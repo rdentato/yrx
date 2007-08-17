@@ -1,0 +1,4 @@
+\s*on\s+entry\s+do\s*
+\s*on\s+exit\s+do\s*
+\s*on\s+eof\s+do\s*
+\s*on\s+\Q\s+do\s*

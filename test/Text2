@@ -1,0 +1,45 @@
+
+  while true do
+    if s == "" then s = getnewline() end
+  --[[ YYSWITCH(s)
+         "\s*--[[\s*YYSWITCH\s*\((\w+)\)" : buf =$1
+                                            break;
+                                            
+         ".*-\n?" :
+         
+         EOF : buf = nil
+               break;
+  -- END ]]   
+  end
+
+
+
+
+
+--[[ YYSWITCH(s)
+  "\s*(\Q)\s*:\s*"  : addregex
+  "\s*ENTER\s*:\s*" : onenter 
+  "\s*EOF\s*:\s*"   : oneof  
+  "\s*EXIT\s*:\s*"  : onexit 
+  "\s*ELSE\s*:\s*"  : onnone 
+  "#.-\n?"          :
+  "\s*\n?"          :
+  "\s*<\s*(\w*)\*>" :
+  ELSE              : error
+-- END ]]
+
+--[[ YRX GENERATED CODE - DO NOT EDIT ]]
+
+
+
+
+
+
+
+
+
+
+
+
+
+--[[ END ]]

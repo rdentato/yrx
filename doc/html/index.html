@@ -1,0 +1,210 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+
+
+  
+  <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+
+  
+
+
+  
+  
+  <title>yrx - a pattern matching package</title><link type="text/css" href="yrx.css" rel="stylesheet"></head>
+
+<body>
+
+
+<table style="text-align: left; width: 100%;" border="0" cellpadding="0" cellspacing="0">
+
+
+  <tbody>
+
+
+    <tr>
+
+
+      <td style="width: 150px; height: 16px;" colspan="1" rowspan="2"><img style="width: 150px; height: 90px;" alt="yrx logo" src="logo.png"></td>
+
+
+      <td id="mnu" style="width: 821px; height: 76px;" align="right" valign="bottom"><a href="index.html">home</a>
+&nbsp;|&nbsp; <a href="docs.html">docs</a>
+&nbsp;|&nbsp; <a href="http://sourceforge.net/project/showfiles.php?group_id=159782">files</a>&nbsp;&nbsp;</td>
+
+
+    </tr>
+
+
+    <tr>
+
+
+      <td class="topln" style="text-align: right; width: 821px; height: 14px; vertical-align: middle;"><small>30
+May 2007 -&nbsp; <a href="mailto:rdentato@users.sourceforge.net">Remo
+&nbsp;Dentato</a>&nbsp;</small>&nbsp;</td>
+
+
+    </tr>
+
+
+    <tr>
+
+
+      <td style="width: 821px; height: 28px;" colspan="2" rowspan="1">&nbsp;<br>
+
+
+      
+      <table style="text-align: left; width: 85%;" align="center" border="0" cellpadding="0" cellspacing="0">
+
+
+        <tbody>
+
+
+          <tr>
+
+
+            <td id="text"><!-- ## BEGIN TEXT -->
+            
+            <h2>About YRX</h2>
+
+
+            
+            <p>&nbsp; &nbsp;YRX is
+a&nbsp;package&nbsp;to ease
+the creation of lexical scanners, filters and other text transformation
+tools.</p>
+
+
+            
+            <p>&nbsp; &nbsp;To create fast and compact
+tools, YRX transforms a set of patterns into a
+Deterministic Finite Automaton (DFA) capable of matching those patterns
+over&nbsp;an input text. This implies that all the
+patterns are tested in parallel with no need of backtracking. Also, the
+submatch capture capability of YRX avoid&nbsp;further
+rescanning of the
+matching text to extract &nbsp;parts of it.</p>
+
+
+            
+            <p>&nbsp; &nbsp;Out of the box, the current
+version of YRX consist of:&nbsp;</p><ul><li><a href="#">yrl</a>: Lua module to create scanner within a Lua program; </li><li><a href="#">yrc</a>: to convert&nbsp;C source code with embedded scanners&nbsp;to a regular C code (similar to the <a href="http://re2c.sourceforge.net">re2c</a>
+tool); </li>
+
+
+              <li><a href="#">yrf</a>: parse and transform a text file in a fashion
+similar to <a href="http://en.wikipedia.org/wiki/AWK_%28programming_language%29">AWK</a>
+or <a href="http://gema.sf.net">Gema</a>;</li>
+
+
+              <li><a href="#">yrd</a>: Generate a graphic representation of the DFA
+corresponding to a given set of patterns (requires <a href="http://www.graphviz.org=">Graphviz</a> , <a href="#">VCG</a>, <a href="#">aiSee</a> or <a href="#">uGraph</a> to create
+the image file);</li>
+
+
+            
+            </ul>
+
+
+            
+            <p>&nbsp; Other, more specialized,
+tools&nbsp;can be created using the
+scripting
+language <a href="http://www.lua.org">Lua</a>, see
+the page on <a href="filters.html">adding
+filters</a> for further details.</p>
+
+
+            
+            <p>&nbsp; YRX
+code is
+released under the terms of the <a href="http://www.opensource.org/licenses/mit-license.php" target="_blank">MIT license</a>, a very liberal, OSI
+approved, license. Simply stated, you can use it anyway you want
+as long as you give me credits and don't blame me if something goes
+wrong!&nbsp;</p>
+
+
+            
+            <p>&nbsp; YRX is distributed without any warranty
+and in the hope it may prove useful.
+&nbsp; If you have any comment or if you find
+any bug, feel free to <a href="mailto:rdentato@users.sourceforge.net">write me</a>
+directly or use one of the many facilities at <a href="http://sourceforge.net/projects/yrx">SourceForge</a>.<br>
+
+
+            </p>
+
+
+            
+            <p>&nbsp; Details on how to use YRX are available
+in the <a href="docs.html">documentation page</a>.&nbsp;Go
+to the SourceForge <a href="http://sourceforge.net/project/showfiles.php?group_id=159782">download
+page</a> to get the source or binary distribution. The under development source is stored in the YRX <a href="http://svn.sourceforge.net/viewcvs.cgi/yrx/">SubVersion
+repository</a>.</p>
+
+
+            
+            <h2>News</h2>
+
+
+            
+            <ul>
+
+
+              <li>30 May 2007 - v1.0rc Released.
+&nbsp;Completely rewritten to use DFA and Lua.</li>
+
+
+              <li>19 Feb 2006 - v0.9 First public
+release. Based on NFA, written in C.</li>
+
+
+            
+            </ul>
+
+
+            
+            <h2>&nbsp;</h2>
+
+
+<!-- ## END TEXT --> </td>
+
+
+          </tr>
+
+
+        
+        </tbody>
+      
+      </table>
+
+
+&nbsp;<br>
+
+
+      </td>
+
+
+    </tr>
+
+
+    <tr>
+
+
+      <td colspan="2" rowspan="1" align="center"><strong></strong><a href="http://www.opensource.org"><img style="border: 0px solid ; width: 82px; height: 68px;" alt="" src="osi2.jpg"></a> &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; <a href="http://www.lua.org"><img style="border: 0px solid ; width: 64px; height: 64px;" alt="Lua Powered" title="Lua Powered" src="lua.gif"></a>&nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp;<a href="http://sourceforge.net"><img style="border: 0px solid ; width: 88px; height: 31px;" src="http://sflogo.sourceforge.net/sflogo.php?group_id=159782&amp;type=1" alt="SourceForge.net Logo" align="middle"></a>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp;&nbsp;<a href="http://www.nvu.com" hreflang="en"><img style="border: 0px solid ; width: 135px; height: 52px;" src="made-with-Nvu-t.png" alt="Document made with Nvu"></a>
+      </td>
+
+
+    </tr>
+
+
+  
+  </tbody>
+</table>
+
+
+</body></html>
