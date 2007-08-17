@@ -1,0 +1,30 @@
+
+<main>
+
+"[^\.\\\[\(\)]" : label = $0
+                  addarc(state,state+1,label)
+                  state = state +1
+
+                  
+"\[" :  label = range($0)
+        addarc(state,state+1,label)
+        state = state +1
+        
+"\*" :  addarc(state,state,label)
+        addarc(state-1,state,"")
+        
+"\?" :  addarc(state-1,state,"")
+
+"\+" :  addarc(state,state,label)
+
+"\-" :
+
+"("  :
+
+<range>
+  BEGIN : 
+  "]"   :
+  END   :
+
+  
+  
