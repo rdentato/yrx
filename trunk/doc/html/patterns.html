@@ -6,7 +6,6 @@
 
 
   <title>yrx - a pattern matching package</title><link rel="stylesheet" href="yrx.css" type="text/css"></head>
-
 <body>
 
 <table style="text-align: left; width: 100%;" border="0" cellpadding="0" cellspacing="0">
@@ -41,7 +40,13 @@ May 2007 -&nbsp; <a href="mailto:rdentato@users.sourceforge.net">Remo
 
           <tr>
 
-            <td id="text"><!-- ## BEGIN TEXT -->
+            <td id="text"><!-- ## BEGIN TEXT --><h2>YRX Patterns</h2>
+&nbsp; &nbsp;YRX does not entirely support the&nbsp;regular expression
+syntax. While YRX patterns offer extensions to RE matching, they do not
+support the * operator when applied to a pattern (it may be applied to
+a character or to a character class, though)..<br><br>&nbsp;
+&nbsp;This limitation has a direct impact on the size of the DFA needed
+to recognize the patterns, see the documentation on the <a href="algorithm.html">algorithm</a> for further information.<br>
             <h2>Pattern List</h2>
 &nbsp; &nbsp;This is the summary list of terms to create yrx
 expression. You can read next section for a discussion of unusual terms<br>
@@ -66,7 +71,7 @@ expression. You can read next section for a discussion of unusual terms<br>
 
                   <td style="width: 20px;"></td>
 
-                  <td style="width: 55px;">.</td>
+                  <td style="width: 55px; font-weight: bold;"><big>.</big></td>
 
                   <td style="width: 420px;">Any character</td>
                   <td style="width: 320px;">"a.b" matches &nbsp;"aob", "axb", "a1b", ....</td>
@@ -102,9 +107,9 @@ expression. You can read next section for a discussion of unusual terms<br>
 
                   <td style="width: 55px;"><span style="font-weight: bold;">[</span><span style="font-style: italic;">x</span><span style="font-weight: bold;">-</span><span style="font-style: italic;">y</span><span style="font-weight: bold;">]</span></td>
 
-                  <td style="width: 420px;">(in a set) any character in the specified range</td>
+                  <td style="width: 420px;">any character in the specified range</td>
 
-                  <td style="width: 320px;">"[a0-9]" matches "a", "0", "1", ... , "9","b"</td>
+                  <td style="width: 320px;">"[a-b0-9]" matches "a", "0", "1", ... , "9","b"</td>
 
                 </tr>
 
@@ -246,7 +251,7 @@ expression. You can read next section for a discussion of unusual terms<br>
                   <td style="width: 420px;">complement of \w&nbsp;(equivalent to [^0-9A-Za-z_])</td>
                   <td style="width: 320px;"></td>
                 </tr>
-                <tr><td></td><td><span style="font-weight: bold;">\N</span></td><td>matcha &nbsp;possibly signed number</td><td></td></tr><tr><td></td><td><span style="font-weight: bold;">\Q</span></td><td>Matches a single or double quoted string</td><td></td></tr><tr><td></td><td><span style="font-weight: bold;">\e</span></td><td>match any possibly escaped caracter</td><td></td></tr><tr><td></td><td><span style="font-weight: bold;">\E</span><span style="font-style: italic;">x</span></td><td>set <span style="font-style: italic;">x</span> as escape character&nbsp;</td><td></td></tr><tr>
+                <tr><td></td><td><span style="font-weight: bold;">\N</span></td><td>matcha &nbsp;possibly signed number</td><td></td></tr><tr><td></td><td><span style="font-weight: bold;">\Q</span></td><td>Matches a single or double quoted string</td><td></td></tr><tr><td></td><td><span style="font-weight: bold;">\e</span></td><td>match any possibly escaped caracter</td><td>matches "\q" as a single character</td></tr><tr><td></td><td><span style="font-weight: bold;">\E</span><span style="font-style: italic;">x</span></td><td>set <span style="font-style: italic;">x</span> as escape character&nbsp;</td><td></td></tr><tr>
                   <td></td>
                   <td><span style="font-style: italic;">p</span><span style="font-weight: bold;">\:</span><span style="font-style: italic;">q</span></td>
                   <td>matches p only if followed by q and pushes q back</td>
@@ -289,16 +294,14 @@ expression. You can read next section for a discussion of unusual terms<br>
                   <td style="width: 320px;"></td>
                 </tr>
               <tr><td style="width: 20px;"></td><td style="width: 55px;">p<span style="font-weight: bold;">-</span>q</td><td style="width: 420px;">matches the shortest sequence of <span style="font-style: italic;">p</span> followed by <span style="font-style: italic;">q</span></td><td style="width: 320px;"></td></tr></tbody>
-            </table>
-<!-- ## END TEXT --></td>
+            </table><br><br><!-- ## END TEXT --></td>
 
           </tr>
 
         </tbody>
       </table>
 
-&nbsp;<br><h2>YRX Patterns</h2>
-&nbsp; &nbsp;Yrx&nbsp;patterns follow <br><h2>&nbsp;</h2>
+&nbsp;<br><br><h2>&nbsp;</h2>
 
       </td>
 
