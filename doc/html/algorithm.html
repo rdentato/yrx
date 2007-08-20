@@ -21,7 +21,6 @@
   
   
   <title>yrx - a pattern matching package</title><link type="text/css" href="yrx.css" rel="stylesheet"></head>
-
 <body>
 
 
@@ -116,7 +115,11 @@ May 2007 -&nbsp; <a href="mailto:rdentato@users.sourceforge.net">Remo
             
             
             
-            <p>&nbsp; &nbsp;Even if the algorithm presented here is a
+            <p>&nbsp; &nbsp;Transforming a set of of patterns in a Non Deterministic Finite Automaton (NFA) and then in a&nbsp; Deterministic Finite Automaton (DFA) is the standard approach for the automatic creating lexical scanners (LEX, re2c, ...).</p><p>&nbsp; &nbsp; Any NFA with <span style="font-style: italic;">n</span> states can be transformed in an equivalent DFA (i.e. a DFA that recognize the same language)&nbsp; with (in the worst case) <span style="font-style: italic;">n</span><sup>2</sup><span style="font-style: italic;"> </span> states.</p><p>&nbsp;
+&nbsp;The number of states has a direct impact on the complexity and
+size of the lexical scanner and also on the time needed to create it.</p><p>&nbsp;
+&nbsp;Even if the worst case is very rare (pathological cases have to
+be built on purpose), it could be worthwile to understand how to </p><p>&nbsp; &nbsp;Even if the algorithm presented here is a
 novel creation of mine, it uses techniques and concepts that are
 described in the literature. The bibliografy section in the
 documentation page provides links to books and articles that are&nbsp;most relevant.&nbsp;</p>
