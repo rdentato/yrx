@@ -371,13 +371,111 @@ class Graph {
   }
 }
 
-
-Graph parse(Graph nfa, char[] rx, int nrx)
-{
-   if (nfa == null) {nfa = new Graph; }
+class rxparser {
+ 
+  Graph parse(Graph nfa, char[] rx, int nrx)
+  {
+     if (nfa == null) {nfa = new Graph; }
+     i = 0; m=rx.length;
+     expr(nfa,rx,1);
+     return nfa;
+  }
   
-   return nfa
+  private:
+
+  /* 
+       expr ::= { term }.
+       
+       term ::= "(" [ expr { altx } ] ")" ["?"] |
+                "\\E" escaped |
+                cclass ["+" | "-" | "*" | "?"].
+       
+       altx ::=  "|" expr .
+       
+       cclass ::= "[" escaped {escaped} "]" |
+                 escaped.
+       
+       escaped ::= "\\x" hexdigit [hexdigit] |
+                   "\\" octdigit [octdigit] [octdigit]|
+                   "\\" spchr | ^spchr
+                   
+       
+       spchr ::= ":" | "|" | "*" | "+" | "-" | "?" | "(" | ")"
+       
+       
+       hexdigit ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "0" |
+                    "A" | "B" | "C" | "D" | "E" | "F" |
+                    "a" | "b" | "c" | "d" | "e" | "f" .
+       
+       
+       octdigit ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" .
+*/
+
+  int i;
+  int m;
+  
+  int expr(Graph nfa, char []rx, int state)
+  {
+     int j = state;
+     while ( j = term(nfa,rx,j)) state = j;
+     return state;
+  }
+  
+  int term(Graph nfa, char []rx, int state)
+  {
+     int j = state;
+     char[] l;
+     int c;
+     Arc a;
+     
+     l = cclass(rx);
+     if (l.length > 0) {
+       a=nfa.addarc(state,state+1,l);
+
+       switch (peek(rx)) {
+         case '-' :  a.lbl.type == LBL_NOTGREEDY;
+         case '*' :  nfa.addarc(state,state+1,"");
+         case '+'    nfa.addarc(state+1,state+1,a.lbl.cpy());
+                     i=i+1;
+                     break;
+                     
+         case '?'    nfa.addarc(state,state+1,"");
+                     i=i+1;
+                     break;
+       }
+       state = state +1;
+       
+       return state;
+     }
+     return 0;
+  }
+  
+  char[] cclass(rx)
+  {
+     char[] l;
+     if (rx[i] == '\\') {
+       i = i+1;
+       if (i < m) 
+        return null;
+     }
+     return l; 
+  }
+  
+  int peek(rx) 
+  {
+    if (i >= m) return -1;
+    return rx[i];
+  }
+  
+  int next(rx) 
+  {
+    if (i >= m) return -1;
+    return rx[i++]; 
+  }
+       
 }
+
+
 
 
 int main (char[][] args)
