@@ -2,9 +2,12 @@
 import std.stdio;
 import std.string;
 
+enum { LBL_BMP=0,LBL_QUOTED, LBL_INTEGER, LBL_ESCAPED, LBL_NEWLINE, LBL_EMPTY, LBL_NOTGREEDY };
+
 class Label {
 public:
    ubyte bmap[32];
+   ushort type;
 
 private:
    char[] thechr(int c) {
@@ -13,12 +16,8 @@ private:
 
      c &= 255;
 
-     if (c < 32 || c > 126 || c == '\\' || c == '"' || c == '\'') {
-       s ~= "\\x";
-       t  = c >> 4;  t += (t > 9? 'A'-10 : '0');
-       s ~= t;
-       t  = c & 0xF; t += (t > 9? 'A'-10 : '0');
-       s ~= t;
+     if (c < 32 || c > 126 || c == '\\' || c == '"' || c == '\'' || c==']' || c=='-') {
+       s ~= "\\x" ~ format("%02X",c); 
      }
      else {
        s ~= cast(char)c;
@@ -34,9 +33,85 @@ public:
   void zro() { for(int i; i<32; i++) bmap[i] = 0; }
   void neg() { for(int i; i<32; i++) bmap[i] ^= 0xFF; }
 
+  this () {}
+  this (char []s) {
+    bool negate = false;
+    bool range = false;
+    char last;
+    int c;
+    int i=0;
+    int n=s.length;
+    
+    type = LBL_EMPTY;
+    if (n > 0) {
+      type = LBL_BMP;
+      
+      if (s[i] == '[') i++;
+      if (s[i] == '^') {i++; negate = true;}
+      
+      while (type == LBL_BMP && i<n && s[i] != ']') {
+        c = s[i];
+        if (c == '-')
+          range = true;
+        else if (c == '.') {
+          zro(); neg(); break;
+        }
+        else {
+          if (c == '\\' && i < n-1) {
+            c=-1;
+            i++;
+            switch (s[i]) {
+              case 'd': for (last='0'; last <= '9'; last++) set(last);
+                        break; 
+              case 'u': for (last='A'; last <= 'Z'; last++) set(last);
+                        break; 
+              case 'w': for (last='0'; last <= '9'; last++) set(last);
+              case 'a': for (last='A'; last <= 'Z'; last++) set(last);
+              case 'l': for (last='a'; last <= 'z'; last++) set(last);
+                        break; 
+                        
+              case 'D': for (last=0; last < '0'; last++) set(last);
+                        for (last='9'+1; last <= 255; last++) set(last);
+                        break; 
+
+              case 'n': c='\n'; break;
+              case 'r': c='\r'; break;
+              case 'b': c='\b'; break;
+              case 't': c='\t'; break;
+              case 'v': c='\v'; break;
+              case 'f': c='\f'; break;
+      
+              case 'e': type = LBL_ESCAPED; break;
+              case 'N': type = LBL_NEWLINE; break;
+              case 'Q': type = LBL_QUOTED; break;
+              case 'I': type = LBL_INTEGER; break;
+              
+              default : c = s[i];
+            
+            }
+          }
+          if (c >= 0) {
+            if (range) {
+               while (++last < c) {
+                 set(last);
+               }
+            }
+            last = c;
+            set(last);
+          }
+          range = false;
+        }
+        i++;
+      }
+      if (range) set('-');
+      if (negate) neg();
+    }
+  }
+  
   Label cpy() {
     Label ll = new Label;
     for(int i; i<32; i++) ll.bmap[i] = bmap[i];
+    ll.type = type;
     return ll;
   }
 
@@ -47,22 +122,51 @@ public:
   void plus(Label l) {
     for(int i; i<32; i++) bmap[i] |= l.bmap[i];
   }
+  
+  bool isEmpty() {
+    ubyte e = 0;
+    for(int i; i<32; i++) e |= bmap[i];
+    return e == 0;
+  }
 
+  bool isEq(Label l) {
+    return cmp(l) == 0;
+  }
+
+  int cmp(Label l) {
+    int e = 0;
+    for(int i=31; e == 0 && i>0; i--) e = bmap[i] - l.bmap[i];
+    return e;
+  }  
+  
   char[] tostring() {
     char []s;
     int a,b;
     int i;
-
-    a=0; b=0;
-    while (a <= 255) {
-      while (a <= 255 && !tst(a)) a++;
-      b=a+1;
-      while (b <= 255 && tst(b)) b++;
-      b=b-1;
-      if (a <= 255) {
-        s ~= thechr(a) ~ thechr(b);
-        a = b+1;
-      }
+    switch (type) {
+      case LBL_BMP: a=0; b=0; s = "[";
+                    while (a <= 255) {
+                      while (a <= 255 && !tst(a)) a++;
+                      b=a+1;
+                      while (b <= 255 && tst(b)) b++;
+                      b=b-1;
+                      if (a <= 255) {
+                        if (a == b) {
+                          s ~= thechr(a);
+                        } else {
+                          s ~= thechr(a) ~ "-" ~ thechr(b);
+                        }
+                        a = b+1;
+                      }
+                    }
+                    s ~= "]";
+                    break;
+                    
+      case LBL_ESCAPED: s="\\e"; break;
+      case LBL_QUOTED:  s="\\Q"; break;
+      case LBL_INTEGER: s="\\I"; break;
+      case LBL_NEWLINE: s="\\N"; break;
+      case LBL_EMPTY:   s=""; break;
     }
     return s;
   }
@@ -80,6 +184,14 @@ public:
     writef("Current l: %s\n",l.tostring());
     l.neg();
     writef("Current l: %s\n",l.tostring());
+    l = new Label("[xyZz92-6]");
+    writef("Current l: %s\n",l.tostring());
+    l = new Label("[^x2-6yZz9]");
+    writef("Current l: %s\n",l.tostring());
+    l = new Label(".");
+    writef("Current l: %s\n",l.tostring());
+    l = new Label("\\e");
+    writef("Current l: %s\n",l.tostring());
     writef("UNIT TEST END\n");
   }
 }
@@ -87,8 +199,14 @@ public:
 
 class TagLst {
   ushort[] tags;
+  char[] tagsig;
 
-  void add(ushort t){ // Let's keep it linear for now ...
+  this() {}
+  this(ushort t) { add(t); }
+  
+  this(ushort[] t) { add(t); }
+  
+  void add(ushort t) { // Let's use a linear search for now ...
     int i,j;
     i = tags.length;
     j = i;
@@ -99,6 +217,7 @@ class TagLst {
     else if (tags[i-1] != t) {
       tags = tags[0..i] ~ t ~ tags[i..length];
     }
+    tagsig = null;
   }
   
   void add(ushort[] t) {
@@ -106,18 +225,17 @@ class TagLst {
       add(t[i]);
   }
  
-  void add(TagLst t) {
-    add(t.tags);
-  }
+  void add(TagLst t) { add(t.tags); }
 
   char[] tostring() {
     char [] s;
-    
-    for (int i=0;i<tags.length;i++) {
-       s ~= format("%d,",tags[i]);
+    if (tagsig.length == 0) {
+      for (int i=0;i<tags.length;i++) {
+        s ~= format("%d,",tags[i]);
+      }
+      tagsig = s;
     }
-    
-    return s;
+    return tagsig;
   }
   
   unittest {
@@ -141,24 +259,124 @@ class TagLst {
    }
    tl.add(t2);
    writef("Current tl: %s\n",tl.tostring());
+   writef("Current tl: %s\n",tl.tagsig);
    
    writef("UNIT TEST END\n");
   }
 }
 
 class Arc {
-   ushort from;
-   ushort to;
-   Label  lbl;
-   TagLst tags;
+  ushort from;
+  ushort to;
+  Label  lbl;
+  TagLst tags;
 
-   this (ushort from, ushort to, Label l, TagLst t) {
-   }
+  this (ushort f, ushort t, Label l, TagLst tl) {
+    from = f; to = t; lbl = l ; tags = tl;
+  }
 
-   this (ushort from, ushort to, Label l) {
-     this(from, to, l, new TagLst);
-   }
+  this (ushort f, ushort t, Label l) { this(f, t, l, null); }
+ 
+}
 
+class Graph {
+  Arc[][] states;
+  int[]   narcs;
+  ushort  curstate;   
+  uint    nstates;
+  
+  this() {
+    states.length = 100;
+    narcs.length = states.length;
+    states[0] = null; // the final state
+    curstate = 1;
+  }
+
+  Arc addarc(ushort f, ushort t, char[] l,ushort tg)
+  {
+    Arc a;
+    a = addarc(f, t, l);
+    a.tags = new TagLst(tg);
+    return a;
+  }
+  
+  Arc addarc(ushort f, ushort t, char[] l,ushort[] tl)
+  {
+    Arc a;
+    a = addarc(f, t, l);
+    a.tags = new TagLst(tl);
+    return a;
+  }
+  
+  Arc addarc(ushort f, ushort t, char[] l,TagLst tl)
+  {
+    Arc a;
+    a = addarc(f, t, l);
+    a.tags = new TagLst(tl.tags);
+    return a;
+  }
+  
+  Arc addarc(ushort f, ushort t, char[] l)
+  {
+    return addarc(f, t, new Label(l));         
+  }
+  
+  Arc addarc(ushort f, ushort t, Label l)
+  {
+    int j=0;
+    Arc a;
+    
+    if (f == 0 || (f == t && l.isEmpty)) return null;
+    if (f > states.length) {
+      states.length = states.length + 100;
+      narcs.length = states.length;
+    }
+
+    if (f > nstates) nstates = f;
+    if (t > nstates) nstates = t;
+            
+    if (states[f].length == narcs[f])
+      states[f].length = states[f].length + 50;
+
+    a = new Arc(f,t,l);
+    states[f][narcs[f]] = a;    
+    narcs[f]++;
+    return a;
+  }
+  
+  void dump() {
+    ushort state=1;
+    int j;
+    Arc a;
+    
+    while (state <= nstates) {
+      for (j=0; j < narcs[state]; j++) {
+        a=states[state][j];
+        writef("%3d -> %-3d %s\n",a.from,a.to,a.lbl.tostring());
+      } 
+      state++;
+    }
+  }
+  
+  unittest {
+    writef("UNIT TEST 300 -- Graph\n");
+    Graph nfa = new Graph; 
+    nfa.addarc(1,2,"p");
+    nfa.addarc(1,2,"\\l");
+    nfa.addarc(2,3,"\\e");
+    nfa.addarc(2,3,"\\N");
+    nfa.addarc(3,0,"d");
+    nfa.dump();
+    writef("UNIT TEST END\n");
+  }
+}
+
+
+Graph parse(Graph nfa, char[] rx, int nrx)
+{
+   if (nfa == null) {nfa = new Graph; }
+  
+   return nfa
 }
 
 
