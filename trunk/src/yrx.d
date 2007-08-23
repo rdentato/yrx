@@ -1,6 +1,7 @@
 // import std.file;
 import std.stdio;
 import std.string;
+import std.ctype;
 
 enum { LBL_BMP=0,LBL_QUOTED, LBL_INTEGER, LBL_ESCAPED, LBL_NEWLINE, LBL_EMPTY, LBL_NOTGREEDY };
 
@@ -40,16 +41,19 @@ public:
     char last;
     int c;
     int i=0;
-    int n=s.length;
+    int n=s.length-1;
+    int h;
     
     type = LBL_EMPTY;
-    if (n > 0) {
+    if (n >= 0) {
       type = LBL_BMP;
       
-      if (s[i] == '[') i++;
-      if (s[i] == '^') {i++; negate = true;}
+      if (s[i] == '[') {
+        i++;
+        if (s[i] == '^') {i++; negate = true;}
+      }
       
-      while (type == LBL_BMP && i<n && s[i] != ']') {
+      while (type == LBL_BMP && i <= n && s[i] != ']') {
         c = s[i];
         if (c == '-')
           range = true;
@@ -57,10 +61,9 @@ public:
           zro(); neg(); break;
         }
         else {
-          if (c == '\\' && i < n-1) {
+          if (c == '\\' && i < n) {
             c=-1;
-            i++;
-            switch (s[i]) {
+            switch (s[++i]) {
               case 'd': for (last='0'; last <= '9'; last++) set(last);
                         break; 
               case 'u': for (last='A'; last <= 'Z'; last++) set(last);
@@ -80,7 +83,30 @@ public:
               case 't': c='\t'; break;
               case 'v': c='\v'; break;
               case 'f': c='\f'; break;
-      
+
+              case 'x': c=0;
+                        h = (i < n) ? hex(s[i+1]) : -1;
+                        if (h >= 0) {
+                          c = h; i++;
+                          h = (i < n) ? hex(s[i+1]) : -1;
+                          if (h >= 0) {
+                            c = (c << 4) | h; i++;
+                          }
+                        }
+                        break;
+              case '0','1','2','3','4','5','6','7':  
+                        writef("ll %d %d %s\n",i,n,s);      
+                        c=oct(s[i]);            
+                        h = (i < n) ? oct(s[i+1]) : -1;
+                        if (h >= 0) {
+                          c = (c << 3) | h; i++;
+                          h = (i < n) ? oct(s[i+1]) : -1;
+                          if (h >= 0) {
+                            c = (c << 3) | h; i++;
+                          }
+                        }
+                        break;
+                    
               case 'e': type = LBL_ESCAPED; break;
               case 'N': type = LBL_NEWLINE; break;
               case 'Q': type = LBL_QUOTED; break;
@@ -194,26 +220,58 @@ public:
     writef("Current l: %s\n",l.tostring());
     writef("UNIT TEST END\n");
   }
+  
+private:
+
+  int hex(char c) {
+    if ('0' <= c && c <= '9') return c - '0';
+    if ('A' <= c && c <= 'F') return c - 'A'+10;
+    if ('a' <= c && c <= 'f') return c - 'a'+10;
+    return -1;
+  }    
+  
+  int oct(char c) {
+    if ('0' <= c && c <= '7') return c - '0';
+    return -1;
+  }    
+
 }
 
-enum {TAG_MRK = 255, TAG_NONE = 127, TAG_CB=0, TAG_CE=128};
+enum {TAG_MRK = 255, TAG_FIN = 127, TAG_CB=0, TAG_CE=128};
 
-class Tag {
-  
-  ushort code(ubyte type, ubyte nrx) { return type + nrx << 8; }
-  
-  ubyte type(ushort tag) { 
-    tag = tag & 0xFF;
-    if (tag == TAG_MRK || tag == TAG_NONE) return tag;
-    return tag & 0x80;
-  }; 
-  
-  ubyte capt(ushort tag) { 
-    tag = tag & 0xFF;
-    if (tag == TAG_MRK || tag == TAG_NONE) return 0;
-    return tag & 0x7F;
-  };   
+ushort tag_code(ubyte type, ubyte nrx) {
+  return (type | (cast(ushort)nrx << 8));
 }
+
+ubyte tag_nrx(ushort tag) { 
+  return (tag >> 8);
+}
+
+ubyte tag_type(ushort tag) { 
+  tag = tag & 0xFF;
+  if (tag == TAG_MRK || tag == TAG_FIN) return tag;
+  return tag & 0x80;
+} 
+
+ubyte tag_capt(ushort tag) { 
+  tag = tag & 0xFF;
+  if (tag == TAG_MRK || tag == TAG_FIN) return 0;
+  return tag & 0x7F;
+}   
+
+char[] tag_str(ushort tag) { 
+  char[] s;
+  
+  switch (tag_type(tag)) {
+    case TAG_MRK : s = format("MRK_%d", tag_nrx(tag)); break;
+    case TAG_FIN : s = format("FIN_%d", tag_nrx(tag)); break;
+    case TAG_CE  : s = format("CE%d_%d", tag_capt(tag), tag_nrx(tag)); break;
+    case TAG_CB  : s = format("CB%d_%d", tag_capt(tag), tag_nrx(tag)); break;    
+  }
+  
+  return s;
+}   
+
 
 class TagLst {
   ushort[] tags;
@@ -247,13 +305,13 @@ class TagLst {
 
   char[] tostring() {
     char [] s;
-    if (tagsig.length == 0) {
-      for (int i=0;i<tags.length;i++) {
-        s ~= format("%d,",tags[i]);
-      }
-      tagsig = s;
+     
+    if (tags.length == 0) return "";
+    
+    for (int i=0;i<tags.length;i++) {
+      s ~= tag_str(tags[i]) ~ ',';
     }
-    return tagsig;
+    return s[0 .. length-1];
   }
   
   unittest {
@@ -264,7 +322,7 @@ class TagLst {
 
    writef("Current tl: %s\n",tl.tostring());
    
-   tl.add(Tag.code(TAG_CE|23,1));
+   tl.add(tag_code(TAG_CE|23,2));
    writef("Current tl: %s\n",tl.tostring());
    tl.add(20);
    tl.add(130);
@@ -294,6 +352,15 @@ class Arc {
   }
 
   this (ushort f, ushort t, Label l) { this(f, t, l, null); }
+  
+  char[] lblstr() {
+    return lbl.tostring();
+  }
+  
+  char[] tagstr() {
+    if (!tags) return "";
+    return tags.tostring();
+  }
  
 }
 
@@ -372,7 +439,7 @@ class Graph {
     while (state <= nstates) {
       for (j=0; j < narcs[state]; j++) {
         a=states[state][j];
-        writef("%3d -> %-3d %s\n",a.from,a.to,a.lbl.tostring());
+        writef("%3d -> %-3d %s %s\n",a.from,a.to,a.lblstr(),a.tagstr());
       } 
       state++;
     }
@@ -400,7 +467,7 @@ class Parser {
      i = 0; m=rx.length; n = nrx;
      state = expr(nfa,rx,1);
      
-     nfa.addarc(state,0,"");
+     nfa.addarc(state,0,"",tag_code(TAG_FIN,n));
      
      return nfa;
   }
@@ -421,7 +488,7 @@ class Parser {
        <escaped>  ::= \\x\h?\h? | \\\o\o?\o? |
                       \\. | <notspchr>
 
-       <notspchr> ::= [^\:\|\*\+\-\?\(\)]
+       <notspchr> ::= [^\|\*\+\-\?\(\)]
            
   */
 
@@ -437,8 +504,7 @@ class Parser {
        state = j;
        j = term(nfa,rx,state);
      } while ( j > 0 )  ;
-     
-writef("EXPR %d %d\n",k,state) ;    
+     if (i<m) writef("ERROR %d@%d\n",n,i);
      return state;
   }
   
@@ -452,24 +518,33 @@ writef("EXPR %d %d\n",k,state) ;
      
      l = cclass(rx);
      if (l.length > 0) {
-       to = nfa.nextstate();
-       a = nfa.addarc(state,to,l);
-
-       switch (peek(rx)) {
-         case '-' :  a.lbl.type = LBL_NOTGREEDY;
-         case '*' :  nfa.addarc(state,to,"");
-         case '+' :  nfa.addarc(to,to,a.lbl.cpy());
-                     i=i+1;
-                     break;
-                     
-         case '?' :  nfa.addarc(state,to,"");
-                     i=i+1;
-                     break;
-         default: break;           
+       if (l == "\\:") {
+         to = nfa.nextstate();
+         nfa.addarc(state,to,"",tag_code(TAG_MRK,n));
+       }
+       else if (l == "\\E") {
+         to = nfa.nextstate();
+         nfa.addarc(state,to,"",tag_code(TAG_MRK,n));
+       }
+       else {
+         to = nfa.nextstate();
+         a = nfa.addarc(state,to,l);
+         
+         switch (peek(rx)) {
+           case '-' :  a.lbl.type = LBL_NOTGREEDY;
+           case '*' :  nfa.addarc(state,to,"");
+           case '+' :  nfa.addarc(to,to,a.lbl.cpy());
+                       i=i+1;
+                       break;
+                       
+           case '?' :  nfa.addarc(state,to,"");
+                       i=i+1;
+                       break;
+           default  :  break;           
+         }
        }
        state = to;
        
-       writef("TERM %s %d\n",l,state);
        return state;
      }
      return 0;
@@ -484,30 +559,56 @@ writef("EXPR %d %d\n",k,state) ;
        while (true) {
          if (rx[j] == '\'') j++; 
          if (rx[j] == ']') break; 
+         j++;
        }
-       l = rx[i..j];
+       l = rx[i..j+1];
        i = j+1;
      }
      else l = escaped(rx);
      
-writef("CLASS %s\n",l);
      return l; 
   }
 
   char[] escaped(char[] rx) 
   {
      char [] l;
-     if (rx[i] == '\\') {
-       i++;
-       l.length = 2;
-       l[0] = '\\'; l[1] = rx[i];
+     int c;
+     ubyte s;
+     int n=rx.length;
+     int j;
+     
+     c = rx[i];
+     
+     if ( c == '*' || c == '+' || c == '?' || c == '-' ||
+          c == '(' || c == ')' || c == '|') {
+       return null;
      }
-     else {
-       l.length = 1;
-       l[0] = rx[i];
+     
+     j=i; 
+     if (c == '\\' && j < (n-1)) {
+       c = rx[++j];
+       if (c == 'x') {
+         if (j < (n-1) && isxdigit(rx[j+1])) {
+           j++;
+           if (j < (n-1) && isxdigit(rx[j + 1])) j++;
+         }
+       }
+       else if ('0' <= c && c <= '7') {
+         c = j< (n-1)? rx[j+1] : 0;
+         if ('0' <= c && c <= '7') {
+           j++;
+           c = j< (n-1)? rx[j+1] : 0;
+           if ('0' <= c && c <= '7') {
+             j++;
+             c = j< (n-1)? rx[j+1] : 0;
+             if ('0' <= c && c <= '7') j++;
+           }
+         }
+       }
      }
-     i++;
-writef("ESC %s\n",l);
+     j++;
+     l = rx[i..j];
+     i = j;
      return l;
   }
   
@@ -524,15 +625,15 @@ writef("ESC %s\n",l);
   }
        
   unittest {
-     Parser p = new Parser;
-     Graph dfa;
-     
-     assert(p!=null);
-     dfa = p.parse(dfa,"a+b",1);
-     dfa = p.parse(dfa,"cd*",1);
-     if (dfa) dfa.dump();
+    Parser p = new Parser;
+    Graph dfa;
+    
+    assert(p!=null);
+    dfa = p.parse(dfa,"[\\d\\l]",1);
+    //dfa = p.parse(dfa,"cd*",1);
+    if (dfa) dfa.dump();
   }
-  
+
 }
 
 
@@ -540,10 +641,14 @@ writef("ESC %s\n",l);
 
 int main (char[][] args)
 {
-  Label l = new Label();
+  int nrx;
+  int i;
+  Graph dfa;
+  Parser rxp = new Parser;
 
-  for (int i = 1; i < args.length; ++i)  {
-  	writef("%d\t%d %s\t%s\n",i, i & 1, args[i],l.tostring());
+  for (i = 1; i < args.length; ++i)  {
+    dfa = rxp.parse(dfa,args[i],i);
   }
+  if (dfa) dfa.dump();
   return(0);
 }
