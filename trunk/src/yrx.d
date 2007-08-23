@@ -196,6 +196,24 @@ public:
   }
 }
 
+enum {TAG_MRK = 255, TAG_NONE = 127, TAG_CB=0, TAG_CE=128};
+
+class Tag {
+  
+  ushort code(ubyte type, ubyte nrx) { return type + nrx << 8; }
+  
+  ubyte type(ushort tag) { 
+    tag = tag & 0xFF;
+    if (tag == TAG_MRK || tag == TAG_NONE) return tag;
+    return tag & 0x80;
+  }; 
+  
+  ubyte capt(ushort tag) { 
+    tag = tag & 0xFF;
+    if (tag == TAG_MRK || tag == TAG_NONE) return 0;
+    return tag & 0x7F;
+  };   
+}
 
 class TagLst {
   ushort[] tags;
@@ -246,7 +264,7 @@ class TagLst {
 
    writef("Current tl: %s\n",tl.tostring());
    
-   tl.add(100);
+   tl.add(Tag.code(TAG_CE|23,1));
    writef("Current tl: %s\n",tl.tostring());
    tl.add(20);
    tl.add(130);
@@ -292,6 +310,8 @@ class Graph {
     curstate = 1;
   }
 
+  ushort nextstate() { return ++curstate; }
+  
   Arc addarc(ushort f, ushort t, char[] l,ushort tg)
   {
     Arc a;
@@ -327,7 +347,7 @@ class Graph {
     Arc a;
     
     if (f == 0 || (f == t && l.isEmpty)) return null;
-    if (f > states.length) {
+    if (f > states.length || t > states.length) {
       states.length = states.length + 100;
       narcs.length = states.length;
     }
@@ -371,53 +391,54 @@ class Graph {
   }
 }
 
-class rxparser {
+class Parser {
  
   Graph parse(Graph nfa, char[] rx, int nrx)
-  {
-     if (nfa == null) {nfa = new Graph; }
-     i = 0; m=rx.length;
-     expr(nfa,rx,1);
+  {  ushort state;
+  
+     if (!nfa) { nfa = new Graph; }
+     i = 0; m=rx.length; n = nrx;
+     state = expr(nfa,rx,1);
+     
+     nfa.addarc(state,0,"");
+     
      return nfa;
   }
   
   private:
 
   /* 
-       expr ::= { term }.
-       
-       term ::= "(" [ expr { altx } ] ")" ["?"] |
-                "\\E" escaped |
-                cclass ["+" | "-" | "*" | "?"].
-       
-       altx ::=  "|" expr .
-       
-       cclass ::= "[" escaped {escaped} "]" |
-                 escaped.
-       
-       escaped ::= "\\x" hexdigit [hexdigit] |
-                   "\\" octdigit [octdigit] [octdigit]|
-                   "\\" spchr | ^spchr
-                   
-       
-       spchr ::= ":" | "|" | "*" | "+" | "-" | "?" | "(" | ")"
-       
-       
-       hexdigit ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "0" |
-                    "A" | "B" | "C" | "D" | "E" | "F" |
-                    "a" | "b" | "c" | "d" | "e" | "f" .
-       
-       
-       octdigit ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" .
-*/
+       <expr>     ::= <term>+
+
+       <term>     ::= \(<expr><altx>*\)\?? |
+                      \\E<escaped> | \\: |
+                      <cclass>[\+\-\*\?]?
+
+       <altx>     ::=  \|<expr>
+
+       <cclass>   ::= \[\e*\] | <escaped>
+
+       <escaped>  ::= \\x\h?\h? | \\\o\o?\o? |
+                      \\. | <notspchr>
+
+       <notspchr> ::= [^\:\|\*\+\-\?\(\)]
+           
+  */
 
   int i;
   int m;
+  int n;
   
   int expr(Graph nfa, char []rx, int state)
   {
      int j = state;
-     while ( j = term(nfa,rx,j)) state = j;
+     int k = state;
+     do {
+       state = j;
+       j = term(nfa,rx,state);
+     } while ( j > 0 )  ;
+     
+writef("EXPR %d %d\n",k,state) ;    
      return state;
   }
   
@@ -426,53 +447,92 @@ class rxparser {
      int j = state;
      char[] l;
      int c;
+     ushort to;
      Arc a;
      
      l = cclass(rx);
      if (l.length > 0) {
-       a=nfa.addarc(state,state+1,l);
+       to = nfa.nextstate();
+       a = nfa.addarc(state,to,l);
 
        switch (peek(rx)) {
-         case '-' :  a.lbl.type == LBL_NOTGREEDY;
-         case '*' :  nfa.addarc(state,state+1,"");
-         case '+'    nfa.addarc(state+1,state+1,a.lbl.cpy());
+         case '-' :  a.lbl.type = LBL_NOTGREEDY;
+         case '*' :  nfa.addarc(state,to,"");
+         case '+' :  nfa.addarc(to,to,a.lbl.cpy());
                      i=i+1;
                      break;
                      
-         case '?'    nfa.addarc(state,state+1,"");
+         case '?' :  nfa.addarc(state,to,"");
                      i=i+1;
                      break;
+         default: break;           
        }
-       state = state +1;
+       state = to;
        
+       writef("TERM %s %d\n",l,state);
        return state;
      }
      return 0;
   }
   
-  char[] cclass(rx)
+  char[] cclass(char[] rx)
   {
      char[] l;
-     if (rx[i] == '\\') {
-       i = i+1;
-       if (i < m) 
-        return null;
+     int j = i;
+     if (i == m) return null;
+     if (rx[i] == '[') {
+       while (true) {
+         if (rx[j] == '\'') j++; 
+         if (rx[j] == ']') break; 
+       }
+       l = rx[i..j];
+       i = j+1;
      }
+     else l = escaped(rx);
+     
+writef("CLASS %s\n",l);
      return l; 
   }
+
+  char[] escaped(char[] rx) 
+  {
+     char [] l;
+     if (rx[i] == '\\') {
+       i++;
+       l.length = 2;
+       l[0] = '\\'; l[1] = rx[i];
+     }
+     else {
+       l.length = 1;
+       l[0] = rx[i];
+     }
+     i++;
+writef("ESC %s\n",l);
+     return l;
+  }
   
-  int peek(rx) 
+  int peek(char[] rx) 
   {
     if (i >= m) return -1;
     return rx[i];
   }
   
-  int next(rx) 
+  int next(char[] rx) 
   {
     if (i >= m) return -1;
     return rx[i++]; 
   }
        
+  unittest {
+     Parser p = new Parser;
+     Graph dfa;
+     
+     assert(p!=null);
+     dfa = p.parse(dfa,"a+b",1);
+     dfa = p.parse(dfa,"cd*",1);
+     if (dfa) dfa.dump();
+  }
+  
 }
 
 
