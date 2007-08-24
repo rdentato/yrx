@@ -17,7 +17,7 @@ private:
 
      c &= 255;
 
-     if (c < 32 || c > 126 || c == '\\' || c == '"' || c == '\'' || c==']' || c=='-') {
+     if (c < 32 || c > 126 || c == '\\' || c == '"' || c == '\'' || c=='[' || c==']' || c=='-') {
        s ~= "\\x" ~ format("%02X",c); 
      }
      else {
@@ -38,22 +38,21 @@ public:
   this (char []s) {
     bool negate = false;
     bool range = false;
-    char last;
+    int last;
     int c;
     int i=0;
     int n=s.length-1;
     int h;
-    
-    type = LBL_EMPTY;
+  //writef("--- '%s'\n",s);
+    type = LBL_BMP;
     if (n >= 0) {
-      type = LBL_BMP;
       
       if (s[i] == '[') {
         i++;
         if (s[i] == '^') {i++; negate = true;}
       }
       
-      while (type == LBL_BMP && i <= n && s[i] != ']') {
+      while ( i <= n && s[i] != ']') {
         c = s[i];
         if (c == '-')
           range = true;
@@ -77,6 +76,25 @@ public:
                         for (last='9'+1; last <= 255; last++) set(last);
                         break; 
 
+              case 'U': for (last=0; last < 'A'; last++) set(last);
+                        for (last='Z'+1; last <= 255; last++) set(last);
+                        break; 
+                        
+              case 'L': for (last=0; last < 'a'; last++) set(last);
+                        for (last='z'+1; last <= 255; last++) set(last);
+                        break; 
+                        
+              case 'A': for (last=0; last < 'A'; last++) set(last);
+                        for (last='Z'+1; last < 'a'; last++) set(last);
+                        for (last='z'+1; last <= 255; last++) set(last);
+                        break; 
+                        
+              case 'W': for (last=0; last < '0'; last++) set(last);
+                        for (last='9'+1; last < 'A'; last++) set(last);
+                        for (last='Z'+1; last < 'a'; last++) set(last);
+                        for (last='z'+1; last <= 255; last++) set(last);
+                        break; 
+                        
               case 'n': c='\n'; break;
               case 'r': c='\r'; break;
               case 'b': c='\b'; break;
@@ -84,34 +102,17 @@ public:
               case 'v': c='\v'; break;
               case 'f': c='\f'; break;
 
-              case 'x': c=0;
-                        h = (i < n) ? hex(s[i+1]) : -1;
-                        if (h >= 0) {
-                          c = h; i++;
-                          h = (i < n) ? hex(s[i+1]) : -1;
-                          if (h >= 0) {
-                            c = (c << 4) | h; i++;
-                          }
-                        }
+              case 'x': c = 0;
+                        while (i < n)
+                          c = (c<<4) | hex(s[++i]);
                         break;
-              case '0','1','2','3','4','5','6','7':  
-                        writef("ll %d %d %s\n",i,n,s);      
-                        c=oct(s[i]);            
-                        h = (i < n) ? oct(s[i+1]) : -1;
-                        if (h >= 0) {
-                          c = (c << 3) | h; i++;
-                          h = (i < n) ? oct(s[i+1]) : -1;
-                          if (h >= 0) {
-                            c = (c << 3) | h; i++;
-                          }
-                        }
+                        
+              case '0','1','2','3','4','5','6','7': 
+                        c = oct(s[i]); 
+                        while (i < n)
+                          c = (c<<3) | oct(s[++i]);
                         break;
                     
-              case 'e': type = LBL_ESCAPED; break;
-              case 'N': type = LBL_NEWLINE; break;
-              case 'Q': type = LBL_QUOTED; break;
-              case 'I': type = LBL_INTEGER; break;
-              
               default : c = s[i];
             
             }
@@ -169,31 +170,24 @@ public:
     char []s;
     int a,b;
     int i;
-    switch (type) {
-      case LBL_BMP: a=0; b=0; s = "[";
-                    while (a <= 255) {
-                      while (a <= 255 && !tst(a)) a++;
-                      b=a+1;
-                      while (b <= 255 && tst(b)) b++;
-                      b=b-1;
-                      if (a <= 255) {
-                        if (a == b) {
-                          s ~= thechr(a);
-                        } else {
-                          s ~= thechr(a) ~ "-" ~ thechr(b);
-                        }
-                        a = b+1;
-                      }
-                    }
-                    s ~= "]";
-                    break;
-                    
-      case LBL_ESCAPED: s="\\e"; break;
-      case LBL_QUOTED:  s="\\Q"; break;
-      case LBL_INTEGER: s="\\I"; break;
-      case LBL_NEWLINE: s="\\N"; break;
-      case LBL_EMPTY:   s=""; break;
+    
+    a=0; b=0; s = "[";
+    while (a <= 255) {
+      while (a <= 255 && !tst(a)) a++;
+      b=a+1;
+      while (b <= 255 && tst(b)) b++;
+      b=b-1;
+      if (a <= 255) {
+        if (a == b) {
+          s ~= thechr(a);
+        } else {
+          s ~= thechr(a) ~ "-" ~ thechr(b);
+        }
+        a = b+1;
+      }
     }
+    s ~= "]";
+    if (type == LBL_NOTGREEDY) s ~= "-";
     return s;
   }
 
@@ -460,12 +454,24 @@ class Graph {
 
 class Parser {
  
+  int i;
+  int m;
+  int n;
+  char[] e;
+  char[] r;
+  int p;
+  
   Graph parse(Graph nfa, char[] rx, int nrx)
   {  ushort state;
   
      if (!nfa) { nfa = new Graph; }
-     i = 0; m=rx.length; n = nrx;
-     state = expr(nfa,rx,1);
+     r = rx;
+     m = r.length;
+     i = 0;
+     n = nrx;
+     e = "\\\\";
+     p = 1;
+     state = expr(nfa,1);
      
      nfa.addarc(state,0,"",tag_code(TAG_FIN,n));
      
@@ -486,51 +492,86 @@ class Parser {
        <cclass>   ::= \[\e*\] | <escaped>
 
        <escaped>  ::= \\x\h?\h? | \\\o\o?\o? |
-                      \\. | <notspchr>
-
-       <notspchr> ::= [^\|\*\+\-\?\(\)]
+                      \\. | [^\|\*\+\-\?\(\)]
            
   */
 
-  int i;
-  int m;
-  int n;
-  
-  int expr(Graph nfa, char []rx, int state)
+  int expr(Graph nfa, int state)
   {
      int j = state;
      int k = state;
      do {
        state = j;
-       j = term(nfa,rx,state);
+       j = term(nfa,state);
      } while ( j > 0 )  ;
-     if (i<m) writef("ERROR %d@%d\n",n,i);
      return state;
   }
   
-  int term(Graph nfa, char []rx, int state)
+  int term(Graph nfa, ushort state)
   {
      int j = state;
      char[] l;
      int c;
-     ushort to;
+     ushort to = state;
+     ushort t1;
      Arc a;
      
-     l = cclass(rx);
-     if (l.length > 0) {
-       if (l == "\\:") {
-         to = nfa.nextstate();
-         nfa.addarc(state,to,"",tag_code(TAG_MRK,n));
+
+     if ( (i < m) && (r[i] == '(')) {
+        c = p++; i++;
+        to = nfa.nextstate();
+        nfa.addarc(state,to,"",tag_code(TAG_CB|c,n));
+        state = expr(nfa,to);
+        to = nfa.nextstate();
+        nfa.addarc(state,to,"",tag_code(TAG_CE|c,n));
+        if ((i < m) && (r[i] == ')')) {
+           i++;
+        }
+        return to;
+     }
+          
+     if ( (i < m) && (r[i] == '\\')) {
+       switch (r[i+1]) {
+         case 'E' :  e = escaped();
+                     i = i+2;
+                     return state;
+                     
+         case ':' :  to = nfa.nextstate();
+                     nfa.addarc(state,to,"",tag_code(TAG_MRK,n));
+                     i = i+2;
+                     return to;
+                     
+         default  :  break;
        }
-       else if (l == "\\E") {
+     }
+     
+     l = cclass();
+     if (l.length > 0) {
+       if (l == "\\e") {
+         t1 = nfa.nextstate();
          to = nfa.nextstate();
-         nfa.addarc(state,to,"",tag_code(TAG_MRK,n));
+         a = nfa.addarc(state,to,format("[^%s]",e));
+         nfa.addarc(state,t1,e);
+         nfa.addarc(t1,to,".");
+         switch (peek()) {
+           case '-' :  a.lbl.type = LBL_NOTGREEDY;
+           case '*' :  nfa.addarc(state,to,"");
+           case '+' :  nfa.addarc(to,to,a.lbl.cpy());
+                       nfa.addarc(to,t1,e);
+                       i=i+1;
+                       break;
+                       
+           case '?' :  nfa.addarc(state,to,"");
+                       i=i+1;
+                       break;
+           default  :  break;           
+         }
        }
        else {
          to = nfa.nextstate();
          a = nfa.addarc(state,to,l);
          
-         switch (peek(rx)) {
+         switch (peek()) {
            case '-' :  a.lbl.type = LBL_NOTGREEDY;
            case '*' :  nfa.addarc(state,to,"");
            case '+' :  nfa.addarc(to,to,a.lbl.cpy());
@@ -550,80 +591,73 @@ class Parser {
      return 0;
   }
   
-  char[] cclass(char[] rx)
+  char[] cclass()
   {
      char[] l;
      int j = i;
      if (i == m) return null;
-     if (rx[i] == '[') {
+     if (r[i] == '[') {
        while (true) {
-         if (rx[j] == '\'') j++; 
-         if (rx[j] == ']') break; 
+         if (r[j] == '\'') j++; 
+         if (r[j] == ']') break; 
          j++;
        }
-       l = rx[i..j+1];
+       l = r[i..j+1];
        i = j+1;
      }
-     else l = escaped(rx);
+     else l = escaped();
      
      return l; 
   }
 
-  char[] escaped(char[] rx) 
+  char[] escaped() 
   {
      char [] l;
      int c;
      ubyte s;
-     int n=rx.length;
      int j;
-     
-     c = rx[i];
-     
-     if ( c == '*' || c == '+' || c == '?' || c == '-' ||
-          c == '(' || c == ')' || c == '|') {
-       return null;
-     }
-     
-     j=i; 
-     if (c == '\\' && j < (n-1)) {
-       c = rx[++j];
-       if (c == 'x') {
-         if (j < (n-1) && isxdigit(rx[j+1])) {
-           j++;
-           if (j < (n-1) && isxdigit(rx[j + 1])) j++;
-         }
+
+     if (i < m) {
+       c = r[i];
+       
+       if ( c == '*' || c == '+' || c == '?' || c == '-' ||
+            c == '(' || c == ')' || c == '|') {
+         return null;
        }
-       else if ('0' <= c && c <= '7') {
-         c = j< (n-1)? rx[j+1] : 0;
-         if ('0' <= c && c <= '7') {
-           j++;
-           c = j< (n-1)? rx[j+1] : 0;
+       
+       j=i; 
+       if (c == '\\' && j < (m-1)) {
+         c = r[++j];
+         if (c == 'x') {
+           if (j < (m-1) && isxdigit(r[j+1])) {
+             j++;
+             if (j < (m-1) && isxdigit(r[j + 1])) j++;
+           }
+         }
+         else if ('0' <= c && c <= '7') {
+           c = j < (m-1)? r[j+1] : 0;
            if ('0' <= c && c <= '7') {
              j++;
-             c = j< (n-1)? rx[j+1] : 0;
-             if ('0' <= c && c <= '7') j++;
+             c = j < (m-1)? r[j+1] : 0;
+             if ('0' <= c && c <= '7') {
+               j++;
+             }
            }
          }
        }
+       j++;
+       l = r[i..j];
+       i = j;
      }
-     j++;
-     l = rx[i..j];
-     i = j;
      return l;
   }
   
-  int peek(char[] rx) 
+  int peek() 
   {
     if (i >= m) return -1;
-    return rx[i];
+    return r[i];
   }
-  
-  int next(char[] rx) 
-  {
-    if (i >= m) return -1;
-    return rx[i++]; 
-  }
-       
+      
   unittest {
     Parser p = new Parser;
     Graph dfa;
@@ -635,8 +669,6 @@ class Parser {
   }
 
 }
-
-
 
 
 int main (char[][] args)
