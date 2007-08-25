@@ -43,6 +43,7 @@ public:
     int i=0;
     int n=s.length-1;
     int h;
+    Label ll = new Label;
   //writef("--- '%s'\n",s);
     type = LBL_BMP;
     if (n >= 0) {
@@ -62,39 +63,32 @@ public:
         else {
           if (c == '\\' && i < n) {
             c=-1;
+            ll.zro();
             switch (s[++i]) {
-              case 'd': for (last='0'; last <= '9'; last++) set(last);
-                        break; 
-              case 'u': for (last='A'; last <= 'Z'; last++) set(last);
-                        break; 
-              case 'w': for (last='0'; last <= '9'; last++) set(last);
-              case 'a': for (last='A'; last <= 'Z'; last++) set(last);
-              case 'l': for (last='a'; last <= 'z'; last++) set(last);
-                        break; 
+              case 'h','H': for (last='A'; last <= 'F'; last++) ll.set(last);
+                            for (last='a'; last <= 'f'; last++) ll.set(last);
+              case 'd','D': for (last='0'; last <= '9'; last++) ll.set(last);
+                            break; 
                         
-              case 'D': for (last=0; last < '0'; last++) set(last);
-                        for (last='9'+1; last <= 255; last++) set(last);
-                        break; 
+              case 'o','O': for (last='0'; last <= '7'; last++) ll.set(last);
+                            break; 
+                            
+              case 'u','U': for (last='A'; last <= 'Z'; last++) ll.set(last);
+                            break; 
+                        
+              case 'w','W': ll.set('_');
+                            for (last='0'; last <= '9'; last++) ll.set(last);
+              case 'a','A': for (last='A'; last <= 'Z'; last++) ll.set(last);
+              case 'l','L': for (last='a'; last <= 'z'; last++) ll.set(last);
+                            break; 
 
-              case 'U': for (last=0; last < 'A'; last++) set(last);
-                        for (last='Z'+1; last <= 255; last++) set(last);
-                        break; 
+              case 's','S': for (last=8; last <= 13; last++) ll.set(last);
+                            ll.set(' ');
+                            break;
                         
-              case 'L': for (last=0; last < 'a'; last++) set(last);
-                        for (last='z'+1; last <= 255; last++) set(last);
-                        break; 
-                        
-              case 'A': for (last=0; last < 'A'; last++) set(last);
-                        for (last='Z'+1; last < 'a'; last++) set(last);
-                        for (last='z'+1; last <= 255; last++) set(last);
-                        break; 
-                        
-              case 'W': for (last=0; last < '0'; last++) set(last);
-                        for (last='9'+1; last < 'A'; last++) set(last);
-                        for (last='Z'+1; last < 'a'; last++) set(last);
-                        for (last='z'+1; last <= 255; last++) set(last);
-                        break; 
-                        
+              case 'y','Y': ll.set(' ');ll.set('\t');
+                            break;                        
+                                               
               case 'n': c='\n'; break;
               case 'r': c='\r'; break;
               case 'b': c='\b'; break;
@@ -118,13 +112,15 @@ public:
             }
           }
           if (c >= 0) {
-            if (range) {
-               while (++last < c) {
-                 set(last);
-               }
-            }
+            if (range)
+              while (++last < c) set(last);
+ 
             last = c;
             set(last);
+          }
+          else {
+           if (isupper(s[i])) ll.neg();
+           plus(ll);
           }
           range = false;
         }
@@ -472,7 +468,7 @@ class Parser {
      e = "\\\\";
      p = 1;
      state = expr(nfa,1);
-     
+     if (peek(0) >= 0) err("Unexpected character '" ~ r[i] ~ "'");
      nfa.addarc(state,0,"",tag_code(TAG_FIN,n));
      
      return nfa;
@@ -485,6 +481,7 @@ class Parser {
 
        <term>     ::= \(<expr><altx>*\)\?? |
                       \\E<escaped> | \\: |
+                      \[eNQI][\+\-\*\?]? |
                       <cclass>[\+\-\*\?]?
 
        <altx>     ::=  \|<expr>
@@ -516,22 +513,40 @@ class Parser {
      ushort t1;
      Arc a;
      
-
-     if ( (i < m) && (r[i] == '(')) {
-        c = p++; i++;
-        to = nfa.nextstate();
-        nfa.addarc(state,to,"",tag_code(TAG_CB|c,n));
-        state = expr(nfa,to);
-        to = nfa.nextstate();
-        nfa.addarc(state,to,"",tag_code(TAG_CE|c,n));
-        if ((i < m) && (r[i] == ')')) {
-           i++;
-        }
-        return to;
+     c = peek(0);
+     
+     if ( c < 0) return 0;
+     
+     if ( c == '(' ) {
+       ushort[] st;
+       
+       c = p++; i++;
+       to = nfa.nextstate();
+       nfa.addarc(state,to,"",tag_code(TAG_CB|c,n));
+       state = to;
+       do {
+         writef(".. %d %s\n",i,r[i..$]);
+         st ~= expr(nfa,state);
+         switch (peek(0)) {
+           case -1  : err("Unclosed capture"); break;
+           case ')' : break;
+           case '|' : i++; break;
+           default  : err("Unexpected character '" ~ r[i] ~ "'");
+         }
+       } while (peek(0) != ')');
+       i++;
+       to = nfa.nextstate();
+       for (t1 = 0; t1 <st.length; t1++)
+         nfa.addarc(st[t1],to,"",tag_code(TAG_CE|c,n));
+       if ((i < m) && (r[i] == '?')) {
+          i++;
+          nfa.addarc(state,to,"",tag_code(TAG_CE|c,n));
+       }
+       return to;
      }
           
-     if ( (i < m) && (r[i] == '\\')) {
-       switch (r[i+1]) {
+     if ( c == '\\') {
+       switch (peek(1)) {
          case 'E' :  e = escaped();
                      i = i+2;
                      return state;
@@ -540,53 +555,52 @@ class Parser {
                      nfa.addarc(state,to,"",tag_code(TAG_MRK,n));
                      i = i+2;
                      return to;
-                     
+
+         case 'e' :  t1 = nfa.nextstate();
+                     to = nfa.nextstate();
+                     a = nfa.addarc(state,to,format("[^%s]",e));
+                     nfa.addarc(state,t1,e);
+                     nfa.addarc(t1,to,".");
+                     switch (peek(2)) {
+                       case '-' :  if (peek(3) >=0 ) a.lbl.type = LBL_NOTGREEDY;
+                       case '*' :  nfa.addarc(state,to,"");
+                       case '+' :  nfa.addarc(to,to,a.lbl.cpy());
+                                   nfa.addarc(to,t1,e);
+                                   i=i+1;
+                                   break;
+                                   
+                       case '?' :  nfa.addarc(state,to,"");
+                                   i=i+1;
+                                   break;
+                       default  :  break;           
+                     }
+                     i = i+2;
+                     return to;
+                                          
          default  :  break;
        }
      }
      
      l = cclass();
      if (l.length > 0) {
-       if (l == "\\e") {
-         t1 = nfa.nextstate();
-         to = nfa.nextstate();
-         a = nfa.addarc(state,to,format("[^%s]",e));
-         nfa.addarc(state,t1,e);
-         nfa.addarc(t1,to,".");
-         switch (peek()) {
-           case '-' :  a.lbl.type = LBL_NOTGREEDY;
-           case '*' :  nfa.addarc(state,to,"");
-           case '+' :  nfa.addarc(to,to,a.lbl.cpy());
-                       nfa.addarc(to,t1,e);
-                       i=i+1;
-                       break;
-                       
-           case '?' :  nfa.addarc(state,to,"");
-                       i=i+1;
-                       break;
-           default  :  break;           
-         }
-       }
-       else {
-         to = nfa.nextstate();
-         a = nfa.addarc(state,to,l);
-         
-         switch (peek()) {
-           case '-' :  a.lbl.type = LBL_NOTGREEDY;
-           case '*' :  nfa.addarc(state,to,"");
-           case '+' :  nfa.addarc(to,to,a.lbl.cpy());
-                       i=i+1;
-                       break;
-                       
-           case '?' :  nfa.addarc(state,to,"");
-                       i=i+1;
-                       break;
-           default  :  break;           
-         }
-       }
-       state = to;
+       to = nfa.nextstate();
+       a = nfa.addarc(state,to,l);
        
-       return state;
+       switch (peek(0)) {
+         case '-' :  if (peek(1) >=0 ) a.lbl.type = LBL_NOTGREEDY;
+         case '*' :  nfa.addarc(state,to,"");
+         case '+' :  nfa.addarc(to,to,a.lbl.cpy());
+                     i=i+1;
+                     break;
+                     
+         case '?' :  nfa.addarc(state,to,"");
+                     i=i+1;
+                     break;
+                     
+         default  :  break;           
+       }
+       
+       return  to;
      }
      return 0;
   }
@@ -617,46 +631,51 @@ class Parser {
      ubyte s;
      int j;
 
-     if (i < m) {
-       c = r[i];
-       
-       if ( c == '*' || c == '+' || c == '?' || c == '-' ||
-            c == '(' || c == ')' || c == '|') {
-         return null;
-       }
-       
-       j=i; 
-       if (c == '\\' && j < (m-1)) {
-         c = r[++j];
-         if (c == 'x') {
-           if (j < (m-1) && isxdigit(r[j+1])) {
-             j++;
-             if (j < (m-1) && isxdigit(r[j + 1])) j++;
-           }
+     c = peek(0);
+     
+     if ( c < 0 || c == '*' || c == '+' || c == '?' || c == '-' ||
+          c == '(' || c == ')' || c == '|') {
+       return l;
+     }
+     
+     j=i; 
+     if (c == '\\' && j < (m-1)) {
+       c = r[++j];
+       if (c == 'x') {
+         if (j < (m-1) && isxdigit(r[j+1])) {
+           j++;
+           if (j < (m-1) && isxdigit(r[j + 1])) j++;
          }
-         else if ('0' <= c && c <= '7') {
+       }
+       else if ('0' <= c && c <= '7') {
+         c = j < (m-1)? r[j+1] : 0;
+         if ('0' <= c && c <= '7') {
+           j++;
            c = j < (m-1)? r[j+1] : 0;
            if ('0' <= c && c <= '7') {
              j++;
-             c = j < (m-1)? r[j+1] : 0;
-             if ('0' <= c && c <= '7') {
-               j++;
-             }
            }
          }
        }
-       j++;
-       l = r[i..j];
-       i = j;
      }
+     j++;
+     l = r[i..j];
+     i = j;
+     
      return l;
   }
   
-  int peek() 
+  int peek(int j) 
   {
-    if (i >= m) return -1;
-    return r[i];
+    if ((i+j) >= m) return -1;
+    return r[i+j];
   }
+  
+  void err(char[] m)
+  {
+    throw new Exception(format("%s @%d:%d",m,i,n));
+  }
+  
       
   unittest {
     Parser p = new Parser;
