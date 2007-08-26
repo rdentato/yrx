@@ -17,7 +17,8 @@ private:
 
      c &= 255;
 
-     if (c < 32 || c > 126 || c == '\\' || c == '"' || c == '\'' || c=='[' || c==']' || c=='-') {
+     if (c < 32    || c > 126  || c == '\\' || c == '"' ||
+         c == '\'' || c == '[' || c == ']'  || c == '-' ) {
        s ~= "\\x" ~ format("%02X",c); 
      }
      else {
@@ -149,7 +150,7 @@ public:
   bool isEmpty() {
     ubyte e = 0;
     for(int i; i<32; i++) e |= bmap[i];
-    return e == 0;
+    return (e == 0);
   }
 
   bool isEq(Label l) {
@@ -269,6 +270,7 @@ class TagLst {
 
   this() {}
   this(ushort t) { add(t); }
+  this(TagLst t) { if (t) add(t.tags); }
   
   this(ushort[] t) { add(t); }
   
@@ -287,11 +289,13 @@ class TagLst {
   }
   
   void add(ushort[] t) {
-    for (int i=0;i<t.length;i++)
-      add(t[i]);
+    if (t) {
+      for (int i=0;i<t.length;i++)
+        add(t[i]);
+    }
   }
  
-  void add(TagLst t) { add(t.tags); }
+  void add(TagLst t) { if (t) add(t.tags); }
 
   char[] tostring() {
     char [] s;
@@ -351,12 +355,31 @@ class Arc {
     if (!tags) return "";
     return tags.tostring();
   }
- 
+  
+  void addtags(TagLst tl)
+  {
+    if (!tags) tags = new TagLst(tl);
+    else tags.add(tl);
+  }
+  
+  void addtags(ushort[] tl)
+  {
+    if (!tags) tags = new TagLst(tl);
+    else tags.add(tl);
+  }
+  
+  void addtags(ushort tg)
+  {
+    if (!tags) tags = new TagLst(tg);
+    else tags.add(tg);
+  }
 }
 
 class Graph {
   Arc[][] states;
-  int[]   narcs;
+  int[]    narcs;
+  ulong[]  epslst;
+  ushort   neps;
   ushort  curstate;   
   uint    nstates;
   
@@ -371,39 +394,36 @@ class Graph {
   
   Arc addarc(ushort f, ushort t, char[] l,ushort tg)
   {
-    Arc a;
-    a = addarc(f, t, l);
-    a.tags = new TagLst(tg);
-    return a;
+    return addarc(f, t, new Label(l),new TagLst(tg));
   }
   
   Arc addarc(ushort f, ushort t, char[] l,ushort[] tl)
   {
-    Arc a;
-    a = addarc(f, t, l);
-    a.tags = new TagLst(tl);
-    return a;
+    return addarc(f, t, new Label(l),new TagLst(tl));
   }
   
   Arc addarc(ushort f, ushort t, char[] l,TagLst tl)
   {
-    Arc a;
-    a = addarc(f, t, l);
-    a.tags = new TagLst(tl.tags);
-    return a;
+    return addarc(f, t, new Label(l),tl);
   }
   
   Arc addarc(ushort f, ushort t, char[] l)
   {
-    return addarc(f, t, new Label(l));         
+    return addarc(f, t, new Label(l),null);
   }
   
   Arc addarc(ushort f, ushort t, Label l)
+  {
+    return addarc(f, t, l,null);
+  }
+  
+  Arc addarc(ushort f, ushort t, Label l,TagLst tl)
   {
     int j=0;
     Arc a;
     
     if (f == 0 || (f == t && l.isEmpty)) return null;
+    
     if (f > states.length || t > states.length) {
       states.length = states.length + 100;
       narcs.length = states.length;
@@ -414,18 +434,25 @@ class Graph {
             
     if (states[f].length == narcs[f])
       states[f].length = states[f].length + 50;
+      
+    a = getarc(f,t,l);
+    
+    if (!a) {
+      a = new Arc(f,t,l);
+      states[f][narcs[f]] = a;    
+      narcs[f]++;
+    }
+    
+    if (tl)  a.addtags(tl);
 
-    a = new Arc(f,t,l);
-    states[f][narcs[f]] = a;    
-    narcs[f]++;
     return a;
   }
-  
+ 
   void dump() {
     ushort state=1;
     int j;
     Arc a;
-    
+   
     while (state <= nstates) {
       for (j=0; j < narcs[state]; j++) {
         a=states[state][j];
@@ -446,6 +473,73 @@ class Graph {
     nfa.dump();
     writef("UNIT TEST END\n");
   }
+  
+private:
+
+  void copyarcs(ushort from,ushort of,TagLst epstags)
+  {
+    Arc a;
+    int j;
+    TagLst t;
+    for (j=0; j < narcs[of]; j++) {
+      a = states[of][j];
+      t = new TagLst(epstags);
+      t.add(a.tags);
+      addarc(from,a.to,a.lbl,t);
+   } 
+  }
+  
+  Arc getarc(ushort from, ushort to, Label l)
+  {
+    Arc a;
+    int i;
+    
+    for (i=0; i<narcs[from]; i++) {
+      a = states[from][i];
+      if ((a.from == from) && (a.to == to) && (a.lbl.isEq(l)))
+        return a;
+    }
+    return null;
+  }
+  
+  
+public:
+  void removeeps()
+  {
+    ushort state = nstates; 
+    Arc a;
+    int j;
+    
+    while (state > 0) {
+      j=0;
+      while (j < narcs[state]) {
+        a=states[state][j];
+        if (a.to > 0 && a.lbl.isEmpty()) {
+          copyarcs(state,a.to,a.tags);
+          narcs[state]--; 
+          if ( j < narcs[state])
+            states[state][j] = states[state][narcs[state]];
+        }
+        else j++;
+      } 
+      state--;
+    }
+  }
+  
+private:
+
+  void merge()
+  {}
+  
+public:   
+  void determinize()
+  {
+    Graph dfa;
+    
+    
+  }
+ 
+
 }
 
 class Parser {
@@ -493,7 +587,7 @@ class Parser {
            
   */
 
-  int expr(Graph nfa, int state)
+  int expr(Graph nfa, ushort state)
   {
      int j = state;
      int k = state;
@@ -524,16 +618,15 @@ class Parser {
        to = nfa.nextstate();
        nfa.addarc(state,to,"",tag_code(TAG_CB|c,n));
        state = to;
-       do {
-         writef(".. %d %s\n",i,r[i..$]);
-         st ~= expr(nfa,state);
-         switch (peek(0)) {
-           case -1  : err("Unclosed capture"); break;
-           case ')' : break;
-           case '|' : i++; break;
-           default  : err("Unexpected character '" ~ r[i] ~ "'");
+       st ~= expr(nfa,state);
+       if (st.length > 0) {
+         t1 = altx(nfa,state);
+         while (t1 > 0) {
+           st ~= t1;
+           t1 = altx(nfa,state);
          }
-       } while (peek(0) != ')');
+       }
+       if (peek(0) != ')') err("Unclosed capture");
        i++;
        to = nfa.nextstate();
        for (t1 = 0; t1 <st.length; t1++)
@@ -603,6 +696,13 @@ class Parser {
        return  to;
      }
      return 0;
+  }
+  
+  int altx(Graph nfa, ushort state)
+  {
+     if (peek(0) != '|') return 0;
+     i++;
+     return expr(nfa,state);
   }
   
   char[] cclass()
@@ -700,6 +800,9 @@ int main (char[][] args)
   for (i = 1; i < args.length; ++i)  {
     dfa = rxp.parse(dfa,args[i],i);
   }
-  if (dfa) dfa.dump();
+  if (dfa) {
+    dfa.removeeps();
+    dfa.dump();
+  }
   return(0);
 }
