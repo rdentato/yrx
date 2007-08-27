@@ -156,6 +156,11 @@ public:
     return (e == 0);
   }
 
+  bool isIn(Label l) {
+    for(byte i; i<32; i++) if ((bmap[i] | l.bmap[i]) | bmap[i]) return false ;
+    return true;
+  }
+  
   bool isEq(Label l) {
     return cmp(l) == 0;
   }
@@ -456,7 +461,6 @@ class Graph {
   {
     int j=0;
     Arc a;
-    
     if (f == 0 || (f == t && l.isEmpty)) return null;
     
     if (f > states.length || t > states.length) {
@@ -500,20 +504,20 @@ class Graph {
     Arc a;
     int stkptr;
     ushort[] stk;
-    bool[] vis;
+    bool[] psh;
    
     stk.length = nstates+1;
-    vis.length = nstates+1;
+    psh.length = nstates+1;
     
     stk[stkptr++] = 1;
-
+    psh[0] = true;
+    
     while (stkptr > 0) {
       state=stk[--stkptr];
-      vis[state]=true;
       for (j=0; j < narcs[state]; j++) {
         a=states[state][j];
         writef("%3d -> %-3d %s %s\n",state,a.to,a.lblstr(),a.tagstr());
-        if (!vis[a.to]) stk[stkptr++] = a.to;
+        if (!psh[a.to]) { stk[stkptr++] = a.to; psh[a.to] = true; }
       } 
     }
   }
@@ -542,7 +546,7 @@ private:
       t = new TagLst(epstags);
       t.add(a.tags);
       addarc(from,a.to,a.lbl,t);
-   } 
+    } 
   }
   
   Arc getarc(ushort from, ushort to, Label l)
@@ -552,7 +556,7 @@ private:
     
     for (i=0; i<narcs[from]; i++) {
       a = states[from][i];
-      if ((a.from == from) && (a.to == to) && (a.lbl.isEq(l)))
+      if ((a.to == to) && (a.lbl.isEq(l)))
         return a;
     }
     return null;
@@ -583,16 +587,47 @@ public:
   }
   
 private:
+  struct totags {
+    ushort to;
+    TagLst tags; 
+  } ;
+
 
   void merge()
   {}
   
+  
+  
 public:   
+
   void determinize()
   {
-    Graph dfa;
+    Graph dfa = new Graph;
     
+    ushort state=1;
+    int j;
+    Arc a;
+    int stkptr;
+    ushort[] stk;
+    bool[] psh;
     
+    totags[] lbls;
+    
+    stk.length = nstates+1;
+    psh.length = nstates+1;
+    
+    stk[stkptr++] = 1;
+    psh[0] = true;
+    
+    while (stkptr > 0) {
+      state=stk[--stkptr];
+      lbls = [];
+      for (j=0; j < narcs[state]; j++) {
+        a=states[state][j];
+        writef("%3d -> %-3d %s %s\n",state,a.to,a.lblstr(),a.tagstr());
+        if (!psh[a.to]) { stk[stkptr++] = a.to; psh[a.to] = true; }
+      } 
+    }
   }
  
 
