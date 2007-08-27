@@ -2,6 +2,7 @@
 import std.stdio;
 import std.string;
 import std.ctype;
+import std.c.stdio;
 
 enum { LBL_BMP=0,LBL_QUOTED, LBL_INTEGER, LBL_ESCAPED, LBL_NEWLINE, LBL_EMPTY, LBL_NOTGREEDY };
 
@@ -30,10 +31,10 @@ private:
 public:
   void clr(ubyte c) { bmap[c>>3] &= ~(1<<(c&7));  }
   void set(ubyte c) { bmap[c>>3] |=  (1<<(c&7));  }
-  bool tst(ubyte c) { return cast(bool)(bmap[c>>3] & (1<<(c&7)));  }
+  ubyte tst(ubyte c) { return (bmap[c>>3] & (1<<(c&7)));  }
 
-  void zro() { for(int i; i<32; i++) bmap[i] = 0; }
-  void neg() { for(int i; i<32; i++) bmap[i] ^= 0xFF; }
+  void zro() { for(byte i; i<32; i++) bmap[i] = 0; }
+  void neg() { for(byte i; i<32; i++) bmap[i] ^= 0xFF; }
 
   this () {}
   this (char []s) {
@@ -134,22 +135,24 @@ public:
   
   Label cpy() {
     Label ll = new Label;
-    for(int i; i<32; i++) ll.bmap[i] = bmap[i];
+    for(byte i; i<32; i++) ll.bmap[i] = bmap[i];
     ll.type = type;
     return ll;
   }
 
   void minus(Label l) {
-    for(int i; i<32; i++) bmap[i] &= ~l.bmap[i];
+    for(byte i; i<32; i++) bmap[i] &= ~l.bmap[i];
   }
 
   void plus(Label l) {
-    for(int i; i<32; i++) bmap[i] |= l.bmap[i];
+    for(byte i; i<32; i++) bmap[i] |= l.bmap[i];
   }
   
   bool isEmpty() {
     ubyte e = 0;
-    for(int i; i<32; i++) e |= bmap[i];
+    if (type == LBL_EMPTY) return true;
+    for(byte i; i<32; i++) e |= bmap[i];
+    if (e == 0) type = LBL_EMPTY;
     return (e == 0);
   }
 
@@ -159,32 +162,61 @@ public:
 
   int cmp(Label l) {
     int e = 0;
-    for(int i=31; e == 0 && i>0; i--) e = bmap[i] - l.bmap[i];
+    for(byte i=31; e == 0 && i>0; i--) e = bmap[i] - l.bmap[i];
     return e;
   }  
   
+  int addch(char [] s,int i,char c)
+  {
+    int k;
+    if (c < 32    || c > 126  || c == '\\' || c == '"' ||
+        c == '\'' || c == '[' || c == ']'  || c == '-' ) {
+      s[i++] = '\\';  s[i++] = 'x';
+
+      k = c >> 4;
+      if (k < 10) k += '0';
+      else k += 'A'-10;
+      s[i++] = k ;
+      
+      k = c & 0x0F;
+      if (k < 10) k += '0';
+      else k += 'A'-10;
+      s[i++] = k;
+    }
+    else s[i++] = c;
+      
+    return i;
+  }
+  
   char[] tostring() {
     char []s;
-    int a,b;
-    int i;
+    short a,b;
+    short i;
     
-    a=0; b=0; s = "[";
+    s.length = 80;
+    
+    a=0; b=0; s[i++] = '[';
     while (a <= 255) {
+      if ((a & 0x07) == 0)
+        while ((a <= 255) && (bmap[a>>3] == 0)) a += 8;
       while (a <= 255 && !tst(a)) a++;
       b=a+1;
       while (b <= 255 && tst(b)) b++;
       b=b-1;
       if (a <= 255) {
-        if (a == b) {
-          s ~= thechr(a);
-        } else {
-          s ~= thechr(a) ~ "-" ~ thechr(b);
+        if (s.length < (i+8)) s.length = s.length + 80;
+        
+        i = addch(s,i,a);
+        if (a != b) {
+          s[i++] = '-';
+          i = addch(s,i,b);
         }
         a = b+1;
       }
     }
-    s ~= "]";
-    if (type == LBL_NOTGREEDY) s ~= "-";
+    s[i++] = ']';
+    if (type == LBL_NOTGREEDY) s[i++] = '-';
+    s.length=i;
     return s;
   }
 
@@ -382,6 +414,8 @@ class Graph {
   ushort   neps;
   ushort  curstate;   
   uint    nstates;
+  TagLst  eps_tl;
+  ushort  eps_state;
   
   this() {
     states.length = 100;
@@ -391,6 +425,7 @@ class Graph {
   }
 
   ushort nextstate() { return ++curstate; }
+  ushort peeknextstate() { return curstate +1; }
   
   Arc addarc(ushort f, ushort t, char[] l,ushort tg)
   {
@@ -444,21 +479,42 @@ class Graph {
     }
     
     if (tl)  a.addtags(tl);
+    
+    if (eps_state == f) a.addtags(eps_tl);
 
     return a;
   }
  
+  void pushtag(ushort state, ushort tag)
+  {
+     if (state != eps_state) {
+       eps_state = state;
+       eps_tl = new TagLst(tag);
+     }
+     else eps_tl.add(tag);  
+  }
+  
   void dump() {
     ushort state=1;
     int j;
     Arc a;
+    int stkptr;
+    ushort[] stk;
+    bool[] vis;
    
-    while (state <= nstates) {
+    stk.length = nstates+1;
+    vis.length = nstates+1;
+    
+    stk[stkptr++] = 1;
+
+    while (stkptr > 0) {
+      state=stk[--stkptr];
+      vis[state]=true;
       for (j=0; j < narcs[state]; j++) {
         a=states[state][j];
-        writef("%3d -> %-3d %s %s\n",a.from,a.to,a.lblstr(),a.tagstr());
+        writef("%3d -> %-3d %s %s\n",state,a.to,a.lblstr(),a.tagstr());
+        if (!vis[a.to]) stk[stkptr++] = a.to;
       } 
-      state++;
     }
   }
   
@@ -516,7 +572,7 @@ public:
         a=states[state][j];
         if (a.to > 0 && a.lbl.isEmpty()) {
           copyarcs(state,a.to,a.tags);
-          narcs[state]--; 
+          narcs[state]--;
           if ( j < narcs[state])
             states[state][j] = states[state][narcs[state]];
         }
@@ -573,12 +629,10 @@ class Parser {
   /* 
        <expr>     ::= <term>+
 
-       <term>     ::= \(<expr><altx>*\)\?? |
+       <term>     ::= \(<expr> ('|' <expr>)*\)\?? |
                       \\E<escaped> | \\: |
                       \[eNQI][\+\-\*\?]? |
                       <cclass>[\+\-\*\?]?
-
-       <altx>     ::=  \|<expr>
 
        <cclass>   ::= \[\e*\] | <escaped>
 
@@ -603,7 +657,7 @@ class Parser {
      int j = state;
      char[] l;
      int c;
-     ushort to = state;
+     ushort to;
      ushort t1;
      Arc a;
      
@@ -614,24 +668,26 @@ class Parser {
      if ( c == '(' ) {
        ushort[] st;
        
-       c = p++; i++;
+       c = p++;
+       if (c>120)
+         err("Too many captures");
+       i++;
        to = nfa.nextstate();
        nfa.addarc(state,to,"",tag_code(TAG_CB|c,n));
        state = to;
-       st ~= expr(nfa,state);
-       if (st.length > 0) {
-         t1 = altx(nfa,state);
-         while (t1 > 0) {
-           st ~= t1;
-           t1 = altx(nfa,state);
-         }
+       t1 = expr(nfa,state);
+       while (t1 > 0) {
+         st ~= t1;
+         if (peek(0) != '|') break;
+         i++;
+         t1 = expr(nfa,state);
        }
        if (peek(0) != ')') err("Unclosed capture");
        i++;
        to = nfa.nextstate();
        for (t1 = 0; t1 <st.length; t1++)
          nfa.addarc(st[t1],to,"",tag_code(TAG_CE|c,n));
-       if ((i < m) && (r[i] == '?')) {
+       if (peek(0)== '?') {
           i++;
           nfa.addarc(state,to,"",tag_code(TAG_CE|c,n));
        }
@@ -646,6 +702,7 @@ class Parser {
                      
          case ':' :  to = nfa.nextstate();
                      nfa.addarc(state,to,"",tag_code(TAG_MRK,n));
+                     //nfa.pushtag(nfa.peeknextstate(),tag_code(TAG_MRK,n));
                      i = i+2;
                      return to;
 
@@ -713,8 +770,11 @@ class Parser {
      if (r[i] == '[') {
        while (true) {
          if (r[j] == '\'') j++; 
-         if (r[j] == ']') break; 
-         j++;
+         if (j < m) {
+           if (r[j] == ']') break; 
+           j++;
+         }
+         if (j == m) err("Unclosed class");
        }
        l = r[i..j+1];
        i = j+1;
@@ -734,7 +794,7 @@ class Parser {
      c = peek(0);
      
      if ( c < 0 || c == '*' || c == '+' || c == '?' || c == '-' ||
-          c == '(' || c == ')' || c == '|') {
+          c == '(' || c == ')' || c == ']' || c == '|') {
        return l;
      }
      
@@ -802,6 +862,7 @@ int main (char[][] args)
   }
   if (dfa) {
     dfa.removeeps();
+    
     dfa.dump();
   }
   return(0);
