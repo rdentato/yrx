@@ -482,7 +482,7 @@ class Graph {
       narcs[f]++;
     }
     
-    if (tl)  a.addtags(tl);
+    if (tl) a.addtags(tl);
     
     if (eps_state == f) a.addtags(eps_tl);
 
@@ -535,20 +535,7 @@ class Graph {
   }
   
 private:
-
-  void copyarcs(ushort from,ushort of,TagLst epstags)
-  {
-    Arc a;
-    int j;
-    TagLst t;
-    for (j=0; j < narcs[of]; j++) {
-      a = states[of][j];
-      t = new TagLst(epstags);
-      t.add(a.tags);
-      addarc(from,a.to,a.lbl,t);
-    } 
-  }
-  
+ 
   Arc getarc(ushort from, ushort to, Label l)
   {
     Arc a;
@@ -563,39 +550,47 @@ private:
   }
   
   
-public:
-  void removeeps()
+  
+private:
+ 
+  void copyarcs(ushort from,ushort of,TagLst epstags)
   {
-    ushort state = nstates; 
+    Arc a;
+    int j;
+    TagLst t;
+    for (j=0; j < narcs[of]; j++) {
+      a = states[of][j];
+      t = new TagLst(epstags);
+      t.add(a.tags);
+      addarc(from,a.to,a.lbl,t);
+    } 
+  }
+  
+  void removeeps(ushort state)
+  {
     Arc a;
     int j;
     
-    while (state > 0) {
-      j=0;
-      while (j < narcs[state]) {
-        a=states[state][j];
-        if (a.to > 0 && a.lbl.isEmpty()) {
+    while (j < narcs[state]) {
+      a=states[state][j];
+      if (a.lbl.isEmpty()) {
+        if (a.to == 0) {
+          if (j > 0) {
+            states[state][j] = states[state][0];
+            states[state][0] = a;
+          }
+          j++;
+        }
+        else{
           copyarcs(state,a.to,a.tags);
           narcs[state]--;
-          if ( j < narcs[state])
+          if (j < narcs[state])
             states[state][j] = states[state][narcs[state]];
         }
-        else j++;
-      } 
-      state--;
+      }
+      else j++;
     }
   }
-  
-private:
-  struct totags {
-    ushort to;
-    TagLst tags; 
-  } ;
-
-
-  void merge()
-  {}
-  
   
   
 public:   
@@ -605,13 +600,11 @@ public:
     Graph dfa = new Graph;
     
     ushort state=1;
-    int j;
-    Arc a;
+    int j,k;
+    Arc a,b;
     int stkptr;
     ushort[] stk;
     bool[] psh;
-    
-    totags[] lbls;
     
     stk.length = nstates+1;
     psh.length = nstates+1;
@@ -621,10 +614,12 @@ public:
     
     while (stkptr > 0) {
       state=stk[--stkptr];
-      lbls = [];
-      for (j=0; j < narcs[state]; j++) {
+      removeeps(state);
+      k = (states[state][j].to == 0)? 1: 0;
+      for (j=k; j < narcs[state]; j++) {
         a=states[state][j];
-        writef("%3d -> %-3d %s %s\n",state,a.to,a.lblstr(),a.tagstr());
+  //      for (k=j+1; k < narcs[state]; k++) {
+  //      }
         if (!psh[a.to]) { stk[stkptr++] = a.to; psh[a.to] = true; }
       } 
     }
@@ -896,8 +891,7 @@ int main (char[][] args)
     dfa = rxp.parse(dfa,args[i],i);
   }
   if (dfa) {
-    dfa.removeeps();
-    
+    dfa.determinize();
     dfa.dump();
   }
   return(0);
