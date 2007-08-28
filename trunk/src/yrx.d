@@ -122,7 +122,8 @@ public:
           }
           else {
            if (isupper(s[i])) ll.neg();
-           plus(ll);
+           or(ll);
+           ll.zro();
           }
           range = false;
         }
@@ -144,8 +145,12 @@ public:
     for(byte i; i<32; i++) bmap[i] &= ~l.bmap[i];
   }
 
-  void plus(Label l) {
+  void or(Label l) {
     for(byte i; i<32; i++) bmap[i] |= l.bmap[i];
+  }
+  
+  void and(Label l) {
+    for(byte i; i<32; i++) bmap[i] &= l.bmap[i];
   }
   
   bool isEmpty() {
@@ -157,7 +162,7 @@ public:
   }
 
   bool isIn(Label l) {
-    for(byte i; i<32; i++) if ((bmap[i] | l.bmap[i]) | bmap[i]) return false ;
+    for(byte i; i<32; i++) if ((bmap[i] | l.bmap[i]) != bmap[i]) return false ;
     return true;
   }
   
@@ -470,7 +475,7 @@ class Graph {
 
     if (f > nstates) nstates = f;
     if (t > nstates) nstates = t;
-            
+    
     if (states[f].length == narcs[f])
       states[f].length = states[f].length + 50;
       
@@ -486,6 +491,8 @@ class Graph {
     
     if (eps_state == f) a.addtags(eps_tl);
 
+    //writef("ADDARC: %d %d %s %s\n",a.from,a.to,a.lbl.tostring,(a.tags?a.tags.tostring():""));
+    
     return a;
   }
  
@@ -562,8 +569,15 @@ private:
       a = states[of][j];
       t = new TagLst(epstags);
       t.add(a.tags);
-      addarc(from,a.to,a.lbl,t);
+      addarc(from,a.to,a.lbl.cpy(),t);
     } 
+  }
+  
+  void delarc(ushort state,int k)
+  {
+    narcs[state]--;
+    if (k < narcs[state])
+       states[state][k] = states[state][narcs[state]];   
   }
   
   void removeeps(ushort state)
@@ -583,45 +597,105 @@ private:
         }
         else{
           copyarcs(state,a.to,a.tags);
-          narcs[state]--;
-          if (j < narcs[state])
-            states[state][j] = states[state][narcs[state]];
+          delarc(state,j);
         }
       }
       else j++;
     }
   }
   
+  // v = a intersect b
+  // a = a minus v
+  // b = b minus v
+  Label intersect(Label a, Label b, )
+  {
+    Label v = a.cpy();
+    v.and(b);
+    //writef("a:%s b:%s v:%s\n",a.tostring(),b.tostring(),v.tostring());
+    a.minus(v);
+    b.minus(v);
+    return v;
+  }
+
+  enum {STK_CLR, STK_PUSH, STK_POP};
+  
+  ushort stack(ushort op, ushort val = 0)
+  {
+    static bool[] psh;
+    static ushort[] stk;
+    static int stkptr;
+    
+    //writef("STACK: %d %d %d %d\n",op,val,stkptr,(stkptr>0)?stk[stkptr-1]:0 );
+    
+    if (op == STK_POP) {
+      if (stkptr == 0) return 0;
+      val = stk[--stkptr];
+      return val;
+    }
+    
+    if (val == 0) {
+      if (psh.length <100) psh.length = 100;
+      psh[0] = true;
+      if (stk.length <100) stk.length = 100;
+      stkptr = 0;
+      return 0;
+    }    
+    
+    if (psh.length < val) psh.length = psh.length +100;
+    if (stk.length < stkptr-1) stk.length = stk.length +100;
+    if (!psh[val]) {
+      stk[stkptr++] = val;
+      psh[val] = true;
+    }
+    return val;
+  }
   
 public:   
-
+ 
   void determinize()
   {
     Graph dfa = new Graph;
     
     ushort state=1;
     int j,k;
-    Arc a,b;
+    Arc a,b,c;
     int stkptr;
     ushort[] stk;
     bool[] psh;
+    Label l;
+    ushort to;
     
-    stk.length = nstates+1;
-    psh.length = nstates+1;
-    
-    stk[stkptr++] = 1;
-    psh[0] = true;
-    
-    while (stkptr > 0) {
-      state=stk[--stkptr];
+    stack(STK_CLR);
+    stack(STK_PUSH,1);
+    state = stack(STK_POP);
+
+    while (state > 0) {
       removeeps(state);
-      k = (states[state][j].to == 0)? 1: 0;
+      k = (states[state][0].to == 0)? 1: 0;
       for (j=k; j < narcs[state]; j++) {
         a=states[state][j];
-  //      for (k=j+1; k < narcs[state]; k++) {
-  //      }
-        if (!psh[a.to]) { stk[stkptr++] = a.to; psh[a.to] = true; }
+        for (k=j+1; k < narcs[state]; k++) {
+          b=states[state][k];
+          //writef("State:%d   j:%d   k:%d ",state,j,k);
+          l=intersect(a.lbl,b.lbl);
+          //writef("a:%s b:%s v:%s\n",a.lbl.tostring(),b.lbl.tostring(),l.tostring());
+          if (!l.isEmpty()) {
+            to = nextstate();
+            c = addarc(state,to,l,a.tags);
+            c.addtags(b.tags);
+            addarc(to,a.to,"");
+            addarc(to,b.to,"");
+            if (b.lbl.isEmpty()) { delarc(state,k);}
+            if (a.lbl.isEmpty()) { delarc(state,j); k= narcs[state]; }
+          }
+        }
       } 
+      k = (states[state][0].to == 0)? 1: 0;
+      for (j=k; j < narcs[state]; j++) {
+        a = states[state][j];
+        stack(STK_PUSH,a.to);
+      }
+      state = stack(STK_POP);
     }
   }
  

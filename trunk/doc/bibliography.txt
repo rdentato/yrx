@@ -12,3 +12,9 @@ Links:
 Josh the Outspoken » Blog Archive » Parsing framework status:
 http://blog.reverberate.org/2007/06/04/16/
 
+
+
+> I think Laurikari's master thesis "Efficient submatch addressing for    
+> regular expression" (http://citeseer.ist.psu.edu/480392.html) gives a   
+> good summary of this point of view. He's also author of the TRE matching
+> ilbrary (http://laurikari.net/tre/).                                    
