@@ -420,13 +420,11 @@ class Arc {
 class Graph {
   Arc[][] states;
   int[]    narcs;
-  ulong[]  epslst;
   ushort   neps;
   ushort  curstate;   
   uint    nstates;
-  TagLst  eps_tl;
-  ushort  eps_state;
-  
+  ushort[2][] mrglst;
+    
   this() {
     states.length = 100;
     narcs.length = states.length;
@@ -434,7 +432,18 @@ class Graph {
     curstate = 1;
   }
 
-  ushort nextstate() { return ++curstate; }
+  ushort nextstate() { 
+    
+    ++curstate;
+    if (curstate > states.length) {
+      states.length = states.length + 100;
+      narcs.length = states.length;
+      mrglst.length = states.length;
+    }
+
+    return curstate;
+  }
+  
   ushort peeknextstate() { return curstate +1; }
   
   Arc addarc(ushort f, ushort t, char[] l,ushort tg)
@@ -468,11 +477,6 @@ class Graph {
     Arc a;
     if (f == 0 || (f == t && l.isEmpty)) return null;
     
-    if (f > states.length || t > states.length) {
-      states.length = states.length + 100;
-      narcs.length = states.length;
-    }
-
     if (f > nstates) nstates = f;
     if (t > nstates) nstates = t;
     
@@ -489,22 +493,11 @@ class Graph {
     
     if (tl) a.addtags(tl);
     
-    if (eps_state == f) a.addtags(eps_tl);
-
     //writef("ADDARC: %d %d %s %s\n",a.from,a.to,a.lbl.tostring,(a.tags?a.tags.tostring():""));
     
     return a;
   }
- 
-  void pushtag(ushort state, ushort tag)
-  {
-     if (state != eps_state) {
-       eps_state = state;
-       eps_tl = new TagLst(tag);
-     }
-     else eps_tl.add(tag);  
-  }
-  
+   
   void dump() {
     ushort state=1;
     int j;
@@ -617,7 +610,7 @@ private:
     return v;
   }
 
-  enum {STK_CLR, STK_PUSH, STK_POP};
+  enum {STK_INIT, STK_PUSH, STK_POP,STK_CLR};
   
   ushort stack(ushort op, ushort val = 0)
   {
@@ -626,6 +619,13 @@ private:
     static int stkptr;
     
     //writef("STACK: %d %d %d %d\n",op,val,stkptr,(stkptr>0)?stk[stkptr-1]:0 );
+    
+    if (op == STK_CLR) {
+      stkptr = 0;
+      psh = null;
+      stk = null;
+      return 0;
+    }
     
     if (op == STK_POP) {
       if (stkptr == 0) return 0;
@@ -649,6 +649,15 @@ private:
     }
     return val;
   }
+    
+  ushort merge(ushort a, ushort b)
+  {
+     ushort t,j;
+   
+     
+       
+     return 0;
+  }
   
 public:   
  
@@ -665,7 +674,7 @@ public:
     Label l;
     ushort to;
     
-    stack(STK_CLR);
+    stack(STK_PUSH,0);
     stack(STK_PUSH,1);
     state = stack(STK_POP);
 
@@ -697,6 +706,7 @@ public:
       }
       state = stack(STK_POP);
     }
+    stack(STK_CLR);
   }
  
 
