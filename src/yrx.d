@@ -8,7 +8,7 @@ enum { LBL_BMP=0,LBL_QUOTED, LBL_INTEGER, LBL_ESCAPED, LBL_NEWLINE, LBL_EMPTY, L
 
 class Label {
 public:
-   ubyte bmap[32];
+   ushort bmap[16];
    ushort type;
 
 private:
@@ -29,12 +29,12 @@ private:
    }
 
 public:
-  void clr(ubyte c) { bmap[c>>3] &= ~(1<<(c&7));  }
-  void set(ubyte c) { bmap[c>>3] |=  (1<<(c&7));  }
-  ubyte tst(ubyte c) { return (bmap[c>>3] & (1<<(c&7)));  }
+  void clr(ubyte c) { bmap[c>>4] &= ~(1<<(c&0xF));  }
+  void set(ubyte c) { bmap[c>>4] |=  (1<<(c&0xF));  }
+  ubyte tst(ubyte c) { return (bmap[c>>4] & (1<<(c&0xF)));  }
 
-  void zro() { for(byte i; i<32; i++) bmap[i] = 0; }
-  void neg() { for(byte i; i<32; i++) bmap[i] ^= 0xFF; }
+  void zro() { for(byte i; i<16; i++) bmap[i] = 0; }
+  void neg() { for(byte i; i<16; i++) bmap[i] ^= 0xFFFF; }
 
   this () {}
   this (char []s) {
@@ -136,33 +136,33 @@ public:
   
   Label cpy() {
     Label ll = new Label;
-    for(byte i; i<32; i++) ll.bmap[i] = bmap[i];
+    for(byte i; i<16; i++) ll.bmap[i] = bmap[i];
     ll.type = type;
     return ll;
   }
 
   void minus(Label l) {
-    for(byte i; i<32; i++) bmap[i] &= ~l.bmap[i];
+    for(byte i; i<16; i++) bmap[i] &= ~l.bmap[i];
   }
 
   void or(Label l) {
-    for(byte i; i<32; i++) bmap[i] |= l.bmap[i];
+    for(byte i; i<16; i++) bmap[i] |= l.bmap[i];
   }
   
   void and(Label l) {
-    for(byte i; i<32; i++) bmap[i] &= l.bmap[i];
+    for(byte i; i<16; i++) bmap[i] &= l.bmap[i];
   }
   
   bool isEmpty() {
-    ubyte e = 0;
-    if (type == LBL_EMPTY) return true;
-    for(byte i; i<32; i++) e |= bmap[i];
-    if (e == 0) type = LBL_EMPTY;
-    return (e == 0);
+    int i;
+    if (type == LBL_EMPTY) return true;    
+    while (i<16) if (bmap[i++] != 0) return false;
+    type = LBL_EMPTY;
+    return true;
   }
 
   bool isIn(Label l) {
-    for(byte i; i<32; i++) if ((bmap[i] | l.bmap[i]) != bmap[i]) return false ;
+    for(byte i; i<16; i++) if ((bmap[i] | l.bmap[i]) != bmap[i]) return false ;
     return true;
   }
   
@@ -172,7 +172,7 @@ public:
 
   int cmp(Label l) {
     int e = 0;
-    for(byte i=31; e == 0 && i>0; i--) e = bmap[i] - l.bmap[i];
+    for(byte i=15; e == 0 && i>0; i--) e = bmap[i] - l.bmap[i];
     return e;
   }  
   
@@ -218,7 +218,7 @@ public:
         
         i = addch(s,i,a);
         if (a != b) {
-          s[i++] = '-';
+          if (b>a+1) s[i++] = '-';
           i = addch(s,i,b);
         }
         a = b+1;
@@ -473,12 +473,11 @@ class Graph {
   
   Arc addarc(ushort f, ushort t, Label l,TagLst tl)
   {
-    int j=0;
     Arc a;
+    
     if (f == 0 || (f == t && l.isEmpty)) return null;
     
-    if (f > nstates) nstates = f;
-    if (t > nstates) nstates = t;
+    if (f > nstates || t > nstates) nstates = t;
     
     if (states[f].length == narcs[f])
       states[f].length = states[f].length + 50;
@@ -558,7 +557,7 @@ private:
     Arc a;
     int j;
     TagLst t;
-    for (j=0; j < narcs[of]; j++) {
+    for (j = narcs[of]-1; j >= 0; j--) {
       a = states[of][j];
       t = new TagLst(epstags);
       t.add(a.tags);
@@ -649,14 +648,96 @@ private:
     }
     return val;
   }
-    
+
+ushort[][] mrgd;
+ushort mrgd_start;
+      
   ushort merge(ushort a, ushort b)
   {
-     ushort t,j;
+     ushort t,a_j,b_k,n;
    
+     ushort[]alst;
+     ushort[]blst;
+     ushort[]tlst;
      
+     //writef("MERGE: %d %d = ",a,b);
+     
+     if (mrgd.length == 0) {
+       mrgd.length = 100;
+       mrgd_start = curstate;
+     }
+     
+     if (a>b){t=a;a=b;b=t;}
+     if (mrgd.length < (b - mrgd_start)) { mrgd.length =  (b- mrgd_start) + 100; }
+     
+     if (a <= mrgd_start) {
+       alst.length=1;
+       alst[0] = a;
+     } 
+     else alst = mrgd[a-mrgd_start];
+     
+     if (b <= mrgd_start) {
+       blst.length=1;
+       blst[0] = b;
+     } 
+     else blst = mrgd[b-mrgd_start];
+  
+     if (alst.length < blst.length) {
+       t = b; b = a; a = t;
+       tlst = blst; blst = alst; alst = tlst;
+     }
+
+     do {
+       while (a_j < alst.length && alst[a_j] < blst[b_k]) a_j++;
        
-     return 0;
+       if (a_j == alst.length) {
+         alst ~= blst[b_k..$];
+         b_k = blst.length;
+         n++;
+       }
+       else {
+         if (alst[a_j] != blst[b_k]) {       
+           alst = alst[0..a_j+1] ~ blst[b_k] ~ alst[a_j+1 .. length];
+           n++;
+         }
+         a_j++; 
+         b_k++;
+       }
+       
+     } while (b_k < blst.length);
+
+     //writef("(a=");
+     //for (int k=0;k<alst.length ;k++) writef("%d ",alst[k]);
+     //writef(")(b=");
+     //for (int k=0;k<blst.length ;k++) writef("%d ",blst[k]);
+     //writef(")");
+     
+     t = a;
+     if (n>0) {
+       t = curstate - mrgd_start;
+       while (t > 0 && n > 0) {
+         if (mrgd[t].length == alst.length) {
+           a_j =0;
+           while (a_j < alst.length && mrgd[t][a_j] == alst[a_j]) a_j++;
+           if (a_j == alst.length) break;
+           t--;
+         } 
+         else t--; 
+       }
+       if (t == 0) {
+         t = nextstate();
+         mrgd[t-mrgd_start] = alst;
+         addarc(t,a,"");
+         addarc(t,b,"");
+       }
+       else t += mrgd_start;
+     }
+     
+     //writef("%d\n",t);
+     //if (curstate > 8) throw new Exception("PIOPO" ~ format("%d %d",n,t));
+     
+
+     return t;
   }
   
 public:   
@@ -669,9 +750,7 @@ public:
     int j,k;
     Arc a,b,c;
     int stkptr;
-    ushort[] stk;
-    bool[] psh;
-    Label l;
+    Label l,al,bl;
     ushort to;
     
     stack(STK_PUSH,0);
@@ -680,27 +759,30 @@ public:
 
     while (state > 0) {
       removeeps(state);
-      k = (states[state][0].to == 0)? 1: 0;
-      for (j=k; j < narcs[state]; j++) {
-        a=states[state][j];
+      //k = (states[state][0].to == 0)? 1: 0;
+      for (j=0; j < narcs[state]; j++) {
+        a=states[state][j]; al=a.lbl; 
         for (k=j+1; k < narcs[state]; k++) {
-          b=states[state][k];
+          b=states[state][k]; bl=b.lbl;
           //writef("State:%d   j:%d   k:%d ",state,j,k);
-          l=intersect(a.lbl,b.lbl);
+          //l=intersect(a.lbl,b.lbl);
+          l=al.cpy();
+          l.and(bl);
+          al.minus(l);
+          bl.minus(l);
+          
           //writef("a:%s b:%s v:%s\n",a.lbl.tostring(),b.lbl.tostring(),l.tostring());
           if (!l.isEmpty()) {
-            to = nextstate();
+            to = merge(a.to,b.to);
             c = addarc(state,to,l,a.tags);
             c.addtags(b.tags);
-            addarc(to,a.to,"");
-            addarc(to,b.to,"");
-            if (b.lbl.isEmpty()) { delarc(state,k);}
-            if (a.lbl.isEmpty()) { delarc(state,j); k= narcs[state]; }
+            if (bl.isEmpty()) { delarc(state,k);}
+            if (al.isEmpty()) { delarc(state,j); k= narcs[state]; }
           }
         }
       } 
-      k = (states[state][0].to == 0)? 1: 0;
-      for (j=k; j < narcs[state]; j++) {
+      //k = (states[state][0].to == 0)? 1: 0;
+      for (j=0; j < narcs[state]; j++) {
         a = states[state][j];
         stack(STK_PUSH,a.to);
       }
@@ -976,7 +1058,7 @@ int main (char[][] args)
   }
   if (dfa) {
     dfa.determinize();
-    dfa.dump();
+    //dfa.dump();
   }
   return(0);
 }
