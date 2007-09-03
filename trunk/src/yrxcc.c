@@ -1,3 +1,17 @@
+/*  
+**  (C) 2007 by Remo Dentato (rdentato@users.sourceforge.net)
+**
+** Permission to use, copy, modify and distribute this code and
+** its documentation for any purpose is hereby granted without
+** fee, provided that the above copyright notice, or equivalent
+** attribution acknowledgement, appears in all copies and
+** supporting documentation.
+** 
+** Copyright holder makes no representations about the suitability
+** of this software for any purpose. It is provided "as is" without
+** express or implied warranty.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -122,10 +136,11 @@ char *str_dup(char *s)
 
 /*************************************/
 
-#define TAG_FIN 0xFF
-#define TAG_MRK 0x7F
-#define TAG_CB  0x00
-#define TAG_CE  0x80
+#define TAG_FIN  0xFF
+#define TAG_MRK  0x7F
+#define TAG_CB   0x00
+#define TAG_CE   0x80
+#define TAG_NONE 0x00
 
 #define tag_code(t,n)((t) | ((n) << 8))
 #define tag_nrx(t)   ((t) >> 8)
@@ -340,6 +355,22 @@ void addarc(uint16_t from,uint16_t to,char *l,uint16_t tag)
 
 /**************************************************/
 
+  /* 
+       <expr>     ::= <term>+
+
+       <term>     ::= \( <expr> ( '|' <expr> )*\)[\+\-\*\?]? |
+                      \\E<escaped> | \\: |
+                      \[eNQI][\+\-\*\?]? |
+                      <cclass>[\+\-\*\?]?
+                      
+       <cclass>   ::= \[\e*\] | <escaped>
+
+       <escaped>  ::= \\x\h?\h? | \\\o\o?\o? |
+                      \\. | [^\|\*\+\-\?\(\)]
+           
+  */
+
+
 uint16_t nextstate()
 {
   if (cur_state == 65500)  err("More than 65500 states!!");
@@ -428,17 +459,64 @@ char *cclass()
    return l;
 }
 
-
+uint16_t expr(uint16_t state);
+  
 uint16_t term(uint16_t state)
 {
-  uint16_t to,t1;
+  uint16_t to,t1,alt,start;
   int c;
+  uint8_t ncapt;
   char *l;
   
   c = peekch(0);
     
   if ( c < 0) return 0;
 
+  if ( c == '(') {
+    c = nextch();
+    ncapt = capt++;
+    if (ncapt>120)  err("Too many captures");
+    
+    start = nextstate();
+    
+    alt = nextstate();
+    to  = nextstate();
+    addarc(alt,to,"",tag_code(TAG_CE|ncapt,cur_nrx));
+    
+
+    t1 = expr(start);
+    while (t1 > 0) {
+      c = nextch();
+      if (c != '|') break;
+      addarc(t1,alt,"",TAG_NONE);    
+      t1 = expr(start);
+    }
+    addarc(t1,alt,"",TAG_NONE);    
+    if (c != ')') err("Unclosed capture");
+    
+    switch (peekch(0)) {
+       case '?':  addarc(start,alt,"",TAG_NONE);
+                  addarc(state,start,"",tag_code(TAG_CB|ncapt,cur_nrx));
+                  c = nextch();
+                  break;
+                  
+       case '*':  addarc(alt,start,"",TAG_NONE);
+                  addarc(state,alt,"",tag_code(TAG_CB|ncapt,cur_nrx));
+                  c = nextch();
+                  break;
+                  
+       case '+':  addarc(alt,start,"",TAG_NONE);
+                  addarc(state,start,"",tag_code(TAG_CB|ncapt,cur_nrx));
+                  c = nextch();
+                  break;
+
+       default :  addarc(state,start,"",tag_code(TAG_CB|ncapt,cur_nrx));
+                  break;
+    }
+    
+    return to;
+  }
+  
   if ( c == '\\') {
     switch (peekch(1)) {
       case 'E' :  c = nextch(); c = nextch();
@@ -509,8 +587,8 @@ uint16_t term(uint16_t state)
 
     return  to;
   }
+  
   return 0;
-
 }
 
 uint16_t expr(uint16_t state)
