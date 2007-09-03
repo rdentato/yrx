@@ -205,7 +205,7 @@ static uint32_t hash(ht *h,void *a)
   return k;
 }
 
-/* The macro helem is safe with respect to side effects */
+/* The macro helem is not safe with respect to side effects on q*/
 #define helem(h,q) (q == NULL? \
                               NULL: \
                               (h)->arr.arr == NULL? \
