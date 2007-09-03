@@ -3,6 +3,7 @@ import std.stdio;
 import std.string;
 import std.ctype;
 import std.c.stdio;
+import std.gc;
 
 enum { LBL_BMP=0,LBL_QUOTED, LBL_INTEGER, LBL_ESCAPED, LBL_NEWLINE, LBL_EMPTY, LBL_NOTGREEDY };
 
@@ -29,9 +30,9 @@ private:
    }
 
 public:
-  void clr(ubyte c) { bmap[c>>4] &= ~(1<<(c&0xF));  }
-  void set(ubyte c) { bmap[c>>4] |=  (1<<(c&0xF));  }
-  ubyte tst(ubyte c) { return (bmap[c>>4] & (1<<(c&0xF)));  }
+  void   clr(ushort c) { bmap[c>>4] &= ~(1<<(c&0xF));  }
+  void   set(ushort c) { bmap[c>>4] |=  (1<<(c&0xF));  }
+  ushort tst(ushort c) { return (bmap[c>>4] & (1<<(c&0xF)));  }
 
   void zro() { for(byte i; i<16; i++) bmap[i] = 0; }
   void neg() { for(byte i; i<16; i++) bmap[i] ^= 0xFFFF; }
@@ -207,8 +208,8 @@ public:
     
     a=0; b=0; s[i++] = '[';
     while (a <= 255) {
-      if ((a & 0x07) == 0)
-        while ((a <= 255) && (bmap[a>>3] == 0)) a += 8;
+      if ((a & 0x0F) == 0)
+        while ((a <= 255) && (bmap[a>>4] == 0)) a += 16;
       while (a <= 255 && !tst(a)) a++;
       b=a+1;
       while (b <= 255 && tst(b)) b++;
@@ -308,7 +309,7 @@ char[] tag_str(ushort tag) {
 
 class TagLst {
   ushort[] tags;
-  char[] tagsig;
+  ushort  ntags;
 
   this() {}
   this(ushort t) { add(t); }
@@ -318,16 +319,13 @@ class TagLst {
   
   void add(ushort t) { // Let's use a linear search for now ...
     int i,j;
-    i = tags.length;
-    j = i;
-    while (i>0 && tags[i-1] > t) i--;
-    if (i==0) {
-      tags = t ~ tags;
+    i = ntags-1;
+    while (i>=0 && tags[i] != t) i--;
+    if (i<0) {
+      if (ntags >= tags.length) tags.length = ntags +10;
+      tags[ntags++] = t;
     }
-    else if (tags[i-1] != t) {
-      tags = tags[0..i] ~ t ~ tags[i..length];
-    }
-    tagsig = null;
+    //writef("at (%s) ",tostring());
   }
   
   void add(ushort[] t) {
@@ -378,13 +376,14 @@ class TagLst {
 }
 
 class Arc {
-  ushort from;
+  //ushort from;
   ushort to;
   Label  lbl;
   TagLst tags;
 
   this (ushort f, ushort t, Label l, TagLst tl) {
-    from = f; to = t; lbl = l ; tags = tl;
+    //from = f;
+     to = t; lbl = l ; tags = tl;
   }
 
   this (ushort f, ushort t, Label l) { this(f, t, l, null); }
@@ -423,10 +422,9 @@ class Graph {
   ushort   neps;
   ushort  curstate;   
   uint    nstates;
-  ushort[2][] mrglst;
     
   this() {
-    states.length = 100;
+    states.length = 10;
     narcs.length = states.length;
     states[0] = null; // the final state
     curstate = 1;
@@ -435,10 +433,10 @@ class Graph {
   ushort nextstate() { 
     
     ++curstate;
-    if (curstate > states.length) {
-      states.length = states.length + 100;
+    if (curstate >= states.length) {
+      states.length = curstate + 10;
       narcs.length = states.length;
-      mrglst.length = states.length;
+      writef(narcs.length);
     }
 
     return curstate;
@@ -479,15 +477,16 @@ class Graph {
     
     if (f > nstates || t > nstates) nstates = t;
     
-    if (states[f].length == narcs[f])
-      states[f].length = states[f].length + 50;
-      
     a = getarc(f,t,l);
     
     if (!a) {
       a = new Arc(f,t,l);
+      if (states[f].length <= narcs[f]) {
+        states[f].length = narcs[f] + 10;
+      }
       states[f][narcs[f]] = a;    
       narcs[f]++;
+        //writef("oo %d %d %d %s\n",f,states[f].length,narcs[f],a.lblstr());
     }
     
     if (tl) a.addtags(tl);
@@ -560,7 +559,7 @@ private:
     for (j = narcs[of]-1; j >= 0; j--) {
       a = states[of][j];
       t = new TagLst(epstags);
-      t.add(a.tags);
+      t.add(a.tags); //writef("ca (%d,%d,%d) ",of,narcs[of],j);
       addarc(from,a.to,a.lbl.cpy(),t);
     } 
   }
@@ -663,12 +662,12 @@ ushort mrgd_start;
      //writef("MERGE: %d %d = ",a,b);
      
      if (mrgd.length == 0) {
-       mrgd.length = 100;
+       mrgd.length = 10;
        mrgd_start = curstate;
      }
      
      if (a>b){t=a;a=b;b=t;}
-     if (mrgd.length < (b - mrgd_start)) { mrgd.length =  (b- mrgd_start) + 100; }
+     if (mrgd.length < (b - mrgd_start)) { mrgd.length =  (b- mrgd_start) + 10; }
      
      if (a <= mrgd_start) {
        alst.length=1;
@@ -752,6 +751,7 @@ public:
     int stkptr;
     Label l,al,bl;
     ushort to;
+    Arc[] s;
     
     stack(STK_PUSH,0);
     stack(STK_PUSH,1);
@@ -760,10 +760,11 @@ public:
     while (state > 0) {
       removeeps(state);
       //k = (states[state][0].to == 0)? 1: 0;
+      s = states[state];
       for (j=0; j < narcs[state]; j++) {
-        a=states[state][j]; al=a.lbl; 
+        a=s[j]; al=a.lbl; 
         for (k=j+1; k < narcs[state]; k++) {
-          b=states[state][k]; bl=b.lbl;
+          b=s[k]; bl=b.lbl;
           //writef("State:%d   j:%d   k:%d ",state,j,k);
           //l=intersect(a.lbl,b.lbl);
           l=al.cpy();
@@ -777,7 +778,7 @@ public:
             c = addarc(state,to,l,a.tags);
             c.addtags(b.tags);
             if (bl.isEmpty()) { delarc(state,k);}
-            if (al.isEmpty()) { delarc(state,j); k= narcs[state]; }
+            if (al.isEmpty()) { delarc(state,j); k = narcs[state]; }
           }
         }
       } 
@@ -816,7 +817,6 @@ class Parser {
      state = expr(nfa,1);
      if (peek(0) >= 0) err("Unexpected character '" ~ r[i] ~ "'");
      nfa.addarc(state,0,"",tag_code(TAG_FIN,n));
-     
      return nfa;
   }
   
@@ -963,14 +963,16 @@ class Parser {
      char[] l;
      int j = i;
      if (i == m) return null;
-     if (r[i] == '[') {
+     if (r[j] == '[') {
+       j++;
        while (true) {
-         if (r[j] == '\'') j++; 
-         if (j < m) {
-           if (r[j] == ']') break; 
+         //writef("-- %s\n",r[j..$]);
+         if (r[j] == '\\') j+=2; 
+         else if (j < m) {
+           if (r[j] == ']') break;
            j++;
          }
-         if (j == m) err("Unclosed class");
+         if (j >= m) err("Unclosed class");
        }
        l = r[i..j+1];
        i = j+1;
@@ -1052,13 +1054,31 @@ int main (char[][] args)
   int i;
   Graph dfa;
   Parser rxp = new Parser;
+  char [][] rxs;
 
-  for (i = 1; i < args.length; ++i)  {
-    dfa = rxp.parse(dfa,args[i],i);
+
+  rxs = args;
+  
+  if (rxs.length == 1) {
+    rxs.length = 256;
+    i=1;
+    while ((rxs[i] = readln()) != null) {
+      if (rxs[i][rxs[i].length-1] == '\n') 
+        rxs[i].length = rxs[i].length-1;
+      if (rxs[i].length >0)
+       i++;
+    }
+    rxs.length = i;
   }
+  
+  for (i = 1; i < rxs.length; ++i)  {
+    writefln(rxs[i]);
+    dfa = rxp.parse(dfa,rxs[i],i);
+  }
+  
   if (dfa) {
     dfa.determinize();
-    //dfa.dump();
+    dfa.dump();
   }
   return(0);
 }
