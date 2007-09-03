@@ -522,7 +522,7 @@ uint16_t term(uint16_t state)
       case 'E' :  c = nextch(); c = nextch();
                   l = escaped();
                   if (l == NULL) err("Invalid escape sequence");
-                  esc = l[1];
+                  esc = l[1];  /*** BUG Need to properly handle \x and \0 ***/
                   if (esc == '\\') esc = l[2];
                   return state;
                   
