@@ -569,20 +569,23 @@ uint16_t term(uint16_t state)
     c = peekch(0);
     if ( c == '-') l[0] = '-';
 
-    addarc(state,to,l,0);
 
     switch (c) {
       case '-' :
       case '*' :  addarc(state,to,"",0);
-      case '+' :  addarc(to,to,l,0);
+                  addarc(to,to,l,0);
+                  c = nextch();
+                  break;
+
+      case '+' :  addarc(state,to,l,0);
+                  addarc(to,to,l,0);
                   c = nextch();
                   break;
 
       case '?' :  addarc(state,to,"",0);
                   c = nextch();
+      default  :  addarc(state,to,l,0);
                   break;
-
-      default  :  break;
     }
 
     return  to;
