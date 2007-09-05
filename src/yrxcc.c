@@ -18,7 +18,9 @@
 #include <stddef.h>
 #include <string.h>
 #include <strings.h>
-#include <setjmp.h>
+
+#define HUL_MAIN
+#include "../utils/hul/src/hul.h"
 
 #ifndef FALSE
 #define FALSE 0
@@ -76,6 +78,88 @@ void usv_free(intvec *v)
 #endif
 
 /**************************************************/
+typedef struct {
+  uint32_t next;
+  uint16_t to;
+  uint16_t tag;
+  uint8_t  flg;
+  uint8_t  lmin;
+  uint8_t  lmax;
+  uint8_t  pad;
+} Arc;
+
+
+Arc      *arclist = NULL;
+uint32_t  arclist_cnt = 0;
+uint32_t  arclist_lim = 0;
+
+uint32_t *statelist = NULL;
+uint16_t  statelist_cnt = 0;
+uint16_t  statelist_lim = 0;
+
+#define BLK_SIZE 512
+
+typedef struct memblk {
+  struct memblk *next;
+  uint16_t avail;
+  uint8_t blk[BLK_SIZE];
+} memblk;
+
+memblk *new_memblk()
+{
+  memblk *m;
+  m = malloc(sizeof(memblk);
+  if (m == NULL) yrxerr("Out of mem (blk)");
+  m->next  = NULL;
+  m->avail = BLK_SIZE;
+  return m;
+}
+
+
+typedef struct lbl_t { 
+  uint8_t flg;
+  uint8_t len;
+  uint8_t lbls[1];
+} lbl_t;
+
+typedef struct tag_t { 
+  uint8_t len;
+  uint8_t tags[1];
+} tag_t;
+
+memblk *lblSet = NULL;
+memblk *tagSet = NULL;
+
+lbl_t *get_lbl(uint8_t len, uint8_t *l)
+{
+  uint8_t j;
+  uint16_t need;
+  memblk *m;
+  lbl_t lbl;
+  
+  need =  sizeof(lbl_t)+len-1;
+  
+  if (lblSet == NULL) {
+    lblSet = new_memblk);
+  } 
+  m = lblSet;
+  while (m != NULL) {
+    if (m->avail < need) break;
+    if (m->next == NULL) {
+      m->next = new_memblk();
+      m = m->next;
+      break;
+    }
+    m = m->next;
+  }
+  lbl = (lbl_t *)(m->blk + (BLK_SIZE - m->avail));
+  lbl->len = len;
+  lbl->flg = 0;
+  for (j=0;j<len;j++) lbl->lbls[j] = l[j];
+  m->avail -= need;
+}
+
+/**************************************************/
 
 char     *cur_rx;
 int       cur_pos;
@@ -87,17 +171,6 @@ uint16_t  cur_state;
 uint16_t  nstates;
 
 
-/**************************************************/
-
-jmp_buf errjmp;
-
-void err(char *errmsg)
-{
-  fprintf(stderr,"ERROR: %s\n",errmsg);
-  fprintf(stderr,"%5d: %s\n",cur_nrx,cur_rx);
-  fprintf(stderr,"%*s\n",cur_pos+8,"*");
-  longjmp(errjmp,1);
-}
 /**************************************************/
 
 char *str =  NULL;
@@ -187,8 +260,12 @@ int __c;
 int escval(char *s)
 {
   
-  
   return -1; 
+}
+
+yrxerr(char *errmsg)
+{
+  err("ERROR: %s\n%5d: %s\n%*s\n",errmsg,cur_nrx,cur_rx,cur_pos+8,"*");
 }
 
 uint16_t *lbl_bmp(char *s)
@@ -221,7 +298,7 @@ uint16_t *lbl_bmp(char *s)
       else {
         if (c == '\\') {
           s++;
-          if (*s == '\0') err("Unexpected \\");
+          if (*s == '\0') yrxerr("Unexpected \\");
           
           c = -1;
           
@@ -325,32 +402,69 @@ int lbl_rng(uint16_t *bmp, uint16_t a)
   return ((a<<8) | b);
 }
 
-
-
-
 /**************************************************/
 
 void addarc(uint16_t from,uint16_t to,char *l,uint16_t tag)
 {
+  uint32_t t,k;
+  Arc *a;
+  
+  t = (from > to)? from : to;
+  if (t >= statelist_lim) {
+    statelist_lim = t + 128;
+    statelist = realloc(statelist,sizeof(uint32_t) * statelist_lim+1) ;
+    if (state == NULL) yrxerr("Out of memory (state)")
+  }
+  
+  k = (from < to)? from : to;
+  
+  if (k > statelist_cnt) { statelist[k] = 0; statelist_cnt = k);
+  if (t > statelist_cnt) { statelist[t] = 0; statelist_cnt = t);
+  
+  
+  if (arclist_cnt >= arclist_lim) {
+    arclist_lim  = arclist_lim + 128;
+    arclist = realloc(arclist,sizeof(Arc) * arclist_lim);
+    if (arclist == NULL) yrxerror("Out of memory (arc)");
+  }
+  
+  a = &arclist[arclist_cnt];
+  
+  a->next = statelist[from];
+  a->to   = to;
+  a->tag  = tag;
+  
+  statelist[from] = arclist_cnt++;
+  
+}
+
+void xaddarc(uint16_t from,uint16_t to,char *l,uint16_t tag)
+{
   uint16_t *bmp=NULL;
   int a,b;
   
+  printf("addarc(%d,%d,%d,\"",from,to,tag);
   
-  printf("%05d %05d %04X ",from,to,tag);
+  /*printf("%05d %05d %04X ",from,to,tag);*/
   
   if (l && l[0]) {
-    printf("%c ",l[0]);
+    printf("%c",l[0]);
     bmp = lbl_bmp(l+1);
     a=0;
     while (a <= 255) {
       b = lbl_rng(bmp,a);
       if (b<0) break;
-      printf("%04X",b);
-      a = (b & 0xFF) + 1;
+      a = b >> 8;
+      if (32<= a && a <= 127) printf("%c",a);
+      else printf("\\%03d",a);
+      a = (b & 0xFF);
+      if (32<= a && a <= 127) printf("%c",a);
+      else printf("\\%03d",a);
+      a++;
     }
   }
   
-  printf("\n");
+  printf("\")\n");
 }
 
 /**************************************************/
@@ -373,7 +487,7 @@ void addarc(uint16_t from,uint16_t to,char *l,uint16_t tag)
 
 uint16_t nextstate()
 {
-  if (cur_state == 65500)  err("More than 65500 states!!");
+  if (cur_state == 65500)  yrxerr("More than 65500 states!!");
   return ++cur_state ;
 }
 
@@ -413,7 +527,7 @@ char* escaped()
    if (c == '\\') {
      c = nextch();
      c = nextch();
-     if (c < 0) err ("Unexpected character");
+     if (c < 0) yrxerr ("Unexpected character");
      if (c == 'x') {
        c = peekch(0);
        if (isxdigit(c)) {
@@ -450,7 +564,7 @@ char *cclass()
      while (c != ']') {
        c = nextch();
        if ( c == '\\' ) c = (nextch(),0);
-       if ( c < 0 ) err("Unterminated class");
+       if ( c < 0 ) yrxerr("Unterminated class");
      }
      l = str_set(j,cur_pos);
    }
@@ -475,7 +589,7 @@ uint16_t term(uint16_t state)
   if ( c == '(') {
     c = nextch();
     ncapt = capt++;
-    if (ncapt>120)  err("Too many captures");
+    if (ncapt>120)  yrxerr("Too many captures");
     
     start = nextstate();
     
@@ -492,7 +606,7 @@ uint16_t term(uint16_t state)
       t1 = expr(start);
     }
     addarc(t1,alt,"",TAG_NONE);    
-    if (c != ')') err("Unclosed capture");
+    if (c != ')') yrxerr("Unclosed capture");
     
     switch (peekch(0)) {
        case '?':  addarc(start,alt,"",TAG_NONE);
@@ -521,7 +635,7 @@ uint16_t term(uint16_t state)
     switch (peekch(1)) {
       case 'E' :  c = nextch(); c = nextch();
                   l = escaped();
-                  if (l == NULL) err("Invalid escape sequence");
+                  if (l == NULL) yrxerr("Invalid escape sequence");
                   esc = l[1];  /*** BUG Need to properly handle \x and \0 ***/
                   if (esc == '\\') esc = l[2];
                   return state;
@@ -617,7 +731,7 @@ uint16_t parse(char *rx,uint16_t nrx)
 
   state =  expr(1);
 
-  if (peekch(0) != -1) err("Unexpected character ");
+  if (peekch(0) != -1) yrxerr("Unexpected character ");
 
   addarc(state,0,"",tag_code(TAG_FIN,cur_nrx));
 
@@ -626,18 +740,19 @@ uint16_t parse(char *rx,uint16_t nrx)
 
 /*************************************/
 
-void init()
-{
-  cur_state = 1;
-  if (setjmp(errjmp) != 0) {
-    exit(1);
-  }
-}
 
 void closedown()
 {
   if (str != NULL) free(str);
   if (str2 != NULL) free(str2);
+  if (arclist != NULL) free(arclist);
+  if (statelist != NULL) free(statelist);
+}
+
+void init()
+{
+  cur_state = 1;
+  atexit(closedown);
 }
 
 int main(int argc, char **argv)
@@ -653,7 +768,6 @@ int main(int argc, char **argv)
   
   
   
-  closedown();
-  return 0;
+  exit(0);
 }
 

@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <strings.h>
-
+#include "hul.h"
 
 typedef struct {
   uint32_t s;  /* page size    */
@@ -35,7 +35,6 @@ typedef struct hx {
   he         elem;
 } hx;
 
-
 typedef struct {
   void      *flst;
   uint32_t   ecnt;
@@ -53,6 +52,8 @@ void *vecGet(vec *v, uint32_t ndx);
 void *vecNext(vec *v);
 void *vecSet(vec *v, uint32_t ndx, void *elem);
 void *vecFree(vec *v);
+
+uint32_t vecSize(vec *v);
 
 #define htCount(h)        ((h)->ecnt)
 
