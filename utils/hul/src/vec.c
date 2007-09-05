@@ -22,7 +22,8 @@ Springer-Verlag   London, UK
 
 /*
 ** Integer log base 2 of uint32 integer values.
-** Makes a binary search
+**   llog2(0) == llog2(1) == 0
+** Makes a binary search.
 */
 static uint32_t llog2(uint32_t x)
 {
@@ -35,7 +36,7 @@ static uint32_t llog2(uint32_t x)
     return l;
 }
 
-uint32_t pgsize(uint32_t p)
+static uint32_t pgsize(uint32_t p)
 {
   uint32_t k;
 
@@ -45,7 +46,7 @@ uint32_t pgsize(uint32_t p)
   return (1<<k) * PGSTEP;
 }
 
-void ndx2pg(uint32_t ndx, uint32_t *p, uint32_t *n)
+static void ndx2pg(uint32_t ndx, uint32_t *p, uint32_t *n)
 {
   uint32_t k,m,s,b;
 
@@ -121,7 +122,7 @@ void *vecFree(vec *v)
   return NULL;
 }
 
-void *vecslot(vec *v,uint32_t page, uint32_t n)
+static void *vecslot(vec *v,uint32_t page, uint32_t n)
 {
   void *p=NULL;
   uint32_t t;
