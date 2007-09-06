@@ -29,8 +29,9 @@ Springer-Verlag   London, UK
 
 static const char *errNOMEM = "Out of Memory (vec)";
 
-#define PTRSTEP 128  
-#define PGSTEP 64
+#define PTRSTEP 16  
+#define PGSTEP  64
+#define MBSTEP 512
 
 #define old_pgsize(n) ((uint32_t)((n+1)*PGSTEP))
 
@@ -55,7 +56,7 @@ static uint32_t pgsize(uint32_t p)
   uint32_t k;
 
   p += 2;
-  k=llog2(p/2);
+  k  = llog2(p/2);
   if (p >= 3* (1<<k)) k++;
   return (1<<k) * PGSTEP;
 }
@@ -65,36 +66,36 @@ static void ndx2pg(uint32_t ndx, uint32_t *p, uint32_t *n)
   uint32_t k,m,s,b;
 
  *p = 0;
-  m=(ndx/PGSTEP) ;
+  m =(ndx/PGSTEP) ;
 
-  k  = llog2(m+1);
-  *p = (k & 1)? 1<<(k/2): 0;
+  k = llog2(m+1);
+ *p = (k & 1)? 1<<(k/2): 0;
 
-  m  = m - (1<<k) + 1 ;
-  s  = k - (k/2);
-  k  = k/2;
-  b  = m >> s;
+  m = m - (1<<k) + 1 ;
+  s = k - (k/2);
+  k = k/2;
+  b = m >> s;
 
-  *p += (1<<(k+1)) - 2 + b;
-  *n = ((m - (b<<s))*PGSTEP)+ (ndx & (PGSTEP-1));
-  dbgprintf(DBG_MSG,"  %u %u %u (%u)\n",ndx,*p, *n,pgsize(*p));
+ *p += (1<<(k+1)) - 2 + b;
+ *n  = ((m - (b<<s))*PGSTEP)+ (ndx & (PGSTEP-1));
+ 
+  dbgprintf(DBG_OFF,"  %u %u %u (%u)\n",ndx,*p, *n,pgsize(*p));
 }
 
 
 static void vecInit(vec *v,uint32_t elemsize)
 {
   uint16_t i;
+  
   if (v) {
-    v->esz = elemsize;
-    v->npg = PTRSTEP;
+    v->esz   = elemsize;
+    v->npg   = 0;
+    v->arr   = NULL;
+    v->blk   = NULL;
     v->mrk.p = 0;
     v->mrk.n = (uint32_t)-1;
-    v->arr = malloc(PTRSTEP * sizeof(uint8_t *));
-    v->mrk.q = *v->arr-v->esz;
-    if (v->arr) {
-      for (i=0; i<PTRSTEP; i++) v->arr[i] = NULL;
-    }
-    else v->npg = 0;
+    v->mrk.w = (uint32_t)-1;
+    v->mrk.q = ((uint8_t *)0) - ((elemsize > 0)? elemsize : sizeof(vlb));
   }
 }
 
@@ -104,21 +105,14 @@ vec *vecNew(uint32_t elemsize)
 
   v = malloc(sizeof(vec));
   vecInit(v,elemsize);
-  if (v->arr == NULL) {
-    free(v);
-    v=NULL;
-  }
   return v;
 }
 
-vec *vecSetPSZ(vec *v,uint16_t pgsize)
-{
-  
-}
 
-static void vecCleanup (vec *v)
+static void vcleanup (vec *v)
 {
   uint16_t i;
+  vmb *m;
   if (v) {
     if (v->arr) {
       for (i=0; i< v->npg; i++) {
@@ -128,13 +122,21 @@ static void vecCleanup (vec *v)
       free(v->arr);
       v->arr = NULL;
     }
+    m = v->blk;
+    dbgprintf(DBG_OFF,"Cleanup: blk: %p\n",m);
+    while (m != NULL) {
+      v->blk = m->next;
+      free(m);
+      m = v->blk;
+    dbgprintf(DBG_OFF,"Cleanup: blk: %p\n",m);
+    }
   }
 }
 
 void *vecFree(vec *v)
 {
   if (v) {
-    vecCleanup(v);
+    vcleanup(v);
     free(v);
   }
   return NULL;
@@ -144,30 +146,33 @@ static void *vecslot(vec *v,uint32_t page, uint32_t n)
 {
   void *p=NULL;
   uint32_t t;
+  uint16_t s;
 
   if (page >= v->npg) {
-    t=v->npg;
+    /* Extend the index to pages*/
+    dbgprintf(DBG_OFF,"\t *X* %d %d\n",page,v->npg);
+    t = v->npg;
     v->npg = ((page / PTRSTEP)+1)*PTRSTEP;
     v->arr = realloc(v->arr, v->npg * sizeof(void *));
     if (v->arr == NULL) err(errNOMEM);
     while (t < v->npg)  v->arr[t++] = NULL;
-    dbgprintf(0,"\t *** %d \n",v->npg);
+    dbgprintf(DBG_OFF,"\t *** %d \n",v->npg);
   }
 
   v->mrk.s = pgsize(page);
+  
+  s = (v->esz > 0)? v->esz : sizeof(vlb);
+  
   if (v->arr[page] == NULL) {
-    v->arr[page] = calloc(v->mrk.s,v->esz);
-  }
-  if (v->arr[page] == NULL) {
-     dbgprintf(1,"\t *** %d \n",v->npg);
-     err(errNOMEM);
+    v->arr[page] = calloc(v->mrk.s,s); /* page is guaranteed to be filled with 0's */
+    if (v->arr[page] == NULL)  err(errNOMEM);
   }
 
-  p = v->arr[page]+(n*v->esz);
+  p = v->arr[page]+(n*s);
 
-  v->mrk.p=page;
-  v->mrk.n=n;
-  v->mrk.q=p;
+  v->mrk.p = page;
+  v->mrk.n = n;
+  v->mrk.q = p;
 
   return p;
 }
@@ -179,6 +184,10 @@ void *vecGet(vec *v,uint32_t ndx)
   uint32_t page, n;
 
   if (v == NULL)  err(errNOMEM);
+  
+  if (ndx == v->mrk.w) return v->mrk.q;
+  
+  v->mrk.w = ndx;
   ndx2pg(ndx,&page,&n);
   return vecslot(v,page,n);
 }
@@ -186,18 +195,35 @@ void *vecGet(vec *v,uint32_t ndx)
 void *vecNext(vec *v)
 {
   if (v == NULL)  err(errNOMEM);
+  v->mrk.w++;
   if (++v->mrk.n >= v->mrk.s) {
     return vecslot(v,v->mrk.p+1,0);
   }
 
-  v->mrk.q += v->esz;
+  v->mrk.q += (v->esz > 0)? v->esz : sizeof(vlb);
   return v->mrk.q;
 }
 
+void *vecPrev(vec *v)
+{
+  if (v == NULL)  err(errNOMEM);
+  if (v->mrk.w == 0) return NULL;
+  v->mrk.w--;
+  if (v->mrk.n == 0) {
+    return vecGet(v,v->mrk.w);
+  }
+
+  v->mrk.q -= (v->esz > 0)? v->esz : sizeof(vlb);
+  return v->mrk.q;
+}
+
+
 void *vecSet(vec *v, uint32_t ndx, void *elem)
 {
-  void *p=NULL;
+  void *p;
 
+  if (v->esz == 0) err("vecSet() used on arrays with variable size elements");
+  
   p = vecGet(v,ndx);
 
   if (p != NULL) {
@@ -207,18 +233,74 @@ void *vecSet(vec *v, uint32_t ndx, void *elem)
   return p;
 }
 
+static vmb *newvmb(uint16_t s)
+{
+  vmb *m;
+  
+  m = malloc(sizeof(vmb) + s );
+  if (m == NULL) err(errNOMEM);
+  m->next = NULL;
+  m->size = s;
+  m->avail = s;
+  
+  return m;
+}
+
+void *vecSetL(vec *v, uint32_t ndx, void *elem, uint16_t len)
+{
+  vlb *p=NULL;
+  vmb *m;
+  uint16_t s = MBSTEP;
+
+  if (v->esz != 0) err("vecSetL() used on arrays with fized size elements");
+  
+  p = vecGet(v,ndx);
+
+  if (p != NULL) {
+    dbgprintf(DBG_ERR,"Found: %p (cur: %u new: %u)\n",p,p->len,len);
+    if (len > p->len) {
+      if (s < len) s = len;
+      m = v->blk;
+      while (m != NULL) {
+        if (m->avail >= len) break;
+        m = m->next;
+      }      
+      if (m == NULL) {
+        m = newvmb(s);
+        m->next = v->blk;
+        v->blk  = m;
+      }
+      dbgprintf(DBG_ERR,"\t allocated: %d, used:%d @%d\n",s,len,(m->size - m->avail));
+      p->buf = &(m->buf[(m->size - m->avail)]);
+      m->avail -= len;
+    }
+    p->len = len;
+    memcpy(p->buf, elem, len);
+  }
+  
+  return p;
+}
+
 uint32_t vecSize(vec *v)
 {
   uint16_t k = 0;
+  vmb *m;
   uint32_t size = 0;
     
   if (v) {
     for (k=0; k < v->npg; k++) {
       if (v->arr[k] != NULL) {
-        size += pgsize(k) * v->esz;
+        size += pgsize(k) * (v->esz > 0? v->esz : sizeof(vlb));
       } 
     }
+    m = v->blk;
+    while ( m != NULL) {
+      size += sizeof(vmb) + m->size;
+      m = m->next;
+    }
     size += v->npg * sizeof(uint8_t *);
+    size += sizeof(vec);
+    
   }
   return size;
 }
@@ -275,7 +357,7 @@ static void reash(ht *h)
    hx *q, *p, *s, *r, *t, *u;
    vMark vm;
 
-   dbgprintf(1,"reash %d %d ...",h->ecnt, h->msk+1);
+   dbgprintf(DBG_MSG,"reash %d %d ...",h->ecnt, h->msk+1);
    m = (h->msk << 1) | 1;
    q = vecGet(&(h->ndx),0);
    for (n=0; n <= h->msk; n++) {
@@ -441,8 +523,8 @@ void *htInsert(ht *h,void *e)
 ht *htFree(ht *h)
 {
   if (h != NULL) {
-    vecCleanup(&(h->ndx));
-    vecCleanup(&(h->arr));
+    vcleanup(&(h->ndx));
+    vcleanup(&(h->arr));
     h->ecnt = 0;
     free(h);
   }
