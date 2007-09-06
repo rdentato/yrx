@@ -20,7 +20,8 @@
 #include <strings.h>
 
 #define HUL_MAIN
-#include "../utils/hul/src/hul.h"
+#include "hul.h"
+#include "vec.h"
 
 #ifndef FALSE
 #define FALSE 0
@@ -34,48 +35,6 @@
 #define BOOL uint8_t
 #endif
 
-#if 0
-typedef struct {
-  uint16_t *vec;
-  int       max;
-} usvec;
-
-uint16_t usv_get(usvec *v,int i)
-{
-  if (i > v->max) return 0;
-  return v->vec[i];
-}
-
-uint16_t usv_set(usvec *v,int i,uint16_t x)
-{
-  if (i > v->max) {
-    v->max = i+10;
-    v->vec = realloc(v->vec,v->max*sizeof(uint16_t));
-  }
-  if (v->vec != NULL) v->vec[i] = x;
-  return x;
-}
-
-usvec *usv_new(int n)
-{
-  usvec *v;
-  v = malloc(sizeof(usvec));
-  if (v != NULL) {
-    v->max = n;
-    if (n > 0) v->vec = malloc(v->max * sizeof(uint16_t));
-    if (v->vec == NULL) {free(v); v = NULL;)
-  }
-  return v;
-}
-
-void usv_free(intvec *v)
-{
-  if (v != NULL) {
-    if (v->vec != NULL) free(v->vec);
-    free(v);
-  }
-}
-#endif
 
 /**************************************************/
 typedef struct {
@@ -97,24 +56,6 @@ uint32_t *statelist = NULL;
 uint16_t  statelist_cnt = 0;
 uint16_t  statelist_lim = 0;
 
-#define BLK_SIZE 512
-
-typedef struct memblk {
-  struct memblk *next;
-  uint16_t avail;
-  uint8_t blk[BLK_SIZE];
-} memblk;
-
-memblk *new_memblk()
-{
-  memblk *m;
-  m = malloc(sizeof(memblk);
-  if (m == NULL) yrxerr("Out of mem (blk)");
-  m->next  = NULL;
-  m->avail = BLK_SIZE;
-  return m;
-}
-
 
 typedef struct lbl_t { 
   uint8_t flg;
@@ -127,37 +68,8 @@ typedef struct tag_t {
   uint8_t tags[1];
 } tag_t;
 
-memblk *lblSet = NULL;
-memblk *tagSet = NULL;
-
-lbl_t *get_lbl(uint8_t len, uint8_t *l)
-{
-  uint8_t j;
-  uint16_t need;
-  memblk *m;
-  lbl_t lbl;
-  
-  need =  sizeof(lbl_t)+len-1;
-  
-  if (lblSet == NULL) {
-    lblSet = new_memblk);
-  } 
-  m = lblSet;
-  while (m != NULL) {
-    if (m->avail < need) break;
-    if (m->next == NULL) {
-      m->next = new_memblk();
-      m = m->next;
-      break;
-    }
-    m = m->next;
-  }
-  lbl = (lbl_t *)(m->blk + (BLK_SIZE - m->avail));
-  lbl->len = len;
-  lbl->flg = 0;
-  for (j=0;j<len;j++) lbl->lbls[j] = l[j];
-  m->avail -= need;
-}
+vec *lblSet = NULL;
+vec *tagSet = NULL;
 
 /**************************************************/
 
@@ -405,40 +317,6 @@ int lbl_rng(uint16_t *bmp, uint16_t a)
 /**************************************************/
 
 void addarc(uint16_t from,uint16_t to,char *l,uint16_t tag)
-{
-  uint32_t t,k;
-  Arc *a;
-  
-  t = (from > to)? from : to;
-  if (t >= statelist_lim) {
-    statelist_lim = t + 128;
-    statelist = realloc(statelist,sizeof(uint32_t) * statelist_lim+1) ;
-    if (state == NULL) yrxerr("Out of memory (state)")
-  }
-  
-  k = (from < to)? from : to;
-  
-  if (k > statelist_cnt) { statelist[k] = 0; statelist_cnt = k);
-  if (t > statelist_cnt) { statelist[t] = 0; statelist_cnt = t);
-  
-  
-  if (arclist_cnt >= arclist_lim) {
-    arclist_lim  = arclist_lim + 128;
-    arclist = realloc(arclist,sizeof(Arc) * arclist_lim);
-    if (arclist == NULL) yrxerror("Out of memory (arc)");
-  }
-  
-  a = &arclist[arclist_cnt];
-  
-  a->next = statelist[from];
-  a->to   = to;
-  a->tag  = tag;
-  
-  statelist[from] = arclist_cnt++;
-  
-}
-
-void xaddarc(uint16_t from,uint16_t to,char *l,uint16_t tag)
 {
   uint16_t *bmp=NULL;
   int a,b;

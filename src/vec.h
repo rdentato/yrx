@@ -94,5 +94,7 @@ int u32setCmp(u32set *a, u32set *b);
 void u32setCpy(u32set *a, u32set *b);
 void u32setClr(u32set *a);
 
+uint32_t SuperFastHash (const uint8_t *data, int len, uint32_t hash);
+
 #endif  /* VEC_H */
 

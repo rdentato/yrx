@@ -18,8 +18,11 @@ include ../config.mk
 YRXLUA=yrxdfa.lua yrxgraph.lua yrxasm.lua yrxc.lua yrxl.lua 
 
 
-yrx$(_EXE):	yrxexe.lua
-	../utils/srlua/glue ../utils/srlua/srlua$(_EXE) yrxexe.lua yrx$(_EXE)
+yrxcc$(_EXE):	yrxcc.o vec.o
+	gcc -o yrxcc$(_EXE) yrxcc.o vec.o
+
+yrx_l$(_EXE):	yrxexe.lua
+	../utils/srlua/glue ../utils/srlua/srlua$(_EXE) yrxexe.lua yrx_l$(_EXE)
 	rm yrxexe.lua
 	
 yrxlua.lua:	$(YRXLUA)
@@ -30,7 +33,12 @@ yrxexe.lua:	$(YRXLUA) yrx.lua
 
 yrxclib$(_LIB): yrxclib.o
 	$(AR)yrxclib.$(_LIB) yrxclib.o
+
 	
+vt$(_EXE):	vt.o vec.o
+	gcc -o vt$(_EXE) vt.o vec.o
+
+		
 x$(_EXE): ../test/test.rxs yrxclib$(_LIB)
 	#lua yrx.lua -cfun -o x.c -i ../test/test.rxs
 	gcc -L. -O2 -o x$(_EXE) ../test/test.c yrxclib$(_LIB)
