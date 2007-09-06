@@ -8,6 +8,18 @@
 #include <strings.h>
 #include "hul.h"
 
+typedef struct vlb {
+  uint16_t    len;
+  uint8_t    *buf;
+} vlb;
+
+typedef struct vmb {
+  struct vmb *next;
+  uint16_t    size;
+  uint16_t    avail;
+  uint8_t     buf[];
+} vmb;
+
 typedef struct {
   uint32_t s;  /* page size    */
   uint32_t p;  /* page number  */
@@ -17,10 +29,11 @@ typedef struct {
 } vMark;
 
 typedef struct {
-  uint32_t  esz;
-  uint32_t  npg;
-  vMark     mrk;
+  uint16_t  esz;
+  uint16_t  npg;
+  vmb      *blk;
   uint8_t **arr;
+  vMark     mrk;
 } vec;
 
 typedef union {
@@ -48,9 +61,15 @@ typedef struct {
 } ht;
 
 vec  *vecNew(uint32_t elemsize);
+#define vecNewL() vecNew(0)
+
 void *vecGet(vec *v, uint32_t ndx);
+#define vecGetL(v,n) (vlb *)vecGet(v,n)
+
 void *vecNext(vec *v);
+void *vecPrev(vec *v);
 void *vecSet(vec *v, uint32_t ndx, void *elem);
+void *vecSetL(vec *v, uint32_t ndx, void *elem,uint16_t len);
 void *vecFree(vec *v);
 
 uint32_t vecSize(vec *v);

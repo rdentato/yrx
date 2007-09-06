@@ -42,22 +42,58 @@ static void ArcClr(Arc *a)
 int main(int argc, char * argv[])
 {
   vec *v;
+  ht  *h;
+  
   uint32_t j,k,n=0;
-  Arc a;
+  Arc a,*p;
   uint32_t t;
+  vlb *l;
   
   v=vecNew(sizeof(Arc));
-
+  
+  printf("n;minsize;vsize;diff\n");
   for (j=1; j < 1000; j++) {
     for (k=j; k < 1000; k++) {
+      if ((n & 0x3FF) == 0) {
+      }
       a.from = j; a.to = k;
       vecSet(v,n++,&a); 
     }
   } 
-  t = vecSize(v);
-  printf("Size: %u (%u) %u %u",t,v->npg,sizeof(Arc)*n, t-sizeof(Arc)*n);
  
+  p = (Arc *)vecGet(v,n/2);
+  
+  /*printf("%u;%u;%u;%u\n",n,sizeof(Arc)*n,t, t-sizeof(Arc)*n);*/
+  
+  printf("%d -> %d\n",p->from,p->to);
+  p = (Arc *)vecNext(v);
+  printf("%d -> %d\n",p->from,p->to);
+  p = (Arc *)vecPrev(v);
+  printf("%d -> %d\n",p->from,p->to);
+  p = (Arc *)vecNext(v);
+  printf("%d -> %d\n",p->from,p->to);
+  fflush(stdout);
+  
   v=vecFree(v);
+  
+  v = vecNewL();
+  t = vecSize(v);
+  printf("%u\n",t);
+  
+  l = vecSetL(v,1,"Ciao",5); 
+  printf("1 is %p\n",l);
+  t = vecSize(v);
+  printf("%u\n",t);
+  l = vecSetL(v,2,"Pippo",6);
+  printf("2 is %p\n",l);
+  t = vecSize(v);
+  printf("%u\n",t);
+  
+  l = vecGet(v,1);
+  
+  printf("ptr:%p len: %d buf:%s\n",l,l->len,l->buf);
+  v = vecFree(v);
+  
 }
 
 
