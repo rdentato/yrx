@@ -339,12 +339,8 @@ ht *htInit(ht *h, uint32_t elemsize,void *hfn, void *cmp, void *cpy, void *clr)
     h->cmp  = cmp;
     h->cpy  = cpy;
     h->clr  = clr;
-    h->arr.arr = NULL;
-    h->arr.esz = elemsize;
     vecInit(&(h->ndx),sizeof(hx));
-    /*if (elemsize < sizeof(he)) elemsize = sizeof(he);*/
-    if (elemsize > sizeof(he))
-      vecInit(&(h->arr),elemsize);
+    vecInit(&(h->arr),elemsize);
   }
   return h;
 }

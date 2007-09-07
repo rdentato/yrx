@@ -16,7 +16,7 @@ uint32_t ArcHfn(Arc *a)
   uint32_t h;
   
   h = SuperFastHash((uint8_t *)&(a->from),sizeof(uint16_t),13);
-  h = SuperFastHash((uint8_t *)&(a->from),sizeof(uint16_t),h);
+  h = SuperFastHash((uint8_t *)&(a->to),sizeof(uint16_t),h);
   
   return h;  
 }
