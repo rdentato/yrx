@@ -37,39 +37,23 @@
 
 
 /**************************************************/
-typedef struct {
-  uint32_t next;
-  uint16_t to;
-  uint16_t tag;
-  uint8_t  flg;
-  uint8_t  lmin;
-  uint8_t  lmax;
-  uint8_t  pad;
+typedef struct Arc {
+  struct Arc  *next;
+  uint16_t     to;
+  uint16_t     tag;
+  uint8_t      flg;
+  uint8_t      lmin;
+  uint8_t      lmax;
+  uint8_t      pad;
 } Arc;
 
 
-Arc      *arclist = NULL;
-uint32_t  arclist_cnt = 0;
-uint32_t  arclist_lim = 0;
+vec *arcs_lst = NULL;
+uint32_t  arcs_cnt = 0;
 
-uint32_t *statelist = NULL;
-uint16_t  statelist_cnt = 0;
-uint16_t  statelist_lim = 0;
+vec *state_lst = NULL;
+uint16_t  state_cnt = 0;
 
-
-typedef struct lbl_t { 
-  uint8_t flg;
-  uint8_t len;
-  uint8_t lbls[1];
-} lbl_t;
-
-typedef struct tag_t { 
-  uint8_t len;
-  uint8_t tags[1];
-} tag_t;
-
-vec *lblSet = NULL;
-vec *tagSet = NULL;
 
 /**************************************************/
 
@@ -317,6 +301,43 @@ int lbl_rng(uint16_t *bmp, uint16_t a)
 /**************************************************/
 
 void addarc(uint16_t from,uint16_t to,char *l,uint16_t tag)
+{
+  Arc   a;
+  Arc  *p;
+  Arc **q;
+  uint16_t k;
+  uint16_t *bmp=NULL;
+  int a,b;
+  
+
+  if (from >= state_cnt) state_cnt = from+1;
+  if (to >= state_cnt) state_cnt = to+1;
+  
+  q = vecGet(state_lst,from);  
+  a.to  = to;
+  a.tag = tag;
+  
+  if (l == NULL || l[0] == '\0') {
+    a.flg = 'X';  a.lmin = 0;    a.lmax = 0;
+    p = vecSet(arcs_lst,arcs_cnt++, &a);
+    p->next = *q;
+    *q = p;
+  }
+  else {  
+    
+  do {
+    if (l[0] != '\0') {
+      a.flg = *l++; a.lmin = *l++; a.lmax = *l++;
+    }
+    p = vecSet(arcs_lst,arcs_cnt++, &a);
+    p->next = *q;
+    *q = p;
+  } while (*l != '\0');
+  
+  
+}
+
+void xaddarc(uint16_t from,uint16_t to,char *l,uint16_t tag)
 {
   uint16_t *bmp=NULL;
   int a,b;
@@ -607,6 +628,12 @@ uint16_t parse(char *rx,uint16_t nrx)
   esc     = '\\';
   capt    = 1;
 
+  if (arcs_lst == NULL)
+    arcs_lst = vecNew(sizeof(Arc)); 
+  
+  if (state_lst == NULL)
+    state_lst = vecNew(sizeof(Arc *)); 
+  
   state =  expr(1);
 
   if (peekch(0) != -1) yrxerr("Unexpected character ");
@@ -623,14 +650,28 @@ void closedown()
 {
   if (str != NULL) free(str);
   if (str2 != NULL) free(str2);
-  if (arclist != NULL) free(arclist);
-  if (statelist != NULL) free(statelist);
+  if (arcs_lst != NULL) vecFree(arcs_lst);
+  if (state_lst != NULL) vecFree(state_lst);
 }
 
 void init()
 {
   cur_state = 1;
   atexit(closedown);
+}
+
+void dump()
+{
+  uint32_t i;
+  Arc *a;
+  
+  for (i=0; i< state_cnt; i++) {
+    a = *(Arc **)vecGet(state_lst,i);
+    while (a) {
+      printf("%5d -> %-5d %c %04X %02X %02X\n",i,a->to,a->flg,a->tag,a->lmin,a->lmax);
+      a = a->next;
+    }
+  }
 }
 
 int main(int argc, char **argv)
@@ -643,9 +684,7 @@ int main(int argc, char **argv)
   if (argc > 1) {
     parse(argv[1],1);
   }
-  
-  
-  
+  dump();
   exit(0);
 }
 
