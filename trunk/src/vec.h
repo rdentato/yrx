@@ -8,17 +8,6 @@
 #include <strings.h>
 #include "hul.h"
 
-typedef struct vlb {
-  uint16_t    len;
-  uint8_t    *buf;
-} vlb;
-
-typedef struct vmb {
-  struct vmb *next;
-  uint16_t    size;
-  uint16_t    avail;
-  uint8_t     buf[];
-} vmb;
 
 typedef struct {
   uint32_t s;  /* page size    */
@@ -28,43 +17,21 @@ typedef struct {
   uint8_t *q;  /* slot pointer */
 } vMark;
 
-typedef struct {
-  uint16_t  esz;
-  uint16_t  npg;
-  vmb      *blk;
-  uint8_t **arr;
-  vMark     mrk;
+typedef struct vec{
+  uint16_t      esz;
+  uint16_t      npg;
+  uint16_t      ksz;
+  uint16_t      flg;
+  uint32_t      cnt;
+  struct vec   *ndx;
+  uint8_t     **arr;
+  vMark         mrk;
 } vec;
 
-typedef union {
-  void    *p;
-  int32_t  i;
-  uint32_t u;
-} he;
 
-typedef struct hx {
-  uint32_t   key;
-  struct hx *next;
-  he         elem;
-} hx;
-
-typedef struct {
-  void      *flst;
-  uint32_t   ecnt;
-  uint32_t   msk;
-  uint32_t  (*hfn)(void *a);
-  int       (*cmp)(void *a, void *b);
-  void      (*cpy)(void *a, void *b);
-  void      (*clr)(void *a);
-  vec arr;
-  vec ndx;
-} ht;
-
-vec  *vecNew(uint32_t elemsize);
-#define vecNewL() vecNew(0)
+vec  *vecNew(uint16_t elemsize);
 
 void *vecGet(vec *v, uint32_t ndx);
-#define vecGetL(v,n) (vlb *)vecGet(v,n)
 
 void *vecNext(vec *v);
 void *vecPrev(vec *v);
@@ -74,46 +41,20 @@ void *vecFree(vec *v);
 
 uint32_t vecSize(vec *v);
 
-#define htCount(h)        ((h)->ecnt)
+#define vecCnt(v) ((v)->cnt)
 
-void *htFirst(ht *h);
-void *htNext(ht *h);
-ht   *htFree(ht *h);
-void *htInsert(ht *h,void *e);
-void *htDelete(ht *h,void *e);
-void *htSearch(ht *h,void *e);
-void *htIndex(ht *h);
+#define VEC_ISSET  0x00000001
 
-ht *htInit(ht *h, uint32_t elemsize,void *hfn, void *cmp, void *cpy, void *clr);
+vec *setNew(uint16_t esz,uint16_t ksz);
 
-#define htNew(e,f,p,y,r) htInit(NULL,e,f,p,y,r)
-#define htCreate(t) htInit(NULL,sizeof(t),t##Hfn,t##Cmp,t##Cpy,t##Clr)
+void *setAdd(vec *v,void *e);
+void *setGet(vec *v,void *e);
 
+#define setForeach(v,i,p) for (i=0, p = *((void **)vecGet(v->ndx,0));\
+                               i < vecCnt(v->ndx);\
+                               i++, p = *((void **)vecNext(v->ndx)) )
 
-#define KEY
-
-typedef struct u16map {
-  uint16_t key;
-  uint16_t val;
-} u16map;
-
-
-uint32_t u16mapHfn(u16map *a);
-int u16mapCmp(u16map *a, u16map *b);
-void u16mapCpy(u16map *a, u16map *b);
-void u16mapClr(u16map *a);
-
-
-typedef struct u32set {
-  uint32_t val;
-} u32set;
-
-uint32_t u32setHfn(u32set *a);
-int u32setCmp(u32set *a, u32set *b);
-void u32setCpy(u32set *a, u32set *b);
-void u32setClr(u32set *a);
-
-uint32_t SuperFastHash (const uint8_t *data, int len, uint32_t hash);
+#define setFree vecFree
 
 #endif  /* VEC_H */
 

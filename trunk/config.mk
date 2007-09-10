@@ -34,15 +34,16 @@ UPX=test
 
 UPX=upx
 
-
-
+#########
 ######### NO Configurable items below this line
+#########
 
 ifeq ($(SYS),MINGW)
 _EXE=.exe
 endif
 
 _LIB=.a
+_OBJ=o
 
 AR=ar rcu 
 

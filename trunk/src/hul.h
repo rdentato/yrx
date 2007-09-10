@@ -23,6 +23,7 @@
 #include <strings.h>
 #include <stdarg.h>
 #include <setjmp.h>
+#include <errno.h>
 
 /* Using HUL */
 
@@ -80,7 +81,7 @@
 HUL_EXTERN int8_t dbg_lvl;
 
 #define dbgprintf(n,fmt,...) ( (dbg_lvl <= n)\
-                                  ? fprintf(stderr,fmt,__VA_ARGS__),fflush(stderr)\
+                                  ? fflush(stdout), fprintf(stderr,fmt,__VA_ARGS__),fflush(stderr)\
                                   : 0)
 #define dbglvl(n) (dbg_lvl = n)
 
@@ -103,8 +104,10 @@ HUL_EXTERN int8_t dbg_lvl;
 HUL_EXTERN jmp_buf *errjmpptr;
 
 /* Print a message and exit */
-#define err(...) \
-               (fprintf(stderr,__VA_ARGS__),\
+#define err(errnum,...) \
+               (errno = errnum,\
+                fprintf(stderr,"[%d] ",errno),\
+                fprintf(stderr,__VA_ARGS__),\
                 errjmpptr != NULL\
                   ? longjmp(*errjmpptr,1) \
                   : exit(1))

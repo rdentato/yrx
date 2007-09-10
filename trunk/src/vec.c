@@ -28,6 +28,7 @@ Springer-Verlag   London, UK
 #include "vec.h"
 
 static const char *errNOMEM = "Out of Memory (vec)";
+static const char *errUNEXP = "Unexpected error";
 
 #define PTRSTEP 16  
 #define PGSTEP  64
@@ -85,21 +86,22 @@ static void ndx2pg(uint32_t ndx, uint32_t *p, uint32_t *n)
 
 static void vecInit(vec *v,uint32_t elemsize)
 {
-  uint16_t i;
-  
   if (v) {
+    if (elemsize < sizeof(uint8_t *)) elemsize =  sizeof(uint8_t *);
     v->esz   = elemsize;
+    v->ksz   = v->esz;
     v->npg   = 0;
+    v->cnt   = 0;
     v->arr   = NULL;
-    v->blk   = NULL;
+    v->ndx   = NULL;
     v->mrk.p = 0;
     v->mrk.n = (uint32_t)-1;
     v->mrk.w = (uint32_t)-1;
-    v->mrk.q = ((uint8_t *)0) - ((elemsize > 0)? elemsize : sizeof(vlb));
+    v->mrk.q = ((uint8_t *)0 - elemsize);
   }
 }
 
-vec *vecNew(uint32_t elemsize)
+vec *vecNew(uint16_t elemsize)
 {
   vec *v;
 
@@ -112,7 +114,6 @@ vec *vecNew(uint32_t elemsize)
 static void vcleanup (vec *v)
 {
   uint16_t i;
-  vmb *m;
   if (v) {
     if (v->arr) {
       for (i=0; i< v->npg; i++) {
@@ -121,14 +122,6 @@ static void vcleanup (vec *v)
       }
       free(v->arr);
       v->arr = NULL;
-    }
-    m = v->blk;
-    dbgprintf(DBG_OFF,"Cleanup: blk: %p\n",m);
-    while (m != NULL) {
-      v->blk = m->next;
-      free(m);
-      m = v->blk;
-    dbgprintf(DBG_OFF,"Cleanup: blk: %p\n",m);
     }
   }
 }
@@ -146,7 +139,6 @@ static void *vecslot(vec *v,uint32_t page, uint32_t n)
 {
   void *p=NULL;
   uint32_t t;
-  uint16_t s;
 
   if (page >= v->npg) {
     /* Extend the index to pages*/
@@ -154,21 +146,19 @@ static void *vecslot(vec *v,uint32_t page, uint32_t n)
     t = v->npg;
     v->npg = ((page / PTRSTEP)+1)*PTRSTEP;
     v->arr = realloc(v->arr, v->npg * sizeof(void *));
-    if (v->arr == NULL) err(errNOMEM);
+    if (v->arr == NULL) err(3001,errNOMEM);
     while (t < v->npg)  v->arr[t++] = NULL;
     dbgprintf(DBG_OFF,"\t *** %d \n",v->npg);
   }
 
   v->mrk.s = pgsize(page);
   
-  s = (v->esz > 0)? v->esz : sizeof(vlb);
-  
   if (v->arr[page] == NULL) {
-    v->arr[page] = calloc(v->mrk.s,s); /* page is guaranteed to be filled with 0's */
-    if (v->arr[page] == NULL)  err(errNOMEM);
+    v->arr[page] = calloc(v->mrk.s, v->esz); /* page is guaranteed to be filled with 0's */
+    if (v->arr[page] == NULL)  err(3002,errNOMEM);
   }
 
-  p = v->arr[page]+(n*s);
+  p = v->arr[page] + (n * v->esz);
 
   v->mrk.p = page;
   v->mrk.n = n;
@@ -183,7 +173,7 @@ void *vecGet(vec *v,uint32_t ndx)
 {
   uint32_t page, n;
 
-  if (v == NULL)  err(errNOMEM);
+  if (v == NULL)  err(3003,errNOMEM);
   
   if (ndx == v->mrk.w) return v->mrk.q;
   
@@ -194,109 +184,70 @@ void *vecGet(vec *v,uint32_t ndx)
 
 void *vecNext(vec *v)
 {
-  if (v == NULL)  err(errNOMEM);
+  if (v == NULL)  err(3004,errNOMEM);
+  
   v->mrk.w++;
-  if (++v->mrk.n >= v->mrk.s) {
-    return vecslot(v,v->mrk.p+1,0);
-  }
+  if (++v->mrk.n >= v->mrk.s) return vecslot(v,v->mrk.p+1,0);
 
-  v->mrk.q += (v->esz > 0)? v->esz : sizeof(vlb);
+  v->mrk.q += v->esz;
   return v->mrk.q;
 }
 
 void *vecPrev(vec *v)
 {
-  if (v == NULL)  err(errNOMEM);
+  if (v == NULL) err(3005,errNOMEM);
   if (v->mrk.w == 0) return NULL;
+  if (v->mrk.n == 0) return vecGet(v,v->mrk.w - 1);
+  
+  v->mrk.n--;
   v->mrk.w--;
-  if (v->mrk.n == 0) {
-    return vecGet(v,v->mrk.w);
-  }
-
-  v->mrk.q -= (v->esz > 0)? v->esz : sizeof(vlb);
+  v->mrk.q -= v->esz;
   return v->mrk.q;
 }
-
 
 void *vecSet(vec *v, uint32_t ndx, void *elem)
 {
   void *p;
 
-  if (v->esz == 0) err("vecSet() used on arrays with variable size elements");
-  
   p = vecGet(v,ndx);
-
+  
   if (p != NULL) {
+    if (ndx >= v->cnt) v->cnt = ndx+1;
     if (elem) memcpy(p, elem, v->esz);
     else      memset(p, 0x00, v->esz);
   }
   return p;
 }
 
-static vmb *newvmb(uint16_t s)
+void *vecAdd(vec *v, void *elem)
 {
-  vmb *m;
-  
-  m = malloc(sizeof(vmb) + s );
-  if (m == NULL) err(errNOMEM);
-  m->next = NULL;
-  m->size = s;
-  m->avail = s;
-  
-  return m;
+  return vecSet(v,v->mrk.w+1,elem);
 }
 
-void *vecSetL(vec *v, uint32_t ndx, void *elem, uint16_t len)
+vec *vecShrink(vec *v,uint32_t ndx)
 {
-  vlb *p=NULL;
-  vmb *m;
-  uint16_t s = MBSTEP;
-
-  if (v->esz != 0) err("vecSetL() used on arrays with fized size elements");
+  uint32_t page, n;
   
-  p = vecGet(v,ndx);
-
-  if (p != NULL) {
-    dbgprintf(DBG_ERR,"Found: %p (cur: %u new: %u)\n",p,p->len,len);
-    if (len > p->len) {
-      if (s < len) s = len;
-      m = v->blk;
-      while (m != NULL) {
-        if (m->avail >= len) break;
-        m = m->next;
-      }      
-      if (m == NULL) {
-        m = newvmb(s);
-        m->next = v->blk;
-        v->blk  = m;
-      }
-      dbgprintf(DBG_ERR,"\t allocated: %d, used:%d @%d\n",s,len,(m->size - m->avail));
-      p->buf = &(m->buf[(m->size - m->avail)]);
-      m->avail -= len;
-    }
-    p->len = len;
-    memcpy(p->buf, elem, len);
+  ndx2pg(ndx,&page,&n);
+  
+  while (++page < v->npg) {
+     if (v->arr[page] != NULL) free(v->arr[page]);
+     v->arr[page] = NULL;
   }
-  
-  return p;
+  if (v->cnt > ndx) v->cnt = ndx;
+  return v; 
 }
 
 uint32_t vecSize(vec *v)
 {
   uint16_t k = 0;
-  vmb *m;
   uint32_t size = 0;
     
   if (v) {
     for (k=0; k < v->npg; k++) {
       if (v->arr[k] != NULL) {
-        size += pgsize(k) * (v->esz > 0? v->esz : sizeof(vlb));
+        size += pgsize(k) * v->esz;
       } 
-    }
-    m = v->blk;
-    while ( m != NULL) {
-      size += sizeof(vmb) + m->size;
-      m = m->next;
     }
     size += v->npg * sizeof(uint8_t *);
     size += sizeof(vec);
@@ -305,363 +256,88 @@ uint32_t vecSize(vec *v)
   return size;
 }
 
-/***********/
-/* TODO (remo#9#) document how hashtable are handled */
+/********** SET ***********/
 
-#define NOKEY ((uint32_t)0L)
 
-static uint32_t hashrnd;
+#define vecNdx(v) ((v)->ndx)
 
-static uint32_t hash(ht *h,void *a)
+vec *setNew(uint16_t elemsize,uint16_t keysize)
+{
+   vec *v;
+   
+   v = vecNew(elemsize);
+   if (v != NULL) {
+     vecNdx(v) = vecNew(sizeof(void *));
+     if (vecNdx(v) == NULL) v = vecFree(v);
+   }
+   if (v != NULL && keysize > 0) v->ksz = keysize;
+
+   return v; 
+}
+
+static void *setsearch(vec *v,void *elem,uint32_t *ndx)
+{
+   int i = 0, k = 0;
+   int c = 0, j = 0;
+   void **q;
+   
+   if (vecNdx(v) == NULL) err(3232,errUNEXP);
+   
+   j = vecCnt(vecNdx(v))-1;
+   
+   while (i <= j) {
+     k = (i+j)/2;
+    *ndx = k;
+     q = vecGet(vecNdx(v),k);
+     if (q == NULL) err(3239,errUNEXP);
+     if ((c = memcmp(elem, *q, v->ksz)) == 0) return *q;
+     dbgprintf(DBG_MSG,"** search: %d,%d [%d] == %d\n",i,j,k,c);
+     if (c < 0) j = k-1; 
+     else i = k+1;
+   }
+  *ndx = k;
+   if (c > 0) *ndx = k+1;
+   return NULL;  
+}
+
+void *setGet(vec *v,void *elem)
 {
   uint32_t k;
-  k=h->hfn(a);
-  if (k == NOKEY) k = 0x811c9dc5;
-  hashrnd ^= k;
-  return k;
+  return setsearch(v,elem,&k);
 }
 
-/* The macro helem is not safe with respect to side effects on q*/
-#define helem(h,q) (q == NULL? \
-                              NULL: \
-                              (h)->arr.arr == NULL? \
-                                                   (void *)(&((q)->elem)): \
-                                                   (q)->elem.p)
-
-ht *htInit(ht *h, uint32_t elemsize,void *hfn, void *cmp, void *cpy, void *clr)
+void *setAdd(vec *v,void *elem)
 {
-  if (h == NULL) h=malloc(sizeof(ht));
-  if (h != NULL) {
-    h->ecnt = 0;
-    h->msk  = PGSTEP-1;  // Assumes PGSTEP is a power of two!!
-    h->flst = NULL;
-    h->hfn  = hfn;
-    h->cmp  = cmp;
-    h->cpy  = cpy;
-    h->clr  = clr;
-    vecInit(&(h->ndx),sizeof(hx));
-    vecInit(&(h->arr),elemsize);
-  }
-  return h;
-}
+  int i;
+  uint32_t k;
+  void **q,**r;
+  void *p;
+ 
+  p = setsearch(v,elem,&k);
 
-
-#define addto(l,i) ((i)->next=l,i)
-static void reash(ht *h)
-{
-   uint32_t m,n;
-   hx *q, *p, *s, *r, *t, *u;
-   vMark vm;
-
-   dbgprintf(DBG_MSG,"reash %d %d ...",h->ecnt, h->msk+1);
-   m = (h->msk << 1) | 1;
-   q = vecGet(&(h->ndx),0);
-   for (n=0; n <= h->msk; n++) {
-     if ((q->key != NOKEY) && (q->key & h->msk) == n) {
-       p=NULL; s=NULL; r=q;
-       while (1) {
-         t=r->next;
-         if ((r->key & m) > n) s=addto(s,r);
-         else p=addto(p,r);
-         r=t; if (r==q) break;
-       }
-       /* now p points to the list of 0k  and s to the list of 1k*/
-       /* the list are "inverted!" */
-       if (s != NULL) {
-         /* fix 1k list */
-         vecMark(&(h->ndx),vm,'s');
-         r=vecGet(&(h->ndx), s->key & m);
-         vecMark(&(h->ndx),vm,'r');
-         t=s->next; s->next = r;
-         while (t != NULL) {
-           u = t; t = t->next;
-           u->next = s; s = u;
-         }
-         *r=*s;
-         s->key = NOKEY; s->elem.p = NULL; s->next = NULL;
-       }
-       if (p!=NULL) {
-         /* fix 0k list */
-         t = p->next; p->next = q;
-         while (t != NULL) {
-           u = t; t = t->next;
-           u->next = p; p = u;
-         }
-         if (p != q)  {
-           *q=*p;
-            p->key = NOKEY; p->elem.p = NULL; p->next = NULL;
-         }
-       }
-     }
-     q=vecNext(&(h->ndx));
-   }
-   h->msk = m;
-   /*fprintf(stderr,"done\n");fflush(stderr);*/
-}
-
-
-void *htSearch(ht *h,void *e)
-{
-  uint32_t k,n;
-  hx *q, *s;
-
-  k=hash(h,e);
-  n = k & h->msk;
-  q = vecGet(&(h->ndx),n);
-  s = q;
-  while (q) {
-    if (q->key == k && h->cmp(e,helem(h,q)) == 0)
-      break;
-    q = q->next;
-    if (q==s) q=NULL;
-  }
-  if (q != NULL && q->key == 0) q = NULL;
-
-  return helem(h,q);
-}
-
-void *htDelete(ht *h,void *e)
-{
-  uint32_t k,n;
-  hx *q, *s, *r;
-
-  k=hash(h,e);
-  n = k & h->msk;
-  q = vecGet(&(h->ndx),n);
-  s = q; r = s;
-  while (q) {
-    if (q->key == k && h->cmp(e,helem(h,q)) == 0)
-      break;
-    r = q;
-    q = q->next;
-    if (q==s) q=NULL;
-  }
-  if (q != NULL) {
-    if (h->arr.arr) {
-      *((void **)q->elem.p) = h->flst;
-      h->flst = q->elem.p;
+  if (p == NULL) {
+    /* Need to be inserted in pos. k */
+    i = vecCnt(vecNdx(v));
+    
+    /* Add |elem| to the vector */    
+       
+    p = vecSet(v,i,elem);
+    dbgprintf(DBG_MSG,"To be placed at: %d (i:%d p:%p)\n",k,i,p);
+    
+    q = vecSet(vecNdx(v),i,&p);
+    /* Shift down pointers from k to the end*/
+    while (i-- > k) {
+      dbgprintf(DBG_MSG,"\t(i:%d)\n",i);
+      r = q;
+      q = vecGet(vecNdx(v),i);
+     *r = *q;
     }
-    if (q == s) {
-      q = q->next;
-      *s = *q;
-    }
-    else {
-      r->next = q->next;
-    }
-    q->key = 0;  q->elem.p = NULL; q->next = NULL;
-    h->ecnt--;
+    
+    *q = p; /* q points to vec[k] */
   }
-  return NULL;
-}
-
-/* This should be the "Brent variation" hash table as described in
-** the Lua code. Unfortunately the paper where this is introduced is not
-** freely available and I could'nt check.
-*/
-#define TOO_DENSE(h) ((h->msk - h->ecnt) < (h->msk/4))
-void *htInsert(ht *h,void *e)
-{
-  void *p=NULL;
-  uint32_t k,n,t;
-  hx *q, *r, *s;
-
-  if (TOO_DENSE(h)) reash(h);
-/*fprintf(stderr,"*");fflush(stderr);*/
-  k=hash(h,e);
-
-  n = k & h->msk;
-  q = vecGet(&(h->ndx),n);
-
-  if (q->key != k || h->cmp(e, helem(h,q)) != 0) {
-    if (q->key == NOKEY) {
-      q->next = q;
-    }
-    else {
-      t = (hashrnd & h->msk);
-      r = vecGet(&(h->ndx),t);
-      while (r->key != 0) {
-        if (++t > h->msk) r=vecGet(&(h->ndx),(t=0));
-        else r=vecNext(&(h->ndx));
-      }
-      t = q->key & h->msk;
-      if (t == n) { /* position is right! */
-        r->next = q->next;        /* add to the list */
-        q->next = r;
-        q=r;
-      }
-      else { /* move the intruder out of the way */
-        s = q;
-        while (s->next != q) s=s->next;
-        s->next = r;
-        *r=*q;
-        q->next = q;
-      }
-    }
-    q->key = k;
-    if (h->arr.arr != NULL) {
-      if ( h->flst != NULL) {
-        q->elem.p = h->flst;
-        h->flst = *((void **)h->flst);
-      }
-      else q->elem.p = vecGet(&(h->arr),h->ecnt);
-    }
-    h->ecnt++;
-  }
-
-  p=helem(h,q);
-  if (p != NULL) {
-    if (e != NULL) h->cpy(p, e);
-    else h->clr(p);
-  }
-  return p;
-}
-
-ht *htFree(ht *h)
-{
-  if (h != NULL) {
-    vcleanup(&(h->ndx));
-    vcleanup(&(h->arr));
-    h->ecnt = 0;
-    free(h);
-  }
-  return NULL;
-}
-
-void *htNext(ht *h)
-{
-  uint32_t n;
-  vec *x;
-  hx *q = NULL;
-
-  x=&(h->ndx);
-  n = (x->mrk.p * (x->mrk.p+1) * PGSTEP) + x->mrk.n;
-  while (++n <= h->msk ) {
-    q=vecNext(x);
-    /*fprintf(stderr,"%u,%X\n",n,q->key);*/
-    if (q->key != NOKEY) break;
-  }
-  if (q != NULL && q->key != NOKEY) return q->elem.p;
-  return NULL;
-}
-
-void *htFirst(ht *h)
-{
-  uint32_t n=0;
-  hx *q = NULL;
-
-  q = vecGet(&(h->ndx),0);
-  while (n++ <= h->msk) {
-    q=vecNext(&(h->ndx));
-    /*fprintf(stderr,"%u,%X\n",n,q->key);*/
-    if (q->key != NOKEY) break;
-  }
-  if (q != NULL && q->key != NOKEY) return q->elem.p;
-  return NULL;
-}
-
-void *htIndex(ht *h)
-{
-  void **p=NULL;
-  void **q;
-
-  if (htCount(h)>0) {
-    p=malloc(sizeof(void **)*(htCount(h)+1));
-    if (p != NULL) {
-      q=p;
-      *q=htFirst(h);
-      while (*q != NULL) {
-        *++q=htNext(h);
-      }
-    }
-  }
-  return p;
-}
-
-/* Taken from Christopher Clark hash table implementation
-**
-*/
-static uint32_t scrambleint(uint32_t i)
-{
-    /* - logic taken from java 1.4 hashtable source */
-    i += ~(i << 9);
-    i ^=  ((i >> 14) | (i << 18)); /* >>> */
-    i +=  (i << 4);
-    i ^=  ((i >> 10) | (i << 22)); /* >>> */
-    return i;
-}
-
-
-uint32_t u16mapHfn(u16map *a)        {return (a->key); }
-int u16mapCmp(u16map *a, u16map *b)  {return (a->key - b->key);}
-void u16mapCpy(u16map *a, u16map *b) {*a = *b; }
-void u16mapClr(u16map *a)            {a->key = 0; a->val = 0;}
-
-
-uint32_t u32setHfn(u32set *a)        {return a->val; }
-int u32setCmp(u32set *a, u32set *b)  {return a->val - b->val; }
-void u32setCpy(u32set *a, u32set *b) {*a = *b; }
-void u32setClr(u32set *a)            {a->val = 0; }
-
-
-
-/*
-http://www.azillionmonkeys.com/qed/hash.html
-*/
-#undef get16bits
-#if (defined(__GNUC__) && defined(__i386__)) || defined(__WATCOMC__) \
-  || defined(_MSC_VER) || defined (__BORLANDC__) || defined (__TURBOC__)
-#define get16bits(d) (*((const uint16_t *) (d)))
-#endif
-
-#if !defined (get16bits)
-#define get16bits(d) ((((uint32_t)(((const uint8_t *)(d))[1])) << 8)\
-                       +(uint32_t)(((const uint8_t *)(d))[0]) )
-#endif
-
-uint32_t SuperFastHash (const uint8_t *data, int len, uint32_t hash)
-{
-uint32_t tmp;
-int rem;
-
-    if (len <= 0 || data == NULL) return 0;
-
-    rem = len & 3;
-    len >>= 2;
-
-    /* Main loop */
-    for (;len > 0; len--) {
-        hash  += get16bits (data);
-        tmp    = (get16bits (data+2) << 11) ^ hash;
-        hash   = (hash << 16) ^ tmp;
-        data  += 2*sizeof (uint16_t);
-        hash  += hash >> 11;
-    }
-
-    /* Handle end cases */
-    switch (rem) {
-        case 3: hash += get16bits (data);
-                hash ^= hash << 16;
-                hash ^= data[sizeof (uint16_t)] << 18;
-                hash += hash >> 11;
-                break;
-        case 2: hash += get16bits (data);
-                hash ^= hash << 11;
-                hash += hash >> 17;
-                break;
-        case 1: hash += *data;
-                hash ^= hash << 10;
-                hash += hash >> 1;
-    }
-
-    /* Force "avalanching" of final 127 bits */
-    hash ^= hash << 3;
-    hash += hash >> 5;
-    hash ^= hash << 4;
-    hash += hash >> 17;
-    hash ^= hash << 25;
-    hash += hash >> 6;
-
-    return hash;
+  else  dbgprintf(DBG_MSG,"Found at: %d\n",k);
+  
+  return p;  
 }
 
 
