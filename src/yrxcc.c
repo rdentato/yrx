@@ -39,21 +39,17 @@
 /**************************************************/
 typedef struct Arc {
   struct Arc  *next;
-  uint16_t     to;
-  uint16_t     tag;
-  uint8_t      flg;
-  uint8_t      lmin;
-  uint8_t      lmax;
-  uint8_t      pad;
+  uint16_t    *tag;
+  uint16_t   **lbl;
 } Arc;
 
 
-vec *arcs_lst = NULL;
-uint32_t  arcs_cnt = 0;
+vec *arcs = NULL;
+vec *states = NULL;
 
-vec *state_lst = NULL;
-uint16_t  state_cnt = 0;
-
+/**************************************************/
+typedef uint16_t Lbl[17];
+vec *lbls = NULL;
 
 /**************************************************/
 
@@ -131,7 +127,14 @@ char *tag_str(uint16_t tag) {
   return s;
 }
 
+
 /**************************************************/
+yrxerr(char *errmsg)
+{
+  err("ERROR: %s\n%5d: %s\n%*s\n",errmsg,cur_nrx,cur_rx,cur_pos+8,"*");
+}
+/**************************************************/
+
 
 #define lbl_clr(b,c) (b[c>>4] &= ~(1<<(c&0xF)))
 
@@ -146,6 +149,8 @@ char *tag_str(uint16_t tag) {
 #define lbl_or(a,b)  do { uint8_t i; for(i=0; i<16; i++) a[i] |=  b[i]; } while (0)
 #define lbl_and(a,b) do { uint8_t i; for(i=0; i<16; i++) a[i] &=  b[i]; } while (0)
 
+#define LBL_NOTGREEDY 0x0100
+
 int __c;
 #define hex(c) (__c=c,('0' <= __c && __c <= '9')? __c - '0' :\
                       ('A' <= __c && __c <= 'F')? __c - 'A'+10:\
@@ -153,16 +158,6 @@ int __c;
                       
 #define oct(c) (__c=c,('0' <= __c && __c <= '7')? __c - '0' : -1)
 
-int escval(char *s)
-{
-  
-  return -1; 
-}
-
-yrxerr(char *errmsg)
-{
-  err("ERROR: %s\n%5d: %s\n%*s\n",errmsg,cur_nrx,cur_rx,cur_pos+8,"*");
-}
 
 uint16_t *lbl_bmp(char *s)
 {
@@ -300,44 +295,8 @@ int lbl_rng(uint16_t *bmp, uint16_t a)
 
 /**************************************************/
 
+
 void addarc(uint16_t from,uint16_t to,char *l,uint16_t tag)
-{
-  Arc   a;
-  Arc  *p;
-  Arc **q;
-  uint16_t k;
-  uint16_t *bmp=NULL;
-  int a,b;
-  
-
-  if (from >= state_cnt) state_cnt = from+1;
-  if (to >= state_cnt) state_cnt = to+1;
-  
-  q = vecGet(state_lst,from);  
-  a.to  = to;
-  a.tag = tag;
-  
-  if (l == NULL || l[0] == '\0') {
-    a.flg = 'X';  a.lmin = 0;    a.lmax = 0;
-    p = vecSet(arcs_lst,arcs_cnt++, &a);
-    p->next = *q;
-    *q = p;
-  }
-  else {  
-    
-  do {
-    if (l[0] != '\0') {
-      a.flg = *l++; a.lmin = *l++; a.lmax = *l++;
-    }
-    p = vecSet(arcs_lst,arcs_cnt++, &a);
-    p->next = *q;
-    *q = p;
-  } while (*l != '\0');
-  
-  
-}
-
-void xaddarc(uint16_t from,uint16_t to,char *l,uint16_t tag)
 {
   uint16_t *bmp=NULL;
   int a,b;
@@ -664,14 +623,15 @@ void dump()
 {
   uint32_t i;
   Arc *a;
-  
-  for (i=0; i< state_cnt; i++) {
-    a = *(Arc **)vecGet(state_lst,i);
+#if 0  
+  for (i=0; i< vecCnt(states); i++) {
+    a = *(Arc **)vecGet(states,i);
     while (a) {
       printf("%5d -> %-5d %c %04X %02X %02X\n",i,a->to,a->flg,a->tag,a->lmin,a->lmax);
       a = a->next;
     }
   }
+#endif
 }
 
 int main(int argc, char **argv)

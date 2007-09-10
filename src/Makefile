@@ -17,7 +17,7 @@ include ../config.mk
 
 YRXLUA=yrxdfa.lua yrxgraph.lua yrxasm.lua yrxc.lua yrxl.lua 
 
-CFLAGS = -DDEBUG
+CFLAGS = -DDEBUG -Wall -pedantic
 
 yrxcc$(_EXE):	yrxcc.o vec.o
 	gcc -o yrxcc$(_EXE) yrxcc.o vec.o
@@ -47,4 +47,5 @@ x$(_EXE): ../test/test.rxs yrxclib$(_LIB)
 clean:
 	rm -f yrxlua.lua yrxexe.lua yrx$(_EXE)
 	rm -f x.*
+	rm -f *.$(_OBJ)
 	

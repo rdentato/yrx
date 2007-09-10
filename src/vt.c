@@ -4,51 +4,21 @@
 #include "vec.h"
 
 typedef struct Arc {
-  struct Arc *next;
   uint16_t from;
   uint16_t to;  
-  uint16_t *tag;
-  uint8_t *lbl;
 } Arc;
-
-uint32_t ArcHfn(Arc *a)
-{
-  uint32_t h;
-  
-  h = SuperFastHash((uint8_t *)&(a->from),sizeof(uint16_t),13);
-  h = SuperFastHash((uint8_t *)&(a->to),sizeof(uint16_t),h);
-  
-  return h;  
-}
-
-int ArcCmp(Arc *a,Arc *b)
-{
-  if (a->to = b->to)
-    if (a->tag == b->tag)
-      if (a->lbl == b->lbl)
-        return 0;
-      else return -1;
-    else return -1;
-  else return (a->to - b->to);
-}
-
-static void ArcCpy(Arc *a, Arc *b)
-{ *a=*b; }
-
-static void ArcClr(Arc *a)
-{ a->tag = NULL; a->lbl = NULL; }
-
 
 int main(int argc, char * argv[])
 {
   vec *v;
-  ht  *h;
-  
+ 
   uint32_t j,k,n=0;
   Arc a,*p;
   uint32_t t;
-  vlb *l;
+  uint8_t **p8;
+  Arc *q;
   
+  #if 0
   v=vecNew(sizeof(Arc));
   
   printf("n;minsize;vsize;diff\n");
@@ -72,28 +42,88 @@ int main(int argc, char * argv[])
   printf("%d -> %d\n",p->from,p->to);
   p = (Arc *)vecNext(v);
   printf("%d -> %d\n",p->from,p->to);
+  printf("CNT: %u\n",vecCnt(v));
   fflush(stdout);
-  
+ 
   v=vecFree(v);
+  #endif
+  /**** SET ****/
   
-  v = vecNewL();
-  t = vecSize(v);
-  printf("%u\n",t);
+  v = setNew(sizeof(Arc),0);
+
+  a.from = 100; a.to = 100;
+    
+  p = setAdd(v,&a);
+  printf("%p %d -> %d (%p %d -> %d)\n",p,p->from,p->to,&a,a.from,a.to);
   
-  l = vecSetL(v,1,"Ciao",5); 
-  printf("1 is %p\n",l);
-  t = vecSize(v);
-  printf("%u\n",t);
-  l = vecSetL(v,2,"Pippo",6);
-  printf("2 is %p\n",l);
-  t = vecSize(v);
-  printf("%u\n",t);
+  /*
+  p = setGet(v,&a);
+  printf("%p %d -> %d (%p %d -> %d)\n",p,p->from,p->to,&a,a.from,a.to);
   
-  l = vecGet(v,1);
+  p8 = (uint8_t **)p - 1;
+  printf("%p == %p\n",p,*p8);
   
-  printf("ptr:%p len: %d buf:%s\n",l,l->len,l->buf);
-  v = vecFree(v);
+ fflush(stdout);
+ */
+  a.from++;
+  /*
+  p = setGet(v,&a);
+  printf("%p\n",p);
+ */
   
+  p = setAdd(v,&a);
+  printf("%p %d -> %d (%p %d -> %d)\n",p,p->from,p->to,&a,a.from,a.to);
+  
+  /*
+  p8 = (uint8_t **)p - 1;
+  printf("%p == %p\n",p,*p8);
+*/
+ a.from--;
+ fflush(stdout);
+  /*
+  p = setGet(v,&a);
+  printf("%p\n",p);
+  / *
+  printf("%p %d -> %d (%p %d -> %d)\n",p,p->from,p->to,&a,a.from,a.to);*/
+  
+  a.from = 10; a.to = 10;
+  p = setAdd(v,&a);
+  printf("%p %d -> %d (%p %d -> %d)\n",p,p->from,p->to,&a,a.from,a.to);
+  
+  a.from = 210; a.to = 210;
+  p = setAdd(v,&a);
+  printf("%p %d -> %d (%p %d -> %d)\n",p,p->from,p->to,&a,a.from,a.to);
+  printf("\n");
+  
+  a.from = 40; a.to = 10;
+  p = setAdd(v,&a);
+  printf("%p %d -> %d (%p %d -> %d)\n",p,p->from,p->to,&a,a.from,a.to);
+  
+  a.from = 100; a.to = 100;
+  p = setAdd(v,&a);
+  printf("%p %d -> %d (%p %d -> %d)\n",p,p->from,p->to,&a,a.from,a.to);
+  
+  a.from = 140; a.to = 10;
+  p = setAdd(v,&a);
+  printf("%p %d -> %d (%p %d -> %d)\n",p,p->from,p->to,&a,a.from,a.to);
+  
+  fflush(stdout);
+  setForeach(v,k,p) 
+    printf("%d] %p %d -> %d\n",k,p,p->from,p->to);
+    
+  /*
+  for (k=0;k < vecCnt(v);k++) {
+    p = vecGet(v,k);
+    p = *(Arc **)p;
+    printf("%d] %p %d -> %d\n",k,p,p->from,p->to);
+    if (k>0) printf(" == %d ",memcmp(q,p,v->esz-sizeof(uint8_t *)));
+    printf("\n");
+    q = p;
+  }
+*/
+  v = setFree(v);
+ 
+  exit(0); 
 }
 
 
