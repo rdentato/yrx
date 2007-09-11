@@ -17,7 +17,7 @@ include ../config.mk
 
 YRXLUA=yrxdfa.lua yrxgraph.lua yrxasm.lua yrxc.lua yrxl.lua 
 
-CFLAGS = -DDEBUG -Wall -pedantic
+CFLAGS = -DDEBUG -Wall
 
 yrxcc$(_EXE):	yrxcc.o vec.o
 	gcc -o yrxcc$(_EXE) yrxcc.o vec.o
@@ -36,7 +36,7 @@ yrxclib$(_LIB): yrxclib.o
 	$(AR)yrxclib.$(_LIB) yrxclib.o
 
 	
-vt$(_EXE):	vt.o vec.o
+vt$(_EXE):	vt.o vec.o vt.h
 	gcc -o vt$(_EXE) vt.o vec.o
 
 		

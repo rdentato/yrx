@@ -17,17 +17,16 @@ typedef struct {
   uint8_t *q;  /* slot pointer */
 } vMark;
 
-typedef struct vec{
+typedef struct {
   uint16_t      esz;
   uint16_t      npg;
   uint16_t      ksz;
   uint16_t      flg;
   uint32_t      cnt;
-  struct vec   *ndx;
+  void         *aux;
   uint8_t     **arr;
   vMark         mrk;
 } vec;
-
 
 vec  *vecNew(uint16_t elemsize);
 
@@ -42,6 +41,7 @@ void *vecFree(vec *v);
 uint32_t vecSize(vec *v);
 
 #define vecCnt(v) ((v)->cnt)
+#define vecNdx(v) ((vec *)((v)->aux))
 
 #define VEC_ISSET  0x00000001
 
@@ -49,10 +49,11 @@ vec *setNew(uint16_t esz,uint16_t ksz);
 
 void *setAdd(vec *v,void *e);
 void *setGet(vec *v,void *e);
+void setDel(vec *v,void *elem);
 
-#define setForeach(v,i,p) for (i=0, p = *((void **)vecGet(v->ndx,0));\
-                               i < vecCnt(v->ndx);\
-                               i++, p = *((void **)vecNext(v->ndx)) )
+#define setForeach(v,i,p) for (i=0, p = *((void **)vecGet(vecNdx(v),0));\
+                               i < vecCnt(vecNdx(v));\
+                               i++, p = *((void **)vecNext(vecNdx(v))) )
 
 #define setFree vecFree
 
