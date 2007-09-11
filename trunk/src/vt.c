@@ -6,6 +6,7 @@
 typedef struct Arc {
   uint16_t from;
   uint16_t to;  
+  uint32_t info;
 } Arc;
 
 int main(int argc, char * argv[])
@@ -49,9 +50,9 @@ int main(int argc, char * argv[])
   #endif
   /**** SET ****/
   
-  v = setNew(sizeof(Arc),0);
+  v = setNew(sizeof(Arc),offsetof(Arc,info));
 
-  a.from = 100; a.to = 100;
+  a.from = 100; a.to = 100; a.info = 2323;
     
   p = setAdd(v,&a);
   printf("%p %d -> %d (%p %d -> %d)\n",p,p->from,p->to,&a,a.from,a.to);
@@ -107,9 +108,38 @@ int main(int argc, char * argv[])
   p = setAdd(v,&a);
   printf("%p %d -> %d (%p %d -> %d)\n",p,p->from,p->to,&a,a.from,a.to);
   
+  a.info = 92;
+  p = setAdd(v,&a);
+  printf("%p %d -> %d (%p %d -> %d)\n",p,p->from,p->to,&a,a.from,a.to);
+  
+  a.from = 40; a.to = 10;
+  p = setGet(v,&a);
+  printf("%p %d -> %d (%p %d -> %d)\n",p,p->from,p->to,&a,a.from,a.to);
+  setDel(v,&a);
+  p = setGet(v,&a);
+  printf("%p\n",p);
+  a.from = 140; a.to = 10;
+  p = setGet(v,&a);
+  printf("%p %d -> %d (%p %d -> %d)\n",p,p->from,p->to,&a,a.from,a.to);
+  setDel(v,&a);
+  p = setGet(v,&a);
+  printf("%p\n",p);
+  
   fflush(stdout);
   setForeach(v,k,p) 
-    printf("%d] %p %d -> %d\n",k,p,p->from,p->to);
+  printf("%d] %p %d -> %d\n",k,p,p->from,p->to);
+  
+  
+  a.from = 40; a.to = 10;
+  p = setAdd(v,&a);
+  printf("%p %d -> %d (%p %d -> %d)\n",p,p->from,p->to,&a,a.from,a.to);
+  a.from = 140; a.to = 10;
+  p = setAdd(v,&a);
+  printf("%p %d -> %d (%p %d -> %d)\n",p,p->from,p->to,&a,a.from,a.to);
+  
+  fflush(stdout);
+  setForeach(v,k,p) 
+  printf("%d] %p %d -> %d\n",k,p,p->from,p->to);
     
   /*
   for (k=0;k < vecCnt(v);k++) {

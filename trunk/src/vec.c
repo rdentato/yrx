@@ -87,13 +87,14 @@ static void ndx2pg(uint32_t ndx, uint32_t *p, uint32_t *n)
 static void vecInit(vec *v,uint32_t elemsize)
 {
   if (v) {
-    if (elemsize < sizeof(uint8_t *)) elemsize =  sizeof(uint8_t *);
+    /* Ensure an element can store a (void *), will be used for the freelist */
+    if (elemsize < sizeof(void *)) elemsize =  sizeof(void *);
     v->esz   = elemsize;
     v->ksz   = v->esz;
     v->npg   = 0;
     v->cnt   = 0;
     v->arr   = NULL;
-    v->ndx   = NULL;
+    v->aux   = NULL;
     v->mrk.p = 0;
     v->mrk.n = (uint32_t)-1;
     v->mrk.w = (uint32_t)-1;
@@ -259,7 +260,6 @@ uint32_t vecSize(vec *v)
 /********** SET ***********/
 
 
-#define vecNdx(v) ((v)->ndx)
 
 vec *setNew(uint16_t elemsize,uint16_t keysize)
 {
@@ -267,7 +267,7 @@ vec *setNew(uint16_t elemsize,uint16_t keysize)
    
    v = vecNew(elemsize);
    if (v != NULL) {
-     vecNdx(v) = vecNew(sizeof(void *));
+     v->aux = vecNew(sizeof(void *));
      if (vecNdx(v) == NULL) v = vecFree(v);
    }
    if (v != NULL && keysize > 0) v->ksz = keysize;
@@ -320,10 +320,17 @@ void *setAdd(vec *v,void *elem)
     i = vecCnt(vecNdx(v));
     
     /* Add |elem| to the vector */    
-       
-    p = vecSet(v,i,elem);
-    dbgprintf(DBG_MSG,"To be placed at: %d (i:%d p:%p)\n",k,i,p);
+    q = vecNdx(v)->aux;
+    if (q == NULL) {       
+      p = vecSet(v,vecCnt(v),elem);
+    }
+    else {
+      vecNdx(v)->aux = *q;
+      p = (void *)q;
+      memcpy(p, elem, v->esz);    
+    }
     
+    dbgprintf(DBG_MSG,"To be placed at: %d (i:%d p:%p)\n",k,i,p);
     q = vecSet(vecNdx(v),i,&p);
     /* Shift down pointers from k to the end*/
     while (i-- > k) {
@@ -335,9 +342,34 @@ void *setAdd(vec *v,void *elem)
     
     *q = p; /* q points to vec[k] */
   }
-  else  dbgprintf(DBG_MSG,"Found at: %d\n",k);
+  else  {
+    memcpy(p, elem, v->esz);
+    dbgprintf(DBG_MSG,"Found at: %d\n",k);
+  }
   
   return p;  
 }
 
 
+void setDel(vec *v,void *elem)
+{
+  int i;
+  uint32_t k;
+  void **q,**r;
+ 
+  q = setsearch(v,elem,&k);
+  if (q != NULL) {
+    *q = vecNdx(v)->aux;
+    vecNdx(v)->aux = q;  /* Free list */
+    
+    /* Remove k-th index */
+    q = vecGet(vecNdx(v),k);
+    
+    for (i = k+1; i < vecCnt(vecNdx(v)); i++) {
+      r = q;
+      q = vecGet(vecNdx(v),i);
+     *r = *q;
+    }
+    vecCnt(vecNdx(v))--;
+  }
+}
