@@ -11,18 +11,14 @@
 ** of this software for any purpose. It is provided "as is" without
 ** express or implied warranty.
 */
-
 /*
-Resizable Arrays in Optimal Time and Space
-Lecture Notes In Computer Science; Vol. 1663
-Proceedings of the 6th International Workshop on Algorithms and Data Structures
-1999
-Andrej Brodnik 	
-Svante Carlsson 	
-Erik D. Demaine 	
-J. Ian Munro 	
-Robert Sedgewick 	
-Springer-Verlag   London, UK 
+@inproceedings{ brodnik99resizable,
+    author = "Andrej Brodnik and Svante Carlsson and Erik D. Demaine and J. Ian Munro and Robert Sedgewick",
+    title = "Resizable Arrays in Optimal Time and Space",
+    booktitle = "Workshop on Algorithms and Data Structures",
+    pages = "37-48",
+    year = "1999",
+    url = "citeseer.ist.psu.edu/brodnik99resizable.html" }
 */
 
 #include "vec.h"
