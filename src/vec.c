@@ -11,6 +11,7 @@
 ** of this software for any purpose. It is provided "as is" without
 ** express or implied warranty.
 */
+
 /*
 @inproceedings{ brodnik99resizable,
     author = "Andrej Brodnik and Svante Carlsson and Erik D. Demaine and J. Ian Munro and Robert Sedgewick",
@@ -18,7 +19,23 @@
     booktitle = "Workshop on Algorithms and Data Structures",
     pages = "37-48",
     year = "1999",
-    url = "citeseer.ist.psu.edu/brodnik99resizable.html" }
+    url = "citeseer.ist.psu.edu/brodnik99resizable.html"
+}
+
+@Article{Demaine:2001:AAF,
+  author =       "Erik Demaine",
+  title =        "Algorithm Alley: Fast and Small Resizable Arrays",
+  journal =      j-DDJ,
+  volume =       "26",
+  number =       "7",
+  pages =        "132--134",
+  month =        jul,
+  year =         "2001",
+  CODEN =        "DDJOEB",
+  ISSN =         "1044-789X",
+  bibdate =      "Thu Jun 7 06:07:17 MDT 2001",
+  URL =          "http://www.ddj.com/architect/184404698",
+}
 */
 
 #include "vec.h"
@@ -27,10 +44,7 @@ static const char *errNOMEM = "Out of Memory (vec)";
 static const char *errUNEXP = "Unexpected error";
 
 #define PTRSTEP 16  
-#define PGSTEP  64
-#define MBSTEP 512
-
-#define old_pgsize(n) ((uint32_t)((n+1)*PGSTEP))
+#define PGSTEP  4
 
 /*
 ** Integer log base 2 of uint32 integer values.
@@ -40,6 +54,7 @@ static const char *errUNEXP = "Unexpected error";
 static uint32_t llog2(uint32_t x)
 {
   uint32_t l=0;
+
   if (x & 0xFFFF0000) {l += 16; x >>= 16;}   /* 11111111111111110000000000000000 */
   if (x & 0xFF00)     {l += 8;  x >>= 8 ;}   /* 1111111100000000*/
   if (x & 0xF0)       {l += 4;  x >>= 4 ;}   /* 11110000*/
@@ -48,35 +63,33 @@ static uint32_t llog2(uint32_t x)
   return l;
 }
 
+#define two_raised(n) (1<<(n))
+#define div2(n)       ((n)>>1)
+
 static uint32_t pgsize(uint32_t p)
 {
   uint32_t k;
 
   p += 2;
-  k  = llog2(p/2);
-  if (p >= 3* (1<<k)) k++;
-  return (1<<k) * PGSTEP;
+  k  = llog2(div2(p));
+  if (p >= 3* two_raised(k)) k++;
+  return two_raised(k) * PGSTEP;
 }
 
 static void ndx2pg(uint32_t ndx, uint32_t *p, uint32_t *n)
 {
-  uint32_t k,m,s,b;
-
- *p = 0;
-  m =(ndx/PGSTEP) ;
-
-  k = llog2(m+1);
- *p = (k & 1)? 1<<(k/2): 0;
-
-  m = m - (1<<k) + 1 ;
-  s = k - (k/2);
-  k = k/2;
-  b = m >> s;
-
- *p += (1<<(k+1)) - 2 + b;
- *n  = ((m - (b<<s))*PGSTEP)+ (ndx & (PGSTEP-1));
- 
-  dbgprintf(DBG_OFF,"  %u %u %u (%u)\n",ndx,*p, *n,pgsize(*p));
+  uint32_t k,m,s;
+  
+  m  = (ndx/PGSTEP) +1;       /* squeeze pages */
+  k  = llog2(m);              /* compute MSB */
+  m ^= two_raised(k);         /* clear MSB */
+  s  = div2(k+1);             /* ceil(k/2)  */
+  k  = div2(k);               /* floor(k/2)  */
+ *p  = two_raised(s)+ two_raised(k) - 2 + (m >> s);  /* Sum of two seqences of 2^j */
+  m &= (two_raised(s) - 1);   /* */
+ *n  = (m * PGSTEP) + (ndx & (PGSTEP-1)); /* expand pages */
+  dbgprintf(DBG_MSG,"ndg2pg ->  %4u %4u %4u (%4u)\n",ndx,*p, *n,pgsize(*p));
+  
 }
 
 

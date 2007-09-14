@@ -19,12 +19,12 @@ int main(int argc, char * argv[])
   uint8_t **p8;
   Arc *q;
   
-  #if 0
+  #if 1
   v=vecNew(sizeof(Arc));
   
   printf("n;minsize;vsize;diff\n");
-  for (j=1; j < 1000; j++) {
-    for (k=j; k < 1000; k++) {
+  for (j=1; j < 100; j++) {
+    for (k=j; k < 100; k++) {
       if ((n & 0x3FF) == 0) {
       }
       a.from = j; a.to = k;
@@ -48,8 +48,9 @@ int main(int argc, char * argv[])
  
   v=vecFree(v);
   #endif
-  /**** SET ****/
   
+  /**** SET ****/
+  #if 0
   v = setNew(sizeof(Arc),offsetof(Arc,info));
 
   a.from = 100; a.to = 100; a.info = 2323;
@@ -152,7 +153,7 @@ int main(int argc, char * argv[])
   }
 */
   v = setFree(v);
- 
+ #endif
   exit(0); 
 }
 
