@@ -43,9 +43,6 @@
 static const char *errNOMEM = "Out of Memory (vec)";
 static const char *errUNEXP = "Unexpected error";
 
-#define PTRSTEP 16  
-#define PGSTEP  4
-
 /*
 ** Integer log base 2 of uint32 integer values.
 **   llog2(0) == llog2(1) == 0
@@ -73,22 +70,21 @@ static uint32_t pgsize(uint32_t p)
   p += 2;
   k  = llog2(div2(p));
   if (p >= 3* two_raised(k)) k++;
-  return two_raised(k) * PGSTEP;
+  return two_raised(k);
 }
 
 static void ndx2pg(uint32_t ndx, uint32_t *p, uint32_t *n)
 {
   uint32_t k,m,s;
   
-  m  = (ndx/PGSTEP) +1;       /* squeeze pages */
+  m  = ndx +1;
   k  = llog2(m);              /* compute MSB */
   m ^= two_raised(k);         /* clear MSB */
   s  = div2(k+1);             /* ceil(k/2)  */
   k  = div2(k);               /* floor(k/2)  */
- *p  = two_raised(s)+ two_raised(k) - 2 + (m >> s);  /* Sum of two seqences of 2^j */
-  m &= (two_raised(s) - 1);   /* */
- *n  = (m * PGSTEP) + (ndx & (PGSTEP-1)); /* expand pages */
-  dbgprintf(DBG_MSG,"ndg2pg ->  %4u %4u %4u (%4u)\n",ndx,*p, *n,pgsize(*p));
+ *p  = (two_raised(s) - 1) + (two_raised(k) - 1) + (m >> s);  /* Sum of two seqences of 2^j */
+ *n  = m & (two_raised(s) - 1);
+  dbgprintf(DBG_OFF,"ndg2pg ->  %4u %4u %4u (%4u)\n",ndx,*p, *n,pgsize(*p));
   
 }
 
@@ -152,13 +148,19 @@ static void *vecslot(vec *v,uint32_t page, uint32_t n)
 
   if (page >= v->npg) {
     /* Extend the index to pages*/
-    dbgprintf(DBG_OFF,"\t *X* %d %d\n",page,v->npg);
+    dbgprintf(DBG_MSG,"\t *X* %d %d %d\n",page,v->npg,llog2(page+1));
+
     t = v->npg;
-    v->npg = ((page / PTRSTEP)+1)*PTRSTEP;
+   /* The smallest power of two greater then |page| */ 
+    v->npg = (page == 0)? 1 : 1 << (llog2(page) +1) ; 
+    
+    dbgprintf(DBG_OFF,"\t === %d ",v->npg);
+    
     v->arr = realloc(v->arr, v->npg * sizeof(void *));
     if (v->arr == NULL) err(3001,errNOMEM);
     while (t < v->npg)  v->arr[t++] = NULL;
-    dbgprintf(DBG_OFF,"\t *** %d \n",v->npg);
+    
+    dbgprintf(DBG_MSG,"\t *** %d \n",v->npg);
   }
 
   v->mrk.s = pgsize(page);
