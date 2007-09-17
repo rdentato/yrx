@@ -36,7 +36,7 @@ yrxclib$(_LIB): yrxclib.o
 	$(AR)yrxclib.$(_LIB) yrxclib.o
 
 	
-vt$(_EXE):	vt.o vec.o vt.h
+vt$(_EXE):	vt.o vec.o
 	gcc -o vt$(_EXE) vt.o vec.o
 
 		
