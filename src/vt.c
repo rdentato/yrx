@@ -6,7 +6,7 @@
 typedef struct Arc {
   uint16_t from;
   uint16_t to;  
-  uint32_t info;
+  uint32_t info[31];
 } Arc;
 
 int main(int argc, char * argv[])
@@ -19,7 +19,7 @@ int main(int argc, char * argv[])
   uint8_t **p8;
   Arc *q;
   
-  #if 1
+  #if 0
   v=vecNew(sizeof(Arc));
   
   printf("n;minsize;vsize;diff\n");
@@ -154,6 +154,18 @@ int main(int argc, char * argv[])
 */
   v = setFree(v);
  #endif
+ 
+ #if 1
+  v = vecNew(sizeof(Arc));
+  
+  a.from = 3; a.to = 6;
+  for (k = 0; k < 200; k++) {
+    printf("%u;%u;%u\n",k,vecSize(v),k*sizeof(Arc));
+    vecAdd(v,&a);
+  }
+  v = vecFree(v);
+ #endif
+ 
   exit(0); 
 }
 
