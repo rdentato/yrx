@@ -148,7 +148,7 @@ static void *vecslot(vec *v,uint32_t page, uint32_t n)
 
   if (page >= v->npg) {
     /* Extend the index to pages*/
-    dbgprintf(DBG_MSG,"\t *X* %d %d %d\n",page,v->npg,llog2(page+1));
+    dbgprintf(DBG_OFF,"\t *X* %d %d %d\n",page,v->npg,llog2(page+1));
 
     t = v->npg;
    /* The smallest power of two greater then |page| */ 
@@ -160,7 +160,7 @@ static void *vecslot(vec *v,uint32_t page, uint32_t n)
     if (v->arr == NULL) err(3001,errNOMEM);
     while (t < v->npg)  v->arr[t++] = NULL;
     
-    dbgprintf(DBG_MSG,"\t *** %d \n",v->npg);
+    dbgprintf(DBG_OFF,"\t *** %d \n",v->npg);
   }
 
   v->mrk.s = pgsize(page);
@@ -268,119 +268,91 @@ uint32_t vecSize(vec *v)
   return size;
 }
 
-/********** SET ***********/
+/**** MAP ***/
 
+#define AUX(v) (((vec *)v)->aux)
 
+#define KEY(v,e) *((uint32_t *)(((uint8_t *)e) + ((v)->esz) - sizeof(uint32_t)))
 
-vec *setNew(uint16_t elemsize,uint16_t keysize)
+vec *mapNew(uint16_t elemsize,uint16_t keysize)
 {
-   vec *v;
-   
-   v = vecNew(elemsize);
-   if (v != NULL) {
-     v->aux = vecNew(sizeof(void *));
-     if (vecNdx(v) == NULL) v = vecFree(v);
-   }
-   if (v != NULL && keysize > 0) v->ksz = keysize;
-
-   return v; 
-}
-
-static void *setsearch(vec *v,void *elem,uint32_t *ndx)
-{
-   int i = 0, k = 0;
-   int c = 0, j = 0;
-   void **q;
-   
-   if (vecNdx(v) == NULL) err(3232,errUNEXP);
-   
-   j = vecCnt(vecNdx(v))-1;
-   
-   while (i <= j) {
-     k = (i+j)/2;
-    *ndx = k;
-     q = vecGet(vecNdx(v),k);
-     if (q == NULL) err(3239,errUNEXP);
-     if ((c = memcmp(elem, *q, v->ksz)) == 0) return *q;
-     dbgprintf(DBG_MSG,"** search: %d,%d [%d] == %d\n",i,j,k,c);
-     if (c < 0) j = k-1; 
-     else i = k+1;
-   }
-  *ndx = k;
-   if (c > 0) *ndx = k+1;
-   return NULL;  
-}
-
-void *setGet(vec *v,void *elem)
-{
-  uint32_t k;
-  return setsearch(v,elem,&k);
-}
-
-void *setAdd(vec *v,void *elem)
-{
-  int i;
-  uint32_t k;
-  void **q,**r;
-  void *p;
- 
-  p = setsearch(v,elem,&k);
-
-  if (p == NULL) {
-    /* Need to be inserted in pos. k */
-    i = vecCnt(vecNdx(v));
-    
-    /* Add |elem| to the vector */    
-    q = vecNdx(v)->aux;
-    if (q == NULL) {       
-      p = vecSet(v,vecCnt(v),elem);
-    }
-    else {
-      vecNdx(v)->aux = *q;
-      p = (void *)q;
-      memcpy(p, elem, v->esz);    
-    }
-    
-    dbgprintf(DBG_MSG,"To be placed at: %d (i:%d p:%p)\n",k,i,p);
-    q = vecSet(vecNdx(v),i,&p);
-    /* Shift down pointers from k to the end*/
-    while (i-- > k) {
-      dbgprintf(DBG_MSG,"\t(i:%d)\n",i);
-      r = q;
-      q = vecGet(vecNdx(v),i);
-     *r = *q;
-    }
-    
-    *q = p; /* q points to vec[k] */
+  vec *m = vecNew(elemsize);
+  if (m != NULL){
+    m->ksz = keysize;
+    m->aux = vecNew(sizeof(void *));
+    if (m->aux == NULL) m = vecFree(m);
   }
-  else  {
-    memcpy(p, elem, v->esz);
-    dbgprintf(DBG_MSG,"Found at: %d\n",k);
+  return m;
+}
+
+/*
+** Fowler/Noll/Vo hash
+** By:  chongo <Landon Curt Noll>  http://www.isthe.com/chongo/
+** See: http://www.isthe.com/chongo/tech/comp/fnv/index.html
+*/
+ 
+#define FNV1_32_INIT ((uint32_t)0x811c9dc5)
+#define FNV_32_PRIME ((uint32_t)0x01000193)
+
+uint32_t fnv(void *buf, size_t len)
+{
+  uint8_t *bp = (uint8_t *)buf;
+  uint32_t hval = FNV1_32_INIT;
+
+  while (len-- > 0) {
+    hval ^= (uint32_t)*bp++;
+    hval *= FNV_32_PRIME;
+  }
+  return hval;
+}
+
+/*
+** This is a linear probing hash.
+** Max probes is N, if a chain is longer than N the table is doubled and reashed
+** If after reash it's still impossible to insert within N, N is doubled
+** If still it's impossible, we'll exit with an error
+*/
+
+/* I just need a pointer that is different from NULL and can't be
+** a pointer to an element. Pointing to a function will do the trick.
+*/
+#define DELETED ((void *)fnv)
+static uint16_t maxchn = 4;
+
+#define MSK(v) (AUX(v)->cnt-1)
+
+static void *mapSearch(vec *m, void *elem)
+{
+  void *p = NULL;
+  uint32_t key;
+  uint32_t k;
+  
+  key = fnv(elem,m->ksz);
+  
+  k = key;
+  
+  while (1) {
+    k &= MSK(v);
+    p = *vecGet(AUX,k);
+    if (p != NULL) || ((p != DELETED && memcmp(p,elem,v->ksz) == 0))
+      break;
+    k++;
   }
   
-  return p;  
+  return p;
 }
 
-
-void setDel(vec *v,void *elem)
+void *mapAdd(vec *m,void *elem)
 {
-  int i;
-  uint32_t k;
-  void **q,**r;
- 
-  q = setsearch(v,elem,&k);
-  if (q != NULL) {
-    *q = vecNdx(v)->aux;
-    vecNdx(v)->aux = q;  /* Free list */
-    
-    /* Remove k-th index */
-    q = vecGet(vecNdx(v),k);
-    
-    for (i = k+1; i < vecCnt(vecNdx(v)); i++) {
-      r = q;
-      q = vecGet(vecNdx(v),i);
-     *r = *q;
-    }
-    vecCnt(vecNdx(v))--;
+  void *p = NULL;
+  uint32_t key;
+  
+  key = fnv(elem,m->ksz);
+
+  p = mapSearch(m,elem);
+  if (p != NULL) {
+    KEY(m,elem) = key;
   }
+  
+  return p;
 }
