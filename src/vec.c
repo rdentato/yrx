@@ -270,7 +270,7 @@ uint32_t vecSize(vec *v)
 
 /**** MAP ***/
 
-#define AUX(v) (((vec *)v)->aux)
+#define AUX(v) ((vec *)(((vec *)v)->aux))
 
 #define KEY(v,e) *((uint32_t *)(((uint8_t *)e) + ((v)->esz) - sizeof(uint32_t)))
 
@@ -280,7 +280,13 @@ vec *mapNew(uint16_t elemsize,uint16_t keysize)
   if (m != NULL){
     m->ksz = keysize;
     m->aux = vecNew(sizeof(void *));
-    if (m->aux == NULL) m = vecFree(m);
+    if (m->aux == NULL) {
+      m = vecFree(m);
+    }
+    else {
+      AUX(m)->cnt = 4;
+    }
+    
   }
   return m;
 }
@@ -309,7 +315,7 @@ uint32_t fnv(void *buf, size_t len)
 /*
 ** This is a linear probing hash.
 ** Max probes is N, if a chain is longer than N the table is doubled and reashed
-** If after reash it's still impossible to insert within N, N is doubled
+** If after rehash it's still impossible to insert within N, N is doubled
 ** If still it's impossible, we'll exit with an error
 */
 
@@ -319,38 +325,55 @@ uint32_t fnv(void *buf, size_t len)
 #define DELETED ((void *)fnv)
 static uint16_t maxchn = 4;
 
-#define MSK(v) (AUX(v)->cnt-1)
+#define MSK(v) (AUX(v)->cnt - 1)
 
-static void *mapSearch(vec *m, void *elem)
+
+
+/*
+                        AUX       MAP
+           ,-----.    +-----+   +-----+
+   slot -> | xx -|--> | zz -|-->|     |
+           `-----'    +-----+   +-----+
+
+*/
+
+static void *mapSearch(vec *m, void *elem, void ***slot)
 {
   void *p = NULL;
   uint32_t key;
   uint32_t k;
+  uint16_t d;
   
   key = fnv(elem,m->ksz);
-  
   k = key;
-  
+  d = 0;
   while (1) {
-    k &= MSK(v);
-    p = *vecGet(AUX,k);
-    if (p != NULL) || ((p != DELETED && memcmp(p,elem,v->ksz) == 0))
-      break;
+    k &= MSK(m);
+    *slot = vecGet(AUX(m),k);
+    if (*slot == NULL) return NULL;
+    
+    p  = *(*slot);
+    if (p == NULL) return NULL;
+    
+    if ((KEY(m,p) == key) && (memcmp(p,elem,m->ksz) == 0)) return p;
+    if (++d >= maxchn) {
+      *slot = NULL;  /* Need to rehash if want to insert */
+      return NULL;
+    }
     k++;
   }
-  
-  return p;
 }
 
 void *mapAdd(vec *m,void *elem)
 {
   void *p = NULL;
+  void **q;
   uint32_t key;
   
   key = fnv(elem,m->ksz);
 
-  p = mapSearch(m,elem);
-  if (p != NULL) {
+  p = mapSearch(m,elem,&q);
+  if (p == NULL) {
     KEY(m,elem) = key;
   }
   
