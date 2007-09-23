@@ -19,7 +19,7 @@ int main(int argc, char * argv[])
   uint8_t **p8;
   Arc *q;
   
-  #if 1
+  #if 0
   v=vecNew(sizeof(Arc));
   
   printf("n;minsize;vsize;diff\n");
@@ -157,7 +157,7 @@ int main(int argc, char * argv[])
   v = setFree(v);
  #endif
  
- #if 1
+ #if 0
   v = vecNew(sizeof(Arc));
   
   a.from = 3; a.to = 6;
@@ -168,6 +168,24 @@ int main(int argc, char * argv[])
   v = vecFree(v);
  #endif
  
+ #if 1
+  v = vecNew(sizeof(Arc));
+  a.from = 3; a.to = 6;
+  vecAdd(v,&a);
+  a.from = 3; a.to = 7;
+  vecAdd(v,&a);
+  a.from = 3; a.to = 8;
+  vecAdd(v,&a);
+  printf("CNT: %u\n", vecCnt(v));
+  vecDel(v,1);
+  a.from = 2; a.to = 8;
+  vecAdd(v,&a);
+  printf("CNT: %u\n", vecCnt(v));
+  a.from = 1; a.to = 8;
+  vecAdd(v,&a);
+  printf("CNT: %u\n", vecCnt(v));
+  v = vecFree(v);
+ #endif
   exit(0); 
 }
 

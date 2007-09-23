@@ -22,6 +22,7 @@ typedef struct {
   uint16_t      npg;
   uint16_t      ksz;
   uint16_t      flg;
+  uint32_t      lst;
   uint32_t      cnt;
   void         *aux;
   uint8_t     **arr;
@@ -32,7 +33,8 @@ vec  *vecNew(uint16_t elemsize);
 
 void *vecGet(vec *v, uint32_t ndx);
 
-void *vecNext(vec *v);
+#define vecNext(v) vecGet(v,(v)->mrk.w + 1)
+
 void *vecPrev(vec *v);
 void *vecSet(vec *v, uint32_t ndx, void *elem);
 void *vecSetL(vec *v, uint32_t ndx, void *elem,uint16_t len);
@@ -43,7 +45,10 @@ uint32_t vecSize(vec *v);
 #define vecCnt(v) ((v)->cnt)
 #define vecNdx(v) ((vec *)((v)->aux))
 
-#define VEC_ISSET  0x00000001
+#define VEC_ISSET    0x00000001
+#define VEC_ANYNDX   UINT32_MAX
+
+#define vecAdd(v,e) vecSet(v,VEC_ANYNDX,e);
 
 vec *setNew(uint16_t esz,uint16_t ksz);
 
