@@ -66,11 +66,17 @@ static uint32_t llog2(uint32_t x)
 static uint32_t pgsize(uint32_t p)
 {
   uint32_t k;
-
   p += 2;
-  k  = llog2(div2(p));
+  k  = llog2(p) - 1;
+  
+  k  = two_raised(k);
+  if (p >= 3*k) k <<= 1;
+  return k;
+  
+/*
   if (p >= 3* two_raised(k)) k++;
   return two_raised(k);
+  */
 }
 
 static void ndx2pg(uint32_t ndx, uint32_t *p, uint32_t *n)
@@ -82,9 +88,11 @@ static void ndx2pg(uint32_t ndx, uint32_t *p, uint32_t *n)
   m ^= two_raised(k);         /* clear MSB */
   s  = div2(k+1);             /* ceil(k/2)  */
   k  = div2(k);               /* floor(k/2)  */
- *p  = (two_raised(s) - 1) + (two_raised(k) - 1) + (m >> s);  /* Sum of two seqences of 2^j */
+ *p  = (two_raised(s) - 1) +  /* Sum for i=0 to ceil(k/2 - 1)  of 2^i */
+       (two_raised(k) - 1) +  /* Sum for i=0 to floor(k/2 - 1) of 2^i */
+       (m >> s);  
  *n  = m & (two_raised(s) - 1);
-  dbgprintf(DBG_OFF,"ndg2pg ->  %4u %4u %4u (%4u)\n",ndx,*p, *n,pgsize(*p));
+  dbgprintf(DBG_MSG,"ndg2pg ->  %4u %4u %4u (%4u)\n",ndx,*p, *n,pgsize(*p));
   
 }
 
@@ -92,17 +100,18 @@ static void ndx2pg(uint32_t ndx, uint32_t *p, uint32_t *n)
 static void vecInit(vec *v,uint32_t elemsize)
 {
   if (v) {
-    /* Ensure an element can store a (void *), will be used for the freelist */
-    if (elemsize < sizeof(void *)) elemsize =  sizeof(void *);
+    /* Ensure an element can store a 32 bit integer, will be used for the freelist */
+    if (elemsize < sizeof(uint32_t)) elemsize =  sizeof(uint32_t);
     v->esz   = elemsize;
     v->ksz   = v->esz;
     v->npg   = 0;
     v->cnt   = 0;
+    v->lst   = VEC_ANYNDX;
     v->arr   = NULL;
     v->aux   = NULL;
     v->mrk.p = 0;
     v->mrk.n = (uint32_t)-1;
-    v->mrk.w = (uint32_t)-1;
+    v->mrk.w = VEC_ANYNDX;
     v->mrk.q = ((uint8_t *)0 - elemsize);
   }
 }
@@ -187,22 +196,20 @@ void *vecGet(vec *v,uint32_t ndx)
 
   if (v == NULL)  err(3003,errNOMEM);
   
-  if (ndx == v->mrk.w) return v->mrk.q;
+  if (v->mrk.w != VEC_ANYNDX) {
+    switch ((int)(ndx - v->mrk.w)) {
+      case  0 : return v->mrk.q;
+      
+      case  1 : v->mrk.w++;
+                if (++v->mrk.n >= v->mrk.s) return vecslot(v,v->mrk.p+1,0);
+                v->mrk.q += v->esz;
+                return v->mrk.q;
+    }
+  }
   
   v->mrk.w = ndx;
   ndx2pg(ndx,&page,&n);
   return vecslot(v,page,n);
-}
-
-void *vecNext(vec *v)
-{
-  if (v == NULL)  err(3004,errNOMEM);
-  
-  v->mrk.w++;
-  if (++v->mrk.n >= v->mrk.s) return vecslot(v,v->mrk.p+1,0);
-
-  v->mrk.q += v->esz;
-  return v->mrk.q;
 }
 
 void *vecPrev(vec *v)
@@ -217,23 +224,38 @@ void *vecPrev(vec *v)
   return v->mrk.q;
 }
 
+void vecDel(vec *v, uint32_t ndx)
+{
+  uint32_t *p;
+  
+  p = vecGet(v,ndx); 
+ *p = v->lst;
+  v->lst = ndx;
+  v->cnt--;
+}
 void *vecSet(vec *v, uint32_t ndx, void *elem)
 {
-  void *p;
+  uint32_t *p = NULL;
 
-  p = vecGet(v,ndx);
-  
-  if (p != NULL) {
-    if (ndx >= v->cnt) v->cnt = ndx+1;
-    if (elem) memcpy(p, elem, v->esz);
-    else      memset(p, 0x00, v->esz);
+  if (ndx == VEC_ANYNDX) {
+    ndx = v->lst;  
+    if (ndx == VEC_ANYNDX) {
+      ndx = v->cnt;
+    } else {
+      p = vecGet(v,ndx);
+      v->lst = *p;
+      v->cnt++;
+      printf("** %u %u\n",ndx,v->lst);
+    }
   }
-  return p;
-}
+  
+  if (p == NULL) p = vecGet(v,ndx);
+  
+  if (ndx >= v->cnt) v->cnt = ndx+1;
+  if (elem) memcpy(p, elem, v->esz);
+  else      memset(p, 0x00, v->esz);
 
-void *vecAdd(vec *v, void *elem)
-{
-  return vecSet(v,v->mrk.w+1,elem);
+  return p;
 }
 
 vec *vecShrink(vec *v,uint32_t ndx)
