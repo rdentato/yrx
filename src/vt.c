@@ -19,11 +19,11 @@ int main(int argc, char * argv[])
   uint8_t **p8;
   Arc *q;
   
-  #if 0
+  #if 1
   v=vecNew(sizeof(Arc));
   
   printf("n;minsize;vsize;diff\n");
-  for (j=1; j < 1000; j++) {
+  for (j=1; j <1000 ; j++) {
     for (k=j; k < 1000; k++) {
       if ((n & 0x3FF) == 0) {
         t  = vecSize(v);
