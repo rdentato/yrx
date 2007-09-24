@@ -109,7 +109,7 @@ static void vecInit(vec *v,uint32_t elemsize)
     v->lst   = VEC_ANYNDX;
     v->arr   = NULL;
     v->aux   = NULL;
-    v->mrk.p = 0;
+    v->mrk.p = (uint16_t)-1;
     v->mrk.n = (uint32_t)-1;
     v->mrk.w = VEC_ANYNDX;
     v->mrk.q = ((uint8_t *)0 - elemsize);
@@ -172,7 +172,7 @@ static void *vecslot(vec *v,uint32_t page, uint32_t n)
     dbgprintf(DBG_OFF,"\t *** %d \n",v->npg);
   }
 
-  v->mrk.s = pgsize(page);
+  if (page != v->mrk.p) v->mrk.s = pgsize(page);
   
   if (v->arr[page] == NULL) {
     v->arr[page] = calloc(v->mrk.s, v->esz); /* page is guaranteed to be filled with 0's */
@@ -253,7 +253,7 @@ void *vecSet(vec *v, uint32_t ndx, void *elem)
   
   if (ndx >= v->cnt) v->cnt = ndx+1;
   if (elem) memcpy(p, elem, v->esz);
-  else      memset(p, 0x00, v->esz);
+  /*else      memset(p, 0x00, v->esz);*/
 
   return p;
 }
@@ -261,15 +261,16 @@ void *vecSet(vec *v, uint32_t ndx, void *elem)
 vec *vecShrink(vec *v,uint32_t ndx)
 {
   uint32_t page, n;
-  
+
   ndx2pg(ndx,&page,&n);
-  
+
   while (++page < v->npg) {
      if (v->arr[page] != NULL) free(v->arr[page]);
      v->arr[page] = NULL;
   }
+
   if (v->cnt > ndx) v->cnt = ndx;
-  return v; 
+  return v;
 }
 
 uint32_t vecSize(vec *v)
@@ -292,112 +293,62 @@ uint32_t vecSize(vec *v)
 
 /**** MAP ***/
 
-#define AUX(v) ((vec *)(((vec *)v)->aux))
+typedef struct node {
+  struct node *lnk[2];
+  uint8_t      elm[sizeof(uint32_t)];
+} node;
 
-#define KEY(v,e) *((uint32_t *)(((uint8_t *)e) + ((v)->esz) - sizeof(uint32_t)))
 
-vec *mapNew(uint16_t elemsize,uint16_t keysize)
+#define LNKSZ  offsetof(node,elm)
+#define ROOT(v) ((node *)((v)->aux))
+
+#define ELEMptr(n) (((node *)(n))->elm)
+
+vec *mapNew(uint16_t elemsz, uint16_t keysz)
 {
-  vec *m = vecNew(elemsize);
-  if (m != NULL){
-    m->ksz = keysize;
-    m->aux = vecNew(sizeof(void *));
-    if (m->aux == NULL) {
-      m = vecFree(m);
-    }
-    else {
-      AUX(m)->cnt = 4;
-    }
-    
+  vec *v;
+  
+  v = vecNew(elemsz+LNKSZ);
+  
+  if (v != NULL) {
+    v->ksz = keysz;
+    v->aux = NULL;
   }
-  return m;
+  
+  return v; 
 }
 
-/*
-** Fowler/Noll/Vo hash
-** By:  chongo <Landon Curt Noll>  http://www.isthe.com/chongo/
-** See: http://www.isthe.com/chongo/tech/comp/fnv/index.html
-*/
+static int cmp;
+
+#define CMP(v,n,k) (cmp = memcmp((n)->elm,k,(v)->ksz))
+#define LEFT(n)  ((n)->lnk[0])
+#define RIGHT(n) ((n)->lnk[1])
+
+static void *mapsearch(vec *v, node *root, void *elem, node **parent)
+{
+  if (root == NULL) return NULL;
+  
+  CMP(v,root,elem);
+  if (cmp == 0) return root;
+  if (cmp < 0) return mapsearch(v,RIGHT(root),elem,&RIGHT(root));
+  return mapsearch(v,LEFT(root),elem,&LEFT(root));
+}
+
+void *mapAdd(vec *v, void *elem)
+{
+  node *p;
+  node *q = NULL;
+  
  
-#define FNV1_32_INIT ((uint32_t)0x811c9dc5)
-#define FNV_32_PRIME ((uint32_t)0x01000193)
-
-uint32_t fnv(void *buf, size_t len)
-{
-  uint8_t *bp = (uint8_t *)buf;
-  uint32_t hval = FNV1_32_INIT;
-
-  while (len-- > 0) {
-    hval ^= (uint32_t)*bp++;
-    hval *= FNV_32_PRIME;
-  }
-  return hval;
-}
-
-/*
-** This is a linear probing hash.
-** Max probes is N, if a chain is longer than N the table is doubled and reashed
-** If after rehash it's still impossible to insert within N, N is doubled
-** If still it's impossible, we'll exit with an error
-*/
-
-/* I just need a pointer that is different from NULL and can't be
-** a pointer to an element. Pointing to a function will do the trick.
-*/
-#define DELETED ((void *)fnv)
-static uint16_t maxchn = 4;
-
-#define MSK(v) (AUX(v)->cnt - 1)
-
-
-
-/*
-                        AUX       MAP
-           ,-----.    +-----+   +-----+
-   slot -> | xx -|--> | zz -|-->|     |
-           `-----'    +-----+   +-----+
-
-*/
-
-static void *mapSearch(vec *m, void *elem, void ***slot)
-{
-  void *p = NULL;
-  uint32_t key;
-  uint32_t k;
-  uint16_t d;
-  
-  key = fnv(elem,m->ksz);
-  k = key;
-  d = 0;
-  while (1) {
-    k &= MSK(m);
-    *slot = vecGet(AUX(m),k);
-    if (*slot == NULL) return NULL;
-    
-    p  = *(*slot);
-    if (p == NULL) return NULL;
-    
-    if ((KEY(m,p) == key) && (memcmp(p,elem,m->ksz) == 0)) return p;
-    if (++d >= maxchn) {
-      *slot = NULL;  /* Need to rehash if want to insert */
-      return NULL;
-    }
-    k++;
-  }
-}
-
-void *mapAdd(vec *m,void *elem)
-{
-  void *p = NULL;
-  void **q;
-  uint32_t key;
-  
-  key = fnv(elem,m->ksz);
-
-  p = mapSearch(m,elem,&q);
+  p = mapsearch(v,ROOT(v),elem,&q); 
   if (p == NULL) {
-    KEY(m,elem) = key;
+    p = vecAdd(v,NULL);
+    RIGHT(p) = NULL;
+    LEFT(p) = NULL;
+    if (q == NULL) ROOT(v) = p;
+    else q = p;
   }
-  
   return p;
 }
+
+

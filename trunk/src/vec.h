@@ -10,8 +10,8 @@
 
 
 typedef struct {
+  uint16_t p;  /* page number  */
   uint32_t s;  /* page size    */
-  uint32_t p;  /* page number  */
   uint32_t n;  /* slot number  */
   uint32_t w;  /* water mark   */
   uint8_t *q;  /* slot pointer */
@@ -21,7 +21,6 @@ typedef struct {
   uint16_t      esz;
   uint16_t      npg;
   uint16_t      ksz;
-  uint16_t      flg;
   uint32_t      lst;
   uint32_t      cnt;
   void         *aux;
@@ -49,6 +48,7 @@ uint32_t vecSize(vec *v);
 #define VEC_ANYNDX   UINT32_MAX
 
 #define vecAdd(v,e) vecSet(v,VEC_ANYNDX,e);
+void vecDel(vec *v, uint32_t ndx);
 
 vec *setNew(uint16_t esz,uint16_t ksz);
 
