@@ -19,12 +19,12 @@ int main(int argc, char * argv[])
   uint8_t **p8;
   Arc *q;
   
-  #if 1
+  #if 0
   v=vecNew(sizeof(Arc));
   
   printf("n;minsize;vsize;diff\n");
-  for (j=1; j <1000 ; j++) {
-    for (k=j; k < 1000; k++) {
+  for (j=1; j <100 ; j++) {
+    for (k=j; k < 100; k++) {
       if ((n & 0x3FF) == 0) {
         t  = vecSize(v);
         printf("%u;%u;%u;%u\n",n,sizeof(Arc)*n,t, t-sizeof(Arc)*n);
@@ -163,29 +163,42 @@ int main(int argc, char * argv[])
   a.from = 3; a.to = 6;
   for (k = 0; k < 200; k++) {
     printf("%u;%u;%u\n",k,vecSize(v),k*sizeof(Arc));
-    vecAdd(v,&a);
+    blkAdd(v,&a);
   }
   v = vecFree(v);
  #endif
  
  #if 1
-  v = vecNew(sizeof(Arc));
+  v = blkNew(sizeof(Arc));
   a.from = 3; a.to = 6;
-  vecAdd(v,&a);
+  p=blkAdd(v,&a);
   a.from = 3; a.to = 7;
-  vecAdd(v,&a);
+  blkAdd(v,&a);
   a.from = 3; a.to = 8;
-  vecAdd(v,&a);
-  printf("CNT: %u\n", vecCnt(v));
-  vecDel(v,1);
+  blkAdd(v,&a);
+  printf("CNT: %u\n", v->mrk_w);
+  blkDel(v,p);
   a.from = 2; a.to = 8;
-  vecAdd(v,&a);
-  printf("CNT: %u\n", vecCnt(v));
+  blkAdd(v,&a);
+  printf("CNT: %u\n", v->mrk_w);
   a.from = 1; a.to = 8;
-  vecAdd(v,&a);
-  printf("CNT: %u\n", vecCnt(v));
-  v = vecFree(v);
+  blkAdd(v,&a);
+  printf("CNT: %u\n", v->mrk_w);
+  v = blkFree(v);
  #endif
+ 
+ #if 0
+   v = stkNew(sizeof(Arc));
+  printf("CNT: %u\n", vecCnt(v));
+   stkPush(v,&a);
+   p = stkTop(v);
+  printf("%u->%u (%u->%u)\n", p->from,p->to,a.from,a.to);
+  
+  printf("CNT: %u\n", vecCnt(v));
+   
+   v = stkFree(v);
+ #endif
+ 
   exit(0); 
 }
 
