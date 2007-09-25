@@ -97,22 +97,20 @@ static void ndx2pg(uint32_t ndx, uint32_t *p, uint32_t *n)
 }
 
 
-static void vecInit(vec *v,uint32_t elemsize)
+static void vecInit(vec *v,uint16_t elemsize)
 {
   if (v) {
     /* Ensure an element can store a 32 bit integer, will be used for the freelist */
     if (elemsize < sizeof(uint32_t)) elemsize =  sizeof(uint32_t);
-    v->esz   = elemsize;
-    v->ksz   = v->esz;
-    v->npg   = 0;
-    v->cnt   = 0;
-    v->lst   = VEC_ANYNDX;
-    v->arr   = NULL;
-    v->aux   = NULL;
-    v->mrk.p = (uint16_t)-1;
-    v->mrk.n = (uint32_t)-1;
-    v->mrk.w = VEC_ANYNDX;
-    v->mrk.q = ((uint8_t *)0 - elemsize);
+    v->esz    = elemsize;
+    v->ksz    = v->esz;
+    v->npg    = 0;
+    vecCnt(v) = 0;
+    v->arr    = NULL;
+    v->mrk_p  = (uint16_t)-1;
+    v->mrk_n  = (uint16_t)-1;
+    v->mrk_w  = VEC_ANYNDX;
+    v->mrk_q  = ((uint8_t *)0 - elemsize);
   }
 }
 
@@ -172,18 +170,18 @@ static void *vecslot(vec *v,uint32_t page, uint32_t n)
     dbgprintf(DBG_OFF,"\t *** %d \n",v->npg);
   }
 
-  if (page != v->mrk.p) v->mrk.s = pgsize(page);
+  if (page != v->mrk_p) v->mrk_s = pgsize(page);
   
   if (v->arr[page] == NULL) {
-    v->arr[page] = calloc(v->mrk.s, v->esz); /* page is guaranteed to be filled with 0's */
+    v->arr[page] = calloc(v->mrk_s, v->esz); /* page is guaranteed to be filled with 0's */
     if (v->arr[page] == NULL)  err(3002,errNOMEM);
   }
 
   p = v->arr[page] + (n * v->esz);
 
-  v->mrk.p = page;
-  v->mrk.n = n;
-  v->mrk.q = p;
+  v->mrk_p = page;
+  v->mrk_n = n;
+  v->mrk_q = p;
 
   return p;
 }
@@ -196,18 +194,20 @@ void *vecGet(vec *v,uint32_t ndx)
 
   if (v == NULL)  err(3003,errNOMEM);
   
-  if (v->mrk.w != VEC_ANYNDX) {
-    switch ((int)(ndx - v->mrk.w)) {
-      case  0 : return v->mrk.q;
+  if (ndx == VEC_ANYNDX) ndx = 0;
+  
+  if (v->mrk_w != VEC_ANYNDX) {
+    switch ((int)(ndx - v->mrk_w)) {
+      case  0 : return v->mrk_q;
       
-      case  1 : v->mrk.w++;
-                if (++v->mrk.n >= v->mrk.s) return vecslot(v,v->mrk.p+1,0);
-                v->mrk.q += v->esz;
-                return v->mrk.q;
+      case  1 : v->mrk_w++;
+                if (++v->mrk_n >= v->mrk_s) return vecslot(v,v->mrk_p+1,0);
+                v->mrk_q += v->esz;
+                return v->mrk_q;
     }
   }
   
-  v->mrk.w = ndx;
+  v->mrk_w = ndx;
   ndx2pg(ndx,&page,&n);
   return vecslot(v,page,n);
 }
@@ -215,43 +215,22 @@ void *vecGet(vec *v,uint32_t ndx)
 void *vecPrev(vec *v)
 {
   if (v == NULL) err(3005,errNOMEM);
-  if (v->mrk.w == 0) return NULL;
-  if (v->mrk.n == 0) return vecGet(v,v->mrk.w - 1);
+  if (v->mrk_w == 0) return NULL;
+  if (v->mrk_n == 0) return vecGet(v,v->mrk_w - 1);
   
-  v->mrk.n--;
-  v->mrk.w--;
-  v->mrk.q -= v->esz;
-  return v->mrk.q;
+  v->mrk_n--;
+  v->mrk_w--;
+  v->mrk_q -= v->esz;
+  return v->mrk_q;
 }
 
-void vecDel(vec *v, uint32_t ndx)
-{
-  uint32_t *p;
-  
-  p = vecGet(v,ndx); 
- *p = v->lst;
-  v->lst = ndx;
-  v->cnt--;
-}
 void *vecSet(vec *v, uint32_t ndx, void *elem)
 {
   uint32_t *p = NULL;
 
-  if (ndx == VEC_ANYNDX) {
-    ndx = v->lst;  
-    if (ndx == VEC_ANYNDX) {
-      ndx = v->cnt;
-    } else {
-      p = vecGet(v,ndx);
-      v->lst = *p;
-      v->cnt++;
-      printf("** %u %u\n",ndx,v->lst);
-    }
-  }
+  p = vecGet(v,ndx);
   
-  if (p == NULL) p = vecGet(v,ndx);
-  
-  if (ndx >= v->cnt) v->cnt = ndx+1;
+  if (ndx >= vecCnt(v)) vecCnt(v) = ndx+1;
   if (elem) memcpy(p, elem, v->esz);
   /*else      memset(p, 0x00, v->esz);*/
 
@@ -269,7 +248,7 @@ vec *vecShrink(vec *v,uint32_t ndx)
      v->arr[page] = NULL;
   }
 
-  if (v->cnt > ndx) v->cnt = ndx;
+  if (vecCnt(v) > ndx) vecCnt(v) = ndx;
   return v;
 }
 
@@ -291,6 +270,38 @@ uint32_t vecSize(vec *v)
   return size;
 }
 
+
+/**** BLK ***/
+#define FREELST(v) ((v)->aux0.p)
+
+vec *blkNew(uint16_t elemsz)
+{
+  vec *v;
+  
+  v = vecNew(elemsz);
+  if (v != NULL) FREELST(v) = NULL;
+  
+  return v;
+}
+
+void blkDel(vec *v, void *e)
+{
+  *((void **)e) = FREELST(v);
+  FREELST(v) = e;
+}
+
+void *blkAdd(vec *v,void *e)
+{
+  void **p;
+  
+  p = FREELST(v);
+  
+  if (p != NULL) FREELST(v) = *p;
+  else p = vecNext(v);
+  if (e != NULL) memcpy(p,e,v->esz);
+  return p;
+}
+
 /**** MAP ***/
 
 typedef struct node {
@@ -300,55 +311,98 @@ typedef struct node {
 
 
 #define LNKSZ  offsetof(node,elm)
-#define ROOT(v) ((node *)((v)->aux))
-
-#define ELEMptr(n) (((node *)(n))->elm)
+#define STACK(v) ((v)->aux1.p)
 
 vec *mapNew(uint16_t elemsz, uint16_t keysz)
 {
   vec *v;
   
-  v = vecNew(elemsz+LNKSZ);
+  v = blkNew(elemsz+LNKSZ);
   
   if (v != NULL) {
     v->ksz = keysz;
-    v->aux = NULL;
+    STACK(v) = NULL;
   }
   
   return v; 
 }
 
-static int cmp;
-
-#define CMP(v,n,k) (cmp = memcmp((n)->elm,k,(v)->ksz))
+#define CMP(v,n,k) (memcmp((n)->elm,k,(v)->ksz))
+#define CPY(v,n,e) (memcpy((p)->elm,e,(v)->esz))
 #define LEFT(n)  ((n)->lnk[0])
 #define RIGHT(n) ((n)->lnk[1])
+#define ROOT(v)  ((v)->aux2.p)
 
-static void *mapsearch(vec *v, node *root, void *elem, node **parent)
+static node **parent;
+static int cmp;
+
+static node *mapsearch(vec *v, node *root, void *elem)
 {
   if (root == NULL) return NULL;
   
-  CMP(v,root,elem);
+  cmp = CMP(v,root,elem);
   if (cmp == 0) return root;
-  if (cmp < 0) return mapsearch(v,RIGHT(root),elem,&RIGHT(root));
-  return mapsearch(v,LEFT(root),elem,&LEFT(root));
+  if (cmp < 0) {
+    parent = &RIGHT(root);
+    return mapsearch(v,RIGHT(root),elem);
+  }
+  parent = &LEFT(root);
+  return mapsearch(v,LEFT(root),elem);
 }
 
 void *mapAdd(vec *v, void *elem)
 {
   node *p;
-  node *q = NULL;
-  
  
-  p = mapsearch(v,ROOT(v),elem,&q); 
+  parent = (node **)&ROOT(v);
+  
+  p = mapsearch(v,ROOT(v),elem); 
   if (p == NULL) {
-    p = vecAdd(v,NULL);
-    RIGHT(p) = NULL;
-    LEFT(p) = NULL;
-    if (q == NULL) ROOT(v) = p;
-    else q = p;
+    p = blkAdd(v,NULL);
+    LEFT(p) = NULL; RIGHT(p) = NULL;
+    *parent = p;
   }
-  return p;
+  CPY(v,p,elem); /* overwrite if key already present */
+  return p->elm;
 }
 
+void *mapGet(vec *v, void *elem)
+{
+  node *p = mapsearch(v,ROOT(v),elem); 
+  if (p != NULL) return p->elm;
+  return NULL;
+}
+
+void *mapFirst(vec *v)
+{
+  node *p;
+  
+  p = ROOT(v);
+  if (p == NULL) {
+    if (STACK(v) != NULL) stkReset((vec *)STACK(v));
+    return NULL;
+  }
+
+  if (STACK(v) == NULL) STACK(v) = stkNew(sizeof(node *));
+  stkReset(STACK(v));
+    
+  if (p != NULL) {
+    if (RIGHT(p)) stkPush(STACK(v),RIGHT(p));
+    if (LEFT(p)) stkPush(STACK(v),LEFT(p));
+    return p->elm;
+  }
+  return NULL;
+}
+
+void *mapNext(vec *v)
+{
+  node *p;
+  if (stkIsEmpty(STACK(v))) return NULL;
+  
+  p = stkTop(STACK(v));
+  stkPop(STACK(v));
+  if (RIGHT(p)) stkPush(STACK(v),RIGHT(p));
+  if (LEFT(p)) stkPush(STACK(v),LEFT(p));
+  return p->elm;
+}
 
