@@ -33,9 +33,8 @@ int main(int argc, char * argv[])
   uint8_t **p8;
   Arc *q;
   
-  
   TSTHDR("Basic vec");
-  
+
   TSTGROUP("Creating vectors");
   
   /**************************/
@@ -75,10 +74,67 @@ int main(int argc, char * argv[])
     
   TSTDESC("There is only one page allocated");
   TST("v->npg == 1",(v->npg == 1 && v->arr != NULL && v->arr[0] != NULL));
+
+  TSTGROUP("Moving sequentially");
+  TSTDESC("Let's load a few elements and then move over them\n");
+  
+  a.from = 16; a.to = 16;
+  vecSet(v,16,&a);
+  
+  vecCnt(v) = 0;
+  for (k=0;k<16;k++) {
+     a.from = k; 
+     a.to = rand() & 0x0F; 
+     vecSet(v,k,&a);
+  }
+  TST("16 elements",(vecCnt(v) == 16));
+  p = vecGet(v,12);
+  TST("Selected 12",(v->cur_w == 12));
+  
+  p = vecNext(v); /* 13 */
+  p = vecNext(v); /* 14 */
+  TST("Selected 14",(v->cur_w == 14));
+  p = vecPrev(v); /* 13 */
+  p = vecPrev(v); /* 12 */
+  p = vecPrev(v); /* 11 */
+  TST("Selected 11",(v->cur_w == 11));
+  p = vecNext(v); /* 12 */
+  p = vecNext(v); /* 13 */
+  p = vecNext(v); /* 14 */
+  p = vecNext(v); /* 15 */
+  p = vecNext(v); /* 16 */
+  TST("Selected 16",(v->cur_w == 16));
+  TSTDESC("Just moving on the elements won't change the elements counter");
+  TSTW("Still 16 elements",(vecCnt(v) == 16),"\tCount = %d\n",vecCnt(v));
+  
   
   v = vecFree(v);
 
   /**********************************************************************/
+ #if 1
+  TSTHDR("Block discipline");
+
+  TSTGROUP("Creating blocks");
+  
+  v = blkNew(sizeof(Arc));
+  
+  TSTDESC("Blocks are allocated one after the other");
+  blkAdd(v,&a);
+  blkAdd(v,NULL);
+  TST("Highest blk 1",(v->cur_w == 1));
+  blkAdd(v,&a);
+  blkAdd(v,NULL);
+  TST("Highest blk 3",(v->cur_w == 3));
+  
+  TST("Free list empty",((v)->aux0.p == NULL));
+  TSTDESC("Let get the 1st block as ");
+   
+  
+  v = blkFree(v);
+ #endif
+
+  /**********************************************************************/
+ #if 0
   TSTHDR("Stack discipline");
 
   TSTGROUP("Creating stacks");
@@ -113,14 +169,24 @@ int main(int argc, char * argv[])
   stkPop(v);
   TSTW("No element",(stkIsEmpty(v) && stkDepth(v) == 0),"\tDepth = %d\n",stkDepth(v));
   stkPop(v);
-  TSTW("Still No element",(stkIsEmpty(v) && stkDepth(v) == 2),"\tDepth = %d",stkDepth(v));
+  TSTW("Still No element",(stkIsEmpty(v) && stkDepth(v) == 0),"\tDepth = %d",stkDepth(v));
   p = stkTop(v);
   TST("Top is NULL",(p == NULL));
+  
+  stkPush(v,&a);
+  stkPush(v,&a);
+  stkPush(v,&a);
+  stkPush(v,&a);
+  TST("Four elements",(stkDepth(v) == 4));
+  stkReset(v);
+  TST("Reset",(stkDepth(v) == 0));
   
   v = stkFree(v);
   TST("Free stack",(v == NULL));
   
+ #endif
   TSTSTAT();
+  
   #if 0
   v=vecNew(sizeof(Arc));
   
