@@ -92,7 +92,7 @@ static void ndx2pg(uint32_t ndx, uint32_t *p, uint32_t *n)
        (two_raised(k) - 1) +  /* Sum for i=0 to floor(k/2 - 1) of 2^i */
        (m >> s);  
  *n  = m & (two_raised(s) - 1);
-  dbgprintf(DBG_MSG,"ndg2pg ->  %4u %4u %4u (%4u)\n",ndx,*p, *n,pgsize(*p));
+  dbgprintf(DBG_OFF,"ndg2pg ->  %4u %4u %4u (%4u)\n",ndx,*p, *n,pgsize(*p));
   
 }
 
@@ -107,10 +107,10 @@ static void vecInit(vec *v,uint16_t elemsize)
     v->npg    = 0;
     vecCnt(v) = 0;
     v->arr    = NULL;
-    v->mrk_p  = (uint16_t)-1;
-    v->mrk_n  = (uint16_t)-1;
-    v->mrk_w  = VEC_ANYNDX;
-    v->mrk_q  = ((uint8_t *)0 - elemsize);
+    v->cur_p  = (uint16_t)-1;
+    v->cur_n  = (uint16_t)-1;
+    v->cur_w  = VEC_ANYNDX;
+    v->cur_q  = ((uint8_t *)0 - elemsize);
   }
 }
 
@@ -120,6 +120,7 @@ vec *vecNew(uint16_t elemsize)
 
   v = malloc(sizeof(vec));
   vecInit(v,elemsize);
+  dbgprintf(DBG_OFF,"VEC: %p\n",v);
   return v;
 }
 
@@ -148,7 +149,7 @@ void *vecFree(vec *v)
   return NULL;
 }
 
-static void *vecslot(vec *v,uint32_t page, uint32_t n)
+static void *vecslot(vec *v,uint16_t page, uint16_t n)
 {
   void *p=NULL;
   uint32_t t;
@@ -164,29 +165,27 @@ static void *vecslot(vec *v,uint32_t page, uint32_t n)
     dbgprintf(DBG_OFF,"\t === %d ",v->npg);
     
     v->arr = realloc(v->arr, v->npg * sizeof(void *));
-    if (v->arr == NULL) err(3001,errNOMEM);
+    if (v->arr == NULL) err(3001,"Unable to allocate page index for (%u)\n",page);
     while (t < v->npg)  v->arr[t++] = NULL;
     
     dbgprintf(DBG_OFF,"\t *** %d \n",v->npg);
   }
 
-  if (page != v->mrk_p) v->mrk_s = pgsize(page);
+  if (page != v->cur_p) v->cur_s = pgsize(page);
   
   if (v->arr[page] == NULL) {
-    v->arr[page] = calloc(v->mrk_s, v->esz); /* page is guaranteed to be filled with 0's */
+    v->arr[page] = calloc(v->cur_s, v->esz); /* page is guaranteed to be filled with 0's */
     if (v->arr[page] == NULL)  err(3002,errNOMEM);
   }
 
   p = v->arr[page] + (n * v->esz);
 
-  v->mrk_p = page;
-  v->mrk_n = n;
-  v->mrk_q = p;
+  v->cur_p = page;
+  v->cur_n = n;
+  v->cur_q = p;
 
   return p;
 }
-
-#define vecMark(v,m,o)  do {if (o=='r') (v)->mrk = m; else  m=(v)->mrk;} while(0)
 
 void *vecGet(vec *v,uint32_t ndx)
 {
@@ -196,32 +195,33 @@ void *vecGet(vec *v,uint32_t ndx)
   
   if (ndx == VEC_ANYNDX) ndx = 0;
   
-  if (v->mrk_w != VEC_ANYNDX) {
-    switch ((int)(ndx - v->mrk_w)) {
-      case  0 : return v->mrk_q;
+  if (v->cur_w != VEC_ANYNDX) {
+    switch ((int)(ndx - v->cur_w)) {
+      case  0 : dbgprintf(DBG_MSG,"get same %u (%u)\n",ndx,v->cur_w);
+                return v->cur_q;
       
-      case  1 : v->mrk_w++;
-                if (++v->mrk_n >= v->mrk_s) return vecslot(v,v->mrk_p+1,0);
-                v->mrk_q += v->esz;
-                return v->mrk_q;
+      case  1 : dbgprintf(DBG_MSG,"get next %u (%u)\n",ndx,v->cur_w);
+                v->cur_w++;
+                if (++v->cur_n >= v->cur_s) return vecslot(v,v->cur_p+1,0);
+                v->cur_q += v->esz;
+                return v->cur_q;
+                
+      case -1 : dbgprintf(DBG_MSG,"get prev %u (w:%u p:%u)\n",ndx,v->cur_w,v->cur_w);
+                if (v->cur_w == 0) return NULL;
+                if (v->cur_n == 0) {
+                  v->cur_p--;
+                  return vecslot(v,v->cur_p,pgsize(v->cur_p) - 1);
+                }  
+                v->cur_n--;
+                v->cur_w--;
+                v->cur_q -= v->esz;
+                return v->cur_q;
     }
   }
-  
-  v->mrk_w = ndx;
+  dbgprintf(DBG_MSG,"get index %d (%d)\n",ndx,v->cur_w);
+  v->cur_w = ndx;
   ndx2pg(ndx,&page,&n);
   return vecslot(v,page,n);
-}
-
-void *vecPrev(vec *v)
-{
-  if (v == NULL) err(3005,errNOMEM);
-  if (v->mrk_w == 0) return NULL;
-  if (v->mrk_n == 0) return vecGet(v,v->mrk_w - 1);
-  
-  v->mrk_n--;
-  v->mrk_w--;
-  v->mrk_q -= v->esz;
-  return v->mrk_q;
 }
 
 void *vecSet(vec *v, uint32_t ndx, void *elem)
@@ -229,7 +229,6 @@ void *vecSet(vec *v, uint32_t ndx, void *elem)
   uint32_t *p = NULL;
 
   p = vecGet(v,ndx);
-  
   if (ndx >= vecCnt(v)) vecCnt(v) = ndx+1;
   if (elem) memcpy(p, elem, v->esz);
   /*else      memset(p, 0x00, v->esz);*/
@@ -269,6 +268,7 @@ uint32_t vecSize(vec *v)
   }
   return size;
 }
+
 
 
 /**** BLK ***/
@@ -313,6 +313,12 @@ typedef struct node {
 #define LNKSZ  offsetof(node,elm)
 #define STACK(v) ((v)->aux1.p)
 
+#define CMP(v,n,k) (memcmp((n)->elm,k,(v)->ksz))
+#define CPY(v,n,e) (memcpy((p)->elm,e,(v)->esz - LNKSZ))
+#define LEFT(n)  ((n)->lnk[0])
+#define RIGHT(n) ((n)->lnk[1])
+#define ROOT(v)  ((v)->aux2.p)
+
 vec *mapNew(uint16_t elemsz, uint16_t keysz)
 {
   vec *v;
@@ -322,22 +328,19 @@ vec *mapNew(uint16_t elemsz, uint16_t keysz)
   if (v != NULL) {
     v->ksz = keysz;
     STACK(v) = NULL;
+    ROOT(v)  = NULL;
   }
   
   return v; 
 }
 
-#define CMP(v,n,k) (memcmp((n)->elm,k,(v)->ksz))
-#define CPY(v,n,e) (memcpy((p)->elm,e,(v)->esz))
-#define LEFT(n)  ((n)->lnk[0])
-#define RIGHT(n) ((n)->lnk[1])
-#define ROOT(v)  ((v)->aux2.p)
 
 static node **parent;
 static int cmp;
 
 static node *mapsearch(vec *v, node *root, void *elem)
 {
+  dbgprintf(DBG_OFF,"mapsearch() ROOT: %p\n",root); 
   if (root == NULL) return NULL;
   
   cmp = CMP(v,root,elem);
@@ -353,14 +356,17 @@ static node *mapsearch(vec *v, node *root, void *elem)
 void *mapAdd(vec *v, void *elem)
 {
   node *p;
- 
+  
   parent = (node **)&ROOT(v);
   
-  p = mapsearch(v,ROOT(v),elem); 
+  p = mapsearch(v,ROOT(v),elem);
+  dbgprintf(DBG_OFF,"mapAdd() PTR: %p\n",p); 
   if (p == NULL) {
     p = blkAdd(v,NULL);
     LEFT(p) = NULL; RIGHT(p) = NULL;
     *parent = p;
+    mapCnt(v)++;
+    dbgprintf(DBG_OFF,"mapAdd() ADDED: %p TO: %p\n",p,parent); 
   }
   CPY(v,p,elem); /* overwrite if key already present */
   return p->elm;
@@ -376,19 +382,23 @@ void *mapGet(vec *v, void *elem)
 void *mapFirst(vec *v)
 {
   node *p;
-  
+  node *q;
+ 
+
   p = ROOT(v);
   if (p == NULL) {
     if (STACK(v) != NULL) stkReset((vec *)STACK(v));
     return NULL;
   }
 
-  if (STACK(v) == NULL) STACK(v) = stkNew(sizeof(node *));
+  if (STACK(v) == NULL)
+    STACK(v) = stkNew(sizeof(node *));
   stkReset(STACK(v));
     
   if (p != NULL) {
-    if (RIGHT(p)) stkPush(STACK(v),RIGHT(p));
-    if (LEFT(p)) stkPush(STACK(v),LEFT(p));
+    if ((q = RIGHT(p)) != NULL) stkPush(STACK(v),&q);
+    if ((q = LEFT(p))  != NULL) stkPush(STACK(v),&q);
+    dbgprintf(DBG_MSG,"(STACK: %p) PARENT: %p LEFT:%p RIGHT: %p\n",STACK(v),p,LEFT(p),RIGHT(p));
     return p->elm;
   }
   return NULL;
@@ -396,13 +406,23 @@ void *mapFirst(vec *v)
 
 void *mapNext(vec *v)
 {
-  node *p;
-  if (stkIsEmpty(STACK(v))) return NULL;
+  node *p,*q;
   
-  p = stkTop(STACK(v));
+  if (stkIsEmpty(STACK(v))) return NULL;
+  dbgprintf(DBG_OFF,"mapNext() STACK: %p\n",STACK(v));
+  
+  p = *((node **)stkTop(STACK(v)));
   stkPop(STACK(v));
-  if (RIGHT(p)) stkPush(STACK(v),RIGHT(p));
-  if (LEFT(p)) stkPush(STACK(v),LEFT(p));
+  
+  if ((q = RIGHT(p)) != NULL) stkPush(STACK(v),&q);
+  if ((q = LEFT(p))  != NULL) stkPush(STACK(v),&q);
+  dbgprintf(DBG_MSG,"(STACK: %p) PARENT: %p LEFT:%p RIGHT: %p\n",STACK(v),p,LEFT(p),RIGHT(p));
   return p->elm;
+}
+
+void *mapFree(vec *v)
+{
+  if (STACK(v) != NULL) stkFree(v);
+  return vecFree(v); 
 }
 
