@@ -197,16 +197,16 @@ void *vecGet(vec *v,uint32_t ndx)
   
   if (v->cur_w != VEC_ANYNDX) {
     switch ((int)(ndx - v->cur_w)) {
-      case  0 : dbgprintf(DBG_MSG,"get same %u (%u)\n",ndx,v->cur_w);
+      case  0 : dbgprintf(DBG_OFF,"get same %u (%u)\n",ndx,v->cur_w);
                 return v->cur_q;
       
-      case  1 : dbgprintf(DBG_MSG,"get next %u (%u)\n",ndx,v->cur_w);
+      case  1 : dbgprintf(DBG_OFF,"get next %u (%u)\n",ndx,v->cur_w);
                 v->cur_w++;
                 if (++v->cur_n >= v->cur_s) return vecslot(v,v->cur_p+1,0);
                 v->cur_q += v->esz;
                 return v->cur_q;
                 
-      case -1 : dbgprintf(DBG_MSG,"get prev %u (w:%u p:%u)\n",ndx,v->cur_w,v->cur_w);
+      case -1 : dbgprintf(DBG_OFF,"get prev %u (w:%u p:%u)\n",ndx,v->cur_w,v->cur_w);
                 if (v->cur_w == 0) return NULL;
                 if (v->cur_n == 0) {
                   v->cur_p--;
@@ -218,7 +218,7 @@ void *vecGet(vec *v,uint32_t ndx)
                 return v->cur_q;
     }
   }
-  dbgprintf(DBG_MSG,"get index %d (%d)\n",ndx,v->cur_w);
+  dbgprintf(DBG_OFF,"get index %d (%d)\n",ndx,v->cur_w);
   v->cur_w = ndx;
   ndx2pg(ndx,&page,&n);
   return vecslot(v,page,n);
