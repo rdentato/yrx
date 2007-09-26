@@ -80,9 +80,15 @@
 
 HUL_EXTERN int8_t dbg_lvl;
 
-#define dbgprintf(n,fmt,...) ( (dbg_lvl <= n)\
-                                  ? fflush(stdout), fprintf(stderr,fmt,__VA_ARGS__),fflush(stderr)\
-                                  : 0)
+/* To ensure that dbg messages are correctly interleaved with other 
+   messages that might have been printed, |stdout| is flushed before
+   printing and |stderr| is flushed right after.
+*/
+#define dbgprintf(n,...) ( (dbg_lvl <= n)\
+                              ? fflush(stdout),\
+                                fprintf(stderr,__VA_ARGS__),\
+                                fflush(stderr)\
+                              : 0)
 #define dbglvl(n) (dbg_lvl = n)
 
 #else
@@ -114,5 +120,72 @@ HUL_EXTERN jmp_buf *errjmpptr;
 
 #define errjmp(j) (errjmpptr = &j)
                
+
+/* Unit Test */
+/*
+   These macros are intended to be used when writing unit tests. They
+   are available only if the symbol |HUL_UT| is defined before including
+   the |hul.h| header.
+*/
+#ifdef HUL_UT
+
+/* Test are divided in sections introduced by the |TSTHDR(s)| macro. 
+   The macro reset the appropriate counters and print the header |s|
+*/
+
+#define TSTHDR(s) (TSTGRP = 0,\
+                   TSTTOT \
+                     ? TSTSTAT() \
+                     : 0, TSTTOT = 0, TSTPASS=0, \
+                       fprintf(stderr,"\n:: %s\n",s),fflush(stderr))
+
+/* In each session, tests can be logically grouped so that different aspects
+   of related functions can be tested.
+*/
+
+#define TSTGROUP(s) (TSTNUM=0, \
+                     fprintf(stderr, "\n#%d %s\n",\
+                                     ++TSTGRP, s),\
+                                     fflush(stderr), TSTGRP)
+
+/* The single test is defined  with the |TST(s,x)| macro.
+     |s| is a string that defines the test
+     |x| a boolean expression that is to be true for the test to succeed.
+*/
+
+#define TST(s,x) (TST_DO(s,x), TST_END)
+
+/* With |TSTW(s,x,...)| you can setup a warning to be printed if the test fails
+   so to explain better why the test failed.
+     TSTW("Zero(x)", (x==0), "x is %d instead of 0",x)
+*/                  
+#define TSTW(s,x,...) (TST_DO(s,x),(TSTRES ? 0 : fprintf(stderr,__VA_ARGS__)) , TST_END)
+
+
+#define TST_DO(s,x) (TSTRES = (x), TSTTOT++,\
+                  fprintf(stderr, ".%03d %s - %s",\
+                          ++TSTNUM, TSTRES?(TSTPASS++,TSTOK):TSTKO, s))
+
+#define TST_END fputc('\n',stderr), fflush(stderr),TSTRES
+
+
+
+/* At the end of a section, the accumulated stats can be printed out
+*/
+#define TSTSTAT() (fprintf(stderr,"\nPASSED: %d/%d\n",TSTPASS,TSTTOT),fflush(stderr))
+
+#define TSTDESC(x) 
+
+static int TSTRES  = 0;  /* Result of the last performed |TST()| */
+static int TSTNUM  = 0;  /* Last test number */
+static int TSTGRP  = 0;  /* Current test group */
+static int TSTTOT  = 0;  /* Number of tests executed */
+static int TSTPASS = 0;  /* Number of passed tests */
+
+static const char *TSTOK = " PASS";
+static const char *TSTKO = "*FAIL";
+
+#endif
+
 #endif /* HUL_H */
 
