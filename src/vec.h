@@ -44,27 +44,48 @@ typedef struct {
   uint8_t *     cur_q;  /* cur slot pointer */
 } vec;
 
-vec  *vecNew(uint16_t elemsize);
-
-void *vecGet(vec *v, uint32_t ndx);
+vec      *vecNew  (uint16_t elemsize);
+void     *vecGet  (vec *v, uint32_t ndx);
+void     *vecSet  (vec *v, uint32_t ndx, void *elem);
+void     *vecFree (vec *v);
+uint32_t  vecSize (vec *v);
 
 #define vecNext(v) vecGet(v, (v)->cur_w == VEC_ANYNDX? 0 : (v)->cur_w + 1)
-#define vecPrev(v) vecGet(v, (v)->cur_w == VEC_ANYNDX? 0 : (v)->cur_w - 1)
-
-void *vecSet(vec *v, uint32_t ndx, void *elem);
-void *vecFree(vec *v);
-
-uint32_t vecSize(vec *v);
-
+#define vecPrev(v) (((v)->cur_w == 0 || (v)->cur_w == VEC_ANYNDX) \
+                     ? NULL \
+                     : vecGet(v,(v)->cur_w - 1))
 #define vecCnt(v) ((v)->cnt)
 
 #define VEC_ANYNDX   UINT32_MAX
 
-void  blkDel(vec *v, void *e);
-vec  *blkNew(uint16_t elemsz);
-void *blkAdd(vec *v,void *e);
-#define blkFree vecFree
+/**********************/
+
+typedef struct blkNode {
+  struct blkNode *lnk[2];
+  uint8_t         elm[sizeof(uint32_t)];
+} blkNode;
+
+#define blkElm(p)      (p == NULL? NULL : (void *)(((blkNode *)(p))->elm))
+#define blkNodePtr(p)  (p == NULL? NULL : (void *)((char*)(p) - offsetof(blkNode,elm)))
+#define blkDeleted     ((void *)vecGet)
+#define blkFreelst(v)  ((v)->aux0.p)
+#define blkLeft(n)     (((blkNode *)(n))->lnk[0])
+#define blkRight(n)    (((blkNode *)(n))->lnk[1])
+#define blkLeftPtr(n)  (n == NULL? NULL :((blkNode *)(n))->lnk[0])
+#define blkRightPtr(n) (n == NULL? NULL :((blkNode *)(n))->lnk[1])
+
 #define blkReset(v)   (vecCnt(v) == 0 , v->aux0.p = NULL )
+#define blkFree       vecFree
+#define blkSet(v,p,e) ((e != NULL)? memcpy(p->elm,e,v->esz - offsetof(blkNode,elm)) : 0)
+
+void    blkDel  (vec *v, void *e);
+vec    *blkNew  (uint16_t elemsz);
+void   *blkAdd  (vec *v,void *e);
+void   *blkFirst(vec *v);
+void   *blkNext (vec *v);
+void   *blkPrev (vec *v);
+
+/**********************/
 
 #define stkNew        vecNew
 #define stkFree(v)    vecFree((vec *)v)
@@ -75,13 +96,16 @@ void *blkAdd(vec *v,void *e);
 #define stkTop(v)     (stkIsEmpty(v)? NULL : vecGet((vec *)v, stkDepth(v)-1))
 #define stkReset(v)   (stkIsEmpty(v)? 0    : (stkDepth(v) = 0))
 
-vec *mapNew(uint16_t elemsz, uint16_t keysz);
-void *mapGet(vec *v, void *elem);
-void *mapFree(vec *v);
-void *mapFirst(vec *v);
-void *mapNext(vec *v);
-void *mapAdd(vec *v, void *elem);
-#define mapCnt vecCnt
+/**********************/
+vec    *mapNew     (uint16_t elemsz, uint16_t keysz);
+void   *mapGet     (vec *v, void *elem);
+void   *mapFree    (vec *v);
+void   *mapFirst   (vec *v);
+void   *mapNext    (vec *v);
+void   *mapAdd     (vec *v, void *elem);
+#define mapRoot(v) ((v)->aux2.p)
+#define mapCnt(v)  ((v)->aux3.n)
+
 
 #endif  /* VEC_H */
 

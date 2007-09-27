@@ -126,26 +126,25 @@ HUL_EXTERN jmp_buf *errjmpptr;
    These macros are intended to be used when writing unit tests. They
    are available only if the symbol |HUL_UT| is defined before including
    the |hul.h| header.
+   The log created is TAP compatible (see: <http://testanything.org>).
 */
 #ifdef HUL_UT
 
-/* Test are divided in sections introduced by the |TSTHDR(s)| macro. 
+/* Tests are divided in sections introduced by the |TSTHDR(s)| macro. 
    The macro reset the appropriate counters and print the header |s|
 */
 
-#define TSTHDR(s) (TSTGRP = 0,\
-                   TSTTOT \
-                     ? TSTSTAT() \
-                     : 0, TSTTOT = 0, TSTPASS=0, \
-                       fprintf(stderr,"\n:: %s\n",s),fflush(stderr))
+#define TSTHDR(s) (TSTTOT? TSTSTAT() : 0, \
+                   TSTGRP = 0, TSTSEC++, TSTPASS=0, \
+                       fprintf(stderr,"#\n# %d. %s\n",TSTSEC, s),fflush(stderr))
 
 /* In each session, tests can be logically grouped so that different aspects
    of related functions can be tested.
 */
 
 #define TSTGROUP(s) (TSTNUM=0, \
-                     fprintf(stderr, "\n#%d %s\n",\
-                                     ++TSTGRP, s),\
+                     fprintf(stderr, "#\n#   %d.%d %s\n",\
+                                     TSTSEC, ++TSTGRP, s),\
                                      fflush(stderr), TSTGRP)
 
 /* The single test is defined  with the |TST(s,x)| macro.
@@ -156,34 +155,51 @@ HUL_EXTERN jmp_buf *errjmpptr;
 #define TST(s,x) (TST_DO(s,x), TST_END)
 
 /* With |TSTW(s,x,...)| you can setup a warning to be printed if the test fails
-   so to explain better why the test failed.
+   so to explain better why the test failed. The varargs will be passed to 
+   a |fprintf(stderr, ...)|
      TSTW("Zero(x)", (x==0), "x is %d instead of 0",x)
 */                  
-#define TSTW(s,x,...) (TST_DO(s,x),(TSTRES ? 0 : fprintf(stderr,__VA_ARGS__)) , TST_END)
+#define TSTW(s,x,...) (TST_DO(s,x), \
+                       (TSTRES ? 0\
+                               : (fprintf(stderr,"# "),\
+                                  fprintf(stderr,__VA_ARGS__))) , TST_END)
 
 
-#define TST_DO(s,x) (TSTRES = (x), TSTTOT++,\
-                  fprintf(stderr, ".%03d %s - %s",\
-                          ++TSTNUM, TSTRES?(TSTPASS++,TSTOK):TSTKO, s))
+#define TST_DO(s,x) (TSTRES = (x), TSTGTT++, TSTTOT++,\
+                    fprintf(stderr, "%s %4d $%02d%02d%03d %s",\
+                                (TSTRES? (TSTGPAS++,TSTPASS++,TSTOK) : TSTKO),\
+                                TSTGTT, TSTSEC, TSTGRP, ++TSTNUM, s))
 
 #define TST_END fputc('\n',stderr), fflush(stderr),TSTRES
 
+#define TSTS(s,x,r) (TST_DO(s,1), fprintf(stderr," # SKIP %s",r), TST_END)
+#define TSTs(s,x,r) TST(s,x)
 
+#define TSTWRITE(...) fprintf(stderr,__VA_ARGS__)
+                       
+#define TSTNOTE(...) (fprintf(stderr,"#     "), TSTWRITE(__VA_ARGS__),TST_END)
 
 /* At the end of a section, the accumulated stats can be printed out
 */
-#define TSTSTAT() (fprintf(stderr,"\nPASSED: %d/%d\n",TSTPASS,TSTTOT),fflush(stderr))
+#define TSTSTAT() (fprintf(stderr,"#\n# SEC. %d PASSED: %d/%d\n",TSTSEC,TSTPASS,TSTTOT),\
+                   fflush(stderr),TSTTOT = 0)
 
-#define TSTDESC(x) 
+#define TSTDONE() (TSTTOT? TSTSTAT() : 0, \
+                   fprintf(stderr,"#\n# TOTAL PASSED: %d/%d\n",TSTGPAS,TSTGTT),\
+                   fprintf(stderr,"#\n# END OF TESTS\n1..%d\n",TSTGTT),fflush(stderr))
+
 
 static int TSTRES  = 0;  /* Result of the last performed |TST()| */
 static int TSTNUM  = 0;  /* Last test number */
 static int TSTGRP  = 0;  /* Current test group */
+static int TSTSEC  = 0;  /* Current test SECTION*/
 static int TSTTOT  = 0;  /* Number of tests executed */
+static int TSTGTT  = 0;  /* Number of tests executed (Grand Total) */
+static int TSTGPAS = 0;  /* Number of tests passed (Grand Total) */
 static int TSTPASS = 0;  /* Number of passed tests */
 
-static const char *TSTOK = " PASS";
-static const char *TSTKO = "*FAIL";
+static const char *TSTOK = "ok    ";
+static const char *TSTKO = "not ok";
 
 #endif
 
