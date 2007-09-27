@@ -33,6 +33,7 @@ typedef struct {
   aux_t         aux0;
   aux_t         aux1;
   aux_t         aux2;
+  aux_t         aux3;
   uint16_t      esz;
   uint16_t      ksz;
   uint16_t      npg;
@@ -63,6 +64,7 @@ void  blkDel(vec *v, void *e);
 vec  *blkNew(uint16_t elemsz);
 void *blkAdd(vec *v,void *e);
 #define blkFree vecFree
+#define blkReset(v)   (vecCnt(v) == 0 , v->aux0.p = NULL )
 
 #define stkNew        vecNew
 #define stkFree(v)    vecFree((vec *)v)

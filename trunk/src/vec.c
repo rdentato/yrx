@@ -296,9 +296,11 @@ void *blkAdd(vec *v,void *e)
   
   p = FREELST(v);
   
-  if (p != NULL) FREELST(v) = *p;
-  else p = vecNext(v);
-  if (e != NULL) memcpy(p,e,v->esz);
+  if (p != NULL) {
+    FREELST(v) = *p;
+    if (e != NULL) memcpy(p,e,v->esz);
+  }
+  else p = vecSet(v,vecCnt(v),e);
   return p;
 }
 
@@ -318,6 +320,7 @@ typedef struct node {
 #define LEFT(n)  ((n)->lnk[0])
 #define RIGHT(n) ((n)->lnk[1])
 #define ROOT(v)  ((v)->aux2.p)
+#define NODES(v) ((v)->aux3.n)
 
 vec *mapNew(uint16_t elemsz, uint16_t keysz)
 {
