@@ -206,7 +206,7 @@ void *vecGet(vec *v,uint32_t ndx)
                 v->cur_q += v->esz;
                 return v->cur_q;
                 
-      case -1 : dbgprintf(DBG_OFF,"get prev %u (w:%u p:%u)\n",ndx,v->cur_w,v->cur_w);
+      case -1 : dbgprintf(DBG_MSG,"get prev %u (w:%u p:%u)\n",ndx,v->cur_w,v->cur_w);
                 if (v->cur_w == 0) return NULL;
                 if (v->cur_n == 0) {
                   v->cur_p--;
@@ -272,136 +272,153 @@ uint32_t vecSize(vec *v)
 
 
 /**** BLK ***/
-#define FREELST(v) ((v)->aux0.p)
+
+#define LNKSZ  offsetof(blkNode,elm)
 
 vec *blkNew(uint16_t elemsz)
 {
   vec *v;
   
-  v = vecNew(elemsz);
-  if (v != NULL) FREELST(v) = NULL;
-  
+  v = vecNew(elemsz + LNKSZ);
+  if (v != NULL) blkFreelst(v) = NULL;
+
   return v;
 }
 
-void blkDel(vec *v, void *e)
+void blkDel(vec *v, void *p)
 {
-  *((void **)e) = FREELST(v);
-  FREELST(v) = e;
+  blkLeft(p) = blkDeleted;
+  blkRight(p) = blkFreelst(v);  
+  blkFreelst(v) = p;
 }
 
 void *blkAdd(vec *v,void *e)
 {
-  void **p;
+  blkNode *p;
   
-  p = FREELST(v);
+  p = blkFreelst(v);
   
-  if (p != NULL) {
-    FREELST(v) = *p;
-    if (e != NULL) memcpy(p,e,v->esz);
-  }
-  else p = vecSet(v,vecCnt(v),e);
+  if (p != NULL) blkFreelst(v) = blkRight(p);
+  else p = vecSet(v,vecCnt(v),NULL);
+  
+  blkLeft(p) = NULL;
+  blkRight(p) = NULL; 
+  blkSet(v,p,e);
   return p;
 }
 
+#define CURCNT(v) ((v)->aux1.n)
+
+void *blkNext(vec *v)
+{
+  blkNode *p;
+  
+  while (CURCNT(v) < vecCnt(v)) {
+    p = vecGet(v,CURCNT(v)++);
+    if (blkRight(p) != blkDeleted) return p;
+  }
+  return NULL;
+}
+
+void *blkFirst(vec *v)
+{
+  CURCNT(v) = 0; return blkNext(v);  
+}
+
+void *blkPrev(vec *v)
+{
+  blkNode *p;
+  
+  while (CURCNT(v) > 0) {
+    p = vecGet(v,--CURCNT(v));
+    if (blkRight(p) != blkDeleted) return p;
+  }
+  return NULL;
+}
+
+
+
 /**** MAP ***/
 
-typedef struct node {
-  struct node *lnk[2];
-  uint8_t      elm[sizeof(uint32_t)];
-} node;
-
-
-#define LNKSZ  offsetof(node,elm)
+#define CMP(v,n,k) (memcmp(blkElm(n),k,(v)->ksz))
+#define CPY(v,p,e) (memcpy(blkElm(n),e,(v)->esz - LNKSZ))
 #define STACK(v) ((v)->aux1.p)
-
-#define CMP(v,n,k) (memcmp((n)->elm,k,(v)->ksz))
-#define CPY(v,n,e) (memcpy((p)->elm,e,(v)->esz - LNKSZ))
-#define LEFT(n)  ((n)->lnk[0])
-#define RIGHT(n) ((n)->lnk[1])
-#define ROOT(v)  ((v)->aux2.p)
-#define NODES(v) ((v)->aux3.n)
 
 vec *mapNew(uint16_t elemsz, uint16_t keysz)
 {
   vec *v;
-  
-  v = blkNew(elemsz+LNKSZ);
+  v = blkNew(elemsz);
   
   if (v != NULL) {
     v->ksz = keysz;
     STACK(v) = NULL;
-    ROOT(v)  = NULL;
+    mapRoot(v)  = NULL;
+    mapCnt(v) = 0;
   }
-  
+
   return v; 
 }
 
-
-static node **parent;
+static blkNode **parent;
 static int cmp;
 
-static node *mapsearch(vec *v, node *root, void *elem)
+static blkNode *mapsearch(vec *v, blkNode *root, void *elem)
 {
   dbgprintf(DBG_OFF,"mapsearch() ROOT: %p\n",root); 
   if (root == NULL) return NULL;
   
-  cmp = CMP(v,root,elem);
+  cmp = memcmp(root->elm,elem,v->ksz);
   if (cmp == 0) return root;
-  if (cmp < 0) {
-    parent = &RIGHT(root);
-    return mapsearch(v,RIGHT(root),elem);
+  if (cmp <  0) {
+    parent = &blkRight(root);
+    return mapsearch(v,blkRight(root),elem);
   }
-  parent = &LEFT(root);
-  return mapsearch(v,LEFT(root),elem);
+  parent = &blkLeft(root);
+  return mapsearch(v,blkLeft(root),elem);
 }
 
 void *mapAdd(vec *v, void *elem)
 {
-  node *p;
+  blkNode *p;
   
-  parent = (node **)&ROOT(v);
+  parent = (blkNode **)&mapRoot(v);
   
-  p = mapsearch(v,ROOT(v),elem);
+  p = mapsearch(v,mapRoot(v),elem);
   dbgprintf(DBG_OFF,"mapAdd() PTR: %p\n",p); 
   if (p == NULL) {
     p = blkAdd(v,NULL);
-    LEFT(p) = NULL; RIGHT(p) = NULL;
     *parent = p;
     mapCnt(v)++;
     dbgprintf(DBG_OFF,"mapAdd() ADDED: %p TO: %p\n",p,parent); 
   }
-  CPY(v,p,elem); /* overwrite if key already present */
+  blkSet(v,p,elem);
   return p->elm;
 }
 
 void *mapGet(vec *v, void *elem)
 {
-  node *p = mapsearch(v,ROOT(v),elem); 
-  if (p != NULL) return p->elm;
-  return NULL;
+  return blkElm(mapsearch(v,mapRoot(v),elem));
 }
 
 void *mapFirst(vec *v)
 {
-  node *p;
-  node *q;
- 
+  blkNode *p;
+  blkNode *q;
 
-  p = ROOT(v);
+  p = mapRoot(v);
   if (p == NULL) {
     if (STACK(v) != NULL) stkReset((vec *)STACK(v));
     return NULL;
   }
 
   if (STACK(v) == NULL)
-    STACK(v) = stkNew(sizeof(node *));
+    STACK(v) = stkNew(sizeof(blkNode *));
   stkReset(STACK(v));
     
   if (p != NULL) {
-    if ((q = RIGHT(p)) != NULL) stkPush(STACK(v),&q);
-    if ((q = LEFT(p))  != NULL) stkPush(STACK(v),&q);
-    dbgprintf(DBG_MSG,"(STACK: %p) PARENT: %p LEFT:%p RIGHT: %p\n",STACK(v),p,LEFT(p),RIGHT(p));
+    if ((q = blkRight(p)) != NULL) stkPush(STACK(v),&q);
+    if ((q = blkLeft(p))  != NULL) stkPush(STACK(v),&q);
+    dbgprintf(DBG_OFF,"(STACK: %p) PARENT: %p LEFT:%p RIGHT: %p\n",STACK(v),p,blkLeft(p),blkRight(p));
     return p->elm;
   }
   return NULL;
@@ -409,17 +426,17 @@ void *mapFirst(vec *v)
 
 void *mapNext(vec *v)
 {
-  node *p,*q;
+  blkNode *p,*q;
   
   if (stkIsEmpty(STACK(v))) return NULL;
-  dbgprintf(DBG_OFF,"mapNext() STACK: %p\n",STACK(v));
+  dbgprintf(DBG_MSG,"mapNext() STACK: %p\n",STACK(v));
   
-  p = *((node **)stkTop(STACK(v)));
+  p = *((blkNode **)stkTop(STACK(v)));
   stkPop(STACK(v));
   
-  if ((q = RIGHT(p)) != NULL) stkPush(STACK(v),&q);
-  if ((q = LEFT(p))  != NULL) stkPush(STACK(v),&q);
-  dbgprintf(DBG_MSG,"(STACK: %p) PARENT: %p LEFT:%p RIGHT: %p\n",STACK(v),p,LEFT(p),RIGHT(p));
+  if ((q = blkRight(p)) != NULL) stkPush(STACK(v),&q);
+  if ((q = blkLeft(p))  != NULL) stkPush(STACK(v),&q);
+  dbgprintf(DBG_MSG,"(STACK: %p) PARENT: %p LEFT:%p RIGHT: %p\n",STACK(v),p,blkLeft(p),blkRight(p));
   return p->elm;
 }
 
@@ -428,4 +445,5 @@ void *mapFree(vec *v)
   if (STACK(v) != NULL) stkFree(v);
   return vecFree(v); 
 }
+
 
