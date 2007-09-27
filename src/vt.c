@@ -104,6 +104,7 @@ int main(int argc, char * argv[])
   p = vecNext(v); /* 15 */
   p = vecNext(v); /* 16 */
   TST("Selected 16",(v->cur_w == 16));
+  
   TSTDESC("Just moving on the elements won't change the elements counter");
   TSTW("Still 16 elements",(vecCnt(v) == 16),"\tCount = %d\n",vecCnt(v));
   
@@ -119,16 +120,58 @@ int main(int argc, char * argv[])
   v = blkNew(sizeof(Arc));
   
   TSTDESC("Blocks are allocated one after the other");
+  a.from = 1;
   blkAdd(v,&a);
-  blkAdd(v,NULL);
-  TST("Highest blk 1",(v->cur_w == 1));
+  a.from++;
   blkAdd(v,&a);
-  blkAdd(v,NULL);
-  TST("Highest blk 3",(v->cur_w == 3));
+  TST("Highest blk 1",(vecCnt(v) == 2));
+  a.from++;
+  blkAdd(v,&a);
+  a.from++;
+  blkAdd(v,&a);
+  TST("Highest blk 3",(vecCnt(v) == 4));
   
   TST("Free list empty",((v)->aux0.p == NULL));
-  TSTDESC("Let get the 1st block as ");
-   
+  TSTDESC("Let get the 2nd block using the vec discipline");
+  p = vecGet(v,1);
+  TST("Check 2nd blk",(p->from == 2));
+  a.from++;
+  blkAdd(v,&a);
+  TST("Highest blk 4",(vecCnt(v) == 5));
+  
+  
+  TSTGROUP("Delete/Recycle blocks");
+  TSTDESC("Now let's delete the 2nd Block");
+  blkDel(v,p);
+  TST("2nd deleted",((v->aux0.p) == p && *(void **)p == NULL) );
+  
+  q = vecGet(v,3);
+  blkDel(v,q);
+  TST("4th deleted",((v->aux0.p) == q && *(void **)q == p && *(void **)p == NULL) );
+  
+  TSTDESC("We expect to have back the last block deleted");
+  a.from = 12;
+  p = blkAdd(v,&a);
+  TST("4th recycled",(q == p && p->from == 12));
+  p = vecGet(v,1);
+  TST("Free list adjusted",((v->aux0.p) == p && *(void **)p == NULL) );
+
+  a.from = 13;
+  q = blkAdd(v,&a);
+  TST("2nd recycled",(q == p && q->from == 13));
+  
+  TST("Free list adjusted",((v->aux0.p) == NULL));
+    
+  a.from = 16;
+  p = blkAdd(v,&a);
+  TSTW("Highest blk 5",(vecCnt(v) == 6),"\tCount = %d",vecCnt(v));
+  
+  TSTDESC("Check the boundary cases for vecCnt");
+  blkDel(v,vecGet(v,vecCnt(v)-1));
+  TST("Last deleted",((v->aux0.p) == p && *(void **)p == NULL && vecCnt(v) == 6) );
+  a.from = 17;
+  q = blkAdd(v,&a);
+  TST("Last recycled",(q == p && q->from == 17));
   
   v = blkFree(v);
  #endif
