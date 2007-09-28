@@ -20,7 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <strings.h>
+#include <string.h>
 #include <stdarg.h>
 #include <setjmp.h>
 #include <errno.h>
@@ -84,10 +84,18 @@ HUL_EXTERN int8_t dbg_lvl;
    messages that might have been printed, |stdout| is flushed before
    printing and |stderr| is flushed right after.
 */
+/*
+#ifdef HUL_UT
+#define DBGTAP fprintf(stderr,"# ")
+#else
+#define DBGTAP 0
+#endif
+*/
+
 #define dbgprintf(n,...) ( (dbg_lvl <= n)\
-                              ? fflush(stdout),\
+                              ? (fflush(stdout), \
                                 fprintf(stderr,__VA_ARGS__),\
-                                fflush(stderr)\
+                                fflush(stderr)) \
                               : 0)
 #define dbglvl(n) (dbg_lvl = n)
 
@@ -130,63 +138,61 @@ HUL_EXTERN jmp_buf *errjmpptr;
 */
 #ifdef HUL_UT
 
+#define TSTWRITE(...) (fprintf(stderr,__VA_ARGS__),fflush(stderr))
+
+
 /* Tests are divided in sections introduced by the |TSTHDR(s)| macro. 
    The macro reset the appropriate counters and print the header |s|
 */
 
-#define TSTHDR(s) (TSTTOT? TSTSTAT() : 0, \
-                   TSTGRP = 0, TSTSEC++, TSTPASS=0, \
-                       fprintf(stderr,"#\n# %d. %s\n",TSTSEC, s),fflush(stderr))
+#define TSTSECTION(s) (TSTSTAT(), TSTGRP = 0, TSTSEC++, TSTPASS=0, \
+                       TSTWRITE("#\n# %d. %s\n",TSTSEC, s))
 
 /* In each session, tests can be logically grouped so that different aspects
    of related functions can be tested.
 */
 
 #define TSTGROUP(s) (TSTNUM=0, \
-                     fprintf(stderr, "#\n#   %d.%d %s\n",\
-                                     TSTSEC, ++TSTGRP, s),\
-                                     fflush(stderr), TSTGRP)
+                     TSTWRITE("#\n#   %d.%d %s\n", TSTSEC, ++TSTGRP, s),\
+                     TSTGRP)
 
 /* The single test is defined  with the |TST(s,x)| macro.
      |s| is a string that defines the test
      |x| a boolean expression that is to be true for the test to succeed.
 */
 
-#define TST(s,x) (TST_DO(s,x), TST_END)
+#define TST(s,x)    (TST_DO(s,(TSTSKP != NULL? 1 : x)),\
+                     (TSTSKP != NULL? TSTWRITE(" # SKIP %s",TSTSKP):0),\
+                     TST_END)        
 
-/* With |TSTW(s,x,...)| you can setup a warning to be printed if the test fails
-   so to explain better why the test failed. The varargs will be passed to 
-   a |fprintf(stderr, ...)|
-     TSTW("Zero(x)", (x==0), "x is %d instead of 0",x)
-*/                  
-#define TSTW(s,x,...) (TST_DO(s,x), \
-                       (TSTRES ? 0\
-                               : (fprintf(stderr,"# "),\
-                                  fprintf(stderr,__VA_ARGS__))) , TST_END)
+#define TST_DO(s,x) (TSTRES = (x), TSTGTT++, TSTTOT++, TSTNUM++,\
+                     TSTWRITE("%s %4d - $%02d%02d%03d %s",\
+                              (TSTRES? (TSTGPAS++,TSTPASS++,TSTOK) : TSTKO),\
+                              TSTGTT, TSTSEC, TSTGRP, TSTNUM, s))
+
+#define TST_END     TSTWRITE("\n"),TSTRES
+
+#define TSTS(s,x,r) (TST_DO(s,1), TSTWRITE(" # SKIP %s\n",r), TSTRES)
+#define TSTs(s,x,r)  TST(s,x)
+
+#define TSTT(s,x,r) (TST_DO(s,x), TSTWRITE(" # TODO %s\n",r), TSTRES)
+
+#define TSTSKIP(x,r)(TSTSKP = ((x)? r : NULL))
+#define TSTENDSKIP  (TSTSKP = NULL)
 
 
-#define TST_DO(s,x) (TSTRES = (x), TSTGTT++, TSTTOT++,\
-                    fprintf(stderr, "%s %4d $%02d%02d%03d %s",\
-                                (TSTRES? (TSTGPAS++,TSTPASS++,TSTOK) : TSTKO),\
-                                TSTGTT, TSTSEC, TSTGRP, ++TSTNUM, s))
-
-#define TST_END fputc('\n',stderr), fflush(stderr),TSTRES
-
-#define TSTS(s,x,r) (TST_DO(s,1), fprintf(stderr," # SKIP %s",r), TST_END)
-#define TSTs(s,x,r) TST(s,x)
-
-#define TSTWRITE(...) fprintf(stderr,__VA_ARGS__)
-                       
-#define TSTNOTE(...) (fprintf(stderr,"#     "), TSTWRITE(__VA_ARGS__),TST_END)
+#define TSTNOTE(...) (TSTWRITE("#     "), TSTWRITE(__VA_ARGS__), TSTWRITE("\n"))
+                        
+#define TSTONFAIL(...) (TSTRES? 0 : (TSTNOTE(__VA_ARGS__)))
 
 /* At the end of a section, the accumulated stats can be printed out
 */
-#define TSTSTAT() (fprintf(stderr,"#\n# SEC. %d PASSED: %d/%d\n",TSTSEC,TSTPASS,TSTTOT),\
-                   fflush(stderr),TSTTOT = 0)
+#define TSTSTAT() (TSTWRITE("#\n# SECTION %d PASSED: %d/%d\n",TSTSEC,TSTPASS,TSTTOT),\
+                   TSTTOT = 0)
 
-#define TSTDONE() (TSTTOT? TSTSTAT() : 0, \
-                   fprintf(stderr,"#\n# TOTAL PASSED: %d/%d\n",TSTGPAS,TSTGTT),\
-                   fprintf(stderr,"#\n# END OF TESTS\n1..%d\n",TSTGTT),fflush(stderr))
+#define TSTDONE() (TSTSTAT(), \
+                   TSTWRITE("#\n# TOTAL PASSED: %d/%d\n",TSTGPAS,TSTGTT),\
+                   TSTWRITE("#\n# END OF TESTS\n1..%d\n",TSTGTT),fflush(stderr))
 
 
 static int TSTRES  = 0;  /* Result of the last performed |TST()| */
@@ -198,6 +204,7 @@ static int TSTGTT  = 0;  /* Number of tests executed (Grand Total) */
 static int TSTGPAS = 0;  /* Number of tests passed (Grand Total) */
 static int TSTPASS = 0;  /* Number of passed tests */
 
+static char *TSTSKP = NULL;
 static const char *TSTOK = "ok    ";
 static const char *TSTKO = "not ok";
 

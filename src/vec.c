@@ -99,7 +99,7 @@ static void ndx2pg(uint32_t ndx, uint32_t *p, uint32_t *n)
 
 static void vecInit(vec *v,uint16_t elemsize)
 {
-  if (v) {
+  if (v != NULL) {
     /* Ensure an element can store a 32 bit integer, will be used for the freelist */
     if (elemsize < sizeof(uint32_t)) elemsize =  sizeof(uint32_t);
     v->esz    = elemsize;
@@ -128,10 +128,12 @@ vec *vecNew(uint16_t elemsize)
 static void vcleanup (vec *v)
 {
   uint16_t i;
-  if (v) {
-    if (v->arr) {
-      for (i=0; i< v->npg; i++) {
-        if (v->arr[i] != NULL) free(v->arr[i]);
+  if (v != NULL) {
+    if (v->arr != NULL) {
+      for (i = 0; i< v->npg; i++) {
+        dbgprintf(DBG_OFF,"#  %d %p\n",i,v->arr[i]);
+        if (v->arr[i] != NULL)
+           free(v->arr[i]);
         v->arr[i] = NULL;
       }
       free(v->arr);
@@ -176,6 +178,7 @@ static void *vecslot(vec *v,uint16_t page, uint16_t n)
   if (v->arr[page] == NULL) {
     v->arr[page] = calloc(v->cur_s, v->esz); /* page is guaranteed to be filled with 0's */
     if (v->arr[page] == NULL)  err(3002,errNOMEM);
+    dbgprintf(DBG_OFF,"#  page %d 0x%p\n",page,v->arr[page]);
   }
 
   p = v->arr[page] + (n * v->esz);
@@ -202,11 +205,12 @@ void *vecGet(vec *v,uint32_t ndx)
       
       case  1 : dbgprintf(DBG_OFF,"get next %u (%u)\n",ndx,v->cur_w);
                 v->cur_w++;
-                if (++v->cur_n >= v->cur_s) return vecslot(v,v->cur_p+1,0);
+                v->cur_n++;
+                if (v->cur_n >= v->cur_s) return vecslot(v,v->cur_p+1,0);
                 v->cur_q += v->esz;
                 return v->cur_q;
-                
-      case -1 : dbgprintf(DBG_MSG,"get prev %u (w:%u p:%u)\n",ndx,v->cur_w,v->cur_w);
+      #if 0          
+      case -1 : dbgprintf(DBG_OFF,"get prev %u (w:%u p:%u)\n",ndx,v->cur_w,v->cur_p);
                 if (v->cur_w == 0) return NULL;
                 if (v->cur_n == 0) {
                   v->cur_p--;
@@ -216,6 +220,7 @@ void *vecGet(vec *v,uint32_t ndx)
                 v->cur_w--;
                 v->cur_q -= v->esz;
                 return v->cur_q;
+      #endif
     }
   }
   dbgprintf(DBG_OFF,"get index %d (%d)\n",ndx,v->cur_w);
@@ -429,14 +434,14 @@ void *mapNext(vec *v)
   blkNode *p,*q;
   
   if (stkIsEmpty(STACK(v))) return NULL;
-  dbgprintf(DBG_MSG,"mapNext() STACK: %p\n",STACK(v));
+  dbgprintf(DBG_OFF,"mapNext() STACK: %p\n",STACK(v));
   
   p = *((blkNode **)stkTop(STACK(v)));
   stkPop(STACK(v));
   
   if ((q = blkRight(p)) != NULL) stkPush(STACK(v),&q);
   if ((q = blkLeft(p))  != NULL) stkPush(STACK(v),&q);
-  dbgprintf(DBG_MSG,"(STACK: %p) PARENT: %p LEFT:%p RIGHT: %p\n",STACK(v),p,blkLeft(p),blkRight(p));
+  dbgprintf(DBG_OFF,"(STACK: %p) PARENT: %p LEFT:%p RIGHT: %p\n",STACK(v),p,blkLeft(p),blkRight(p));
   return p->elm;
 }
 

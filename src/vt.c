@@ -34,7 +34,7 @@ int main(int argc, char * argv[])
   Arc *q;
   
  #if 1
-  TSTHDR("Basic vec");
+  TSTSECTION("Basic vec");
 
   TSTGROUP("Creating vectors");
   
@@ -61,6 +61,7 @@ int main(int argc, char * argv[])
   
   v = vecNew(sizeof(Arc));
 
+
   a.from = 10; a.to = 32;
   
   TSTNOTE("Let's start with an empty vector.");
@@ -75,6 +76,19 @@ int main(int argc, char * argv[])
     
   TSTNOTE("There is only one page allocated");
   TST("v->npg == 1",(v->npg == 1 && v->arr != NULL && v->arr[0] != NULL));
+  TSTNOTE("Check that elements are stored in order");
+  for (k=0; k < 30; k++) {
+    a.from = k; a.to = k; 
+    vecSet(v,k,&a);
+  }
+
+  j = 0;
+  for (k=0; k < 30; k++) {
+    p = vecGet(v,k);
+    TSTNOTE("  k: %2d f: %d",k,p->from);
+    if (j == 0) j = k-p->from;
+  }
+  TST("Proper ordering",(j == 0));
 
   TSTGROUP("Moving sequentially");
   TSTNOTE("Let's load a few elements and then move over them");
@@ -107,7 +121,8 @@ int main(int argc, char * argv[])
   TST("Selected 16",(v->cur_w == 16));
   
   TSTNOTE("Just moving on the elements won't change the elements counter");
-  TSTW("Still 16 elements",(vecCnt(v) == 16),"\tCount = %d",vecCnt(v));
+  TST("Still 16 elements",(vecCnt(v) == 16));
+  TSTONFAIL("Count = %d",vecCnt(v));
    
   v = vecFree(v);
   TSTNOTE("Next/Prev boundary checks");
@@ -127,7 +142,7 @@ int main(int argc, char * argv[])
   {
   blkNode *pn,*qn;
     
-  TSTHDR("Block discipline");
+  TSTSECTION("Block discipline");
 
   TSTGROUP("Creating blocks");
   
@@ -183,7 +198,8 @@ int main(int argc, char * argv[])
   TST("Free list adjusted",(blkFreelst(v) == NULL));
   a.from = 16;
   pn = blkAdd(v,&a);
-  TSTW("Highest blk 5",(vecCnt(v) == 6),"\tCount = %d",vecCnt(v));
+  TST("Highest blk 5",(vecCnt(v) == 6));
+  TSTONFAIL("\tCount = %d",vecCnt(v));
   
   TST("Free list is empty",(blkFreelst(v) == NULL));
   TSTNOTE("Check the boundary cases for vecCnt");
@@ -197,11 +213,11 @@ int main(int argc, char * argv[])
   
   v = blkFree(v);
   }
- #endif
+ #endif 
 
   /**********************************************************************/
  #if 1
-  TSTHDR("Stack discipline");
+  TSTSECTION("Stack discipline");
 
   TSTGROUP("Creating stacks");
   
@@ -231,12 +247,14 @@ int main(int argc, char * argv[])
   p = stkTop(v);
   TST("Top? ",(p!=&a && p->from == a.from-1 && p->to == a.to+1));
   stkPop(v);
-  TSTW("One element",(stkDepth(v) == 1),"\tDepth = %d",stkDepth(v));
+  TST("One element",(stkDepth(v) == 1));
+  TSTONFAIL("Depth = %d",stkDepth(v));
   stkPop(v);
-  TSTW("No element",(stkIsEmpty(v) && stkDepth(v) == 0),"\tDepth = %d",stkDepth(v));
+  TST("No element",(stkIsEmpty(v) && stkDepth(v) == 0));
+  TSTONFAIL("Depth = %d",stkDepth(v));
   stkPop(v);
-  TSTW("Still No element",(stkIsEmpty(v) && stkDepth(v) == 0),
-                                        "\tDepth = %d",stkDepth(v));
+  TST("Still No element",(stkIsEmpty(v) && stkDepth(v) == 0));
+  TSTONFAIL("Depth = %d",stkDepth(v));
   p = stkTop(v);
   TST("Top is NULL",(p == NULL));
   
@@ -244,7 +262,10 @@ int main(int argc, char * argv[])
   stkPush(v,&a);
   stkPush(v,&a);
   stkPush(v,&a);
-  TST("Four elements",(stkDepth(v) == 4));
+  stkPush(v,&a);
+  stkPush(v,&a);
+  TST("Six elements",(stkDepth(v) == 6));
+
   stkReset(v);
   TST("Reset",(stkDepth(v) == 0));
   
@@ -257,7 +278,7 @@ int main(int argc, char * argv[])
   {
   blkNode *pn,*qn;
   
-  TSTHDR("Maps (treaps)");
+  TSTSECTION("Maps (treaps)");
 
   TSTGROUP("Creating maps");
   
@@ -293,7 +314,9 @@ int main(int argc, char * argv[])
     TSTWRITE("%d ",p->from);
     p = mapNext(v);
   }
+  TSTWRITE("\n");
   v = mapFree(v);
+
   }
  #endif 
  
