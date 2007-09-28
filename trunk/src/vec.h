@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stddef.h>
-#include <strings.h>
+#include <string.h>
 #include "hul.h"
 
 typedef union {
@@ -90,11 +90,12 @@ void   *blkPrev (vec *v);
 #define stkNew        vecNew
 #define stkFree(v)    vecFree((vec *)v)
 #define stkDepth(v)   vecCnt((vec *)v)
-#define stkPush(v,e)  vecSet((vec *)v,vecCnt((vec *)v),e)
+#define stkPush(v,e)  vecSet((vec *)v,stkDepth(v),e)
 #define stkIsEmpty(v) (((vec *)v) == NULL || stkDepth(v) == 0)
 #define stkPop(v)     (stkIsEmpty(v)? 0    : (stkDepth(v)-= 1))
 #define stkTop(v)     (stkIsEmpty(v)? NULL : vecGet((vec *)v, stkDepth(v)-1))
-#define stkReset(v)   (stkIsEmpty(v)? 0    : (stkDepth(v) = 0))
+
+#define stkReset(v)   (stkIsEmpty(v)? 0    : (stkDepth(v) = 0,((vec *)v)->cur_w=VEC_ANYNDX))
 
 /**********************/
 vec    *mapNew     (uint16_t elemsz, uint16_t keysz);
