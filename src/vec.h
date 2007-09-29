@@ -17,7 +17,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef _MSC_VER
+#include <pstdint.h>
+#else
 #include <stdint.h>
+#endif
 #include <stddef.h>
 #include <string.h>
 #include "hul.h"
