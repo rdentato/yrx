@@ -48,9 +48,9 @@ static const char *errUNEXP = "Unexpected error";
 **   llog2(0) == llog2(1) == 0
 ** Makes a binary search.
 */
-static uint32_t llog2(uint32_t x)
+static uint16_t llog2(uint32_t x)
 {
-  uint32_t l=0;
+  uint16_t l=0;
 
   if (x & 0xFFFF0000) {l += 16; x >>= 16;}   /* 11111111111111110000000000000000 */
   if (x & 0xFF00)     {l += 8;  x >>= 8 ;}   /* 1111111100000000*/
@@ -63,9 +63,10 @@ static uint32_t llog2(uint32_t x)
 #define two_raised(n) (1<<(n))
 #define div2(n)       ((n)>>1)
 
-static uint32_t pgsize(uint32_t p)
+static uint16_t pgsize(uint16_t p)
 {
-  uint32_t k;
+  uint16_t k;
+
   p += 2;
   k  = llog2(p) - 1;
   
@@ -79,7 +80,7 @@ static uint32_t pgsize(uint32_t p)
   */
 }
 
-static void ndx2pg(uint32_t ndx, uint32_t *p, uint32_t *n)
+static void ndx2pg(uint32_t ndx, uint16_t *p, uint16_t *n)
 {
   uint32_t k,m,s;
   
@@ -88,11 +89,13 @@ static void ndx2pg(uint32_t ndx, uint32_t *p, uint32_t *n)
   m ^= two_raised(k);         /* clear MSB */
   s  = div2(k+1);             /* ceil(k/2)  */
   k  = div2(k);               /* floor(k/2)  */
- *p  = (two_raised(s) - 1) +  /* Sum for i=0 to ceil(k/2 - 1)  of 2^i */
-       (two_raised(k) - 1) +  /* Sum for i=0 to floor(k/2 - 1) of 2^i */
-       (m >> s);  
- *n  = m & (two_raised(s) - 1);
-  dbgprintf(DBG_OFF,"ndg2pg ->  %4u %4u %4u (%4u)\n",ndx,*p, *n,pgsize(*p));
+ *p  = (uint16_t)(
+	     (two_raised(s) - 1) +  /* Sum for i=0 to ceil(k/2 - 1)  of 2^i */
+         (two_raised(k) - 1) +  /* Sum for i=0 to floor(k/2 - 1) of 2^i */
+         (m >> s)
+	   );  
+ *n  = (uint16_t) (m & (two_raised(s) - 1));
+  dbgprintf(DBG_OFF,"ndg2pg ->  %4u %4u %4u (%4u)\n",ndx,*p, *n, pgsize(*p));
   
 }
 
@@ -192,7 +195,7 @@ static void *vecslot(vec *v,uint16_t page, uint16_t n)
 
 void *vecGet(vec *v,uint32_t ndx)
 {
-  uint32_t page, n;
+  uint16_t page, n;
 
   if (v == NULL)  err(3003,errNOMEM);
   
@@ -243,7 +246,7 @@ void *vecSet(vec *v, uint32_t ndx, void *elem)
 
 vec *vecShrink(vec *v,uint32_t ndx)
 {
-  uint32_t page, n;
+  uint16_t page, n;
 
   ndx2pg(ndx,&page,&n);
 
@@ -447,7 +450,7 @@ void *mapNext(vec *v)
 
 void *mapFree(vec *v)
 {
-  if (STACK(v) != NULL) stkFree(v);
+  if (STACK(v) != NULL) stkFree(STACK(v));
   return vecFree(v); 
 }
 
