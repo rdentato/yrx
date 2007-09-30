@@ -1,4 +1,4 @@
-/*  
+/*
 **  (C) 2007 by Remo Dentato (rdentato@users.sourceforge.net)
 **
 ** Permission to use, copy, modify and distribute this code and
@@ -6,13 +6,13 @@
 ** fee, provided that the above copyright notice, or equivalent
 ** attribution acknowledgement, appears in all copies and
 ** supporting documentation.
-** 
+**
 ** Copyright holder makes no representations about the suitability
 ** of this software for any purpose. It is provided "as is" without
 ** express or implied warranty.
 */
 
-/* My Hopefully Useful Library */
+/* My Hopefully Useful Library (requires a ANSI C99 compiler */
 
 #ifndef HUL_H
 #define HUL_H
@@ -38,31 +38,31 @@
 #endif
 
 
-/* Debugging trace 
+/* Debugging trace
 
    Despite the availability of debuggers, sometimes it's useful to insert
- a couple of |printf()| to trace what's going on in a program. Those 
+ a couple of |printf()| to trace what's going on in a program. Those
  statements are normally guarded with an |#ifdef DEBUG| so that they disappear
  in the release version of the software.
    The downside is that they visually clutter the source code not to mention
- that you might want to have only some of them printing their message and 
+ that you might want to have only some of them printing their message and
  disable the others.
    The macros here help inserting debug messages that can be turned on/off
  and that will be completely removed in the release code. If the source is
  compiled without having the |DEBUG| defined, the macros will expand to nothing.
- 
+
  [|dbglvl(n)|] Messages are grouped in /levels/ so that you may select the ones
                that are more important for you at a given point in time. This
                macros sets the current level of debugging wanted:
-               
+
                [|DBG_NONE|] No message will be printed
                [|DBG_ERR|]  Only messages that will reveal errors
                [|DBG_WARN|] Print also warning messages
                [|DBG_ANY|]  Print any message
- 
+
  [|dbgprintf(n,fmt,...)|] Works as a |fprintf(stderr,fmt, ...)|.
                The first parameter |n| defines the type of the message:
-               
+
                [|DBG_ERR|]  A critical message revealing a serious error
                [|DBG_WARN|] A warning messages, probably an unexpected
                             situation that may be recovered.
@@ -84,7 +84,7 @@
 
 HUL_EXTERN int8_t dbg_lvl;
 
-/* To ensure that dbg messages are correctly interleaved with other 
+/* To ensure that dbg messages are correctly interleaved with other
    messages that might have been printed, |stdout| is flushed before
    printing and |stderr| is flushed right after.
 */
@@ -103,17 +103,21 @@ HUL_EXTERN int8_t dbg_lvl;
                               : 0)
 #define dbglvl(n) (dbg_lvl = n)
 
+#define dbgmsg(...) dbgprintf(DBG_MSG,__VA_ARGS__)
+
+
 #else
 
-#define dbgprintf(n,fmt,...)
+#define dbgprintf(n,...)
 #define dbglvl(n)
+#define dbgmsg(...)
 
 #endif /* DEBUG */
 
 /* Error Handling */
 /* The |err()| macros works as a |fprintf()| on |stderr| and then
    does a longjump() (if a jmp target has been set) or exit().
-   
+
    To properly release resources you should register a cleanup
    function with |atexit()|
 
@@ -131,7 +135,7 @@ HUL_EXTERN jmp_buf *errjmpptr;
                   : exit(1))
 
 #define errjmp(j) (errjmpptr = &j)
-               
+
 
 /* Unit Test */
 /*
@@ -145,7 +149,7 @@ HUL_EXTERN jmp_buf *errjmpptr;
 #define TSTWRITE(...) (fprintf(stderr,__VA_ARGS__),fflush(stderr))
 
 
-/* Tests are divided in sections introduced by the |TSTHDR(s)| macro. 
+/* Tests are divided in sections introduced by the |TSTHDR(s)| macro.
    The macro reset the appropriate counters and print the header |s|
 */
 
@@ -167,12 +171,18 @@ HUL_EXTERN jmp_buf *errjmpptr;
 
 #define TST(s,x)    (TST_DO(s,(TSTSKP != NULL? 1 : x)),\
                      (TSTSKP != NULL? TSTWRITE(" # SKIP %s",TSTSKP):0),\
-                     TST_END)        
-
+                     TST_END)
+/*
 #define TST_DO(s,x) (TSTRES = (x), TSTGTT++, TSTTOT++, TSTNUM++,\
                      TSTWRITE("%s %4d - $%02d%02d%03d %s",\
                               (TSTRES? (TSTGPAS++,TSTPASS++,TSTOK) : TSTKO),\
                               TSTGTT, TSTSEC, TSTGRP, TSTNUM, s))
+
+*/
+#define TST_DO(s,x) (TSTRES = (x), TSTGTT++, TSTTOT++, TSTNUM++,\
+                     TSTWRITE("%s %4d - %s",\
+                              (TSTRES? (TSTGPAS++,TSTPASS++,TSTOK) : TSTKO),\
+                              TSTGTT, s))
 
 #define TST_END     TSTWRITE("\n"),TSTRES
 
@@ -186,7 +196,7 @@ HUL_EXTERN jmp_buf *errjmpptr;
 
 
 #define TSTNOTE(...) (TSTWRITE("#     "), TSTWRITE(__VA_ARGS__), TSTWRITE("\n"))
-                        
+
 #define TSTONFAIL(...) (TSTRES? 0 : (TSTNOTE(__VA_ARGS__)))
 
 /* At the end of a section, the accumulated stats can be printed out
