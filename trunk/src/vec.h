@@ -1,4 +1,4 @@
-/*  
+/*
 **  (C) 2007 by Remo Dentato (rdentato@users.sourceforge.net)
 **
 ** Permission to use, copy, modify and distribute this code and
@@ -6,7 +6,7 @@
 ** fee, provided that the above copyright notice, or equivalent
 ** attribution acknowledgement, appears in all copies and
 ** supporting documentation.
-** 
+**
 ** Copyright holder makes no representations about the suitability
 ** of this software for any purpose. It is provided "as is" without
 ** express or implied warranty.
@@ -28,7 +28,7 @@
 
 typedef union {
     uint32_t  n;
-    void     *p;  
+    void     *p;
 } aux_t;
 
 typedef struct {
@@ -108,9 +108,12 @@ void   *mapFree    (vec *v);
 void   *mapFirst   (vec *v);
 void   *mapNext    (vec *v);
 void   *mapAdd     (vec *v, void *elem);
+void    mapDel     (vec *v, void *elem);
 #define mapRoot(v) ((v)->aux2.p)
 #define mapCnt(v)  ((v)->aux3.n)
 
+void *mapNextSorted(vec *v);
+void *mapFirstSorted(vec *v);
 
 #endif  /* VEC_H */
 
