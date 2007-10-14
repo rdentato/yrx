@@ -18,102 +18,150 @@
 #include <stdio.h>
 #include <stdlib.h>
 #ifdef _MSC_VER
-#include <pstdint.h>
+#include "pstdint.h"
 #else
 #include <stdint.h>
 #endif
 #include <stddef.h>
 #include <string.h>
+
 #include "hul.h"
 
-typedef union {
-    uint32_t  n;
-    void     *p;
-} aux_t;
-
 typedef struct {
-  uint8_t     **arr;
-  uint32_t      cnt;
-  aux_t         aux0;
-  aux_t         aux1;
-  aux_t         aux2;
-  aux_t         aux3;
   uint16_t      esz;
-  uint16_t      ksz;
   uint16_t      npg;
+  uint16_t      aux;
   uint16_t      cur_p;  /* cur page number  */
   uint16_t      cur_s;  /* cur page size    */
   uint16_t      cur_n;  /* cur slot number  */
   uint32_t      cur_w;  /* cur water mark   */
-  uint8_t *     cur_q;  /* cur slot pointer */
+  uint8_t      *cur_q;  /* cur slot pointer */
+  uint8_t     **pgs;
+  uint32_t      cnt;
 } vec;
 
-vec      *vecNew  (uint16_t elemsize);
-void     *vecGet  (vec *v, uint32_t ndx);
-void     *vecSet  (vec *v, uint32_t ndx, void *elem);
-void     *vecFree (vec *v);
-uint32_t  vecSize (vec *v);
+typedef vec *vec_t;
 
-#define vecNext(v) vecGet(v, (v)->cur_w == VEC_ANYNDX? 0 : (v)->cur_w + 1)
-#define vecPrev(v) (((v)->cur_w == 0 || (v)->cur_w == VEC_ANYNDX) \
+typedef void (*vecCleaner)(void *);
+
+vec      *vecNew        (uint16_t elemsize);
+void     *vecGet        (vec *v, uint32_t ndx);
+void     *vecSet        (vec *v, uint32_t ndx, void *elem);
+void     *vecFreeClean  (vec *v, vecCleaner cln);
+uint32_t  vecSize       (vec *v);
+
+#define vecFree(v) vecFreeClean(v,NULL)
+
+#define vecGetVal(v,n,t) ((t *)vecGet(v,n))[0]
+
+#define vecSetVal(v,n,e,t)
+
+#define vecNxtNdx(v) ((v)->cur_w == VEC_NULLNDX? 0 : (v)->cur_w + 1)
+
+#define vecNext(v) vecGet(v, vecNxtNdx(v))
+#define vecPrev(v) (((v)->cur_w == 0 || (v)->cur_w == VEC_NULLNDX) \
                      ? NULL \
                      : vecGet(v,(v)->cur_w - 1))
-#define vecCnt(v) ((v)->cnt)
 
-#define VEC_ANYNDX   UINT32_MAX
+#define vecAdd(v,e)    vecSet(v, vecCnt(v), e)
 
-/**********************/
+#define vecCnt(v)      ((v)->cnt)
+#define vecPos(v)      ((v)->cur_w)
+#define vecFirst(v)    (vecCnt(v)>0? vecGet(v,0) : NULL);
+#define vecLast(v)     (vecCnt(v)>0? vecGet(v,vecCnt(v)-1) : NULL);
 
-typedef struct blkNode {
-  struct blkNode *lnk[2];
-  uint8_t         elm[sizeof(uint32_t)];
-} blkNode;
-
-#define blkElm(p)      (p == NULL? NULL : (void *)(((blkNode *)(p))->elm))
-#define blkNodePtr(p)  (p == NULL? NULL : (void *)((char*)(p) - offsetof(blkNode,elm)))
-#define blkDeleted     ((void *)vecGet)
-#define blkFreelst(v)  ((v)->aux0.p)
-#define blkLeft(n)     (((blkNode *)(n))->lnk[0])
-#define blkRight(n)    (((blkNode *)(n))->lnk[1])
-#define blkLeftPtr(n)  (n == NULL? NULL :((blkNode *)(n))->lnk[0])
-#define blkRightPtr(n) (n == NULL? NULL :((blkNode *)(n))->lnk[1])
-
-#define blkReset(v)   (vecCnt(v) == 0 , v->aux0.p = NULL )
-#define blkFree       vecFree
-#define blkSet(v,p,e) ((e != NULL)? memcpy(p->elm,e,v->esz - offsetof(blkNode,elm)) : 0)
-
-void    blkDel  (vec *v, void *e);
-vec    *blkNew  (uint16_t elemsz);
-void   *blkAdd  (vec *v,void *e);
-void   *blkFirst(vec *v);
-void   *blkNext (vec *v);
-void   *blkPrev (vec *v);
+#define VEC_NULLNDX   UINT32_MAX
 
 /**********************/
 
+#define stk           vec
 #define stkNew        vecNew
 #define stkFree(v)    vecFree((vec *)v)
-#define stkDepth(v)   vecCnt((vec *)v)
+#define stkDepth(v)   (((vec *)v)->cnt)
 #define stkPush(v,e)  vecSet((vec *)v,stkDepth(v),e)
 #define stkIsEmpty(v) (((vec *)v) == NULL || stkDepth(v) == 0)
-#define stkPop(v)     (stkIsEmpty(v)? 0    : (stkDepth(v)-= 1))
+#define stkPop(v)     (stkIsEmpty(v)? 0    : (stkDepth(v)--))
 #define stkTop(v)     (stkIsEmpty(v)? NULL : vecGet((vec *)v, stkDepth(v)-1))
 
-#define stkReset(v)   (stkIsEmpty(v)? 0    : (stkDepth(v) = 0,((vec *)v)->cur_w=VEC_ANYNDX))
+#define stkNth(v,n)   (stkIsEmpty(v) || n >= stkDepth(v)\
+                          ? NULL\
+                          : vecGet((vec *)v, n))
+
+#define stkReset(v)   (v == NULL ? 0 \
+                                 : ( stkDepth(v) = 0,\
+                                    ((vec *)v)->cur_w = VEC_NULLNDX))
+
+#define stkPushVal(v,e,t)  do {t _e=e; stkPush(v,&_e);}while(0)
+#define stkTopVal(v,t)     (stkIsEmpty(v)? (t)NULL : vecGetVal((vec *)v, stkDepth(v)-1,t))
+
+#define stk_t         vec_t
 
 /**********************/
-vec    *mapNew     (uint16_t elemsz, uint16_t keysz);
-void   *mapGet     (vec *v, void *elem);
-void   *mapFree    (vec *v);
-void   *mapFirst   (vec *v);
-void   *mapNext    (vec *v);
-void   *mapAdd     (vec *v, void *elem);
-void    mapDel     (vec *v, void *elem);
-#define mapRoot(v) ((v)->aux2.p)
-#define mapCnt(v)  ((v)->aux3.n)
 
-void *mapNextSorted(vec *v);
-void *mapFirstSorted(vec *v);
+#define bmp_t         vec_t
+vec    *bmpNew   ();
+uint8_t bmpSet   (vec *b,uint32_t ndx);
+uint8_t bmpClr   (vec *b,uint32_t ndx);
+uint8_t bmpTest  (vec *b,uint32_t ndx);
+uint8_t bmpFlip  (vec *b,uint32_t ndx);
+#define bmpFree vecFree
+
+/**********************/
+
+uint32_t   bufLen   (vec *b);
+uint32_t   bufSeek  (vec *b,uint32_t pos);
+uint32_t   bufPos   (vec *b);
+int        bufGetc  (vec *b);
+int        bufGets  (vec *b,char *s);
+uint32_t   bufPuts  (vec *b, char *s);
+uint32_t   bufPutc  (vec *b,char c);
+vec       *bufNew   ();
+
+#define    bufFree  vecFree
+
+#define buf_t         vec_t
+
+/**********************/
+
+typedef struct lstNode {
+  struct lstNode *next;
+  union {
+     struct lstNode *nextfree;
+     int8_t            elem[sizeof(void *)];
+  }                 data[1];
+} lstNode;
+
+#define lstDELETED   ((void *)vecNew)
+
+typedef struct lstVec {
+  vec            vec[1];
+  struct lstNode *tail;
+  struct lstNode *free;
+  uint32_t        cnt;
+} lstVec;
+
+#define lst_t lstVec *
+
+#define lstHead(l) (l->tail != NULL? l->tail->next : NULL)
+#define lstTail(l) (l->tail)
+#define lstNodeElem(node) (node != NULL? (void *)(node->data->elem) : NULL)
+
+#define lstFirst(l) (l->tail != NULL? (void*)(l->tail->next->data->elem) : NULL)
+#define lstLast(l)  (l->tail != NULL? (void*)(l->tail->data->elem) : NULL)
+
+#define lstnode(n)  ((lstNode *)(((uint8_t *)n)-offsetof(lstNode,data)))
+
+void *lstNext(lst_t l, void *ref);
+
+lst_t lstNew(uint16_t elemsz);
+
+void *lstInsAfter(lst_t l,void *ref,void *e);
+void *lstInsHead(lst_t l, void *e);
+#define lstInsTail(l,e)  (lstInsHead(l,e), l->tail = l->tail->next, (void*)(l->tail->data->elem))
+
+void *lstFreeClean(lst_t l, vecCleaner cln);
+#define lstFree(l) lstFreeClean(l,NULL)
+
+#define lstLen(l) (l->cnt)
 
 #endif  /* VEC_H */
-

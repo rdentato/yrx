@@ -23,14 +23,49 @@ typedef struct Arc {
   uint32_t info[31];
 } Arc;
 
+int arccmp(Arc *a, Arc *b)
+{
+  int t;
+  t = a->from - b->from;
+  if (t == 0) t = a->to - b->to;
+  return t;
+}
+
+#if 0
+void setTree(setNode *p)
+{
+
+  if (p != NULL) {
+    TSTWRITE("%d [%d]",((Arc *)(p->elem))->from,p->size);
+    if (p->left != NULL || p->right != NULL) {
+      TSTWRITE(" (");
+      setTree(p->left);
+      TSTWRITE(") (");
+      setTree(p->right);
+      TSTWRITE(")");
+    }
+  }
+
+}
+#endif
+
+
+void arccleanup(Arc *a)
+{
+  dbgmsg("**** CLEANUP: %d->%d\n",a->from,a->to);
+}
+#include "time.h"
+
 int main(int argc, char * argv[])
 {
-  vec *v;
+  vec_t v;
 
   uint32_t j,k,n=0;
   Arc a,*p;
   uint32_t t;
   Arc *q;
+
+  srand(time(0));
 
  #if 1
   TSTSECTION("Basic vec");
@@ -51,8 +86,8 @@ int main(int argc, char * argv[])
   TSTNOTE("enlarged enough to ensure a pointer will fit.");
 
   v = vecNew(0);
-  TST("New vector (elemsz 0 -> sizeof(void*))",
-         (v != NULL && v->esz == sizeof(void *)));
+  TSTT("New vector (elemsz 0 -> sizeof(void*))",
+         (v != NULL && v->esz == sizeof(void *)),"Re-define free list management");
 
   v = vecFree(v);
 
@@ -74,9 +109,9 @@ int main(int argc, char * argv[])
   TST("cur_w  == 0",(v->cur_w == 0));
 
   TSTNOTE("There is only one page allocated");
-  TST("v->npg == 1",(v->npg == 1 && v->arr != NULL && v->arr[0] != NULL));
+  TST("v->npg == 1",(v->npg == 1 && v->pgs != NULL && v->pgs[0] != NULL));
   TSTNOTE("Check that elements are stored in order");
-  for (k=0; k < 30; k++) {
+  for (k=0; k < 32; k++) {
     a.from = k; a.to = k;
     vecSet(v,k,&a);
   }
@@ -103,7 +138,7 @@ int main(int argc, char * argv[])
   }
   TST("16 elements",(vecCnt(v) == 16));
   p = vecGet(v,12);
-  TST("Selected 12",(v->cur_w == 12));
+  TST("Selected 12",(v->cur_w == 12 && p->from == 12));
 
   p = vecNext(v); /* 13 */
   p = vecNext(v); /* 14 */
@@ -123,7 +158,7 @@ int main(int argc, char * argv[])
   TST("Still 16 elements",(vecCnt(v) == 16));
   TSTONFAIL("Count = %d",vecCnt(v));
 
-  v = vecFree(v);
+  v = vecFreeClean(v,(vecCleaner)arccleanup);
   TSTNOTE("Next/Prev boundary checks");
   v = vecNew(sizeof(Arc));
   q = vecPrev(v);
@@ -136,8 +171,20 @@ int main(int argc, char * argv[])
   v = vecFree(v);
  #endif
 
+ #if 0
+  #define HUGECNT 10000000
+  TSTGROUP("Huge vector!");
+
+  v = vecNew(sizeof(uint32_t));
+  for (k=0;k < HUGECNT; k++) {
+    vecSet(v,k,&k);
+  }
+  dbgmsg("** %u elements. Size: %u (%u)\n",vecCnt(v), vecSize(v),v->esz * vecCnt(v));
+  v = vecFree(v);
+ #endif
+
   /**********************************************************************/
- #if 1
+ #if 0
   {
   blkNode *pn,*qn;
 
@@ -215,6 +262,52 @@ int main(int argc, char * argv[])
  #endif
 
   /**********************************************************************/
+ #if 0
+  {
+  Arc *p;
+  TSTSECTION("List discipline");
+
+  TSTGROUP("Creating list");
+
+  v = lstNew(sizeof(Arc));
+  TST("New list is empty",(v != NULL && lstCnt(v) == 0));
+
+  for (k=0;k<10;k++) {
+    a.from = k+10;
+    lstAppend(v,&a);
+  }
+  TST("list has 10 elements",(v != NULL  && lstCnt(v) == 10));
+  TSTONFAIL("\t lstCnt == %u",lstCnt(v));
+
+  TSTGROUP("Iterating");
+
+  p = lstFirst(v);
+  TSTWRITE("# ");
+  j = p->from;
+  while (p != NULL) {
+    k = p->from;
+    TSTWRITE("%d ",p->from);
+    p = lstNext(v);
+  }
+  TSTWRITE("\n");
+  TST("Starts at 10, ends at 19",(j == 10 && k == 19));
+
+  p = lstLast(v);
+  TSTWRITE("# ");
+  j = p->from;
+  while (p != NULL) {
+    k = p->from;
+    TSTWRITE("%d ",p->from);
+    p = lstPrev(v);
+  }
+  TSTWRITE("\n");
+  TST("Starts at 19, ends at 10",(j == 19 && k == 10));
+
+  v = lstFree(v);
+  }
+ #endif
+
+  /**********************************************************************/
  #if 1
   TSTSECTION("Stack discipline");
 
@@ -273,7 +366,7 @@ int main(int argc, char * argv[])
 
  #endif
 
- #if 1
+ #if 0
  uint16_t rndbit();
 
   TSTSECTION("Random number");
@@ -285,11 +378,12 @@ int main(int argc, char * argv[])
   }
   TSTWRITE("\n");
  #endif
- #if 1
+
+ #if 0
   {
   blkNode *pn,*qn;
 
-  TSTSECTION("Maps (treaps)");
+  TSTSECTION("Maps (RBST)");
 
   TSTGROUP("Creating maps");
 
@@ -364,12 +458,219 @@ int main(int argc, char * argv[])
 
   v = mapFree(v);
 
+  TSTGROUP("Creating maps");
+
+  v = mapNew(sizeof(Arc),offsetof(Arc,info));
+  TST("The new map is empty",(v != NULL && mapCnt(v) == 0 && mapRoot(v) == NULL));
+
+  for (k=1;k<=200;k++) {
+    a.from = k; a.to = 10;
+    p = mapAdd(v,&a);  pn = blkNodePtr(p);
+    if ((k+1) % 31 == 0)  {
+      TSTWRITE("#\n# TREE: (");
+      mapTree(mapRoot(v));
+      TSTWRITE("\n#\n");
+    }
   }
+  TST("The new map has 200 elements",(v != NULL && mapCnt(v) == 200));
+
+  v = mapFree(v);
+  }
+ #endif
+
+ #if 0
+  {
+  setNode *p;
+  Arc     *b;
+  set     *tb;
+
+  TSTSECTION("Set (RBST)");
+
+  TSTGROUP("Creating set ");
+
+  tb = setNew(sizeof(Arc),arccmp);
+  TST("New set", (tb != NULL && setCnt(tb) == 0));
+
+  TSTNOTE(" Creating the following tree ");
+  TSTNOTE("  (12 (10 (9) (11)) (13 (15) (14)))");
+
+  a.from = 12; a.to = 19;
+  b = setAdd(tb,&a);
+  TST("Added an element", (b != &a && setCnt(tb) == 1 && a.from == b->from));
+  TSTONFAIL("Count = %d",setCnt(tb));
+
+  a.from = 10; a.to = 19;
+  b = setAdd(tb,&a);
+  TST("Added an element", (b != &a && setCnt(tb) == 2 && a.from == b->from));
+  TSTONFAIL("Count = %d",setCnt(tb));
+
+  a.from = 14; a.to = 19;
+  b = setAdd(tb,&a);
+  TST("Added an element", (b != &a && setCnt(tb) == 3 && a.from == b->from));
+
+  TSTWRITE("#\n# ");
+  setTree(tb->root);
+  TSTWRITE("\n#\n");
+
+  a.from =  9; b = setAdd(tb,&a);
+  a.from = 11; b = setAdd(tb,&a);
+  a.from = 13; b = setAdd(tb,&a);
+  a.from = 15; b = setAdd(tb,&a);
+
+  TSTWRITE("#\n# ");
+  setTree(tb->root);
+  TSTWRITE("\n#\n");
+
+  TSTGROUP("Rotations ");
+
+  tb->root = rotLeft(tb->root);
+
+  TSTNOTE("After a left rotation:");
+  TSTWRITE("#\n# "); setTree(tb->root); TSTWRITE("\n#\n");
+
+  tb->root = rotRight(tb->root);
+
+  TSTNOTE("After a right rotation:");
+  TSTWRITE("#\n# "); setTree(tb->root); TSTWRITE("\n#\n");
+
+  TSTGROUP("Deleting elements");
+
+  a.from = 10;
+  setDel(tb,&a);
+  TSTWRITE("#\n# "); setTree(tb->root); TSTWRITE("\n#\n");
+
+  a.from = 12;
+  setDel(tb,&a);
+  TSTWRITE("#\n# "); setTree(tb->root); TSTWRITE("\n#\n");
+
+  tb = setFree(tb);
+
+  }
+ #endif
+
+ #if 0
+  {
+    arr a;
+
+    TSTSECTION("Multitype array");
+    TSTGROUP("Creating array");
+    a = arrNew();
+
+    arrSet(a,1,INT,-432);
+
+    TST("Setting Integers",(arrGet(a,1,INT) == -432));
+
+    arrSet(a,4,STR,"pippo");
+
+    TST("Setting strings",(strcmp(arrGet(a,4,STR),"pippo") == 0));
+    a = arrFree(a);
+  }
+ #endif
+
+ #if 1
+  { int c;
+    TSTSECTION("Memory buffer");
+    TSTGROUP("Creating buffer");
+    v = bufNew();
+
+    bufPuts(v,"pippo");
+    bufPuts(v,"pluto");
+
+    bufSeek(v,0);
+    TSTWRITE("# ");
+    while ((c=bufGetc(v)) != EOF) {
+      if (c == '\0') TSTWRITE(". ");
+      TSTWRITE("%c",c);
+    }
+
+    TSTWRITE("\n#\n");
+    v = bufFree(v);
+  }
+ #endif
+
+ #if 1
+  TSTSECTION("Bitmaps");
+  TSTGROUP("Creating bmps");
+
+  v = bmpNew();
+
+  for (k=0; k < 100; k+=2) {
+    bmpSet(v,k);
+  }
+  TST("Bitmap set",(bmpTest(v,4) && !bmpTest(v,5)));
+  bmpClr(v,4); bmpFlip(v,5);
+  TST("Bitmap clr and flip",(!bmpTest(v,4) && bmpTest(v,5)));
+  bmpFree(v);
+ #endif
+
+ #if 1
+ {
+   lst_t l;
+
+   TSTSECTION("Lists");
+   TSTGROUP("Creating a list");
+   l = lstNew(sizeof(Arc));
+
+   for (k = 0; k < 100; k++) {
+     a.from = k; a.to = 2 *k;
+     lstInsHead(l,&a);
+   }
+
+   TST("List with 100 elements in order",(lstLen(l) == 100));
+   TSTONFAIL("Count = %d",lstLen(l));
+
+   p = lstFirst(l);
+   TST("Access first",(p->from == 99));
+   TSTONFAIL("First from = %d",p->from);
+
+   p = lstLast(l);
+   TST("Access last",(p->from == 0));
+   TSTONFAIL("First from = %d",p->from);
+
+   p = lstFirst(l);
+   k = 0;
+   while (p!=NULL) {
+      k += p->from;
+      p = lstNext(l,p);
+   }
+   TST("lstNext()",(k == (99*100/2)));
+
+   l = lstFree(l);
+
+   l = lstNew(sizeof(Arc));
+
+   for (k = 0; k < 100; k++) {
+     a.from = k; a.to = 2 *k;
+     p = lstInsTail(l,&a);
+   }
+
+   TST("List with 100 elements in reverse order",(lstLen(l) == 100));
+   TSTONFAIL("Count = %d",lstLen(l));
+
+   p = lstFirst(l);
+   TST("Access first",(p->from == 0));
+   TSTONFAIL("First from = %d",p->from);
+
+   p = lstLast(l);
+   TST("Access last",(p->from == 99));
+   TSTONFAIL("First from = %d",p->from);
+
+   p = lstFirst(l);
+   k = 0;
+   while (p!=NULL) {
+      k += p->from;
+      p = lstNext(l,p);
+   }
+   TST("lstNext()",(k == (99*100/2)));
+
+   l = lstFree(l);
+ }
  #endif
 
 
   TSTDONE();
   exit(0);
 }
+
 /*-------------------------------------------------------------*/
 
