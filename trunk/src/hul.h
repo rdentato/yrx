@@ -12,22 +12,30 @@
 ** express or implied warranty.
 */
 
-/* My Hopefully Useful Library (requires a ANSI C99 compiler */
+/* My Hopefully Useful Library (requires a ANSI C99 compiler) */
 
 #ifndef HUL_H
 #define HUL_H
 
 #include <stdio.h>
 #include <stdlib.h>
+
 #ifdef _MSC_VER
-#include <pstdint.h>
+/* MSVC does not have stdint!!! Paul Hsie graciously create one */
+#include "pstdint.h"
 #else
 #include <stdint.h>
 #endif
+
 #include <string.h>
 #include <stdarg.h>
-#include <setjmp.h>
-#include <errno.h>
+
+/* Using HUL as unit test, implies |DEBUG| */
+#ifdef HUL_UT
+#ifndef DEBUG
+#define DEBUG
+#endif
+#endif
 
 /* Using HUL */
 
@@ -73,12 +81,14 @@
                             regardless the current debug level.
 */
 
-#define DBG_OFF   -1
-#define DBG_NONE  3
-#define DBG_ERR   2
-#define DBG_WARN  1
-#define DBG_MSG   0
-#define DBG_ANY   0
+#define DBG_OFF    -1
+#define DBG_ERR     2
+#define DBG_WRN     1
+#define DBG_MSG     0
+
+/* To be used in |dbglvl()| */
+#define DBG_NOMSG   3
+#define DBG_ANYMSG  0
 
 #ifdef DEBUG
 
@@ -88,54 +98,43 @@ HUL_EXTERN int8_t dbg_lvl;
    messages that might have been printed, |stdout| is flushed before
    printing and |stderr| is flushed right after.
 */
-/*
-#ifdef HUL_UT
-#define DBGTAP fprintf(stderr,"# ")
-#else
-#define DBGTAP 0
-#endif
-*/
 
 #define dbgprintf(n,...) ( (dbg_lvl <= n)\
                               ? (fflush(stdout), \
+                                fprintf(stderr,"# "),\
                                 fprintf(stderr,__VA_ARGS__),\
                                 fflush(stderr)) \
                               : 0)
 #define dbglvl(n) (dbg_lvl = n)
 
-#define dbgmsg(...) dbgprintf(DBG_MSG,__VA_ARGS__)
 
 
 #else
 
 #define dbgprintf(n,...)
 #define dbglvl(n)
-#define dbgmsg(...)
 
 #endif /* DEBUG */
 
+#define dbgmsg(...) dbgprintf(DBG_MSG,__VA_ARGS__)
+#define dbgwrn(...) dbgprintf(DBG_WRN,__VA_ARGS__)
+#define dbgerr(...) dbgprintf(DBG_ERR,__VA_ARGS__)
+#define dbgoff(...) dbgprintf(DBG_OFF,__VA_ARGS__)
+#define dbgwrt(...) dbgprintf(DBG_NOMSG,__VA_ARGS__)
+
+
 /* Error Handling */
-/* The |err()| macros works as a |fprintf()| on |stderr| and then
-   does a longjump() (if a jmp target has been set) or exit().
+/* The |err()| macros does a |fprintf()| on |stderr| and then |exit()|.
 
    To properly release resources you should register a cleanup
    function with |atexit()|
-
 */
 
-HUL_EXTERN jmp_buf *errjmpptr;
-
 /* Print a message and exit */
-#define err(errnum,...) \
-               (errno = errnum,\
-                fprintf(stderr,"[%d] ",errno),\
-                fprintf(stderr,__VA_ARGS__),\
-                errjmpptr != NULL\
-                  ? longjmp(*errjmpptr,1) \
-                  : exit(1))
-
-#define errjmp(j) (errjmpptr = &j)
-
+#define err(errnum,...)  (fflush(stdout),\
+                          fprintf(stderr,"[%d] ",errnum),\
+                          fprintf(stderr,__VA_ARGS__),\
+                          exit(errnum))
 
 /* Unit Test */
 /*
@@ -144,6 +143,7 @@ HUL_EXTERN jmp_buf *errjmpptr;
    the |hul.h| header.
    The log created is TAP compatible (see: <http://testanything.org>).
 */
+
 #ifdef HUL_UT
 
 #define TSTWRITE(...) (fprintf(stderr,__VA_ARGS__),fflush(stderr))
@@ -171,7 +171,7 @@ HUL_EXTERN jmp_buf *errjmpptr;
 
 #define TST(s,x)    (TST_DO(s,(TSTSKP != NULL? 1 : x)),\
                      (TSTSKP != NULL? TSTWRITE(" # SKIP %s",TSTSKP):0),\
-                     TST_END)
+                     TSTWRITE("\n"),TSTRES)
 /*
 #define TST_DO(s,x) (TSTRES = (x), TSTGTT++, TSTTOT++, TSTNUM++,\
                      TSTWRITE("%s %4d - $%02d%02d%03d %s",\
@@ -183,11 +183,6 @@ HUL_EXTERN jmp_buf *errjmpptr;
                      TSTWRITE("%s %4d - %s",\
                               (TSTRES? (TSTGPAS++,TSTPASS++,TSTOK) : TSTKO),\
                               TSTGTT, s))
-
-#define TST_END     TSTWRITE("\n"),TSTRES
-
-#define TSTS(s,x,r) (TST_DO(s,1), TSTWRITE(" # SKIP %s\n",r), TSTRES)
-#define TSTs(s,x,r)  TST(s,x)
 
 #define TSTT(s,x,r) (TST_DO(s,x), TSTWRITE(" # TODO %s\n",r), TSTRES)
 
@@ -201,8 +196,9 @@ HUL_EXTERN jmp_buf *errjmpptr;
 
 /* At the end of a section, the accumulated stats can be printed out
 */
-#define TSTSTAT() (TSTWRITE("#\n# SECTION %d PASSED: %d/%d\n",TSTSEC,TSTPASS,TSTTOT),\
-                   TSTTOT = 0)
+#define TSTSTAT() (TSTTOT == 0 ? 0 : (\
+                   TSTWRITE("#\n# SECTION %d PASSED: %d/%d\n",TSTSEC,TSTPASS,TSTTOT),\
+                   TSTTOT = 0))
 
 #define TSTDONE() (TSTSTAT(), \
                    TSTWRITE("#\n# TOTAL PASSED: %d/%d\n",TSTGPAS,TSTGTT),\
