@@ -21,7 +21,7 @@
 #include <stdlib.h>
 
 #ifdef _MSC_VER
-/* MSVC does not have stdint!!! Paul Hsie graciously create one */
+/* MSVC does not have stdint!!! Paul Hsie graciously created one */
 #include "pstdint.h"
 #else
 #include <stdint.h>

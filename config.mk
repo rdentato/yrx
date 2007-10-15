@@ -1,4 +1,4 @@
-#  (C) 2007 by Remo Dentato (rdentato@users.sourceforge.net)
+#   C) 2007 by Remo Dentato (rdentato@users.sourceforge.net)
 #
 # Permission to use, copy, modify and distribute this code and
 # its documentation for any purpose is hereby granted without

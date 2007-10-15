@@ -108,6 +108,7 @@ uint8_t bmpFlip  (vec *b,uint32_t ndx);
 
 /**********************/
 
+#define buf_t         vec_t
 uint32_t   bufLen   (vec *b);
 uint32_t   bufSeek  (vec *b,uint32_t pos);
 uint32_t   bufPos   (vec *b);
@@ -119,7 +120,6 @@ vec       *bufNew   ();
 
 #define    bufFree  vecFree
 
-#define buf_t         vec_t
 
 /**********************/
 

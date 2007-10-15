@@ -39,6 +39,13 @@ On Resizable arrays:
   url =          "http://www.ddj.com/architect/184404698",
 }
 
+For a discussion on MSB calculation, see section 8 of:
+
+@misc{ bagwell-fast,
+  author = "Phil Bagwell",
+  title = "Fast Functional Lists, Hash-Lists, Deques and Variable Length Arrays",
+  url = "citeseer.ist.psu.edu/bagwell02fast.html" }
+
 On Randomized binary search tree:
 
 @misc{ martinez97randomized,
@@ -150,7 +157,7 @@ static void ndx2pg(uint32_t ndx, uint16_t *p, uint16_t *n)
 /* Ensure an element can store a (void *). Will be used for the freelist */
 #define MINSZ sizeof(void *)
 
-static void vecInit(vec *v,uint16_t elemsize)
+static void vecinit(vec *v,uint16_t elemsize)
 {
   if (v != NULL) {
     /*if (elemsize < MINSZ) elemsize = MINSZ;*/
@@ -172,7 +179,7 @@ vec *vecNew(uint16_t elemsize)
 
   if (elemsize > 0 && elemsize < UINT16_MAX) {
     v = malloc(sizeof(vec));
-    vecInit(v,elemsize);
+    vecinit(v,elemsize);
     dbgprintf(DBG_OFF,"VEC: %p\n", v);
   }
   return v;
@@ -499,7 +506,7 @@ lst_t lstNew(uint16_t elemsz)
 
   l = malloc(sizeof(lstVec));
   if (l != NULL) {
-    vecInit(l->vec,elemsz + offsetof(lstNode, data));
+    vecinit(l->vec,elemsz + offsetof(lstNode, data));
     l->tail = NULL;
     l->free = NULL;
     l->cnt = 0;
@@ -610,8 +617,110 @@ void *lstRemoveHead(lst_t l)
 
 }
 
-
-
 /*******/
 
+#define CNT_MSK         0x80000000
+#define CNT_ISRIGHT(x)  (((x) & CNT_MSK) != 0)
+#define CNT_ISLEFT(x)   (((x) & CNT_MSK) == 0)
+#define CNT_SIZE(x)     ((x) & ~CNT_MSK)
+#define CNT_FLIP(x,n)   ((((x) & CNT_MSK) ^ CNT_MSK) | (n - CNT_SIZE(x)))
+
+#define mapLEFT(node)    (node->lnk[0])
+#define mapRIGHT(node)   (node->lnk[1])
+
+typedef struct mapNode {
+  struct mapNode *lnk[2];
+  uint32_t        cnt;
+  int8_t          elem[sizeof(void *)];
+} mapNode;
+
+typedef struct mapVec {
+  vec             nodes[1];
+  vec             stack[1];
+  struct mapNode *root;
+  struct mapNode *free;
+  uint32_t        cnt;
+} mapVec;
  
+#define map_t mapVec *
+
+
+map_t mapNew(uint16_t elemsz, uint16_t keysz)
+{
+  map_t m;
+
+  m = malloc(sizeof(lstVec));
+  if (m != NULL) {
+    vecinit(m->nodes,elemsz + offsetof(mapNode, elem));
+    vecinit(m->stack,2);
+    m->root = NULL;
+    m->free = NULL;
+    m->nodes->aux = keysz;
+    m->cnt = 0;
+  }
+
+  return m;
+}
+
+
+void *mapFreeClean(map_t m,vecCleaner cln)
+{
+  if (m != NULL) {
+    veccleanup(m->nodes,cln);
+    veccleanup(m->stack,NULL);
+    free(m);
+  }
+  return NULL;
+
+}
+
+
+void *mapAdd(map_t m, void *e)
+{
+  
+  mapNode *node;
+  mapNode **parent;
+  uint32_t size;
+  int cmp;
+
+  parent = &(m->root);
+  node = m->root;
+  size = m->cnt;
+
+  while (1) {
+    if ((cmp = mapCMP(node,e)) == 0) 
+       return node->elem; 
+
+    if (rndnum(size) == size) {
+      *parent = insert_at(node,e);
+      return parent->elem;
+    }
+    else if (cmp > 0)  {
+      if (CNT_ISRIGHT(node->cnt))
+        node->cnt = CNT_FLIP(node->cnt,size);
+      size -= CNT_SIZE(node->cnt);
+      parent = &(mapRIGHT(node));
+      node = mapRIGHT(node);
+
+    }
+    else {
+      if (CNT_ISLEFT(node->cnt))
+        node->cnt = CNT_FLIP(node->cnt,size);
+      size -= CNT_SIZE(node->cnt);
+      parent = &(mapLEFT(node));
+      node = mapLEFT(node);
+    }
+  }
+
+  return m;
+}
+
+
+
+
+
+
+
+
+
+
