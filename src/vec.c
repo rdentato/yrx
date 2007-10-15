@@ -695,7 +695,7 @@ void *mapAdd(map_t m, void *e)
       *parent = insert_at(node,e);
       return parent->elem;
     }
-    else if (cmp > 0)  {
+    if (cmp > 0)  {
       if (CNT_ISRIGHT(node->cnt))
         node->cnt = CNT_FLIP(node->cnt,size);
       size -= CNT_SIZE(node->cnt);
