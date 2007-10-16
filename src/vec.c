@@ -641,7 +641,7 @@ typedef struct mapVec {
   struct mapNode *free;
   uint32_t        cnt;
 } mapVec;
- 
+
 #define map_t mapVec *
 
 
@@ -674,10 +674,49 @@ void *mapFreeClean(map_t m,vecCleaner cln)
 
 }
 
+#define mapCMP(m,n,e) memcmp(n->elem,e,m->nodes->aux)
+
+static mapNode *ins_root(map_t m, mapNode **parent,void *e)
+{
+  mapNode *L,*R;
+  mapNode *node;
+  mapNode **S, **G;
+  int cmp;
+
+  node = *parent;
+
+  S = &L; G = &R;
+
+  while (node != NULL) {
+    if ((cmp = mapCMP(m,node,e)) == 0) {
+      /*...*/
+       break;
+    }
+    if (cmp < 0) {   /* node < e */
+     *S = node;
+      S = &mapRIGHT(node);
+      node = mapRIGHT(node);
+    }
+    else {
+     *G = node;
+      G = &mapLEFT(node);
+      node = mapLEFT(node);
+    }
+  }
+  *S=NULL; *G=NULL;
+
+  node = newmapnode(m);
+
+  memcpy(node->elem,e,m->nodes->esz);
+  mapLEFT(node) = L;
+  mapRIGHT(node) = R;
+ *parent = node;
+
+  return node;
+}
 
 void *mapAdd(map_t m, void *e)
 {
-  
   mapNode *node;
   mapNode **parent;
   uint32_t size;
@@ -688,14 +727,14 @@ void *mapAdd(map_t m, void *e)
   size = m->cnt;
 
   while (1) {
-    if ((cmp = mapCMP(node,e)) == 0) 
-       return node->elem; 
+    if ((cmp = mapCMP(m,node,e)) == 0)
+       return node->elem;
 
     if (rndnum(size) == size) {
-      *parent = insert_at(node,e);
-      return parent->elem;
+      node = ins_root(m,parent,e);
+      return node->elem;
     }
-    if (cmp > 0)  {
+    if (cmp < 0)  {  /* node < e */
       if (CNT_ISRIGHT(node->cnt))
         node->cnt = CNT_FLIP(node->cnt,size);
       size -= CNT_SIZE(node->cnt);
