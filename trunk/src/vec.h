@@ -137,5 +137,21 @@ buf_t      bufNew   (void);
 #define    bufLen   ((b)->cnt)
 
 /**********************/
+typedef struct stp {
+  vec        str[1];
+  uint32_t   msk;
+} stp;
+
+typedef stp *stp_t;
+
+stp_t stpNew   (void);
+void *stpFree  (stp_t pool);
+char *stpAdd   (stp_t pool, char *str);
+char *stpGet   (stp_t pool, char *str);
+char *stpDel   (stp_t pool, char *str);
+
+#define stpCnt(p) ((p)->str->cnt)
+
+/**********************/
 
 #endif  /* VEC_H */

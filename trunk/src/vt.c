@@ -667,6 +667,33 @@ int main(int argc, char * argv[])
  }
  #endif
 
+ #if 1
+ {
+  stp_t pool;
+  char *p;
+  char *q;
+  char  st[10];
+
+   TSTSECTION("Strings pool");
+   TSTGROUP("Creating a pool");
+  pool = stpNew();
+
+  p = stpAdd(pool,"pippo");
+
+  TST("Added a string",(stpCnt(pool) == 1));
+
+  q = stpGet(pool,"pippo");
+  TST("Get a string",(p == q && strcmp(p,"pippo") == 0));
+
+  st[1] = 0;
+  for (k='a'; k<'z'; k++) {
+    st[0] = k;
+    p = stpAdd(pool,st);
+  }
+  stpFree(pool);
+ }  
+ #endif
+
 
   TSTDONE();
   exit(0);
