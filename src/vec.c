@@ -101,7 +101,7 @@ On Random Number generator:
 #endif
 
 static const char *errNOMEM = "Out of Memory (vec)";
-static const char *errUNEXP = "Unexpected error";
+/*static const char *errUNEXP = "Unexpected error";*/
 
 /*
 ** Integer log base 2 of uint32 integer values.
@@ -501,7 +501,7 @@ static uint32_t fnv_hash (void *e, uint16_t len)
   int i = 0;
  
   if (len == 0) 
-    while (p[i]) { FNV_CALC }
+    for (i=0; p[i];  i++) { FNV_CALC }
   else
     for (i=0; i<len; i++) { FNV_CALC }
 
@@ -520,10 +520,12 @@ static uint32_t oat_hash(void *e, uint16_t len)
 { 
   uint8_t *p = e; 
   uint32_t h = 0; 
-  int i; 
+  int i=0; 
+
+  dbgoff("** %p %u\n",e,len);
 
   if (len == 0) 
-    while (p[i]) { OAT_CALC }
+    for (i=0; p[i];  i++) { OAT_CALC }
   else
     for (i=0; i<len; i++) { OAT_CALC }
 
@@ -532,16 +534,7 @@ static uint32_t oat_hash(void *e, uint16_t len)
 
 /********/
 
-typedef struct stp {
-  vec        str[1];
-  uint32_t   msk;
-} stp;
-
-typedef stp *stp_t;
-
-stp_t stpNew(void);
-char *stpAdd(stp_t pool, char *str);
-
+#define STP_REASHING ((void *)stpNew)
 
 stp_t stpNew()
 {
@@ -549,29 +542,40 @@ stp_t stpNew()
  
   if ((pool = malloc(sizeof(stp))) != NULL) {
     vecinit(pool->str,sizeof(char *));
-    pool->msk = 0x01;
+    pool->msk = 3;
   }
 
   return pool;
 }
 
+
+static void stpfree(void *e)
+{
+  char **s=e;
+  if (s != NULL && *s != VEC_DELETED && *s != NULL) {
+    dbgmsg("-- %s\n",*s);
+    free(*s);
+  }
+}
+
 void *stpFree(stp_t pool)
 {
   if (pool != NULL) {
-    veccleanup(pool->str,free);
+    pool->str->cnt = pool->msk+1; /* pretend the table is full */
+    veccleanup(pool->str,stpfree);
     free(pool);
   }
   return NULL;
 }
 
-
-#define TOODENSE(p)  ( (((p)->msk - (p)->str->cnt) * 4) < (p)->msk )
-#define TOOSPARSE(p) ( ((p)->str->cnt * 2) < ((p)->msk -1))
+#define stpN(p)  ((p)->msk+1)
+#define TOODENSE(p)  (((stpN(p) - stpCnt(p)) * 3) < stpN(p)) 
+/*#define TOOSPARSE(p) ( (stpCnt(p) * 2) < (stpN(p)))*/
 
 static char **stpsearch(stp_t pool, char *str, char ***del);
 
 
-static void stpreash(stp_t pool)
+static void stprehash(stp_t pool)
 {
   uint32_t k,max;
   char **p,**s, **d;
@@ -580,16 +584,18 @@ static void stpreash(stp_t pool)
   max = pool->msk+1;
 
   pool->msk = 2 * pool->msk +1;
+  dbgmsg("Rehash: %u,%u\n",max,pool->msk);
+
   for (k=0; k < max; k++) {
     p = vecGet(pool->str,k);
     t = *p;
     if (t != NULL && t != VEC_DELETED) {
-      *p = VEC_DELETED;
-      d = NULL;
+     *p = VEC_DELETED;
+      d = STP_REASHING;
       s = stpsearch(pool, t, &d);
       if (s != NULL) {
-        if (d != NULL) s = d;
-        *s = t;
+        if (d != NULL &&  d != STP_REASHING) s = d;
+       *s = t;
       }
     }
   }
@@ -602,22 +608,26 @@ static char **stpsearch(stp_t pool, char *str, char ***del)
   uint32_t inc;
   char **s;
 
-  key = fnv_hash(str,0) & pool->msk;
+  inc = fnv_hash(str,0) | 1;  /* ensure increment is odd */
+  key = oat_hash(str,0) & pool->msk;
 
-  inc = oat_hash(str,0) | 1; /* ensure increment is odd */
 
   while (1) {
+    dbgmsg("XX %4d (%u) %s\n",key,inc, str);
     s = vecGet(pool->str,key);
 
     if (s == NULL || *s == NULL) return s;
 
     if (*s == VEC_DELETED) {
       if (del == NULL) return s;
-     *del = s;
+      if (0 && *del == STP_REASHING) {
+        *del = s;
+        return s;
+      }
+      *del = s;
     }
     else if (strcmp(str,*s) == 0)
       return s;
-
     key = (key + inc) & pool->msk;    
   }
   return NULL;
@@ -628,8 +638,9 @@ char *stpAdd(stp_t pool, char *str)
 {
   char **s,**d;
 
-  if (TOOFULL(pool)) stpreash(pool);
+  if (TOODENSE(pool)) stprehash(pool);
 
+  dbgmsg("ADD: %s\n", str);
   d = NULL;
   s = stpsearch(pool, str, &d);
 
@@ -638,6 +649,7 @@ char *stpAdd(stp_t pool, char *str)
   if (*s == NULL) {
     if (d != NULL) s = d;
     *s = strdup(str);
+    stpCnt(pool)++;
   }
 
   return *s;
@@ -652,5 +664,19 @@ char *stpGet(stp_t pool, char *str)
   if (s == NULL || *s == NULL || *s == VEC_DELETED) return NULL;
  
   return *s;  
+}
+
+char *stpDel(stp_t pool, char *str)
+{
+  char **s;
+ 
+  s = stpsearch(pool, str, NULL);
+
+  if (s != NULL && (*s != NULL || *s != VEC_DELETED)) {
+    free(*s);
+    *s = VEC_DELETED;
+    stpCnt(pool)--;
+  }
+  return NULL;
 }
 
