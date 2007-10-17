@@ -1025,3 +1025,379 @@ char *arrGet_STR(arr a,uint32_t ndx)
   return v->vv.str;
 }
 #define bmp           vec
+
+
+
+/*********/
+
+
+lst_t lstNew(uint16_t elemsz)
+{
+  lstVec *l;
+
+  l = malloc(sizeof(lstVec));
+  if (l != NULL) {
+    vecinit(l->vec,elemsz + offsetof(lstNode, data));
+    l->tail = NULL;
+    l->free = NULL;
+    l->cnt = 0;
+  }
+  return l;
+}
+
+static lstNode *lstgetnode(lst_t l)
+{
+  lstNode *node = NULL;
+
+  if (l->free != NULL) {
+    node = l->free;
+    l->free = node->data->nextfree;
+  }
+  else {
+    node = vecGet(l->vec, vecCnt(l->vec));
+    vecCnt(l->vec)++;
+  }
+  node->next = node;
+  return node;
+}
+
+static lstNode *lstreleasenode(lst_t l,void *e)
+{
+  return NULL;
+}
+
+static lstNode *lstinsafter(lst_t l, lstNode *ref, void *e)
+{
+  lstNode *node;
+  node = lstgetnode(l);
+  if (node != NULL) {
+    memcpy(node->data->elem, e, (l->vec->esz - offsetof(lstNode, data)));
+    node->next = node;
+    l->cnt++;
+    if (ref != NULL) {
+      node->next = ref->next;
+      ref->next = node;
+    }
+  }
+  return node;
+}
+
+void *lstInsAfter(lst_t l,void *ref,void *e)
+{
+  lstNode *node = NULL;
+
+  if (ref != NULL) node = lstnode(ref);
+  node = lstinsafter(l,node,e);
+  return lstNodeElem(node);
+}
+
+void *lstInsHead(lst_t l, void *e)
+{
+  lstNode *node;
+  node = lstinsafter(l,l->tail,e);
+  if (l->tail == NULL) l->tail = node;
+  return lstFirst(l);
+}
+
+void *lstFreeClean(lst_t l, vecCleaner cln)
+{
+  lstNode *node;
+  uint32_t k = 0;
+
+  if (l != NULL) {
+    if (cln != NULL) {
+      for (k = 0; k < vecCnt(l->vec); k++) {
+        node = vecGet(l->vec,k);
+        if (node->next != lstDELETED) cln(lstNodeElem(node));
+      }
+    }
+    veccleanup(l->vec,NULL);
+    free(l);
+  }
+
+  return NULL;
+}
+
+void *lstGet(lst_t l,uint32_t ndx)
+{
+  lstNode *node;
+  node = lstHead(l);
+
+  if (node == NULL) return NULL;
+  while (ndx-- > 0) {
+    if (node == l->tail) return NULL;
+    node = node->next;
+  }
+  return node;
+}
+
+void *lstNext(lst_t l, void *ref)
+{
+  lstNode *node;
+
+  node = lstnode(ref);
+  if (node == NULL || node == l->tail)
+    return NULL;
+
+  return node->next->data->elem;
+}
+
+void *lstRemoveHead(lst_t l)
+{
+  lstNode *node;
+
+}
+
+/*******/
+
+typedef  union {
+  char          *str;
+  uint32_t       unm;
+  int32_t        snm;
+  void          *ptr;
+  char           chr;
+} vecVal;
+
+
+typedef struct mapNode {
+  struct mapNode *lnk[2];
+  vecVal          key;
+} mapNode
+
+typedef struct mapNodeElem {
+  struct mapNode node;
+  uint8_t        elem[sizeof(void *)];
+} mapNodeElem;
+
+
+/*******/
+
+
+#if 0
+char *
+
+char *strAdd(stp_t pool, char *s)
+{
+  char *t;
+
+  t = stpinsert(pool,s);
+  return t;
+}
+
+void strDel(char *s)
+{
+
+}
+
+
+/*******/
+
+
+#define CNT_MSK         0x80000000
+#define CNT_ISRIGHT(x)  (((x) & CNT_MSK) != 0)
+#define CNT_ISLEFT(x)   (((x) & CNT_MSK) == 0)
+#define CNT_SIZE(x)     ((x) & ~CNT_MSK)
+#define CNT_FLIP(x,n)   ((((x) & CNT_MSK) ^ CNT_MSK) | (n - CNT_SIZE(x)))
+
+#define mapLEFT(node)    (node->lnk[0])
+#define mapRIGHT(node)   (node->lnk[1])
+
+typedef struct mapNode {
+  struct mapNode *lnk[2];
+  uint32_t        hashkey;
+  int8_t          elem[sizeof(void *)];
+} mapNode;
+
+typedef struct mapVec {
+  vec             nodes[1];
+  vec             stack[1];
+  struct mapNode *root;
+  struct mapNode *free;
+  uint32_t        cnt;
+} mapVec;
+
+#define map_t mapVec *
+
+
+map_t mapNew(uint16_t elemsz, uint16_t keysz)
+{
+  map_t m;
+
+  m = malloc(sizeof(lstVec));
+  if (m != NULL) {
+    vecinit(m->nodes,elemsz + offsetof(mapNode, elem));
+    vecinit(m->stack,2);
+    m->root = NULL;
+    m->free = NULL;
+    m->nodes->aux = keysz;
+    m->cnt = 0;
+  }
+
+  return m;
+}
+
+
+void *mapFreeClean(map_t m,vecCleaner cln)
+{
+  if (m != NULL) {
+    veccleanup(m->nodes,cln);
+    veccleanup(m->stack,NULL);
+    free(m);
+  }
+  return NULL;
+
+}
+
+#define mapCMP(m,n,e) memcmp(n->elem,e,m->nodes->aux)
+
+static mapNode *ins_root(map_t m, mapNode **parent,void *e)
+{
+  mapNode *L,*R;
+  mapNode *node;
+  mapNode **S, **G;
+  int cmp;
+
+  node = *parent;
+
+  S = &L; G = &R;
+
+  while (node != NULL) {
+    if ((cmp = mapCMP(m,node,e)) == 0) {
+      /*...*/
+       break;
+    }
+    if (cmp < 0) {   /* node < e */
+     *S = node;
+      S = &mapRIGHT(node);
+      node = mapRIGHT(node);
+    }
+    else {
+     *G = node;
+      G = &mapLEFT(node);
+      node = mapLEFT(node);
+    }
+  }
+  *S=NULL; *G=NULL;
+
+  node = newmapnode(m);
+
+  memcpy(node->elem,e,m->nodes->esz);
+  mapLEFT(node) = L;
+  mapRIGHT(node) = R;
+ *parent = node;
+
+  return node;
+}
+
+void *mapAdd(map_t m, void *e)
+{
+  mapNode *node;
+  mapNode **parent;
+  uint32_t size;
+  int cmp;
+
+  parent = &(m->root);
+  node = m->root;
+  size = m->cnt;
+
+  while (1) {
+    if ((cmp = mapCMP(m,node,e)) == 0)
+       return node->elem;
+
+    if (rndnum(size) == size) {
+      node = ins_root(m,parent,e);
+      return node->elem;
+    }
+    if (cmp < 0)  {  /* node < e */
+      if (CNT_ISRIGHT(node->cnt))
+        node->cnt = CNT_FLIP(node->cnt,size);
+      size -= CNT_SIZE(node->cnt);
+      parent = &(mapRIGHT(node));
+      node = mapRIGHT(node);
+
+    }
+    else {
+      if (CNT_ISLEFT(node->cnt))
+        node->cnt = CNT_FLIP(node->cnt,size);
+      size -= CNT_SIZE(node->cnt);
+      parent = &(mapLEFT(node));
+      node = mapLEFT(node);
+    }
+  }
+
+  return m;
+}
+
+#endif
+
+/*****************/
+
+typedef vec_t map_t;
+
+mapAdd(map_t T,void *e)
+{
+  uint32_t node = 0;
+  uint32_t depth = 0;
+  uint32_t node = VEC_NULL;
+
+  while (mapPTR(t,node) != NULL) {
+    if (mapCMP(t,node,e) < 0) {
+      node = mapLEFT(node);
+    }
+    else {
+      n0 = node;
+      node = mapRIGHT(node);
+    }
+    depth++;
+  }
+
+}
+
+
+
+
+
+
+
+/**********************/
+
+typedef struct lstNode {
+  struct lstNode *next;
+  union {
+     struct lstNode *nextfree;
+     int8_t          elem[sizeof(void *)];
+  }                 data[1];
+} lstNode;
+
+#define lstDELETED   ((void *)vecNew)
+
+typedef struct lstVec {
+  vec            vec[1];
+  struct lstNode *tail;
+  struct lstNode *free;
+  uint32_t        cnt;
+} lstVec;
+
+#define lst_t lstVec *
+
+#define lstHead(l) (l->tail != NULL? l->tail->next : NULL)
+#define lstTail(l) (l->tail)
+#define lstNodeElem(node) (node != NULL? (void *)(node->data->elem) : NULL)
+
+#define lstFirst(l) (l->tail != NULL? (void*)(l->tail->next->data->elem) : NULL)
+#define lstLast(l)  (l->tail != NULL? (void*)(l->tail->data->elem) : NULL)
+
+#define lstnode(n)  ((lstNode *)(((uint8_t *)n)-offsetof(lstNode,data)))
+
+void *lstNext(lst_t l, void *ref);
+
+lst_t lstNew(uint16_t elemsz);
+
+void *lstInsAfter(lst_t l,void *ref,void *e);
+void *lstInsHead(lst_t l, void *e);
+#define lstInsTail(l,e)  (lstInsHead(l,e), l->tail = l->tail->next, (void*)(l->tail->data->elem))
+
+void *lstFreeClean(lst_t l, vecCleaner cln);
+#define lstFree(l) lstFreeClean(l,NULL)
+
+#define lstLen(l) (l->cnt)

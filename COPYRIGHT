@@ -38,6 +38,17 @@ utils/bstring
 
    
 ---------------
+
+In file vec.c the hash functions have been derived by those presented
+by Julienne Walker on <http://www.eternallyconfuzzled.com>.
+
+FNV algorithm (by Glenn Fowler, Phong Vo and Landon Curt Noll) has been
+placed in the Public Domain <http://www.isthe.com/chongo/tech/comp/fnv>
+          
+One-At-Time hash (by Bob Jenkins) is public domain and described at
+<http://burtleburtle.net/bob/hash>.
+          
+---------------
 All other files:
  
  Copyright notice and Terms of use
