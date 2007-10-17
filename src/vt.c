@@ -686,7 +686,7 @@ int main(int argc, char * argv[])
   TST("Get a string",(p == q && strcmp(p,"pippo") == 0));
 
   st[1] = 0;
-  for (k='a'; k<'z'; k++) {
+  for (k='A'; k<'z'; k++) {
     st[0] = k;
     p = stpAdd(pool,st);
   }

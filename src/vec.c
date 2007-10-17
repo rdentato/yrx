@@ -532,6 +532,21 @@ static uint32_t oat_hash(void *e, uint16_t len)
   return h; 
 } 
 
+#define ROT_CALC h = ( h << 4 ) ^ ( h >> 28 ) ^ p[i];
+
+static uint32_t rot_hash(void *e, uint16_t len)
+{
+  uint8_t *p = e; 
+  uint32_t h = 0; 
+  int i=0; 
+ 
+  if (len == 0) 
+    for (i=0; p[i];  i++) { ROT_CALC }
+  else
+    for (i=0; i<len; i++) { ROT_CALC }
+
+  return h; 
+}
 /********/
 
 #define STP_REASHING ((void *)stpNew)
@@ -590,7 +605,7 @@ static void stprehash(stp_t pool)
     p = vecGet(pool->str,k);
     t = *p;
     if (t != NULL && t != VEC_DELETED) {
-     *p = VEC_DELETED;
+     *p = NULL;
       d = STP_REASHING;
       s = stpsearch(pool, t, &d);
       if (s != NULL) {
@@ -599,7 +614,6 @@ static void stprehash(stp_t pool)
       }
     }
   }
-
 }
 
 static char **stpsearch(stp_t pool, char *str, char ***del)
@@ -608,26 +622,26 @@ static char **stpsearch(stp_t pool, char *str, char ***del)
   uint32_t inc;
   char **s;
 
-  inc = fnv_hash(str,0) | 1;  /* ensure increment is odd */
-  key = oat_hash(str,0) & pool->msk;
-
+  inc = (oat_hash(str,0) ) | 1;  /* ensure increment is odd */
+  key = fnv_hash(str,0) & pool->msk;
 
   while (1) {
-    dbgmsg("XX %4d (%u) %s\n",key,inc, str);
     s = vecGet(pool->str,key);
 
     if (s == NULL || *s == NULL) return s;
 
     if (*s == VEC_DELETED) {
       if (del == NULL) return s;
-      if (0 && *del == STP_REASHING) {
+      if (*del == STP_REASHING) {
         *del = s;
         return s;
       }
       *del = s;
     }
-    else if (strcmp(str,*s) == 0)
-      return s;
+	else {
+	  if (strcmp(str,*s) == 0)   return s;
+	}
+    dbgmsg("XX %4d (%u) %s (%s)\n",key,inc, str,*s);
     key = (key + inc) & pool->msk;    
   }
   return NULL;

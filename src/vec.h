@@ -26,10 +26,6 @@
 #include <stdint.h>
 #endif
 
-#ifdef __POCC__
-char * __cdecl strdup(const char *);
-#endif
-
 #include "hul.h"
 
 /**********************/
