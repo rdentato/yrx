@@ -185,8 +185,6 @@ vec *vecNew(uint16_t elemsize)
   return v;
 }
 
-
-
 static void veccleanup (vec *v,vecCleaner cln)
 {
   uint16_t i,k;
@@ -349,7 +347,7 @@ static char *emptystr = "";
 #define bufBlkSize 32
 #define bufBlkMask (bufBlkSize-1)
 
-vec *bufNew()
+buf_t bufNew()
 {
   vec *b;
 
@@ -432,17 +430,9 @@ int bufGets(vec *b,char *s)
   return n;
 }
 
-uint32_t bufLen(vec *b)
-{
-  return b->cnt;
-}
 
 /*******/
 
-#define bmpBlkSize 16
-#define bmpBlkMask (bmpBlkSize-1)
-
-vec *bmpNew() { return vecNew(bmpBlkSize); }
 
 static uint8_t *bmpbyte(vec *b, uint32_t ndx, uint8_t *i)
 {
@@ -497,269 +487,170 @@ uint8_t bmpFlip(vec *b,uint32_t ndx)
   return i;
 }
 
-/*********/
-
-
-lst_t lstNew(uint16_t elemsz)
-{
-  lstVec *l;
-
-  l = malloc(sizeof(lstVec));
-  if (l != NULL) {
-    vecinit(l->vec,elemsz + offsetof(lstNode, data));
-    l->tail = NULL;
-    l->free = NULL;
-    l->cnt = 0;
-  }
-  return l;
-}
-
-static lstNode *lstgetnode(lst_t l)
-{
-  lstNode *node = NULL;
-
-  if (l->free != NULL) {
-    node = l->free;
-    l->free = node->data->nextfree;
-  }
-  else {
-    node = vecGet(l->vec, vecCnt(l->vec));
-    vecCnt(l->vec)++;
-  }
-  node->next = node;
-  return node;
-}
-
-static lstNode *lstreleasenode(lst_t l,void *e)
-{
-  return NULL;
-}
-
-static lstNode *lstinsafter(lst_t l, lstNode *ref, void *e)
-{
-  lstNode *node;
-  node = lstgetnode(l);
-  if (node != NULL) {
-    memcpy(node->data->elem, e, (l->vec->esz - offsetof(lstNode, data)));
-    node->next = node;
-    l->cnt++;
-    if (ref != NULL) {
-      node->next = ref->next;
-      ref->next = node;
-    }
-  }
-  return node;
-}
-
-void *lstInsAfter(lst_t l,void *ref,void *e)
-{
-  lstNode *node = NULL;
-
-  if (ref != NULL) node = lstnode(ref);
-  node = lstinsafter(l,node,e);
-  return lstNodeElem(node);
-}
-
-void *lstInsHead(lst_t l, void *e)
-{
-  lstNode *node;
-  node = lstinsafter(l,l->tail,e);
-  if (l->tail == NULL) l->tail = node;
-  return lstFirst(l);
-}
-
-void *lstFreeClean(lst_t l, vecCleaner cln)
-{
-  lstNode *node;
-  uint32_t k = 0;
-
-  if (l != NULL) {
-    if (cln != NULL) {
-      for (k = 0; k < vecCnt(l->vec); k++) {
-        node = vecGet(l->vec,k);
-        if (node->next != lstDELETED) cln(lstNodeElem(node));
-      }
-    }
-    veccleanup(l->vec,NULL);
-    free(l);
-  }
-
-  return NULL;
-}
-
-void *lstGet(lst_t l,uint32_t ndx)
-{
-  lstNode *node;
-  node = lstHead(l);
-
-  if (node == NULL) return NULL;
-  while (ndx-- > 0) {
-    if (node == l->tail) return NULL;
-    node = node->next;
-  }
-  return node;
-}
-
-void *lstNext(lst_t l, void *ref)
-{
-  lstNode *node;
-
-  node = lstnode(ref);
-  if (node == NULL || node == l->tail)
-    return NULL;
-
-  return node->next->data->elem;
-}
-
-void *lstRemoveHead(lst_t l)
-{
-  lstNode *node;
-
-}
 
 /*******/
 
-#define CNT_MSK         0x80000000
-#define CNT_ISRIGHT(x)  (((x) & CNT_MSK) != 0)
-#define CNT_ISLEFT(x)   (((x) & CNT_MSK) == 0)
-#define CNT_SIZE(x)     ((x) & ~CNT_MSK)
-#define CNT_FLIP(x,n)   ((((x) & CNT_MSK) ^ CNT_MSK) | (n - CNT_SIZE(x)))
+/* http://www.eternallyconfuzzled.com/tuts/algorithms/jsw_tut_hashing.aspx */
 
-#define mapLEFT(node)    (node->lnk[0])
-#define mapRIGHT(node)   (node->lnk[1])
+#define FNV_CALC        h = (h * 16777619) ^ p[i];
 
-typedef struct mapNode {
-  struct mapNode *lnk[2];
-  uint32_t        cnt;
-  int8_t          elem[sizeof(void *)];
-} mapNode;
-
-typedef struct mapVec {
-  vec             nodes[1];
-  vec             stack[1];
-  struct mapNode *root;
-  struct mapNode *free;
-  uint32_t        cnt;
-} mapVec;
-
-#define map_t mapVec *
-
-
-map_t mapNew(uint16_t elemsz, uint16_t keysz)
+static uint32_t fnv_hash (void *e, uint16_t len)
 {
-  map_t m;
+  uint8_t *p = e;
+  uint32_t h = 2166136261;
+  int i = 0;
+ 
+  if (len == 0) 
+    while (p[i]) { FNV_CALC }
+  else
+    for (i=0; i<len; i++) { FNV_CALC }
 
-  m = malloc(sizeof(lstVec));
-  if (m != NULL) {
-    vecinit(m->nodes,elemsz + offsetof(mapNode, elem));
-    vecinit(m->stack,2);
-    m->root = NULL;
-    m->free = NULL;
-    m->nodes->aux = keysz;
-    m->cnt = 0;
+  return h;
+}
+
+#define OAT_CALC { h += p[i];        \
+                   h += ( h << 10 ); \
+                   h ^= ( h >> 6 );  \
+                 }                   \
+                 h += ( h << 3 );    \
+                 h ^= ( h >> 11 );   \
+                 h += ( h << 15 );   
+ 
+static uint32_t oat_hash(void *e, uint16_t len)
+{ 
+  uint8_t *p = e; 
+  uint32_t h = 0; 
+  int i; 
+
+  if (len == 0) 
+    while (p[i]) { OAT_CALC }
+  else
+    for (i=0; i<len; i++) { OAT_CALC }
+
+  return h; 
+} 
+
+/********/
+
+typedef struct stp {
+  vec        str[1];
+  uint32_t   msk;
+} stp;
+
+typedef stp *stp_t;
+
+stp_t stpNew(void);
+char *stpAdd(stp_t pool, char *str);
+
+
+stp_t stpNew()
+{
+  stp_t pool;
+ 
+  if ((pool = malloc(sizeof(stp))) != NULL) {
+    vecinit(pool->str,sizeof(char *));
+    pool->msk = 0x01;
   }
 
-  return m;
+  return pool;
+}
+
+void *stpFree(stp_t pool)
+{
+  if (pool != NULL) {
+    veccleanup(pool->str,free);
+    free(pool);
+  }
+  return NULL;
 }
 
 
-void *mapFreeClean(map_t m,vecCleaner cln)
+#define TOODENSE(p)  ( (((p)->msk - (p)->str->cnt) * 4) < (p)->msk )
+#define TOOSPARSE(p) ( ((p)->str->cnt * 2) < ((p)->msk -1))
+
+static char **stpsearch(stp_t pool, char *str, char ***del);
+
+
+static void stpreash(stp_t pool)
 {
-  if (m != NULL) {
-    veccleanup(m->nodes,cln);
-    veccleanup(m->stack,NULL);
-    free(m);
+  uint32_t k,max;
+  char **p,**s, **d;
+  char  *t;
+
+  max = pool->msk+1;
+
+  pool->msk = 2 * pool->msk +1;
+  for (k=0; k < max; k++) {
+    p = vecGet(pool->str,k);
+    t = *p;
+    if (t != NULL && t != VEC_DELETED) {
+      *p = VEC_DELETED;
+      d = NULL;
+      s = stpsearch(pool, t, &d);
+      if (s != NULL) {
+        if (d != NULL) s = d;
+        *s = t;
+      }
+    }
+  }
+
+}
+
+static char **stpsearch(stp_t pool, char *str, char ***del)
+{
+  uint32_t key;
+  uint32_t inc;
+  char **s;
+
+  key = fnv_hash(str,0) & pool->msk;
+
+  inc = oat_hash(str,0) | 1; /* ensure increment is odd */
+
+  while (1) {
+    s = vecGet(pool->str,key);
+
+    if (s == NULL || *s == NULL) return s;
+
+    if (*s == VEC_DELETED) {
+      if (del == NULL) return s;
+     *del = s;
+    }
+    else if (strcmp(str,*s) == 0)
+      return s;
+
+    key = (key + inc) & pool->msk;    
   }
   return NULL;
 
 }
 
-#define mapCMP(m,n,e) memcmp(n->elem,e,m->nodes->aux)
-
-static mapNode *ins_root(map_t m, mapNode **parent,void *e)
+char *stpAdd(stp_t pool, char *str)
 {
-  mapNode *L,*R;
-  mapNode *node;
-  mapNode **S, **G;
-  int cmp;
+  char **s,**d;
 
-  node = *parent;
+  if (TOOFULL(pool)) stpreash(pool);
 
-  S = &L; G = &R;
+  d = NULL;
+  s = stpsearch(pool, str, &d);
 
-  while (node != NULL) {
-    if ((cmp = mapCMP(m,node,e)) == 0) {
-      /*...*/
-       break;
-    }
-    if (cmp < 0) {   /* node < e */
-     *S = node;
-      S = &mapRIGHT(node);
-      node = mapRIGHT(node);
-    }
-    else {
-     *G = node;
-      G = &mapLEFT(node);
-      node = mapLEFT(node);
-    }
-  }
-  *S=NULL; *G=NULL;
+  if (s == NULL) return NULL;
 
-  node = newmapnode(m);
-
-  memcpy(node->elem,e,m->nodes->esz);
-  mapLEFT(node) = L;
-  mapRIGHT(node) = R;
- *parent = node;
-
-  return node;
-}
-
-void *mapAdd(map_t m, void *e)
-{
-  mapNode *node;
-  mapNode **parent;
-  uint32_t size;
-  int cmp;
-
-  parent = &(m->root);
-  node = m->root;
-  size = m->cnt;
-
-  while (1) {
-    if ((cmp = mapCMP(m,node,e)) == 0)
-       return node->elem;
-
-    if (rndnum(size) == size) {
-      node = ins_root(m,parent,e);
-      return node->elem;
-    }
-    if (cmp < 0)  {  /* node < e */
-      if (CNT_ISRIGHT(node->cnt))
-        node->cnt = CNT_FLIP(node->cnt,size);
-      size -= CNT_SIZE(node->cnt);
-      parent = &(mapRIGHT(node));
-      node = mapRIGHT(node);
-
-    }
-    else {
-      if (CNT_ISLEFT(node->cnt))
-        node->cnt = CNT_FLIP(node->cnt,size);
-      size -= CNT_SIZE(node->cnt);
-      parent = &(mapLEFT(node));
-      node = mapLEFT(node);
-    }
+  if (*s == NULL) {
+    if (d != NULL) s = d;
+    *s = strdup(str);
   }
 
-  return m;
+  return *s;
 }
 
+char *stpGet(stp_t pool, char *str)
+{
+  char **s;
+ 
+  s = stpsearch(pool, str, NULL);
 
-
-
-
-
-
-
-
+  if (s == NULL || *s == NULL || *s == VEC_DELETED) return NULL;
+ 
+  return *s;  
+}
 

@@ -603,7 +603,7 @@ int main(int argc, char * argv[])
   bmpFree(v);
  #endif
 
- #if 1
+ #if 0
  {
    lst_t l;
 
