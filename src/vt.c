@@ -685,13 +685,32 @@ int main(int argc, char * argv[])
   q = stpGet(pool,"pippo");
   TST("Get a string",(p == q && strcmp(p,"pippo") == 0));
 
-  st[1] = 0;
-  for (k='A'; k<'z'; k++) {
-    st[0] = k;
-    p = stpAdd(pool,st);
+  st[2] = 0;
+  for (j='0'; j<126; j++) {
+    st[1] = j;
+    for (k=' '; k<126; k++) {
+      st[0] = k;
+      p = stpAdd(pool,st);
+    }
   }
+  TSTNOTE("Count: %u\n",stpCnt(pool));
+
+  p = stpGet(pool,"pippo");
+  if (p != NULL) TSTNOTE("pippo: %s\n",p);
+  p = stpGet(pool,"aa");
+  if (p != NULL) TSTNOTE("aa: %s\n",p);
+
+  p = stpDel(pool,"aa");
+  p = stpGet(pool,"aa");
+  TST("Deleted aa",(p== NULL));
+
+  p = stpDel(pool,"fU");
+  p = stpDel(pool,"w}");
+  TST("Deleted w}",(p == NULL));
+  p = stpGet(pool,"w}");
+  TST("Deleted w}",(p== NULL));
   stpFree(pool);
- }  
+ }
  #endif
 
 
