@@ -497,10 +497,10 @@ uint8_t bmpFlip(vec *b,uint32_t ndx)
 static uint32_t fnv_hash (void *e, uint16_t len)
 {
   uint8_t *p = e;
-  uint32_t h = 2166136261;
+  uint32_t h = 0x811C9DC5;
   int i = 0;
- 
-  if (len == 0) 
+
+  if (len == 0)
     for (i=0; p[i];  i++) { FNV_CALC }
   else
     for (i=0; i<len; i++) { FNV_CALC }
@@ -514,38 +514,38 @@ static uint32_t fnv_hash (void *e, uint16_t len)
                  }                   \
                  h += ( h << 3 );    \
                  h ^= ( h >> 11 );   \
-                 h += ( h << 15 );   
- 
+                 h += ( h << 15 );
+
 static uint32_t oat_hash(void *e, uint16_t len)
-{ 
-  uint8_t *p = e; 
-  uint32_t h = 0; 
-  int i=0; 
+{
+  uint8_t *p = e;
+  uint32_t h = 0;
+  int i=0;
 
   dbgoff("** %p %u\n",e,len);
 
-  if (len == 0) 
+  if (len == 0)
     for (i=0; p[i];  i++) { OAT_CALC }
   else
     for (i=0; i<len; i++) { OAT_CALC }
 
-  return h; 
-} 
+  return h;
+}
 
 #define ROT_CALC h = ( h << 4 ) ^ ( h >> 28 ) ^ p[i];
 
 static uint32_t rot_hash(void *e, uint16_t len)
 {
-  uint8_t *p = e; 
-  uint32_t h = 0; 
-  int i=0; 
- 
-  if (len == 0) 
+  uint8_t *p = e;
+  uint32_t h = 0;
+  int i=0;
+
+  if (len == 0)
     for (i=0; p[i];  i++) { ROT_CALC }
   else
     for (i=0; i<len; i++) { ROT_CALC }
 
-  return h; 
+  return h;
 }
 /********/
 
@@ -554,7 +554,7 @@ static uint32_t rot_hash(void *e, uint16_t len)
 stp_t stpNew()
 {
   stp_t pool;
- 
+
   if ((pool = malloc(sizeof(stp))) != NULL) {
     vecinit(pool->str,sizeof(char *));
     pool->msk = 3;
@@ -568,7 +568,7 @@ static void stpfree(void *e)
 {
   char **s=e;
   if (s != NULL && *s != VEC_DELETED && *s != NULL) {
-    dbgmsg("-- %s\n",*s);
+    dbgoff("-- %s\n",*s);
     free(*s);
   }
 }
@@ -584,35 +584,65 @@ void *stpFree(stp_t pool)
 }
 
 #define stpN(p)  ((p)->msk+1)
-#define TOODENSE(p)  (((stpN(p) - stpCnt(p)) * 3) < stpN(p)) 
+#define stpM(p)  ((p)->str->aux)
+
+#define TOODENSE(p)  ( (stpM(p) > 30) || \
+                       ((uint32_t)((1 << (stpM(p) >> 1))) > stpCnt(p)) || \
+                       ((stpN(p) - stpCnt(p)) * 16) < stpN(p))
+
 /*#define TOOSPARSE(p) ( (stpCnt(p) * 2) < (stpN(p)))*/
 
 static char **stpsearch(stp_t pool, char *str, char ***del);
 
 
-static void stprehash(stp_t pool)
+#define ndx_hash oat_hash
+#define inc_hash rot_hash
+
+#define DOUBLE_SIZE  0
+#define HALF_SIZE    1
+
+static void stprehash(stp_t pool,int sz)
 {
   uint32_t k,max;
   char **p,**s, **d;
   char  *t;
+  uint32_t key;
+  uint32_t inc;
 
+  stpM(pool) = 0;
   max = pool->msk+1;
-
   pool->msk = 2 * pool->msk +1;
-  dbgmsg("Rehash: %u,%u\n",max,pool->msk);
-
-  for (k=0; k < max; k++) {
-    p = vecGet(pool->str,k);
-    t = *p;
-    if (t != NULL && t != VEC_DELETED) {
-     *p = NULL;
-      d = STP_REASHING;
-      s = stpsearch(pool, t, &d);
-      if (s != NULL) {
-        if (d != NULL &&  d != STP_REASHING) s = d;
+  dbgmsg(" ***** Rehash: (%u) %u,%u\n",stpCnt(pool),max,pool->msk);
+  k = 0;
+  d = NULL;
+  while (k < max) {
+    p = vecGet(pool->str, k);
+    if (*p == VEC_DELETED) *p = NULL;
+    if (*p != NULL) {
+      t = *p;
+      key = ndx_hash(t,0) & pool->msk;
+      if (key != k) {
+       *p = NULL;
+        s = vecGet(pool->str, key);
+        if (*s != NULL && *s != VEC_DELETED) {
+          if ( key < max && s != d) {
+           *p = *s; 
+            k--;
+          }
+          else {
+            inc = (inc_hash(t,0) ) | 1;
+            do {
+              key = (key+inc) & pool->msk;
+              s = vecGet(pool->str, key);
+              /*dbgif((*s != NULL && *s != VEC_DELETED),dbgmsg("  ++ %u %s %s\n",key,t,*s));*/
+            } while (*s != VEC_DELETED && *s != NULL);
+          }
+        }
        *s = t;
+        d = s; /* store last */
       }
     }
+    k++;
   }
 }
 
@@ -621,28 +651,34 @@ static char **stpsearch(stp_t pool, char *str, char ***del)
   uint32_t key;
   uint32_t inc;
   char **s;
+  char *t;
 
-  inc = (oat_hash(str,0) ) | 1;  /* ensure increment is odd */
-  key = fnv_hash(str,0) & pool->msk;
-
+  inc = (inc_hash(str,0) ) | 1;  /* ensure increment is odd */
+  key = ndx_hash(str,0) & pool->msk;
+  stpM(pool) = 0;
   while (1) {
     s = vecGet(pool->str,key);
 
     if (s == NULL || *s == NULL) return s;
 
     if (*s == VEC_DELETED) {
-      if (del == NULL) return s;
-      if (*del == STP_REASHING) {
-        *del = s;
-        return s;
+      if (del != NULL) {
+        if (*del == STP_REASHING) {
+          *del = s;
+          return s;
+        }
+       *del = s;
       }
-      *del = s;
     }
-	else {
-	  if (strcmp(str,*s) == 0)   return s;
-	}
-    dbgmsg("XX %4d (%u) %s (%s)\n",key,inc, str,*s);
-    key = (key + inc) & pool->msk;    
+	  else {
+	    if (strcmp(str,*s) == 0)   return s;
+    }
+    t = *s;
+    if (t == VEC_DELETED) t = "(del)";
+    else if (t == NULL) t = "(null)";
+    dbgmsg("XX %4d (%u) %s (%s)\n",key,inc, str, t);
+    stpM(pool)++;
+    key = (key + inc) & pool->msk;
   }
   return NULL;
 
@@ -652,7 +688,7 @@ char *stpAdd(stp_t pool, char *str)
 {
   char **s,**d;
 
-  if (TOODENSE(pool)) stprehash(pool);
+  if (TOODENSE(pool)) stprehash(pool,DOUBLE_SIZE);
 
   dbgmsg("ADD: %s\n", str);
   d = NULL;
@@ -672,19 +708,19 @@ char *stpAdd(stp_t pool, char *str)
 char *stpGet(stp_t pool, char *str)
 {
   char **s;
- 
+
   s = stpsearch(pool, str, NULL);
 
   if (s == NULL || *s == NULL || *s == VEC_DELETED) return NULL;
- 
-  return *s;  
+
+  return *s;
 }
 
 char *stpDel(stp_t pool, char *str)
 {
-  char **s;
- 
-  s = stpsearch(pool, str, NULL);
+  char **s,**d;
+  d = NULL;
+  s = stpsearch(pool, str, &d);
 
   if (s != NULL && (*s != NULL || *s != VEC_DELETED)) {
     free(*s);
@@ -693,4 +729,6 @@ char *stpDel(stp_t pool, char *str)
   }
   return NULL;
 }
+
+/**************************/
 

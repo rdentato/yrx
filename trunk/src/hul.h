@@ -107,12 +107,14 @@ HUL_EXTERN int8_t dbg_lvl;
                               : 0)
 #define dbglvl(n) (dbg_lvl = n)
 
+#define dbgif(x,y) if x y
 
 
 #else
 
 #define dbgprintf(n,...)
 #define dbglvl(n)
+#define dbgif(x,y)
 
 #endif /* DEBUG */
 
