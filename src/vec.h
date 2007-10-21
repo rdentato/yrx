@@ -21,7 +21,8 @@
 #include <string.h>
 
 #ifdef _MSC_VER
-#include "pstdint.h"
+#include "pstdint.h" 
+#define strdup _strdup
 #else
 #include <stdint.h>
 #endif
@@ -82,7 +83,7 @@ uint32_t  vecSize       (vec_t v);
 #define stkNew        vecNew
 #define stkFree(v)    vecFree(v)
 #define stkDepth(v)   ((v)->cnt)
-#define stkPush(v,e)  vecSet(v,stkDepth(v),e)
+#define stkPush(v,e)  vecSet((vec_t)v,stkDepth(v),e)
 #define stkIsEmpty(v) ((v) == NULL || stkDepth(v) == 0)
 #define stkPop(v)     (stkIsEmpty(v)? 0    : (stkDepth(v)--))
 #define stkTop(v)     (stkIsEmpty(v)? NULL : vecGet(v, stkDepth(v)-1))
@@ -150,4 +151,33 @@ char *stpDel   (stp_t pool, char *str);
 
 /**********************/
 
+#define mapRoot(node)    ((node)->root)
+#define mapLeft(node)    ((node)->lnk[0])
+#define mapRight(node)   ((node)->lnk[1])
+#define mapKeySz(map)    ((map)->nodes->aux)
+#define mapCnt(map)      ((map)->cnt)
+#define mapNodePtr(p)    (p == NULL? NULL : (void *)((char *)(p) - offsetof(mapNode,elem)))
+
+typedef struct mapNode {
+  struct mapNode *lnk[2];
+  int8_t          elem[sizeof(void *)];
+} mapNode;
+
+typedef struct mapVec {
+  vec             nodes[1];
+  vec             stack[1];
+  struct mapNode *root;
+  struct mapNode *freelst;
+  uint32_t        cnt;
+} mapVec;
+
+typedef mapVec *map_t; 
+
+map_t   mapNew    (uint16_t elemsz, uint16_t keysz);
+map_t   mapFree   (map_t m);
+void   *mapAdd    (map_t m, void *e);
+void    mapDel    (map_t m, void *e);
+void   *mapGet    (map_t m, void *e);
+void   *mapFirst  (map_t m);
+void   *mapNext   (map_t m);
 #endif  /* VEC_H */

@@ -193,10 +193,10 @@ static void veccleanup (vec *v,vecCleaner cln)
   if (v != NULL) {
     if (v->pgs != NULL) {
       for (i = 0; i< v->npg; i++) {
-        dbgprintf(DBG_OFF,"#  %d %p\n",i,v->pgs[i]);
+        dbgoff("#  %d %p\n",i,v->pgs[i]);
         if (v->pgs[i] != NULL) {
           if (cln != NULL) {
-            for (k=0, p=v->pgs[i] ; k<pgsize(i);k++, p += v->esz)
+            for (k=0, p=v->pgs[i];  k<pgsize(i);  k++, p += v->esz)
               if (p != NULL) cln(p);
           }
           free(v->pgs[i]);
@@ -240,12 +240,13 @@ static void *vecslot(vec *v,uint16_t page, uint16_t n)
     dbgprintf(DBG_OFF,"\t *** %d \n",v->npg);
   }
 
-  if (page != v->cur_p) v->cur_s = pgsize(page);
+  if (page != v->cur_p) 
+    v->cur_s = pgsize(page);
 
   if (v->pgs[page] == NULL) {
     v->pgs[page] = calloc(v->cur_s, v->esz); /* page is guaranteed to be filled with 0's */
     if (v->pgs[page] == NULL)  err(3002,errNOMEM);
-    dbgprintf(DBG_OFF,"#  page %d 0x%p\n",page,v->pgs[page]);
+    dbgmsg(" ]]]  page %d 0x%p\n", page, v->pgs[page]);
   }
 
   p = v->pgs[page] + (n * v->esz);
@@ -731,4 +732,197 @@ char *stpDel(stp_t pool, char *str)
 }
 
 /**************************/
+
+map_t mapNew(uint16_t elemsz, uint16_t keysz)
+{
+  map_t m;
+
+  m = malloc(sizeof(mapVec));
+  if (m != NULL) {
+    vecinit(m->nodes,elemsz + offsetof(mapNode, elem));
+    vecinit(m->stack,sizeof(mapNode *));
+    m->root = NULL;
+    m->freelst = NULL;
+    mapKeySz(m) = keysz;
+    m->cnt = 0;
+  }
+
+  return m;
+}
+
+map_t mapFree(map_t m)
+{
+  if (m != NULL) {
+    veccleanup(m->nodes, NULL);
+    veccleanup(m->stack, NULL);
+    free(m);
+  }
+  return NULL;
+}
+
+static mapNode *mapnewnode(map_t m)
+{
+  mapNode *p;
+
+  if (m->freelst != NULL) {
+    p = m->freelst;
+    m->freelst = mapRight(p);
+  }
+  else {
+    p = vecSet(m->nodes, vecCnt(m->nodes),NULL);
+  }
+  mapLeft(p) = NULL;
+  mapRight(p) = NULL;
+  mapCnt(m)++;
+  return p;
+}
+
+
+/*http://en.wikipedia.org/wiki/Tree_rotation*/
+
+
+static mapNode *maprotate(mapNode *pivot,uint8_t direction)
+{
+  mapNode *q;
+  int8_t opposite;
+
+  if (pivot == NULL) return NULL;
+
+  direction &= 1;
+  opposite   = direction ^ 1;
+
+  q = pivot->lnk[opposite];
+  if (q == NULL) return pivot;
+
+  pivot->lnk[opposite] =  q->lnk[direction];
+  q->lnk[direction] = pivot;
+  return q;
+}
+
+#define maprotleft(p)   maprotate(p,0);
+#define maprotright(p)  maprotate(p,1);
+
+static mapNode *mapsearch(map_t m, mapNode ***par,  void *elem)
+{
+  int cmp;
+  mapNode  *node;
+  mapNode **parent = *par;
+
+  dbgoff("mapsearch() ROOT: %p\n",*parent);
+
+  stkReset(m->stack);
+
+  do {
+    stkPush(m->stack, &parent);  dbgoff("Pushed: %p (%p)\n",parent, *parent);
+
+    node = *parent;
+    if (node == NULL) break;   dbgoff("Not found\n");
+
+    cmp = memcmp(elem, node->elem, mapKeySz(m));
+    if (cmp == 0) break;   dbgoff("Found: %p\n",node);
+
+    parent = (cmp > 0)? &mapRight(node) : &mapLeft(node);
+
+  } while (1);
+  *par = parent;
+  return node;
+}
+
+static void mapbalance(map_t m)
+{
+  dbgmsg("Count: %d Depth: %d Limit: %d\n",m->cnt, m->stack->cnt,1+llog2(m->cnt));
+}
+
+void *mapAdd(map_t m, void *e)
+{
+  mapNode *node;
+  mapNode **parent;
+
+  parent = &(m->root);
+
+  node = mapsearch(m, &parent, e);
+  if (node == NULL) {
+    node = mapnewnode(m);
+   *parent = node;
+  }
+  memcpy(node->elem, e, m->nodes->esz - offsetof(mapNode, elem));
+  mapbalance(m);
+  return node->elem;
+}
+
+void *mapGet(map_t m, void *e)
+{
+  mapNode *p,**parent;
+  parent = &(m->root);
+  p = mapsearch(m, &parent, e);
+  return (p == NULL? NULL : p->elem);
+}
+
+void mapdelnode(map_t m, mapNode *node)
+{
+  mapLeft(node) = VEC_DELETED;
+  mapRight(node) = m->freelst;
+  m->freelst = node;
+  mapCnt(m)--;
+}
+
+void mapDel(map_t m, void *e)
+{
+  mapNode  *node;
+  mapNode **parent;
+
+  parent = &(m->root);
+
+  node = mapsearch(m, &parent, e);
+
+  dbgoff("mapDel() PTR: %p\n",node);
+
+  if (node != NULL) {
+    while (1) {
+      if (mapRight(node) != NULL) {
+       *parent =  maprotleft(node);
+        parent = &mapLeft(*parent);
+      }
+      else if (mapLeft(node) != NULL) {
+       *parent =  maprotright(node);
+        parent = &mapRight(*parent);
+      }
+      else {
+       *parent = NULL;
+        mapdelnode(m,node);
+        break;
+      }
+    }
+    dbgoff("mapDel() Deleted: %p FROM: %p\n", node, parent);
+  }
+  return;
+}
+
+
+static void mapgoleft(map_t m, mapNode *p)
+{
+  while (p != NULL) {
+    stkPush(m->stack,&p);
+    p = mapLeft(p);
+  }
+}
+
+void *mapNext(map_t m)
+{
+  mapNode *p;
+
+  if (stkIsEmpty(m->stack)) return NULL;
+
+  p = stkTopVal(m->stack, mapNode *);
+  stkPop(m->stack);
+  mapgoleft(m, mapRight(p));
+  return p->elem;
+}
+
+void *mapFirst(map_t m)
+{
+  stkReset(m->stack);
+  mapgoleft(m, m->root);
+  return mapNext(m);
+}
 
