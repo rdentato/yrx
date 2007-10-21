@@ -31,22 +31,29 @@ int arccmp(Arc *a, Arc *b)
   return t;
 }
 
-#if 0
-void setTree(setNode *p)
+#if 1
+void mapTree__(mapNode *p)
 {
 
   if (p != NULL) {
-    TSTWRITE("%d [%d]",((Arc *)(p->elem))->from,p->size);
-    if (p->left != NULL || p->right != NULL) {
+    TSTWRITE("%d",((Arc *)(p->elem))->from);
+    if (mapLeft(p) != NULL || mapRight(p) != NULL) {
       TSTWRITE(" (");
-      setTree(p->left);
+      mapTree__(mapLeft(p));
       TSTWRITE(") (");
-      setTree(p->right);
+      mapTree__(mapRight(p));
       TSTWRITE(")");
     }
   }
-
 }
+
+void mapTree(mapNode *p)
+{
+  TSTWRITE("\n# TREE: ");
+  mapTree__(p);
+  TSTWRITE("\n#\n");
+}
+
 #endif
 
 
@@ -379,9 +386,10 @@ int main(int argc, char * argv[])
   TSTWRITE("\n");
  #endif
 
- #if 0
+ #if 1
   {
-  blkNode *pn,*qn;
+  mapNode *pn,*qn;
+  map_t v;
 
   TSTSECTION("Maps (RBST)");
 
@@ -390,34 +398,36 @@ int main(int argc, char * argv[])
   v = mapNew(sizeof(Arc),offsetof(Arc,info));
   TST("The new map is empty",(v != NULL && mapCnt(v) == 0 && mapRoot(v) == NULL));
   a.from = 12; a.to = 10;
-  p = mapAdd(v,&a);  pn = blkNodePtr(p);
-  TST("Added to root",(vecGet(v,0) == mapRoot(v) && pn == mapRoot(v)));
+  p = mapAdd(v,&a);  pn = mapNodePtr(p);
+  TST("Added to root",(vecGet(v->nodes,0) == mapRoot(v) && pn == mapRoot(v)));
 
   a.from = 6; a.to = 10;
-  p = mapAdd(v,&a);  pn = blkNodePtr(p);
-  TST("Added as root left child",(pn == blkLeft(mapRoot(v))));
+  p = mapAdd(v,&a);  pn = mapNodePtr(p);
+  TST("Added as root left child",(pn == mapLeft(mapRoot(v))));
 
   a.from = 18; a.to = 10;
-  p = mapAdd(v,&a);  pn = blkNodePtr(p);
-  TST("Added as root right child",(pn == blkRight(mapRoot(v))));
+  p = mapAdd(v,&a);  pn = mapNodePtr(p);
+  TST("Added as root right child",(pn == mapRight(mapRoot(v))));
 
   a.from = 8; a.to = 10;
   p = mapAdd(v,&a);
-  pn = blkNodePtr(p);
-  qn = blkRightPtr(blkLeftPtr(mapRoot(v)));
-  TST("Added as root LR child",(pn == qn && ((Arc *)(qn->elm))->from == 8));
+  pn = mapNodePtr(p);
+  qn = mapRight(mapLeft(mapRoot(v)));
+  TST("Added as root LR child",(pn == qn && ((Arc *)(qn->elem))->from == 8));
 
   a.from = 16; a.to = 10;
   p = mapAdd(v,&a);
-  pn =  blkNodePtr(p);
-  qn = blkLeftPtr(blkRightPtr(mapRoot(v)));
-  TST("Added as root RL child",(pn == qn && ((Arc *)(qn->elm))->from == 16));
+  pn =  mapNodePtr(p);
+  qn = mapLeft(mapRight(mapRoot(v)));
+  TST("Added as root RL child",(pn == qn && ((Arc *)(qn->elem))->from == 16));
+
+  mapTree(v->root);
 
   TSTWRITE("#\n# TREE: ");
-  p = mapFirstSorted(v);
+  p = mapFirst(v);
   while (p != NULL) {
     TSTWRITE("%d ",p->from);
-    p = mapNextSorted(v);
+    p = mapNext(v);
   }
   TSTWRITE("\n#\n");
 
@@ -425,6 +435,7 @@ int main(int argc, char * argv[])
   mapDel(v,&a);
   TST("Deleted 8",(mapGet(v,&a) == NULL));
 
+  mapTree(v->root);
   TSTWRITE("#\n# TREE: ");
   p = mapFirst(v);
   while (p != NULL) {
@@ -436,6 +447,7 @@ int main(int argc, char * argv[])
   a.from = 6; a.to = 10;
   mapDel(v,&a);
   TST("Deleted 6",(mapGet(v,&a) == NULL));
+  mapTree(v->root);
   TSTWRITE("#\n# TREE: ");
   p = mapFirst(v);
   while (p != NULL) {
@@ -448,6 +460,7 @@ int main(int argc, char * argv[])
   mapDel(v,&a);
   TST("Deleted 18",(mapGet(v,&a) == NULL));
 
+  mapTree(v->root);
   TSTWRITE("#\n# TREE: ");
   p = mapFirst(v);
   while (p != NULL) {
@@ -457,7 +470,7 @@ int main(int argc, char * argv[])
   TSTWRITE("\n#\n");
 
   v = mapFree(v);
-
+#if 1
   TSTGROUP("Creating maps");
 
   v = mapNew(sizeof(Arc),offsetof(Arc,info));
@@ -465,16 +478,16 @@ int main(int argc, char * argv[])
 
   for (k=1;k<=200;k++) {
     a.from = k; a.to = 10;
-    p = mapAdd(v,&a);  pn = blkNodePtr(p);
+    p = mapAdd(v,&a);  pn = mapNodePtr(p);
     if ((k+1) % 31 == 0)  {
-      TSTWRITE("#\n# TREE: (");
       mapTree(mapRoot(v));
-      TSTWRITE("\n#\n");
     }
   }
+  mapTree(mapRoot(v));
   TST("The new map has 200 elements",(v != NULL && mapCnt(v) == 200));
 
   v = mapFree(v);
+ #endif
   }
  #endif
 
@@ -667,7 +680,7 @@ int main(int argc, char * argv[])
  }
  #endif
 
- #if 1
+ #if 0
  {
   stp_t pool;
   char *p;
