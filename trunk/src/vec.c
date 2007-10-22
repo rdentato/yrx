@@ -100,6 +100,8 @@ On Random Number generator:
 #define STATIC static
 #endif
 
+#include <assert.h> 
+
 static const char *errNOMEM = "Out of Memory (vec)";
 /*static const char *errUNEXP = "Unexpected error";*/
 
@@ -146,10 +148,10 @@ static void ndx2pg(uint32_t ndx, uint16_t *p, uint16_t *n)
   s  = div2(k+1);             /* ceil(k/2)  */
   k  = div2(k);               /* floor(k/2)  */
  *p  = (uint16_t)(
-	       (two_raised(s) - 1) +  /* Sum for i=0 to ceil(k/2 - 1)  of 2^i */
+               (two_raised(s) - 1) +  /* Sum for i=0 to ceil(k/2 - 1)  of 2^i */
          (two_raised(k) - 1) +  /* Sum for i=0 to floor(k/2 - 1) of 2^i */
          (m >> s)
-	   );
+           );
  *n  = (uint16_t) (m & (two_raised(s) - 1));
   dbgprintf(DBG_OFF,"ndg2pg ->  %4u %4u %4u (%4u)\n",ndx,*p, *n, pgsize(*p));
 }
@@ -671,8 +673,8 @@ static char **stpsearch(stp_t pool, char *str, char ***del)
        *del = s;
       }
     }
-	  else {
-	    if (strcmp(str,*s) == 0)   return s;
+          else {
+            if (strcmp(str,*s) == 0)   return s;
     }
     t = *s;
     if (t == VEC_DELETED) t = "(del)";
@@ -769,16 +771,16 @@ static uint8_t T[] = { 0x5B, 0x06, 0xED, 0x30, 0x34, 0xCB, 0x01, 0x99,
 
 static uint32_t mappriority(mapNode *node)
 {
-  uint8_t *p,*q;
-  uint32_t h;
+  /* this is the FNV hash! */
+  uint8_t *p;
+  uint32_t h = 0x811C9DC5;  
 
   p = (uint8_t *)(&node);
-  q = (uint8_t *)(&h);
 
-  q[0] = p[3] ^ T[p[1]];
-  q[1] = p[2] ^ T[p[0]];
-  q[2] = p[0] ^ T[p[3]];
-  q[3] = p[1] ^ T[p[2]];
+  h = (h * 16777619) ^ p[0];
+  h = (h * 16777619) ^ p[1];
+  h = (h * 16777619) ^ p[2];
+  h = (h * 16777619) ^ p[3];
 
   return h;
 }
@@ -880,33 +882,37 @@ static mapNode *mapsearch(map_t m, mapNode ***par,  void *elem)
   return node;
 }
 
+uint32_t mapMaxDepth(map_t m)
+{
+  return (2*llog2(mapCnt(m)+1));
+}
 static void mapbalance(map_t m)
 {
   mapNode **p,**q;
+  mapNode  *node;
   uint8_t direction;
-  uint32_t nodepri,pri;
+  uint32_t nodepri;
 
-  dbgmsg("Count: %d Depth: %d Limit: %d\n",m->cnt, m->stack->cnt,1+llog2(m->cnt));
+  dbgoff("Count: %d Depth: %d Limit: %d\n",m->cnt, m->stack->cnt,1+llog2(m->cnt));
   p = stkTopVal(m->stack,mapNode **);
-  nodepri = mappriority(*p);
+  node = *p;
+  nodepri = mappriority(node);
   while (1) {
     stkPop(m->stack);
-    dbgmsg("    TOP: Parent: %p  Node: %p direction: %d",p,*p,direction);
     q = stkTopVal(m->stack,mapNode **);
     if (q == NULL) break;
 
     direction = 0;
     if (p == &(mapRight(*q))) direction++;
+    dbgoff("  %p -> %p %c  (%x < %x)?\n",*q,*p,direction == 0? 'L':'R',nodepri,mappriority(*q));
 
-    dbgmsg(" nodepri %x pri %x\n", nodepri, mappriority(*q));
-    if (nodepri < mappriority(*q))
-       *q = maprotate(*q,direction);
-    else 
-       break;
+    if (nodepri > mappriority(*q)) break;
 
+    *q = maprotate(*q,direction ^ 1);
+    dbgoff("Rotated: %p -> %p\n",*q,node);
+    assert(*q == node);
     p = q;
   } 
-  printf("\n");
 }
 
 void *mapAdd(map_t m, void *e)
@@ -916,13 +922,14 @@ void *mapAdd(map_t m, void *e)
 
   parent = &(m->root);
 
-
   node = mapsearch(m, &parent, e);
   if (node == NULL) {
     node = mapnewnode(m);
    *parent = node;
   }
-  dbgmsg("ADD: %p to %p\n", node,parent);
+
+  dbgoff("ADD: %p to %p\n", node,parent);
+
   memcpy(node->elem, e, m->nodes->esz - offsetof(mapNode, elem));
   mapbalance(m);
   return node->elem;

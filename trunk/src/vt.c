@@ -18,9 +18,9 @@
 #include "vec.h"
 
 typedef struct Arc {
-  uint16_t from;
-  uint16_t to;
-  uint32_t info[31];
+  uint32_t from;
+  uint32_t to;
+  uint32_t info[30];
 } Arc;
 
 int arccmp(Arc *a, Arc *b)
@@ -32,6 +32,18 @@ int arccmp(Arc *a, Arc *b)
 }
 
 #if 1
+uint32_t mapDepth(map_t m)
+{
+  uint32_t depth=0;
+  mapNode *p;
+  p = mapFirst(m);
+  while (p != NULL) {
+    if (stkDepth(m->stack) > depth) depth = stkDepth(m->stack);
+    p = mapNext(m);
+  }
+  return depth;
+}
+
 void mapTree__(mapNode *p)
 {
 
@@ -47,11 +59,11 @@ void mapTree__(mapNode *p)
   }
 }
 
-void mapTree(mapNode *p)
+void mapTree(map_t m)
 {
   TSTWRITE("\n# TREE: ");
-  mapTree__(p);
-  TSTWRITE("\n#\n");
+  mapTree__(m->root);
+  TSTWRITE("\n# COUNT: %u DEPTH: %u  (%u)\n",mapCnt(m),mapDepth(m),mapMaxDepth(m));
 }
 
 #endif
@@ -421,7 +433,7 @@ int main(int argc, char * argv[])
   qn = mapLeft(mapRight(mapRoot(v)));
   TST("Added as root RL child",(pn == qn && ((Arc *)(qn->elem))->from == 16));
 
-  mapTree(v->root);
+  mapTree(v);
 
   TSTWRITE("#\n# TREE: ");
   p = mapFirst(v);
@@ -435,7 +447,7 @@ int main(int argc, char * argv[])
   mapDel(v,&a);
   TST("Deleted 8",(mapGet(v,&a) == NULL));
 
-  mapTree(v->root);
+  mapTree(v);
   TSTWRITE("#\n# TREE: ");
   p = mapFirst(v);
   while (p != NULL) {
@@ -447,7 +459,7 @@ int main(int argc, char * argv[])
   a.from = 6; a.to = 10;
   mapDel(v,&a);
   TST("Deleted 6",(mapGet(v,&a) == NULL));
-  mapTree(v->root);
+  mapTree(v);
   TSTWRITE("#\n# TREE: ");
   p = mapFirst(v);
   while (p != NULL) {
@@ -460,7 +472,7 @@ int main(int argc, char * argv[])
   mapDel(v,&a);
   TST("Deleted 18",(mapGet(v,&a) == NULL));
 
-  mapTree(v->root);
+  mapTree(v);
   TSTWRITE("#\n# TREE: ");
   p = mapFirst(v);
   while (p != NULL) {
@@ -470,8 +482,8 @@ int main(int argc, char * argv[])
   TSTWRITE("\n#\n");
 
   v = mapFree(v);
-#if 05
-  TSTGROUP("Creating maps");
+#if 1
+  TSTGROUP("Medium size map");
 
   v = mapNew(sizeof(Arc),offsetof(Arc,info));
   TST("The new map is empty",(v != NULL && mapCnt(v) == 0 && mapRoot(v) == NULL));
@@ -480,11 +492,28 @@ int main(int argc, char * argv[])
     a.from = k; a.to = 10;
     p = mapAdd(v,&a);  pn = mapNodePtr(p);
     if ((k+1) % 31 == 0)  {
-      mapTree(mapRoot(v));
+      mapTree(v);
     }
   }
-  mapTree(mapRoot(v));
+  mapTree(v);
   TST("The new map has 200 elements",(v != NULL && mapCnt(v) == 200));
+
+  v = mapFree(v);
+ #endif
+#if 1
+  TSTGROUP("Huge size map");
+
+  v = mapNew(sizeof(Arc),offsetof(Arc,info));
+  TST("The new map is empty",(v != NULL && mapCnt(v) == 0 && mapRoot(v) == NULL));
+
+  for (k=1;k <= 2000000;k++) {
+    a.from = k; a.to = 10;
+    p = mapAdd(v,&a);  pn = mapNodePtr(p);
+    if ((k+1) % 0xFFFF == 0)  {
+      TSTNOTE(" Count: %u Depth: %u (%u)",mapCnt(v),mapDepth(v),mapMaxDepth(v));
+    }
+  }
+  TSTNOTE(" Count: %u Depth: %u (%u)",mapCnt(v),mapDepth(v),mapMaxDepth(v));
 
   v = mapFree(v);
  #endif

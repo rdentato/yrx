@@ -180,7 +180,7 @@ void    mapDel    (map_t m, void *e);
 void   *mapGet    (map_t m, void *e);
 void   *mapFirst  (map_t m);
 void   *mapNext   (map_t m);
-
+uint32_t mapMaxDepth(map_t m);
 
 #endif  /* VEC_H */
 
