@@ -470,7 +470,7 @@ int main(int argc, char * argv[])
   TSTWRITE("\n#\n");
 
   v = mapFree(v);
-#if 1
+#if 05
   TSTGROUP("Creating maps");
 
   v = mapNew(sizeof(Arc),offsetof(Arc,info));
