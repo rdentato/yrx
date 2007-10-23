@@ -104,7 +104,7 @@ int main(int argc, char * argv[])
   TSTNOTE("generic pointer. If a smaller size is specified, the size is");
   TSTNOTE("enlarged enough to ensure a pointer will fit.");
 
-  v = vecNew(0);
+  v = vecNew(1);
   TSTT("New vector (elemsz 0 -> sizeof(void*))",
          (v != NULL && v->esz == sizeof(void *)),"Re-define free list management");
 
@@ -114,14 +114,13 @@ int main(int argc, char * argv[])
 
   v = vecNew(sizeof(Arc));
 
-
   a.from = 10; a.to = 32;
 
   TSTNOTE("Let's start with an empty vector.");
   TST("vecCnt == 0",(vecCnt(v) == 0));
 
   TSTNOTE("Now a single element stored in position 0.");
-  p = vecSet(v,0,&a);
+  p = vecSet(v, 0, &a); 
   TST("vecCnt == 1",(vecCnt(v) == 1));
   TST("cur_p  == 0",(v->cur_p == 0));
   TST("cur_n  == 0",(v->cur_n == 0));
@@ -129,8 +128,10 @@ int main(int argc, char * argv[])
 
   TSTNOTE("There is only one page allocated");
   TST("v->npg == 1",(v->npg == 1 && v->pgs != NULL && v->pgs[0] != NULL));
+  TSTONFAIL("Pages allocated: %d",v->npg);
+
   TSTNOTE("Check that elements are stored in order");
-  for (k=0; k < 32; k++) {
+  for (k = 0; k < 32; k++) {
     a.from = k; a.to = k;
     vecSet(v,k,&a);
   }
@@ -425,13 +426,15 @@ int main(int argc, char * argv[])
   p = mapAdd(v,&a);
   pn = mapNodePtr(p);
   qn = mapRight(mapLeft(mapRoot(v)));
-  TST("Added as root LR child",(pn == qn && ((Arc *)(qn->elem))->from == 8));
+  TST("Added as root LR child",(qn != NULL && qn->elem != NULL && pn == qn && ((Arc *)(qn->elem))->from == 8));
 
   a.from = 16; a.to = 10;
   p = mapAdd(v,&a);
   pn =  mapNodePtr(p);
+  TSTNOTE("pn=%p",pn);
   qn = mapLeft(mapRight(mapRoot(v)));
-  TST("Added as root RL child",(pn == qn && ((Arc *)(qn->elem))->from == 16));
+  TSTNOTE("qn=%p",qn);
+  TST("Added as root RL child",(qn != NULL && qn->elem != NULL && pn == qn && ((Arc *)(qn->elem))->from == 16));
 
   mapTree(v);
 
@@ -506,7 +509,7 @@ int main(int argc, char * argv[])
   v = mapNew(sizeof(Arc),offsetof(Arc,info));
   TST("The new map is empty",(v != NULL && mapCnt(v) == 0 && mapRoot(v) == NULL));
 
-  for (k=1;k <= 2000000;k++) {
+  for (k=1;k <= 1200000; k++) {
     a.from = k; a.to = 10;
     p = mapAdd(v,&a);  pn = mapNodePtr(p);
     if ((k+1) % 0xFFFF == 0)  {

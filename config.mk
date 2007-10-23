@@ -21,6 +21,15 @@
 #SYS=LINUX
 SYS=MINGW
 
+#### LOG2_ASM
+## Uncomment next line to use the inline assembler version of |llog2()|
+LOG2_ASM=-DLOG2_ASM
+
+
+#### DEBUG
+## Uncomment next line to compile a debugging instrumented code
+#DEBUG=-DDEBUG
+
 #### LUA libraries
 ## PATH to the lua source code distribution. It is assumed that Lua 
 ## libraries and executable have already been built.
@@ -29,10 +38,9 @@ LUA=/d/0_Works/lua-5.1.2
 
 #### UPX 
 UPX=test
-## If you have UPX installed and want srlua to be compressed with 
-## UPX then uncomment next line.
-
-UPX=upx
+## If you want to compress the final executable with
+## UPX, just uncomment next line.
+#UPX=upx
 
 #########
 ######### NO Configurable items below this line

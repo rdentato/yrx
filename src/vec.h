@@ -152,8 +152,10 @@ char *stpDel   (stp_t pool, char *str);
 /**********************/
 
 #define mapRoot(node)    ((node)->root)
-#define mapLeft(node)    ((node)->lnk[0])
-#define mapRight(node)   ((node)->lnk[1])
+#define mapLnkLeft(node)    ((node)->lnk[0])
+#define mapLnkRight(node)   ((node)->lnk[1])
+#define mapLeft(node)    (node == NULL ? NULL : mapLnkLeft(node))
+#define mapRight(node)   (node == NULL ? NULL : mapLnkRight(node))
 #define mapKeySz(map)    ((map)->nodes->aux)
 #define mapCnt(map)      ((map)->cnt)
 #define mapNodePtr(p)    (p == NULL? NULL : (void *)(((char *)(p)) - offsetof(mapNode, elem)))
