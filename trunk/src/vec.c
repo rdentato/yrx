@@ -108,18 +108,43 @@ static const char *errNOMEM = "Out of Memory (vec)";
 /*
 ** Integer log base 2 of uint32 integer values.
 **   llog2(0) == llog2(1) == 0
-** Makes a binary search.
 */
 static uint16_t llog2(uint32_t x)
 {
-  uint16_t l=0;
+  int l;
+
+  l=0;
+
+  #ifdef LOG2_ASM   /* Use inline assembly instructions! */
+    #if defined(__POCC__)
+      /* Pelles C */
+      __asm { mov eax, [x]
+              cmp eax, 0
+              je  z
+              bsr ecx, eax
+              mov  l, ecx
+         z:
+      }
+    #elif defined(__GNUC__)
+      /* GCC */
+      __asm__( "bsrl %1,%0" :"=r" (l) :"r" (x));
+    #else
+      /* fallback to the C version */
+      #undef LOG2_ASM
+    #endif
+  #endif
+
+  #ifndef LOG2_ASM  /* Make a binary search.*/
 
   if (x & 0xFFFF0000) {l += 16; x >>= 16;}   /* 11111111111111110000000000000000 */
   if (x & 0xFF00)     {l += 8;  x >>= 8 ;}   /* 1111111100000000*/
   if (x & 0xF0)       {l += 4;  x >>= 4 ;}   /* 11110000*/
   if (x & 0xC)        {l += 2;  x >>= 2 ;}   /* 1100 */
   if (x & 2)          {l += 1;  }            /* 10 */
-  return l;
+
+  #endif
+
+  return (uint16_t)l;
 }
 
 #define two_raised(n) (1<<(n))
@@ -131,7 +156,6 @@ static uint16_t pgsize(uint16_t p)
 
   p += 2;
   k  = llog2(p) - 1;
-
   k  = two_raised(k);
   if (p >= 3*k) k <<= 1;
   return k;
@@ -149,8 +173,8 @@ static void ndx2pg(uint32_t ndx, uint16_t *p, uint16_t *n)
   k  = div2(k);               /* floor(k/2)  */
  *p  = (uint16_t)(
                (two_raised(s) - 1) +  /* Sum for i=0 to ceil(k/2 - 1)  of 2^i */
-         (two_raised(k) - 1) +  /* Sum for i=0 to floor(k/2 - 1) of 2^i */
-         (m >> s)
+               (two_raised(k) - 1) +  /* Sum for i=0 to floor(k/2 - 1) of 2^i */
+               (m >> s)
            );
  *n  = (uint16_t) (m & (two_raised(s) - 1));
   dbgprintf(DBG_OFF,"ndg2pg ->  %4u %4u %4u (%4u)\n",ndx,*p, *n, pgsize(*p));
@@ -162,7 +186,7 @@ static void ndx2pg(uint32_t ndx, uint16_t *p, uint16_t *n)
 static void vecinit(vec *v,uint16_t elemsize)
 {
   if (v != NULL) {
-    /*if (elemsize < MINSZ) elemsize = MINSZ;*/
+    if (elemsize < MINSZ) elemsize = MINSZ;
     v->esz    = elemsize;
     v->aux    = 0;
     v->npg    = 0;
@@ -220,26 +244,39 @@ void *vecFreeClean(vec *v,vecCleaner cln)
   return NULL;
 }
 
-static void *vecslot(vec *v,uint16_t page, uint16_t n)
+static void *vecslot(vec *v, uint16_t page, uint16_t n)
 {
   void *p=NULL;
-  uint32_t t;
+  uint16_t t;
 
   if (page >= v->npg) {
+    
     /* Extend the index to pages*/
-    dbgprintf(DBG_OFF,"\t *X* %d %d %d\n",page,v->npg,llog2(page+1));
+    dbgoff("\t *X* %d %d %d\n",page,v->npg,llog2(page+1));
 
-    t = v->npg;
+    t  = v->npg;
+    
    /* The smallest power of two greater then |page| */
+    #if 0
     v->npg = (page == 0)? 1 : 1 << (llog2(page) +1) ;
-
-    dbgprintf(DBG_OFF,"\t === %d ",v->npg);
-
+    #else
+    v->npg = page + 1;
+    if ((v->npg & (v->npg-1))) {
+      uint16_t xp = v->npg - 1;
+      xp |= (xp >> 1);
+      xp |= (xp >> 2);
+      xp |= (xp >> 4);
+      xp |= (xp >> 8);
+      v->npg = xp + 1;
+    }
+    #endif
+    dbgoff("\t === %d (%d)\n",v->npg,page);
     v->pgs = realloc(v->pgs, v->npg * sizeof(void *));
     if (v->pgs == NULL) err(3001,"Unable to allocate page index for (%u)\n",page);
-    while (t < v->npg)  v->pgs[t++] = NULL;
+    /*while (t < v->npg)  v->pgs[t++] = NULL;/**/
+    memset(v->pgs+t, 0, (v->npg - t)*sizeof(void *));/**/
 
-    dbgprintf(DBG_OFF,"\t *** %d \n",v->npg);
+    dbgoff("\t *** %d \n",v->npg);
   }
 
   if (page != v->cur_p) 
@@ -818,13 +855,13 @@ static mapNode *mapnewnode(map_t m)
 
   if (m->freelst != NULL) {
     p = m->freelst;
-    m->freelst = mapRight(p);
+    m->freelst = mapLnkRight(p);
   }
   else {
     p = vecSet(m->nodes, vecCnt(m->nodes),NULL);
   }
-  mapLeft(p) = NULL;
-  mapRight(p) = NULL;
+  mapLnkLeft(p) = NULL;
+  mapLnkRight(p) = NULL;
   mapCnt(m)++;
   return p;
 }
@@ -873,7 +910,7 @@ static mapNode *mapsearch(map_t m, mapNode ***par,  void *elem)
     cmp = memcmp(elem, node->elem, mapKeySz(m));
     if (cmp == 0) break;   dbgoff("Found: %p\n",node);
 
-    parent = (cmp > 0)? &mapRight(node) : &mapLeft(node);
+    parent = (cmp > 0)? &mapLnkRight(node) : &mapLnkLeft(node);
 
   } while (1);
 
@@ -903,7 +940,7 @@ static void mapbalance(map_t m)
     if (q == NULL) break;
 
     direction = 0;
-    if (p == &(mapRight(*q))) direction++;
+    if (p == &(mapLnkRight(*q))) direction++;
     dbgoff("  %p -> %p %c  (%x < %x)?\n",*q,*p,direction == 0? 'L':'R',nodepri,mappriority(*q));
 
     if (nodepri > mappriority(*q)) break;
@@ -945,8 +982,8 @@ void *mapGet(map_t m, void *e)
 
 void mapdelnode(map_t m, mapNode *node)
 {
-  mapLeft(node) = VEC_DELETED;
-  mapRight(node) = m->freelst;
+  mapLnkLeft(node) = VEC_DELETED;
+  mapLnkRight(node) = m->freelst;
   m->freelst = node;
   mapCnt(m)--;
 }
@@ -964,13 +1001,13 @@ void mapDel(map_t m, void *e)
 
   if (node != NULL) {
     while (1) {
-      if (mapRight(node) != NULL) {
+      if (mapLnkRight(node) != NULL) {
        *parent =  maprotleft(node);
-        parent = &mapLeft(*parent);
+        parent = &mapLnkLeft(*parent);
       }
-      else if (mapLeft(node) != NULL) {
+      else if (mapLnkLeft(node) != NULL) {
        *parent =  maprotright(node);
-        parent = &mapRight(*parent);
+        parent = &mapLnkRight(*parent);
       }
       else {
        *parent = NULL;
@@ -988,7 +1025,7 @@ static void mapgoleft(map_t m, mapNode *p)
 {
   while (p != NULL) {
     stkPush(m->stack,&p);
-    p = mapLeft(p);
+    p = mapLnkLeft(p);
   }
 }
 
@@ -1000,7 +1037,7 @@ void *mapNext(map_t m)
 
   p = stkTopVal(m->stack, mapNode *);
   stkPop(m->stack);
-  mapgoleft(m, mapRight(p));
+  mapgoleft(m, mapLnkRight(p));
   return p->elem;
 }
 
