@@ -130,12 +130,11 @@ void yrxerr(char *errmsg)
 #define lbl_and(a,b) do { uint8_t i; for(i=0; i<16; i++) a[i] &=  b[i]; } while (0)
 
 static int c__;
-#define hex(c) (c__=c,('0' <= c__ && c__ <= '9')? c__ - '0' :\
-                      ('A' <= c__ && c__ <= 'F')? c__ - 'A'+10:\
-                      ('a' <= c__ && c__ <= 'f')? c__ - 'a'+10:-1)\
+#define hex(c) ((c__=c),('0' <= c__ && c__ <= '9')? c__ - '0' :\
+                        ('A' <= c__ && c__ <= 'F')? c__ - 'A'+10:\
+                        ('a' <= c__ && c__ <= 'f')? c__ - 'a'+10:-1)\
 
-#define oct(c) (c__=c,('0' <= c__ && c__ <= '7')? c__ - '0' : -1)
-
+#define oct(c) ((c__=c),('0' <= c__ && c__ <= '7')? c__ - '0' : -1)
 
 uint16_t *lbl_bmp(char *s)
 {
@@ -143,7 +142,7 @@ uint16_t *lbl_bmp(char *s)
   BOOL range = FALSE;
   int last;
   int c;
-  int i=0;
+  int i = 0;
   int h;
 
   static uint16_t ll[16];
@@ -394,7 +393,7 @@ void removeeps()
             if (vecGetVal(marked, a->to, uint16_t) == from)
               yrxerr("Expression contains empty closures");
             vecSet(marked, a->to, &from);
-            dbgoff("Copy from %d to %d\n",a->to,from);
+            _dbgmsg("Copy from %d to %d\n",a->to,from);
             copyarcs(a->to, from, a->tag);
             /* Now delete the arc replacing it with the last one*/
             b = vecGet(arcs, vecCnt(arcs)-1);
@@ -410,10 +409,9 @@ void removeeps()
 
   pushonce(0);
   marked = vecFree(marked);
-
 }
 
-uint32_t intersect(uint32_t &a, uint32_t &b, uint32_t &c)
+uint32_t intersect(uint32_t *a, uint32_t *b, uint32_t *c)
 {
 
 }
@@ -503,7 +501,7 @@ char* escaped()
      return NULL;
    }
 
-   j=cur_pos;
+   j = cur_pos;
    if (c == '\\') {
      c = nextch();
      c = nextch();
@@ -538,15 +536,15 @@ char *cclass()
 
    c = peekch(0);
    if (c < 0) return NULL;
-   j=cur_pos;
+   j = cur_pos;
    if (c == '[') {
-     c=nextch();
+     c = nextch();
      while (c != ']') {
        c = nextch();
-       if ( c == '\\' ) c = (nextch(),0);
-       if ( c < 0 ) yrxerr("Unterminated class");
+       if (c == '\\') c = (nextch(), 0);
+       if (c < 0) yrxerr("Unterminated class");
      }
-     l = str_set(j,cur_pos);
+     l = str_set(j, cur_pos);
    }
    else l = escaped();
 

@@ -21,7 +21,7 @@
 #include <string.h>
 
 #ifdef _MSC_VER
-#include "pstdint.h" 
+#include "pstdint.h"
 #define strdup _strdup
 #else
 #include <stdint.h>
@@ -134,22 +134,6 @@ buf_t      bufNew   (void);
 #define    bufLen   ((b)->cnt)
 
 /**********************/
-typedef struct stp {
-  vec        str[1];
-  uint32_t   msk;
-} stp;
-
-typedef stp *stp_t;
-
-stp_t stpNew   (void);
-void *stpFree  (stp_t pool);
-char *stpAdd   (stp_t pool, char *str);
-char *stpGet   (stp_t pool, char *str);
-char *stpDel   (stp_t pool, char *str);
-
-#define stpCnt(p) ((p)->str->cnt)
-
-/**********************/
 
 #define mapRoot(node)    ((node)->root)
 #define mapLnkLeft(node)    ((node)->lnk[0])
@@ -159,6 +143,8 @@ char *stpDel   (stp_t pool, char *str);
 #define mapKeySz(map)    ((map)->nodes->aux)
 #define mapCnt(map)      ((map)->cnt)
 #define mapNodePtr(p)    (p == NULL? NULL : (void *)(((char *)(p)) - offsetof(mapNode, elem)))
+
+typedef int (*mapCmp_t)();
 
 typedef struct mapNode {
   struct mapNode *lnk[2];
@@ -171,18 +157,36 @@ typedef struct mapVec {
   struct mapNode *root;
   struct mapNode *freelst;
   uint32_t        cnt;
+  mapCmp_t        cmp;
 } mapVec;
 
-typedef mapVec *map_t; 
+typedef mapVec *map_t;
 
-map_t   mapNew    (uint16_t elemsz, uint16_t keysz);
-map_t   mapFree   (map_t m);
-void   *mapAdd    (map_t m, void *e);
-void    mapDel    (map_t m, void *e);
-void   *mapGet    (map_t m, void *e);
-void   *mapFirst  (map_t m);
-void   *mapNext   (map_t m);
-uint32_t mapMaxDepth(map_t m);
+map_t    mapNew         (uint16_t elemsz, int (*cmp)());
+map_t    mapFreeClean   (map_t m, vecCleaner cln);
+void    *mapAdd         (map_t m, void *e);
+void     mapDel         (map_t m, void *e);
+void    *mapGet         (map_t m, void *e);
+void    *mapFirst       (map_t m);
+void    *mapNext        (map_t m);
+
+uint32_t mapMaxDepth    (map_t m);
+
+#define mapFree(m) mapFreeClean(m,NULL)
+
+/**********************/
+
+#define stp_t map_t
+
+stp_t stpNew   (void);
+void *stpFree  (stp_t pool);
+char *stpAdd   (stp_t pool, char *str);
+char *stpGet   (stp_t pool, char *str);
+char *stpDel   (stp_t pool, char *str);
+
+#define stpCnt  mapCnt
+
+/**********************/
 
 #endif  /* VEC_H */
 
