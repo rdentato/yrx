@@ -28,20 +28,78 @@ int arccmp(Arc *a, Arc *b)
   int t;
   t = a->from - b->from;
   if (t == 0) t = a->to - b->to;
+  _dbgmsg("arccmp : %p %p %d\n",a,b,t);
   return t;
 }
 
 #if 1
+
+uint32_t mapdepth(mapNode *p)
+{
+  uint32_t mL=0,mR=0;
+
+  if (p == NULL) return 0;
+  if (mapLeft(p) == NULL && mapRight(p) == NULL) return 0;
+
+  mL = mapdepth(mapLeft(p));
+  mR = mapdepth(mapRight(p));
+
+  if (mL > mR) return mL +1;
+  return mR + 1;
+}
+
+
+typedef struct {
+  mapNode *ptr;
+  uint32_t dpt;
+} mapStack_t;
+
 uint32_t mapDepth(map_t m)
 {
-  uint32_t depth=0;
   mapNode *p;
-  p = mapFirst(m);
-  while (p != NULL) {
-    if (stkDepth(m->stack) > depth) depth = stkDepth(m->stack);
-    p = mapNext(m);
+  mapStack_t ms;
+  mapStack_t *pms;
+  stk_t depths;
+  uint32_t d=0;
+  uint32_t max_depth=0;
+
+  depths = stkNew(sizeof(mapStack_t));
+  if (depths == NULL) return 0;
+
+  ms.ptr = mapRoot(m);
+  ms.dpt = 1;
+
+  stkPush(depths,&ms);
+
+  for(EVER) {
+    pms = stkTop(depths);
+    if (pms == NULL) break;
+
+    p = pms->ptr;
+    d = pms->dpt;
+
+    stkPop(depths);
+
+    for(EVER) {
+      if ((mapLeft(p) == NULL) && (mapRight(p) == NULL)) {
+        if (d > max_depth) max_depth = d;
+        break;
+      }
+      d++;
+      if (mapLeft(p) != NULL) {
+        if (mapRight(p) != NULL) { /* save it for later */
+          ms.ptr = mapRight(p);
+          ms.dpt = d;
+          stkPush(depths,&ms);
+        }
+        p = mapLeft(p);
+      }
+      else
+        p = mapRight(p);
+    }
   }
-  return depth;
+  stkFree(depths);
+  return max_depth;
 }
 
 void mapTree__(mapNode *p)
@@ -120,7 +178,7 @@ int main(int argc, char * argv[])
   TST("vecCnt == 0",(vecCnt(v) == 0));
 
   TSTNOTE("Now a single element stored in position 0.");
-  p = vecSet(v, 0, &a); 
+  p = vecSet(v, 0, &a);
   TST("vecCnt == 1",(vecCnt(v) == 1));
   TST("cur_p  == 0",(v->cur_p == 0));
   TST("cur_n  == 0",(v->cur_n == 0));
@@ -408,7 +466,7 @@ int main(int argc, char * argv[])
 
   TSTGROUP("Creating maps");
 
-  v = mapNew(sizeof(Arc),offsetof(Arc,info));
+  v = mapNew(sizeof(Arc),NULL);
   TST("The new map is empty",(v != NULL && mapCnt(v) == 0 && mapRoot(v) == NULL));
   a.from = 12; a.to = 10;
   p = mapAdd(v,&a);  pn = mapNodePtr(p);
@@ -485,10 +543,10 @@ int main(int argc, char * argv[])
   TSTWRITE("\n#\n");
 
   v = mapFree(v);
-#if 1
+#if 0
   TSTGROUP("Medium size map");
 
-  v = mapNew(sizeof(Arc),offsetof(Arc,info));
+  v = mapNew(sizeof(Arc),NULL);
   TST("The new map is empty",(v != NULL && mapCnt(v) == 0 && mapRoot(v) == NULL));
 
   for (k=1;k<=200;k++) {
@@ -503,15 +561,33 @@ int main(int argc, char * argv[])
 
   v = mapFree(v);
  #endif
-#if 1
+#if 0
   TSTGROUP("Huge size map");
 
-  v = mapNew(sizeof(Arc),offsetof(Arc,info));
+  v = mapNew(sizeof(Arc),arccmp);
   TST("The new map is empty",(v != NULL && mapCnt(v) == 0 && mapRoot(v) == NULL));
 
-  for (k=1;k <= 1200000; k++) {
-    a.from = k; a.to = 10;
-    p = mapAdd(v,&a);  pn = mapNodePtr(p);
+  for (k=1; k <= 700000; k++) {
+    a.from = k; a.to = k;
+    p = mapAdd(v,&a);
+    if ((k+1) % 0xFFFF == 0)  {
+      TSTNOTE(" Count: %u Depth: %u (%u)",mapCnt(v),mapDepth(v),mapMaxDepth(v));
+    }
+  }
+  TSTNOTE(" Count: %u Depth: %u (%u)",mapCnt(v),mapDepth(v),mapMaxDepth(v));
+
+  v = mapFree(v);
+ #endif
+
+ #if 0
+  TSTGROUP("Huge size map (rand)");
+
+  v = mapNew(sizeof(Arc),arccmp);
+  TST("The new map is empty",(v != NULL && mapCnt(v) == 0 && mapRoot(v) == NULL));
+  srand((uint32_t)time(NULL));
+  for (k=1;k <= 700000; k++) {
+    a.from = rand(); a.to = k;
+    p = mapAdd(v,&a);
     if ((k+1) % 0xFFFF == 0)  {
       TSTNOTE(" Count: %u Depth: %u (%u)",mapCnt(v),mapDepth(v),mapMaxDepth(v));
     }
@@ -712,7 +788,7 @@ int main(int argc, char * argv[])
  }
  #endif
 
- #if 0
+ #if 1
  {
   stp_t pool;
   char *p;
@@ -731,9 +807,9 @@ int main(int argc, char * argv[])
   TST("Get a string",(p == q && strcmp(p,"pippo") == 0));
 
   st[2] = 0;
-  for (j='0'; j<126; j++) {
+  for (j='0'; j<255; j++) {
     st[1] = j;
-    for (k=' '; k<126; k++) {
+    for (k=' '; k<256; k++) {
       st[0] = k;
       p = stpAdd(pool,st);
     }

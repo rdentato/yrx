@@ -100,7 +100,7 @@ On Random Number generator:
 #define STATIC static
 #endif
 
-#include <assert.h> 
+#include <assert.h>
 
 static const char *errNOMEM = "Out of Memory (vec)";
 /*static const char *errUNEXP = "Unexpected error";*/
@@ -116,8 +116,8 @@ static uint16_t llog2(uint32_t x)
   l=0;
 
   #ifdef LOG2_ASM   /* Use inline assembly instructions! */
-    #if defined(__POCC__)
-      /* Pelles C */
+    #if defined(__POCC__) || defined(_MSC_VER)
+      /* Pelles C & MS Visual C++*/
       __asm { mov eax, [x]
               cmp eax, 0
               je  z
@@ -135,7 +135,7 @@ static uint16_t llog2(uint32_t x)
   #endif
 
   #ifndef LOG2_ASM  /* Make a binary search.*/
-
+  dbgmsg("Standard llog\n");
   if (x & 0xFFFF0000) {l += 16; x >>= 16;}   /* 11111111111111110000000000000000 */
   if (x & 0xFF00)     {l += 8;  x >>= 8 ;}   /* 1111111100000000*/
   if (x & 0xF0)       {l += 4;  x >>= 4 ;}   /* 11110000*/
@@ -177,7 +177,7 @@ static void ndx2pg(uint32_t ndx, uint16_t *p, uint16_t *n)
                (m >> s)
            );
  *n  = (uint16_t) (m & (two_raised(s) - 1));
-  dbgprintf(DBG_OFF,"ndg2pg ->  %4u %4u %4u (%4u)\n",ndx,*p, *n, pgsize(*p));
+  _dbgmsg("ndg2pg ->  %4u %4u %4u (%4u)\n",ndx,*p, *n, pgsize(*p));
 }
 
 /* Ensure an element can store a (void *). Will be used for the freelist */
@@ -206,7 +206,6 @@ vec *vecNew(uint16_t elemsize)
   if (elemsize > 0 && elemsize < UINT16_MAX) {
     v = malloc(sizeof(vec));
     vecinit(v,elemsize);
-    dbgprintf(DBG_OFF,"VEC: %p\n", v);
   }
   return v;
 }
@@ -219,7 +218,7 @@ static void veccleanup (vec *v,vecCleaner cln)
   if (v != NULL) {
     if (v->pgs != NULL) {
       for (i = 0; i< v->npg; i++) {
-        dbgoff("#  %d %p\n",i,v->pgs[i]);
+        _dbgmsg("#  %d %p\n",i,v->pgs[i]);
         if (v->pgs[i] != NULL) {
           if (cln != NULL) {
             for (k=0, p=v->pgs[i];  k<pgsize(i);  k++, p += v->esz)
@@ -250,12 +249,12 @@ static void *vecslot(vec *v, uint16_t page, uint16_t n)
   uint16_t t;
 
   if (page >= v->npg) {
-    
+
     /* Extend the index to pages*/
-    dbgoff("\t *X* %d %d %d\n",page,v->npg,llog2(page+1));
+    _dbgmsg("\t *X* %d %d %d\n",page,v->npg,llog2(page+1));
 
     t  = v->npg;
-    
+
    /* The smallest power of two greater then |page| */
     #if 0
     v->npg = (page == 0)? 1 : 1 << (llog2(page) +1) ;
@@ -270,22 +269,22 @@ static void *vecslot(vec *v, uint16_t page, uint16_t n)
       v->npg = xp + 1;
     }
     #endif
-    dbgoff("\t === %d (%d)\n",v->npg,page);
+    _dbgmsg("\t === %d (%d)\n",v->npg,page);
     v->pgs = realloc(v->pgs, v->npg * sizeof(void *));
     if (v->pgs == NULL) err(3001,"Unable to allocate page index for (%u)\n",page);
-    /*while (t < v->npg)  v->pgs[t++] = NULL;/**/
+    /*while (t < v->npg)  v->pgs[t++] = NULL;*/
     memset(v->pgs+t, 0, (v->npg - t)*sizeof(void *));/**/
 
-    dbgoff("\t *** %d \n",v->npg);
+    _dbgmsg("\t *** %d \n",v->npg);
   }
 
-  if (page != v->cur_p) 
+  if (page != v->cur_p)
     v->cur_s = pgsize(page);
 
   if (v->pgs[page] == NULL) {
     v->pgs[page] = calloc(v->cur_s, v->esz); /* page is guaranteed to be filled with 0's */
     if (v->pgs[page] == NULL)  err(3002,errNOMEM);
-    dbgoff(" ]]]  page %d 0x%p\n", page, v->pgs[page]);
+    _dbgmsg(" ]]]  page %d 0x%p\n", page, v->pgs[page]);
   }
 
   p = v->pgs[page] + (n * v->esz);
@@ -307,30 +306,31 @@ void *vecGet(vec *v,uint32_t ndx)
 
   if (v->cur_w != VEC_NULLNDX) {
     switch ((int)(ndx - v->cur_w)) {
-      case  0 : dbgprintf(DBG_OFF,"get same %u (%u)\n",ndx,v->cur_w);
+      case  0 : _dbgmsg("get same %u (%u)\n",ndx,v->cur_w);
                 return v->cur_q;
 
-      case  1 : dbgprintf(DBG_OFF,"get next %u (%u)\n",ndx,v->cur_w);
+      case  1 : _dbgmsg("get next %u (%u)\n",ndx,v->cur_w);
                 v->cur_w++;
                 v->cur_n++;
                 if (v->cur_n >= v->cur_s) return vecslot(v,v->cur_p+1,0);
                 v->cur_q += v->esz;
                 return v->cur_q;
-      #if 0
-      case -1 : dbgprintf(DBG_OFF,"get prev %u (w:%u p:%u)\n",ndx,v->cur_w,v->cur_p);
-                if (v->cur_w == 0) return NULL;
+      #if 1
+      case -1 : _dbgmsg("get prev %u (w:%u p:%u)\n",ndx,v->cur_w,v->cur_p);
+                if (v->cur_w == 0) return v->cur_q;
+                v->cur_w--;
                 if (v->cur_n == 0) {
-                  v->cur_p--;
-                  return vecslot(v,v->cur_p,pgsize(v->cur_p) - 1);
+                  page = v->cur_p - 1;
+                  n = pgsize(page)-1;
+                  return vecslot(v, page, n);
                 }
                 v->cur_n--;
-                v->cur_w--;
                 v->cur_q -= v->esz;
                 return v->cur_q;
       #endif
     }
   }
-  dbgprintf(DBG_OFF,"get index %d (%d)\n",ndx,v->cur_w);
+  _dbgmsg("get index %d (%d)\n",ndx,v->cur_w);
   v->cur_w = ndx;
   ndx2pg(ndx,&page,&n);
   return vecslot(v,page,n);
@@ -527,302 +527,25 @@ uint8_t bmpFlip(vec *b,uint32_t ndx)
   return i;
 }
 
-
-/*******/
-
-/* http://www.eternallyconfuzzled.com/tuts/algorithms/jsw_tut_hashing.aspx */
-
-#define FNV_CALC        h = (h * 16777619) ^ p[i];
-
-static uint32_t fnv_hash (void *e, uint16_t len)
-{
-  uint8_t *p = e;
-  uint32_t h = 0x811C9DC5;
-  int i = 0;
-
-  if (len == 0)
-    for (i=0; p[i];  i++) { FNV_CALC }
-  else
-    for (i=0; i<len; i++) { FNV_CALC }
-
-  return h;
-}
-
-#define OAT_CALC { h += p[i];        \
-                   h += ( h << 10 ); \
-                   h ^= ( h >> 6 );  \
-                 }                   \
-                 h += ( h << 3 );    \
-                 h ^= ( h >> 11 );   \
-                 h += ( h << 15 );
-
-static uint32_t oat_hash(void *e, uint16_t len)
-{
-  uint8_t *p = e;
-  uint32_t h = 0;
-  int i=0;
-
-  dbgoff("** %p %u\n",e,len);
-
-  if (len == 0)
-    for (i=0; p[i];  i++) { OAT_CALC }
-  else
-    for (i=0; i<len; i++) { OAT_CALC }
-
-  return h;
-}
-
-#define ROT_CALC h = ( h << 4 ) ^ ( h >> 28 ) ^ p[i];
-
-static uint32_t rot_hash(void *e, uint16_t len)
-{
-  uint8_t *p = e;
-  uint32_t h = 0;
-  int i=0;
-
-  if (len == 0)
-    for (i=0; p[i];  i++) { ROT_CALC }
-  else
-    for (i=0; i<len; i++) { ROT_CALC }
-
-  return h;
-}
-/********/
-
-#define STP_REASHING ((void *)stpNew)
-
-stp_t stpNew()
-{
-  stp_t pool;
-
-  if ((pool = malloc(sizeof(stp))) != NULL) {
-    vecinit(pool->str,sizeof(char *));
-    pool->msk = 3;
-  }
-
-  return pool;
-}
-
-
-static void stpfree(void *e)
-{
-  char **s=e;
-  if (s != NULL && *s != VEC_DELETED && *s != NULL) {
-    dbgoff("-- %s\n",*s);
-    free(*s);
-  }
-}
-
-void *stpFree(stp_t pool)
-{
-  if (pool != NULL) {
-    pool->str->cnt = pool->msk+1; /* pretend the table is full */
-    veccleanup(pool->str,stpfree);
-    free(pool);
-  }
-  return NULL;
-}
-
-#define stpN(p)  ((p)->msk+1)
-#define stpM(p)  ((p)->str->aux)
-
-#define TOODENSE(p)  ( (stpM(p) > 30) || \
-                       ((uint32_t)((1 << (stpM(p) >> 1))) > stpCnt(p)) || \
-                       ((stpN(p) - stpCnt(p)) * 16) < stpN(p))
-
-/*#define TOOSPARSE(p) ( (stpCnt(p) * 2) < (stpN(p)))*/
-
-static char **stpsearch(stp_t pool, char *str, char ***del);
-
-
-#define ndx_hash oat_hash
-#define inc_hash rot_hash
-
-#define DOUBLE_SIZE  0
-#define HALF_SIZE    1
-
-static void stprehash(stp_t pool,int sz)
-{
-  uint32_t k,max;
-  char **p,**s, **d;
-  char  *t;
-  uint32_t key;
-  uint32_t inc;
-
-  stpM(pool) = 0;
-  max = pool->msk+1;
-  pool->msk = 2 * pool->msk +1;
-  dbgmsg(" ***** Rehash: (%u) %u,%u\n",stpCnt(pool),max,pool->msk);
-  k = 0;
-  d = NULL;
-  while (k < max) {
-    p = vecGet(pool->str, k);
-    if (*p == VEC_DELETED) *p = NULL;
-    if (*p != NULL) {
-      t = *p;
-      key = ndx_hash(t,0) & pool->msk;
-      if (key != k) {
-       *p = NULL;
-        s = vecGet(pool->str, key);
-        if (*s != NULL && *s != VEC_DELETED) {
-          if ( key < max && s != d) {
-           *p = *s; 
-            k--;
-          }
-          else {
-            inc = (inc_hash(t,0) ) | 1;
-            do {
-              key = (key+inc) & pool->msk;
-              s = vecGet(pool->str, key);
-              /*dbgif((*s != NULL && *s != VEC_DELETED),dbgmsg("  ++ %u %s %s\n",key,t,*s));*/
-            } while (*s != VEC_DELETED && *s != NULL);
-          }
-        }
-       *s = t;
-        d = s; /* store last */
-      }
-    }
-    k++;
-  }
-}
-
-static char **stpsearch(stp_t pool, char *str, char ***del)
-{
-  uint32_t key;
-  uint32_t inc;
-  char **s;
-  char *t;
-
-  inc = (inc_hash(str,0) ) | 1;  /* ensure increment is odd */
-  key = ndx_hash(str,0) & pool->msk;
-  stpM(pool) = 0;
-  while (1) {
-    s = vecGet(pool->str,key);
-
-    if (s == NULL || *s == NULL) return s;
-
-    if (*s == VEC_DELETED) {
-      if (del != NULL) {
-        if (*del == STP_REASHING) {
-          *del = s;
-          return s;
-        }
-       *del = s;
-      }
-    }
-          else {
-            if (strcmp(str,*s) == 0)   return s;
-    }
-    t = *s;
-    if (t == VEC_DELETED) t = "(del)";
-    else if (t == NULL) t = "(null)";
-    dbgmsg("XX %4d (%u) %s (%s)\n",key,inc, str, t);
-    stpM(pool)++;
-    key = (key + inc) & pool->msk;
-  }
-  return NULL;
-
-}
-
-char *stpAdd(stp_t pool, char *str)
-{
-  char **s,**d;
-
-  if (TOODENSE(pool)) stprehash(pool,DOUBLE_SIZE);
-
-  dbgmsg("ADD: %s\n", str);
-  d = NULL;
-  s = stpsearch(pool, str, &d);
-
-  if (s == NULL) return NULL;
-
-  if (*s == NULL) {
-    if (d != NULL) s = d;
-    *s = strdup(str);
-    stpCnt(pool)++;
-  }
-
-  return *s;
-}
-
-char *stpGet(stp_t pool, char *str)
-{
-  char **s;
-
-  s = stpsearch(pool, str, NULL);
-
-  if (s == NULL || *s == NULL || *s == VEC_DELETED) return NULL;
-
-  return *s;
-}
-
-char *stpDel(stp_t pool, char *str)
-{
-  char **s,**d;
-  d = NULL;
-  s = stpsearch(pool, str, &d);
-
-  if (s != NULL && (*s != NULL || *s != VEC_DELETED)) {
-    free(*s);
-    *s = VEC_DELETED;
-    stpCnt(pool)--;
-  }
-  return NULL;
-}
-
 /**************************/
 
-static uint8_t T[] = { 0x5B, 0x06, 0xED, 0x30, 0x34, 0xCB, 0x01, 0x99, 
-                       0x2B, 0x68, 0x93, 0x16, 0x90, 0xC8, 0x82, 0xC6, 
-                       0xB8, 0xDC, 0x3A, 0x66, 0xB7, 0x04, 0x8A, 0xC7, 
-                       0x8E, 0xA8, 0xA4, 0x29, 0xE3, 0xD4, 0xFC, 0x6E, 
-                       0xC9, 0x1C, 0x3B, 0xF3, 0x3C, 0xAB, 0x56, 0xAE, 
-                       0x63, 0xB2, 0x8C, 0xBC, 0x70, 0x6F, 0x2F, 0xDD, 
-                       0x1E, 0xCF, 0x98, 0x1D, 0xFF, 0x37, 0x38, 0x4F, 
-                       0x3D, 0x6D, 0x03, 0x46, 0x67, 0x09, 0xD7, 0xCE, 
-                       0xD1, 0xB1, 0x9C, 0xEE, 0x4A, 0x9B, 0x84, 0x0E, 
-                       0x3E, 0xBE, 0xA6, 0x91, 0x35, 0xBF, 0xFB, 0x20, 
-                       0xA0, 0xD8, 0x96, 0x12, 0x1A, 0xE1, 0xF1, 0x9F, 
-                       0x14, 0xDF, 0x53, 0x25, 0xEB, 0x7D, 0x80, 0x73, 
-                       0x9A, 0x7A, 0x58, 0x88, 0x5C, 0xE2, 0x43, 0xAD, 
-                       0x05, 0x18, 0xD9, 0x2E, 0xD3, 0xCD, 0xCA, 0xA7, 
-                       0x65, 0x1F, 0x79, 0x89, 0x83, 0xB5, 0x32, 0x41, 
-                       0x28, 0x31, 0x92, 0x02, 0x9D, 0x2C, 0x0C, 0x10, 
-                       0x76, 0x08, 0x74, 0xDB, 0x4D, 0xFA, 0x8D, 0xA3, 
-                       0x07, 0x87, 0x78, 0xFE, 0x60, 0x8F, 0xF4, 0x4E, 
-                       0x21, 0x7E, 0x9E, 0xBD, 0xA9, 0x86, 0x0A, 0x5D, 
-                       0xEC, 0xA1, 0xB9, 0x00, 0x71, 0x57, 0x33, 0x62, 
-                       0x4B, 0x55, 0xD0, 0x54, 0x50, 0x1B, 0xE8, 0x15, 
-                       0x94, 0xDA, 0xE6, 0xFD, 0xBB, 0x7B, 0x13, 0x72, 
-                       0xD2, 0x77, 0xAC, 0x42, 0xA5, 0x69, 0x48, 0x22, 
-                       0xB6, 0x59, 0x5F, 0x24, 0x52, 0x40, 0x45, 0xC3, 
-                       0xF5, 0xB3, 0x47, 0x6A, 0xF9, 0xAF, 0x75, 0xCC, 
-                       0xE0, 0xEA, 0x4C, 0xBA, 0xDE, 0x49, 0xC1, 0xB4, 
-                       0x85, 0xE5, 0x51, 0x23, 0xE7, 0x6C, 0x7C, 0xF0, 
-                       0xF7, 0xF8, 0x0D, 0xA2, 0xC2, 0x5E, 0x19, 0x44, 
-                       0x81, 0x7F, 0xAA, 0xC5, 0x6B, 0xD5, 0x11, 0xC0, 
-                       0x95, 0xE4, 0x2A, 0x0F, 0x36, 0xEF, 0xF2, 0xD6, 
-                       0xC4, 0x17, 0x97, 0x26, 0x0B, 0xE9, 0x2D, 0x8B, 
-                       0x27, 0xB0, 0x3F, 0x39, 0x5A, 0x64, 0xF6, 0x61, 
-};
 
-static uint32_t mappriority(mapNode *node)
+/* Taken from Christopher Clark hash table implementation
+** <http://www.cl.cam.ac.uk/~cwc22/hashtable>
+*/
+static uint32_t scrambleint(uint32_t i)
 {
-  /* this is the FNV hash! */
-  uint8_t *p;
-  uint32_t h = 0x811C9DC5;  
-
-  p = (uint8_t *)(&node);
-
-  h = (h * 16777619) ^ p[0];
-  h = (h * 16777619) ^ p[1];
-  h = (h * 16777619) ^ p[2];
-  h = (h * 16777619) ^ p[3];
-
-  return h;
+    /* - logic taken from java 1.4 hashtable source */
+    i += ~(i << 9);
+    i ^=  ((i >> 14) | (i << 18)); /* >>> */
+    i +=  (i << 4);
+    i ^=  ((i >> 10) | (i << 22)); /* >>> */
+    return i ;
 }
 
-map_t mapNew(uint16_t elemsz, uint16_t keysz)
+#define mappriority(x) scrambleint((uint32_t)x)
+
+map_t mapNew(uint16_t elemsz, mapCmp_t cmp)
 {
   map_t m;
 
@@ -832,22 +555,34 @@ map_t mapNew(uint16_t elemsz, uint16_t keysz)
     vecinit(m->stack,sizeof(mapNode *));
     m->root = NULL;
     m->freelst = NULL;
-    mapKeySz(m) = keysz;
     m->cnt = 0;
+    m->cmp = cmp;
   }
-
   return m;
 }
 
-map_t mapFree(map_t m)
+map_t mapFreeClean(map_t m, vecCleaner cln)
 {
+  uint32_t k;
+  mapNode *p;
+
   if (m != NULL) {
+    if (cln != NULL) {
+      for (k = 0; k < mapCnt(m); k++) {
+        p = vecGet(m->nodes,k);
+        if (p != NULL && mapLnkLeft(p) != VEC_DELETED)
+          cln(p->elem);
+      }
+    }
     veccleanup(m->nodes, NULL);
     veccleanup(m->stack, NULL);
     free(m);
   }
   return NULL;
+
+
 }
+
 
 static mapNode *mapnewnode(map_t m)
 {
@@ -897,22 +632,26 @@ static mapNode *mapsearch(map_t m, mapNode ***par,  void *elem)
   mapNode  *node;
   mapNode **parent = *par;
 
-  dbgoff("mapsearch() ROOT: %p\n",*parent);
+  _dbgmsg("mapsearch() ROOT: %p\n",*parent);
 
   stkReset(m->stack);
 
-  do {
-    stkPush(m->stack, &parent);  dbgoff("Pushed: %p (%p)\n",parent, *parent);
+  for(EVER) {
+    stkPush(m->stack, &parent);  _dbgmsg("Pushed: %p (%p)\n",parent, *parent);
 
     node = *parent;
-    if (node == NULL) break;   dbgoff("Not found\n");
+    if (node == NULL) break;   _dbgmsg("Not found\n");
 
-    cmp = memcmp(elem, node->elem, mapKeySz(m));
-    if (cmp == 0) break;   dbgoff("Found: %p\n",node);
+    if (m->cmp != NULL)
+      cmp = m->cmp(elem,node->elem);
+    else
+      cmp = memcmp(elem, node->elem, m->nodes->esz - offsetof(mapNode, elem));
+
+    if (cmp == 0) break;   _dbgmsg("Found: %p\n",node);
 
     parent = (cmp > 0)? &mapLnkRight(node) : &mapLnkLeft(node);
 
-  } while (1);
+  }
 
   *par = parent;
 
@@ -921,8 +660,9 @@ static mapNode *mapsearch(map_t m, mapNode ***par,  void *elem)
 
 uint32_t mapMaxDepth(map_t m)
 {
-  return (2*llog2(mapCnt(m)+1));
+  return (5*llog2(mapCnt(m)+1))/2;
 }
+
 static void mapbalance(map_t m)
 {
   mapNode **p,**q;
@@ -930,26 +670,26 @@ static void mapbalance(map_t m)
   uint8_t direction;
   uint32_t nodepri;
 
-  dbgoff("Count: %d Depth: %d Limit: %d\n",m->cnt, m->stack->cnt,1+llog2(m->cnt));
+  _dbgmsg("Count: %d Depth: %d Limit: %d\n",m->cnt, m->stack->cnt,1+llog2(m->cnt));
   p = stkTopVal(m->stack,mapNode **);
   node = *p;
   nodepri = mappriority(node);
-  while (1) {
+  for(EVER) {
     stkPop(m->stack);
     q = stkTopVal(m->stack,mapNode **);
     if (q == NULL) break;
 
     direction = 0;
     if (p == &(mapLnkRight(*q))) direction++;
-    dbgoff("  %p -> %p %c  (%x < %x)?\n",*q,*p,direction == 0? 'L':'R',nodepri,mappriority(*q));
+    _dbgmsg("  %p -> %p %c  (%x < %x)?\n",*q,*p,direction == 0? 'L':'R',nodepri,mappriority(*q));
 
     if (nodepri > mappriority(*q)) break;
 
     *q = maprotate(*q,direction ^ 1);
-    dbgoff("Rotated: %p -> %p\n",*q,node);
+    _dbgmsg("Rotated: %p -> %p\n",*q,node);
     assert(*q == node);
     p = q;
-  } 
+  }
 }
 
 void *mapAdd(map_t m, void *e)
@@ -965,7 +705,7 @@ void *mapAdd(map_t m, void *e)
    *parent = node;
   }
 
-  dbgoff("ADD: %p to %p\n", node,parent);
+  _dbgmsg("ADD: %p to %p\n", node,parent);
 
   memcpy(node->elem, e, m->nodes->esz - offsetof(mapNode, elem));
   mapbalance(m);
@@ -980,12 +720,46 @@ void *mapGet(map_t m, void *e)
   return (p == NULL? NULL : p->elem);
 }
 
-void mapdelnode(map_t m, mapNode *node)
+void mapdelnode(map_t m, mapNode **parent)
 {
-  mapLnkLeft(node) = VEC_DELETED;
-  mapLnkRight(node) = m->freelst;
-  m->freelst = node;
-  mapCnt(m)--;
+  mapNode *node;
+  uint32_t  priL = 0;
+  uint32_t  priR = 0;
+
+  node = *parent;
+
+  _dbgmsg("mapDel() PTR: %p\n",node);
+
+  if (node != NULL) {
+    while ((mapLnkRight(node) != NULL) || (mapLnkLeft(node) != NULL)) {
+      if (mapLnkLeft(node) != NULL) {
+        if (mapLnkRight(node) != NULL) {
+          priL = mappriority(mapLnkLeft(node));
+          priR = mappriority(mapLnkRight(node));
+        }
+        else {
+          priL = 1 ; priR = 0;
+        }
+      }
+      else {
+        priL = 0 ; priR = 1;
+      }
+
+      if (priL > priR) {
+       *parent =  maprotright(node);
+        parent = &mapLnkRight(*parent);
+      }
+      else {
+       *parent =  maprotleft(node);
+        parent = &mapLnkLeft(*parent);
+      }
+    }
+   *parent = NULL;
+    mapLnkLeft(node) = VEC_DELETED;
+    mapLnkRight(node) = m->freelst;
+    m->freelst = node;
+    mapCnt(m)--;
+  }
 }
 
 void mapDel(map_t m, void *e)
@@ -996,27 +770,8 @@ void mapDel(map_t m, void *e)
   parent = &(m->root);
 
   node = mapsearch(m, &parent, e);
-
-  dbgoff("mapDel() PTR: %p\n",node);
-
-  if (node != NULL) {
-    while (1) {
-      if (mapLnkRight(node) != NULL) {
-       *parent =  maprotleft(node);
-        parent = &mapLnkLeft(*parent);
-      }
-      else if (mapLnkLeft(node) != NULL) {
-       *parent =  maprotright(node);
-        parent = &mapLnkRight(*parent);
-      }
-      else {
-       *parent = NULL;
-        mapdelnode(m,node);
-        break;
-      }
-    }
-    dbgoff("mapDel() Deleted: %p FROM: %p\n", node, parent);
-  }
+  mapdelnode(m,parent);
+   _dbgmsg("mapDel() Deleted: %p FROM: %p\n", node, parent);
   return;
 }
 
@@ -1024,7 +779,7 @@ void mapDel(map_t m, void *e)
 static void mapgoleft(map_t m, mapNode *p)
 {
   while (p != NULL) {
-    stkPush(m->stack,&p);
+    stkPush(m->stack, &p);
     p = mapLnkLeft(p);
   }
 }
@@ -1046,5 +801,67 @@ void *mapFirst(map_t m)
   stkReset(m->stack);
   mapgoleft(m, m->root);
   return mapNext(m);
+}
+
+/******************************/
+
+static int stpCmp(char *a, char **b)
+{
+  return strcmp(a,*b);
+}
+
+stp_t stpNew()
+{
+  return mapNew(sizeof(char *),stpCmp);
+}
+
+static void stpfree(void *e)
+{
+  char **s = e;
+  _dbgmsg("-- %s\n",*s);
+  if (s != NULL) free(*s);
+}
+
+void *stpFree(stp_t pool)
+{
+  return mapFreeClean(pool,stpfree);
+}
+
+char *stpAdd(stp_t pool, char *str)
+{
+  char **s;
+  char  *t;
+
+  s = mapAdd(pool,&str);
+
+  if (*s == str) {
+    *s = strdup(str);
+    /*memcpy(node->elem, &t,sizeof(char *));*/
+  }
+
+  return *s;
+}
+
+char *stpGet(stp_t pool, char *str)
+{
+  char **s;
+  s = mapGet(pool, str);
+  return s == NULL? NULL : *s;
+}
+
+char *stpDel(stp_t pool, char *str)
+{
+  mapNode  *node;
+  mapNode **parent;
+
+  parent = &(mapRoot(pool));
+
+  node = mapsearch(pool, &parent, str);
+
+  if (node != NULL) {
+    free(node->elem);
+    mapdelnode(pool,parent);
+  }
+  return NULL;
 }
 

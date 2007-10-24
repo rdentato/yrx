@@ -21,7 +21,7 @@
 #include <stdlib.h>
 
 #ifdef _MSC_VER
-/* MSVC does not have stdint!!! Paul Hsie graciously created one */
+/* MSVC does not have stdint.h!!! Paul Hsie graciously created one */
 #include "pstdint.h"
 #else
 #include <stdint.h>
@@ -57,73 +57,34 @@
  disable the others.
    The macros here help inserting debug messages that can be turned on/off
  and that will be completely removed in the release code. If the source is
- compiled without having the |DEBUG| defined, the macros will expand to nothing.
+ compiled without the |DEBUG| symbol defined, the macros will expand to nothing.
 
- [|dbglvl(n)|] Messages are grouped in /levels/ so that you may select the ones
-               that are more important for you at a given point in time. This
-               macros sets the current level of debugging wanted:
+ [|dbgmsg(fmt,...)|]  Works as a |fprintf(stderr,fmt, ...)|.
+ [|_dbgmsg(fmt,...)|] Disables the message.
 
-               [|DBG_NONE|] No message will be printed
-               [|DBG_ERR|]  Only messages that will reveal errors
-               [|DBG_WARN|] Print also warning messages
-               [|DBG_ANY|]  Print any message
-
- [|dbgprintf(n,fmt,...)|] Works as a |fprintf(stderr,fmt, ...)|.
-               The first parameter |n| defines the type of the message:
-
-               [|DBG_ERR|]  A critical message revealing a serious error
-               [|DBG_WARN|] A warning messages, probably an unexpected
-                            situation that may be recovered.
-               [|DBG_MSG|]  A generic message informing on the state of the
-                            program.
-               [|DBG_OFF|]  A message that has been disabled. This is useful
-                            when you want to switch off a given trace message
-                            regardless the current debug level.
 */
 
-#define DBG_OFF    -1
-#define DBG_ERR     2
-#define DBG_WRN     1
-#define DBG_MSG     0
-
-/* To be used in |dbglvl()| */
-#define DBG_NOMSG   3
-#define DBG_ANYMSG  0
-
 #ifdef DEBUG
-
-HUL_EXTERN int8_t dbg_lvl;
 
 /* To ensure that dbg messages are correctly interleaved with other
    messages that might have been printed, |stdout| is flushed before
    printing and |stderr| is flushed right after.
 */
 
-#define dbgprintf(n,...) ( (dbg_lvl <= n)\
-                              ? (fflush(stdout), \
-                                fprintf(stderr,"# "),\
-                                fprintf(stderr,__VA_ARGS__),\
-                                fflush(stderr)) \
-                              : 0)
-#define dbglvl(n) (dbg_lvl = n)
+#define dbgmsg(...) ((fflush(stdout), fprintf(stderr,"# "),\
+                      fprintf(stderr,__VA_ARGS__), fflush(stderr)))
 
 #define dbgif(x,y) if x y
 
 
 #else
 
-#define dbgprintf(n,...)
-#define dbglvl(n)
+#define dbgmsg(...)
 #define dbgif(x,y)
 
 #endif /* DEBUG */
 
-#define dbgmsg(...) dbgprintf(DBG_MSG,__VA_ARGS__)
-#define dbgwrn(...) dbgprintf(DBG_WRN,__VA_ARGS__)
-#define dbgerr(...) dbgprintf(DBG_ERR,__VA_ARGS__)
-#define dbgoff(...) dbgprintf(DBG_OFF,__VA_ARGS__)
-#define dbgwrt(...) dbgprintf(DBG_NOMSG,__VA_ARGS__)
-
+#define _dbgmsg(...)
 
 /* Error Handling */
 /* The |err()| macros does a |fprintf()| on |stderr| and then |exit()|.
@@ -143,13 +104,13 @@ HUL_EXTERN int8_t dbg_lvl;
    These macros are intended to be used when writing unit tests. They
    are available only if the symbol |HUL_UT| is defined before including
    the |hul.h| header.
-   The log created is TAP compatible (see: <http://testanything.org>).
+   The log produced is TAP compatible (see: <http://testanything.org>).
+
 */
 
 #ifdef HUL_UT
 
 #define TSTWRITE(...) (fprintf(stderr,__VA_ARGS__),fflush(stderr))
-
 
 /* Tests are divided in sections introduced by the |TSTHDR(s)| macro.
    The macro reset the appropriate counters and print the header |s|
@@ -216,11 +177,14 @@ static int TSTGTT  = 0;  /* Number of tests executed (Grand Total) */
 static int TSTGPAS = 0;  /* Number of tests passed (Grand Total) */
 static int TSTPASS = 0;  /* Number of passed tests */
 
-static char *TSTSKP = NULL;
-static const char *TSTOK = "ok    ";
-static const char *TSTKO = "not ok";
+static char       *TSTSKP = NULL;
+static const char *TSTOK  = "ok    ";
+static const char *TSTKO  = "not ok";
 
 #endif
+
+#define EVER  ;1;
+#define NEVER ;0;
 
 #endif /* HUL_H */
 
