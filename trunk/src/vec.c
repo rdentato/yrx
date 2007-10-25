@@ -474,7 +474,7 @@ int bufGets(vec *b,char *s)
 /*******/
 
 
-static uint8_t *bmpbyte(vec *b, uint32_t ndx, uint8_t *i)
+static uint8_t *bmpbyte(bmp_t b, uint32_t ndx, uint8_t *i)
 {
   uint32_t k;
   uint8_t *p;
@@ -489,7 +489,7 @@ static uint8_t *bmpbyte(vec *b, uint32_t ndx, uint8_t *i)
   return p;
 }
 
-uint8_t bmpSet(vec *b,uint32_t ndx)
+uint8_t bmpSet(bmp_t b,uint32_t ndx)
 {
   uint8_t *p,i;
 
@@ -498,7 +498,7 @@ uint8_t bmpSet(vec *b,uint32_t ndx)
   return 1;
 }
 
-uint8_t bmpClr(vec *b,uint32_t ndx)
+uint8_t bmpClr(bmp_t b,uint32_t ndx)
 {
   uint8_t *p,i;
 
@@ -507,7 +507,7 @@ uint8_t bmpClr(vec *b,uint32_t ndx)
   return 0;
 }
 
-uint8_t bmpTest(vec *b,uint32_t ndx)
+uint8_t bmpTest(bmp_t b,uint32_t ndx)
 {
   uint8_t *p,i=0;
 
@@ -516,7 +516,7 @@ uint8_t bmpTest(vec *b,uint32_t ndx)
   return i;
 }
 
-uint8_t bmpFlip(vec *b,uint32_t ndx)
+uint8_t bmpFlip(bmp_t b,uint32_t ndx)
 {
   uint8_t *p,i=0;
 
@@ -526,6 +526,36 @@ uint8_t bmpFlip(vec *b,uint32_t ndx)
   }
   return i;
 }
+
+void bmpOp(bmp_t a, bmp_t b, bmp_op op)
+{
+  uint8_t *p, *q;
+  uint32_t i;
+  uint32_t n;
+
+  i = bmpCnt(a);
+  if (b != NULL && bmpCnt(b) < i) i = bmpCnt(b);
+
+  if (i > 0) {
+    i = (i / 8) / bmpBlkSize;
+
+    do {
+      p = vecGet(a,i);
+      q = vecGet(b,i);
+      for (n = 0; n <= bmpBlkSize; n++) {
+        switch (op) {
+          case bmp_AND: *p++ &=  *q++  ; break;
+          case bmp_OR:  *p++ |=  *q++  ; break;
+          case bmp_NEG: *p++ ^=   0xFF ; break;
+          case bmp_ZRO: *p++  =   0x00 ; break;
+          case bmp_SET: *p++  =   0xFF ; break;
+          case bmp_SUB: *p++ &= ~*q++  ; break;
+        }
+      }
+    } while (i-- > 0);
+  }
+}
+
 
 /**************************/
 
@@ -568,7 +598,7 @@ map_t mapFreeClean(map_t m, vecCleaner cln)
 
   if (m != NULL) {
     if (cln != NULL) {
-      for (k = 0; k < mapCnt(m); k++) {
+      for (k = 0; k < m->nodes->cnt; k++) {
         p = vecGet(m->nodes,k);
         if (p != NULL && mapLnkLeft(p) != VEC_DELETED)
           cln(p->elem);
@@ -830,13 +860,11 @@ void *stpFree(stp_t pool)
 char *stpAdd(stp_t pool, char *str)
 {
   char **s;
-  char  *t;
 
   s = mapAdd(pool,&str);
 
   if (*s == str) {
     *s = strdup(str);
-    /*memcpy(node->elem, &t,sizeof(char *));*/
   }
 
   return *s;
