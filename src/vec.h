@@ -106,7 +106,6 @@ uint32_t  vecSize       (vec_t v);
 
 #define bmp_t    vec_t
 
-bmp_t   bmpNew   (void);
 uint8_t bmpSet   (bmp_t b,uint32_t ndx);
 uint8_t bmpClr   (bmp_t b,uint32_t ndx);
 uint8_t bmpTest  (bmp_t b,uint32_t ndx);
@@ -115,8 +114,22 @@ uint8_t bmpFlip  (bmp_t b,uint32_t ndx);
 #define bmpBlkSize 16
 #define bmpBlkMask (bmpBlkSize-1)
 
-#define bmpNew() vecNew(bmpBlkSize)
-#define bmpFree vecFree
+#define bmpNew()  vecNew(bmpBlkSize)
+#define bmpFree   vecFree
+#define bmpCnt    vecCnt
+
+typedef enum {
+  bmp_AND = 1, bmp_OR, bmp_NEG, bmp_ZRO, bmp_SET, bmp_SUB
+} bmp_op;
+
+void bmpOp(bmp_t a, bmp_t b, bmp_op op);
+
+#define bmpAnd(a,b)       bmpOp(a,b,bmp_AND)
+#define bmpOr(a,b)        bmpOp(a,b,bmp_OR)
+#define bmpNeg(a)         bmpOp(a,NULL,bmp_NEG)
+#define bmpClrAll(a)      bmpOp(a,NULL,bmp_ZRO)
+#define bmpSub(a)         bmpOp(a,b,bmp_SUB)
+#define bmpSetAll(a,max) (bmpSet(a,max),bmpOp(a,NULL,bmp_SET)
 
 /**********************/
 
