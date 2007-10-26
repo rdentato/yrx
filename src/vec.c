@@ -474,82 +474,196 @@ int bufGets(vec *b,char *s)
 /*******/
 
 
-static uint8_t *bmpbyte(bmp_t b, uint32_t ndx, uint8_t *i)
+static uint32_t *bmpword(bmp_t b, uint32_t ndx, uint32_t *bit)
 {
   uint32_t k;
-  uint8_t *p;
+  bmpBlk *p = NULL;
 
   if (ndx >= b->cnt) b->cnt = ndx+1;
- *i   = 1 << (ndx % 8);
-  ndx = ndx / 8;
-  k   = ndx & bmpBlkMask;
-  ndx = ndx / bmpBlkSize;
+ *bit = 1 << (ndx & 0x1F);  /* ndx % 32 */
+  ndx = ndx >> 5;           /* ndx / 32 */
+  k   = ndx & 0x03;         /* ndx % 4  */
+  ndx = ndx >> 2;           /* ndx / 4 */
   p = vecGet(b, ndx);
-  if (p != NULL) p += k;
-  return p;
+  if (p == NULL) return NULL;
+  return &((*p)[k]);
 }
 
-uint8_t bmpSet(bmp_t b,uint32_t ndx)
+uint32_t bmpSet(bmp_t b,uint32_t ndx)
 {
-  uint8_t *p,i;
+  uint32_t *p,bit;
 
-  if ((p = bmpbyte(b,ndx,&i)) != NULL)
-    *p |= i;
+  if ((p = bmpword(b,ndx,&bit)) != NULL)
+    *p |= bit;
   return 1;
 }
 
-uint8_t bmpClr(bmp_t b,uint32_t ndx)
+uint32_t bmpClr(bmp_t b,uint32_t ndx)
 {
-  uint8_t *p,i;
+  uint32_t *p,bit;
 
-  if ((p = bmpbyte(b,ndx,&i)) != NULL)
-    *p &= ~i;
+  if ((p = bmpword(b,ndx,&bit)) != NULL)
+    *p &= ~bit;
   return 0;
 }
 
-uint8_t bmpTest(bmp_t b,uint32_t ndx)
+uint32_t bmpTest(bmp_t b,uint32_t ndx)
 {
-  uint8_t *p,i=0;
+  uint32_t *p,bit;
 
-  if ((p = bmpbyte(b, ndx,&i)) != NULL)
-    i &= *p;
-  return i;
+  if ((p = bmpword(b, ndx,&bit)) != NULL)
+    bit &= *p;
+  return bit;
 }
 
-uint8_t bmpFlip(bmp_t b,uint32_t ndx)
+uint32_t bmpFlip(bmp_t b,uint32_t ndx)
 {
-  uint8_t *p,i=0;
+  uint32_t *p,bit;
 
-  if ((p = bmpbyte(b, ndx, &i)) != NULL) {
-   *p ^= i;
-    i &= *p;
+  if ((p = bmpword(b, ndx, &bit)) != NULL) {
+   *p ^= bit;
+    bit &= *p;
   }
-  return i;
+  return bit;
 }
+
+/***** Block operations */
+
+bmp_t bmpDup(bmp_t a)
+{
+
+  bmp_t b;
+  uint32_t *p;
+  uint32_t *q;
+  uint32_t  i;
+  
+  b = bmpNew();
+  i = bmpCnt(a);
+  bmpCnt(b) = i;
+  if (i > 0) {
+    i = (i / 32) / 4;
+    do {
+      p = vecGet(a,i);
+      q = vecGet(b,i);
+      memcpy(q,p,sizeof(bmpBlk));
+    } while (i-- > 0);
+  }
+  return b;
+}
+
+
+void bmpAnd(bmp_t a, bmp_t b)
+{
+  uint32_t  *p;
+  uint32_t  *q;
+  uint32_t i;
+
+  i = bmpCnt(a);
+  if (bmpCnt(b) < i) i = bmpCnt(b);
+  if (i > 0) {
+    i = (i / 32) / 4;
+    do {
+      p = vecGet(a,i);
+      q = vecGet(b,i);
+      *p++ &= *q++;
+      *p++ &= *q++;
+      *p++ &= *q++;
+      *p   &= *q;
+    } while (i-- > 0);
+  }
+}
+
+void bmpOr(bmp_t a, bmp_t b)
+{
+  bmpBlk  *p;
+  bmpBlk  *q;
+  uint32_t i;
+
+  i = bmpCnt(a);
+  if (bmpCnt(b) > i) i = bmpCnt(b);
+  bmpCnt(a) = i;
+  if (i > 0) {
+    i = (i / 32) / 4;
+    do {
+      p = vecGet(a,i);
+      q = vecGet(b,i);
+      (*p)[0] |= (*q)[0];
+      (*p)[1] |= (*q)[1];
+      (*p)[2] |= (*q)[2];
+      (*p)[3] |= (*q)[3];
+    } while (i-- > 0);
+  }
+}
+
+void bmpXor(bmp_t a, bmp_t b)
+{
+  bmpBlk  *p;
+  bmpBlk  *q;
+  uint32_t i;
+
+  i = bmpCnt(a);
+  if (bmpCnt(b) > i) i = bmpCnt(b);
+  bmpCnt(a) = i;
+  if (i > 0) {
+    i = (i / 32) / 4;
+    do {
+      p = vecGet(a,i);
+      q = vecGet(b,i);
+      (*p)[0] ^= (*q)[0];
+      (*p)[1] ^= (*q)[1];
+      (*p)[2] ^= (*q)[2];
+      (*p)[3] ^= (*q)[3];
+    } while (i-- > 0);
+  }
+}
+
+void bmpNeg(bmp_t a)
+{
+  bmpBlk  *p;
+  uint32_t i;
+
+  i = bmpCnt(a);
+  if (i > 0) {
+    i = (i / 32) / 4;
+    do {
+      p = vecGet(a,i);
+      (*p)[0] ^= 0xFFFFFFFF;
+      (*p)[1] ^= 0xFFFFFFFF;
+      (*p)[2] ^= 0xFFFFFFFF;
+      (*p)[3] ^= 0xFFFFFFFF;
+    } while (i-- > 0);
+  }
+}
+
+
+
+#define bmpClrAll(a)      bmpOp(a,NULL,bmp_ZRO)
+#define bmpSub(a)         bmpOp(a,b,bmp_SUB)
+#define bmpSetAll(a,max) (bmpSet(a,max),bmpOp(a,NULL,bmp_SET)
 
 void bmpOp(bmp_t a, bmp_t b, bmp_op op)
 {
-  uint8_t *p, *q;
+  uint32_t *p, *q;
   uint32_t i;
   uint32_t n;
 
   i = bmpCnt(a);
-  if (b != NULL && bmpCnt(b) < i) i = bmpCnt(b);
+  if (b != NULL && bmpCnt(b) > i) i = bmpCnt(b);
 
   if (i > 0) {
-    i = (i / 8) / bmpBlkSize;
+    i = (i / 32) / 4;
 
     do {
       p = vecGet(a,i);
       q = vecGet(b,i);
       for (n = 0; n <= bmpBlkSize; n++) {
         switch (op) {
-          case bmp_AND: *p++ &=  *q++  ; break;
-          case bmp_OR:  *p++ |=  *q++  ; break;
-          case bmp_NEG: *p++ ^=   0xFF ; break;
-          case bmp_ZRO: *p++  =   0x00 ; break;
-          case bmp_SET: *p++  =   0xFF ; break;
-          case bmp_SUB: *p++ &= ~*q++  ; break;
+          case bmp_AND: *p++ &=  *q++        ; break;
+          case bmp_OR:  *p++ |=  *q++        ; break;
+          case bmp_NEG: *p++ ^=   0xFFFFFFFF ; break;
+          case bmp_ZRO: *p++  =   0x00000000 ; break;
+          case bmp_SET: *p++  =   0xFFFFFFFF ; break;
+          case bmp_SUB: *p++ &= ~*q++        ; break;
         }
       }
     } while (i-- > 0);
@@ -573,7 +687,8 @@ static uint32_t scrambleint(uint32_t i)
     return i ;
 }
 
-#define mappriority(x) scrambleint((uint32_t)x)
+static union { mapNode *ptr; uint32_t n; } x__;
+#define mappriority(x) (x__.n=0,x__.ptr = x,scrambleint(x__.n))
 
 map_t mapNew(uint16_t elemsz, mapCmp_t cmp)
 {
@@ -633,7 +748,6 @@ static mapNode *mapnewnode(map_t m)
 
 
 /*http://en.wikipedia.org/wiki/Tree_rotation*/
-
 
 static mapNode *maprotate(mapNode *pivot,uint8_t direction)
 {

@@ -489,9 +489,9 @@ int main(int argc, char * argv[])
   a.from = 16; a.to = 10;
   p = mapAdd(v,&a);
   pn =  mapNodePtr(p);
-  TSTNOTE("pn=%p",pn);
+  /*TSTNOTE("pn=%p",pn);*/
   qn = mapLeft(mapRight(mapRoot(v)));
-  TSTNOTE("qn=%p",qn);
+  /*TSTNOTE("qn=%p",qn);*/
   TST("Added as root RL child",(qn != NULL && qn->elem != NULL && pn == qn && ((Arc *)(qn->elem))->from == 16));
 
   mapTree(v);
@@ -715,7 +715,7 @@ int main(int argc, char * argv[])
 
   v = bmpNew();
 
-  for (k=0; k < 100; k+=2) {
+  for (k=0; k < 1000; k+=2) {
     bmpSet(v,k);
   }
   TST("Bitmap set",(bmpTest(v,4) && !bmpTest(v,5)));
@@ -808,9 +808,9 @@ int main(int argc, char * argv[])
 
   st[2] = 0;
   for (j='0'; j<255; j++) {
-    st[1] = j;
+    st[1] = (char)j;
     for (k=' '; k<256; k++) {
-      st[0] = k;
+      st[0] = (char)k;
       p = stpAdd(pool,st);
     }
   }
