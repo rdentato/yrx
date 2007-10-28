@@ -167,6 +167,8 @@
                    TSTWRITE("#\n# TOTAL PASSED: %d/%d\n",TSTGPAS,TSTGTT),\
                    TSTWRITE("#\n# END OF TESTS\n1..%d\n",TSTGTT),fflush(stderr))
 
+#define TSTIF_OK    if (TSTRES)
+#define TSTIF_NOTOK if (!TSTRES)
 
 static int TSTRES  = 0;  /* Result of the last performed |TST()| */
 static int TSTNUM  = 0;  /* Last test number */

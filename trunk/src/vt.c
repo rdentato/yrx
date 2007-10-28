@@ -788,7 +788,7 @@ int main(int argc, char * argv[])
  }
  #endif
 
- #if 1
+ #if 0
  {
   stp_t pool;
   char *p;
@@ -833,6 +833,7 @@ int main(int argc, char * argv[])
   stpFree(pool);
  }
  #endif
+
 
 
   TSTDONE();
