@@ -25,25 +25,6 @@
 #include "vec.h"
 
 
-/**************************************************/
-
-typedef struct Arc {
-  uint16_t *lbl;
-  uint32_t  tag; /* set of tags of the same rx */
-  uint16_t  to;
-} Arc;
-
-typedef struct {
-   vec_t graph;
-   map_t lbls;
-} aut;
-
-static aut fa;
-
-/*
-vec_t graph = NULL;
-map_t lbls  = NULL;
-*/
 
 /**************************************************/
 
@@ -108,6 +89,29 @@ static char *str_set(int i,int j)
 #define tag_nrx(t)   ((t) >> 8)
 #define tag_type(t)  ((((t) & 0x7F) == 0x7F)? t : (t) & 0x80)
 #define tag_capt(t)  ((((t) & 0x7F) == 0x7F)? 0 : (t) & 0x7F)
+
+
+typedef struct tagNode {
+  struct tagNode *next;
+  uint32_t tag;
+} tagNode;
+
+
+/**************************************************/
+
+typedef struct Arc {
+  uint16_t *lbl;
+  uint32_t  tag; /* set of tags of the same rx */
+  uint16_t  to;
+} Arc;
+
+typedef struct {
+   vec_t graph;
+   map_t lbls;
+   vec_t tags;
+} aut;
+
+static aut fa;
 
 
 /**************************************************/
@@ -805,6 +809,7 @@ static void closedown()
 {
   fa.graph = vecFreeClean(fa.graph,(vecCleaner)statescleanup);
   fa.lbls = mapFree(fa.lbls);
+  fa.tags  = vecFree(fa.tags);
   cleantemp();
 }
 
@@ -812,8 +817,8 @@ static void init()
 {
   cur_state = 1;
   fa.graph = vecNew(sizeof(vec_t));
-  fa.lbls = mapNew(17 * sizeof(uint16_t), NULL);
-
+  fa.lbls  = mapNew(17 * sizeof(uint16_t), NULL);
+  fa.tags  = vecNew(sizeof(tagNode));
   atexit(closedown);
 }
 
@@ -840,7 +845,6 @@ void dump(aut *dfa)
   uint32_t i,from;
   Arc *a;
   vec_t arcs;
-  char *lbl;
 
   pushonce(0);
   pushonce(1);
