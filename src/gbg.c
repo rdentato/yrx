@@ -1700,3 +1700,142 @@ static uint32_t mappriority(void *node)
   return h;
 }
 #endif
+
+
+
+
+typedef struct lplNode {
+  struct lplNode *nxt;
+  int8_t          elem[sizeof(void *)];
+} lplNode;
+
+typedef struct lplVec {
+  vec             nodes[1];
+  struct lplNode *freelst;
+} lplVec;
+
+typedef struct lstHead {
+  vec_t vec;
+  lplNode *head;
+  lplNode *tail;
+} lstHead;
+
+typedef lplVec  *lpl_t;
+
+lpl_t  lplNew(uint16_t elemsz);
+lpl_t  lplFreeClean(lpl_t pool, vecCleaner cln);
+void  *lplNewList(lpl_t pool);
+void  *lstNext(void *node_elem);
+void   lstRelease(lpl_t pool, void *head);
+
+#define lplFree(l) lplFreeClean(l,NULL)
+
+
+
+
+#define lplNodePtr(n) ((lplNode *)(((uint8_t *)(n))-offsetof(lplNode,elem)))
+
+lpl_t lplNew(uint16_t elemsz)
+{
+  lpl_t l;
+
+  l = malloc(sizeof(lplVec));
+  if (l != NULL) {
+    vecinit(l->nodes,elemsz + offsetof(lplNode, elem));
+    l->freelst = NULL;
+  }
+  return l;
+}
+
+lpl_t lplFreeClean(lpl_t pool, vecCleaner cln)
+{
+  uint32_t k;
+  lplNode *p;
+
+  if (pool != NULL) {
+    if (cln != NULL) {
+      for (k = 0; k < vecCnt(pool->nodes); k++) {
+        p = vecGet(pool->nodes,k);
+        if (p != NULL && p->nxt != VEC_DELETED)
+          cln(p->elem);
+      }
+    }
+    veccleanup(pool->nodes, NULL);
+    free(pool);
+  }
+  return NULL;
+}
+
+static lplNode *newlstnode(lpl_t pool)
+{
+  lplNode  *node;
+  lplNode **q;
+
+  if (pool->freelst != NULL) {
+    node = (void *)(pool->freelst);
+    q = (void *)&(node->elem);
+    pool->freelst = *q;
+  } 
+  else {
+    node = vecGet(pool->nodes, vecCnt(pool->nodes)++);
+  }
+  node->nxt = NULL;
+
+  return node;
+}
+
+void *lplNewList(lpl_t pool)
+{
+   lplNode *h;
+
+   h = newlstnode(pool);
+   if (h != NULL) {
+     memset(h->elem, 0, pool->nodes->esz - offsetof(lplNode,elem));
+   }
+   return h->elem;
+}
+
+void *lstNext(void *node_elem)
+{
+  lplNode *node;
+
+  if (node_elem != NULL) {
+    node = lplNodePtr(node_elem)->nxt;
+    if (node != NULL) return node->elem;
+  }
+
+  return NULL;
+}
+
+void *lstIns(void *node_elem)
+{
+  lplNode *node;
+
+  if (node_elem != NULL) {
+    node = lplNodePtr(node_elem);
+    if (node != NULL) return node->elem;
+  }
+  return NULL;
+}
+
+void lstRelease(lpl_t pool, void *head)
+{
+  lplNode  *node;
+  lplNode  *t;
+  lplNode **q;
+
+  if (head != NULL) {
+    node = lplNodePtr(head);
+    t = pool->freelst;
+    do {
+      q = (void *)&(node->elem);
+     *q = t;
+      t = node;
+      node = node->nxt;
+      t->nxt = VEC_DELETED;
+    } while (node != NULL);
+    pool->freelst = t;
+  }
+}
+
+

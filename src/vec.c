@@ -673,7 +673,6 @@ void bmpOp(bmp_t a, bmp_t b, bmp_op op)
 
 /**************************/
 
-
 /* Taken from Christopher Clark hash table implementation
 ** <http://www.cl.cam.ac.uk/~cwc22/hashtable>
 */
@@ -724,8 +723,6 @@ map_t mapFreeClean(map_t m, vecCleaner cln)
     free(m);
   }
   return NULL;
-
-
 }
 
 
@@ -1006,4 +1003,9 @@ char *stpDel(stp_t pool, char *str)
   }
   return NULL;
 }
+
+
+/**************************/
+
+
 

@@ -57,7 +57,7 @@ uint32_t  vecSize       (vec_t v);
 #define vecFree(v)         vecFreeClean(v,NULL)
 
 #define vecGetVal(v,n,t)   ((t *)vecGet(v,n))[0]
-#define vecSetVal(v,n,e,t)
+#define vecSetVal(v,n,e,t) do{ t e__ = e; vecSet(v,n,&e__);} while(0)
 
 #define vecNxtNdx(v)       ((v)->cur_w == VEC_NULLNDX? 0 : (v)->cur_w + 1)
 
@@ -196,6 +196,7 @@ char *stpDel   (stp_t pool, char *str);
 #define stpCnt  mapCnt
 
 /**********************/
+
 
 #endif  /* VEC_H */
 
