@@ -34,14 +34,20 @@
 typedef struct {
   uint16_t      esz;
   uint16_t      npg;
+  uint32_t      cnt;
+} vec0;
+
+typedef struct {
+  uint16_t      esz;
+  uint16_t      npg;
+  uint32_t      cnt;
+  uint8_t     **pgs;
   uint16_t      aux;
   uint16_t      cur_p;  /* cur page number  */
   uint16_t      cur_s;  /* cur page size    */
   uint16_t      cur_n;  /* cur slot number  */
   uint32_t      cur_w;  /* cur water mark   */
   uint8_t      *cur_q;  /* cur slot pointer */
-  uint8_t     **pgs;
-  uint32_t      cnt;
 } vec;
 
 typedef vec *vec_t;
@@ -104,30 +110,7 @@ uint32_t  vecSize       (vec_t v);
 
 /**********************/
 
-#define bmp_t    vec_t
 
-typedef uint32_t bmpBlk[4];
-
-uint32_t bmpSet   (bmp_t b,uint32_t ndx);
-uint32_t bmpClr   (bmp_t b,uint32_t ndx);
-uint32_t bmpTest  (bmp_t b,uint32_t ndx);
-uint32_t bmpFlip  (bmp_t b,uint32_t ndx);
-
-#define bmpBlkSize 4
-#define bmpBlkMask (bmpBlkSize-1)
-
-#define bmpNew()  vecNew(sizeof(bmpBlk))
-#define bmpFree   vecFree
-#define bmpCnt    vecCnt
-
-typedef enum {
-  bmp_AND = 1, bmp_OR, bmp_NEG, bmp_ZRO, bmp_SET, bmp_SUB
-} bmp_op;
-
-void bmpOp(bmp_t a, bmp_t b, bmp_op op);
-
-
-/**********************/
 
 #define buf_t       vec_t
 
@@ -187,16 +170,40 @@ uint32_t mapMaxDepth    (map_t m);
 
 #define stp_t map_t
 
-stp_t stpNew   (void);
-void *stpFree  (stp_t pool);
-char *stpAdd   (stp_t pool, char *str);
-char *stpGet   (stp_t pool, char *str);
-char *stpDel   (stp_t pool, char *str);
+stp_t stpNew  (void);
+void *stpFree (stp_t pool);
+char *stpAdd  (stp_t pool, char *str);
+char *stpGet  (stp_t pool, char *str);
+char *stpDel  (stp_t pool, char *str);
 
 #define stpCnt  mapCnt
 
 /**********************/
 
+#define bmp_t    vec_t
+
+typedef uint32_t bmpBlk[4];
+
+uint32_t bmpSet   (bmp_t b,uint32_t ndx);
+uint32_t bmpClr   (bmp_t b,uint32_t ndx);
+uint32_t bmpTest  (bmp_t b,uint32_t ndx);
+uint32_t bmpFlip  (bmp_t b,uint32_t ndx);
+
+#define bmpBlkSize 4
+#define bmpBlkMask (bmpBlkSize-1)
+
+#define bmpNew()  vecNew(sizeof(bmpBlk))
+#define bmpFree   vecFree
+#define bmpCnt    vecCnt
+
+typedef enum {
+  bmp_AND = 1, bmp_OR, bmp_NEG, bmp_ZRO, bmp_SET, bmp_SUB
+} bmp_op;
+
+void bmpOp(bmp_t a, bmp_t b, bmp_op op);
+
+
+/**********************/
 
 #endif  /* VEC_H */
 

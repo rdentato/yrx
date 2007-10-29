@@ -149,7 +149,10 @@
 
 #define TSTT(s,x,r) (TST_DO(s,x), TSTWRITE(" # TODO %s\n",r), TSTRES)
 
+#define TSTFAILED  (!TSTRES)
+
 #define TSTSKIP(x,r)(TSTSKP = ((x)? r : NULL))
+
 #define TSTENDSKIP  (TSTSKP = NULL)
 
 
@@ -157,11 +160,13 @@
 
 #define TSTONFAIL(...) (TSTRES? 0 : (TSTNOTE(__VA_ARGS__)))
 
-/* At the end of a section, the accumulated stats can be printed out
-*/
+/* At the end of a section, the accumulated stats can be printed out */
+
 #define TSTSTAT() (TSTTOT == 0 ? 0 : (\
                    TSTWRITE("#\n# SECTION %d PASSED: %d/%d\n",TSTSEC,TSTPASS,TSTTOT),\
                    TSTTOT = 0))
+
+/* At the end of all the tests, the accumulated stats can be printed out */
 
 #define TSTDONE() (TSTSTAT(), \
                    TSTWRITE("#\n# TOTAL PASSED: %d/%d\n",TSTGPAS,TSTGTT),\

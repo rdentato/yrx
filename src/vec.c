@@ -260,7 +260,7 @@ static void *vecslot(vec *v, uint16_t page, uint16_t n)
     v->npg = (page == 0)? 1 : 1 << (llog2(page) +1) ;
     #else
     v->npg = page + 1;
-    if ((v->npg & (v->npg-1))) {
+    if (v->npg & (v->npg-1)) { /* if it's not a power of 2, get next power of 2 */
       uint16_t xp = v->npg - 1;
       xp |= (xp >> 1);
       xp |= (xp >> 2);
@@ -470,205 +470,6 @@ int bufGets(vec *b,char *s)
   return n;
 }
 
-
-/*******/
-
-
-static uint32_t *bmpword(bmp_t b, uint32_t ndx, uint32_t *bit)
-{
-  uint32_t k;
-  bmpBlk *p = NULL;
-
-  if (ndx >= b->cnt) b->cnt = ndx+1;
- *bit = 1 << (ndx & 0x1F);  /* ndx % 32 */
-  ndx = ndx >> 5;           /* ndx / 32 */
-  k   = ndx & 0x03;         /* ndx % 4  */
-  ndx = ndx >> 2;           /* ndx / 4 */
-  p = vecGet(b, ndx);
-  if (p == NULL) return NULL;
-  return &((*p)[k]);
-}
-
-uint32_t bmpSet(bmp_t b,uint32_t ndx)
-{
-  uint32_t *p,bit;
-
-  if ((p = bmpword(b,ndx,&bit)) != NULL)
-    *p |= bit;
-  return 1;
-}
-
-uint32_t bmpClr(bmp_t b,uint32_t ndx)
-{
-  uint32_t *p,bit;
-
-  if ((p = bmpword(b,ndx,&bit)) != NULL)
-    *p &= ~bit;
-  return 0;
-}
-
-uint32_t bmpTest(bmp_t b,uint32_t ndx)
-{
-  uint32_t *p,bit;
-
-  if ((p = bmpword(b, ndx,&bit)) != NULL)
-    bit &= *p;
-  return bit;
-}
-
-uint32_t bmpFlip(bmp_t b,uint32_t ndx)
-{
-  uint32_t *p,bit;
-
-  if ((p = bmpword(b, ndx, &bit)) != NULL) {
-   *p ^= bit;
-    bit &= *p;
-  }
-  return bit;
-}
-
-/***** Block operations */
-
-bmp_t bmpDup(bmp_t a)
-{
-
-  bmp_t b;
-  uint32_t *p;
-  uint32_t *q;
-  uint32_t  i;
-  
-  b = bmpNew();
-  i = bmpCnt(a);
-  bmpCnt(b) = i;
-  if (i > 0) {
-    i = (i / 32) / 4;
-    do {
-      p = vecGet(a,i);
-      q = vecGet(b,i);
-      memcpy(q,p,sizeof(bmpBlk));
-    } while (i-- > 0);
-  }
-  return b;
-}
-
-
-void bmpAnd(bmp_t a, bmp_t b)
-{
-  uint32_t  *p;
-  uint32_t  *q;
-  uint32_t i;
-
-  i = bmpCnt(a);
-  if (bmpCnt(b) < i) i = bmpCnt(b);
-  if (i > 0) {
-    i = (i / 32) / 4;
-    do {
-      p = vecGet(a,i);
-      q = vecGet(b,i);
-      *p++ &= *q++;
-      *p++ &= *q++;
-      *p++ &= *q++;
-      *p   &= *q;
-    } while (i-- > 0);
-  }
-}
-
-void bmpOr(bmp_t a, bmp_t b)
-{
-  bmpBlk  *p;
-  bmpBlk  *q;
-  uint32_t i;
-
-  i = bmpCnt(a);
-  if (bmpCnt(b) > i) i = bmpCnt(b);
-  bmpCnt(a) = i;
-  if (i > 0) {
-    i = (i / 32) / 4;
-    do {
-      p = vecGet(a,i);
-      q = vecGet(b,i);
-      (*p)[0] |= (*q)[0];
-      (*p)[1] |= (*q)[1];
-      (*p)[2] |= (*q)[2];
-      (*p)[3] |= (*q)[3];
-    } while (i-- > 0);
-  }
-}
-
-void bmpXor(bmp_t a, bmp_t b)
-{
-  bmpBlk  *p;
-  bmpBlk  *q;
-  uint32_t i;
-
-  i = bmpCnt(a);
-  if (bmpCnt(b) > i) i = bmpCnt(b);
-  bmpCnt(a) = i;
-  if (i > 0) {
-    i = (i / 32) / 4;
-    do {
-      p = vecGet(a,i);
-      q = vecGet(b,i);
-      (*p)[0] ^= (*q)[0];
-      (*p)[1] ^= (*q)[1];
-      (*p)[2] ^= (*q)[2];
-      (*p)[3] ^= (*q)[3];
-    } while (i-- > 0);
-  }
-}
-
-void bmpNeg(bmp_t a)
-{
-  bmpBlk  *p;
-  uint32_t i;
-
-  i = bmpCnt(a);
-  if (i > 0) {
-    i = (i / 32) / 4;
-    do {
-      p = vecGet(a,i);
-      (*p)[0] ^= 0xFFFFFFFF;
-      (*p)[1] ^= 0xFFFFFFFF;
-      (*p)[2] ^= 0xFFFFFFFF;
-      (*p)[3] ^= 0xFFFFFFFF;
-    } while (i-- > 0);
-  }
-}
-
-
-
-#define bmpClrAll(a)      bmpOp(a,NULL,bmp_ZRO)
-#define bmpSub(a)         bmpOp(a,b,bmp_SUB)
-#define bmpSetAll(a,max) (bmpSet(a,max),bmpOp(a,NULL,bmp_SET)
-
-void bmpOp(bmp_t a, bmp_t b, bmp_op op)
-{
-  uint32_t *p, *q;
-  uint32_t i;
-  uint32_t n;
-
-  i = bmpCnt(a);
-  if (b != NULL && bmpCnt(b) > i) i = bmpCnt(b);
-
-  if (i > 0) {
-    i = (i / 32) / 4;
-
-    do {
-      p = vecGet(a,i);
-      q = vecGet(b,i);
-      for (n = 0; n <= bmpBlkSize; n++) {
-        switch (op) {
-          case bmp_AND: *p++ &=  *q++        ; break;
-          case bmp_OR:  *p++ |=  *q++        ; break;
-          case bmp_NEG: *p++ ^=   0xFFFFFFFF ; break;
-          case bmp_ZRO: *p++  =   0x00000000 ; break;
-          case bmp_SET: *p++  =   0xFFFFFFFF ; break;
-          case bmp_SUB: *p++ &= ~*q++        ; break;
-        }
-      }
-    } while (i-- > 0);
-  }
-}
 
 
 /**************************/
@@ -1005,7 +806,170 @@ char *stpDel(stp_t pool, char *str)
 }
 
 
+/****************/
+
+
+static uint32_t *bmpword(bmp_t b, uint32_t ndx, uint32_t *bit)
+{
+  uint32_t k;
+  bmpBlk *p = NULL;
+
+  if (ndx >= b->cnt) b->cnt = ndx+1;
+ *bit = 1 << (ndx & 0x1F);  /* ndx % 32 */
+  ndx = ndx >> 5;           /* ndx / 32 */
+  k   = ndx & 0x03;         /* ndx % 4  */
+  ndx = ndx >> 2;           /* ndx / 4 */
+  p = vecGet(b, ndx);
+  if (p == NULL) return NULL;
+  return &((*p)[k]);
+}
+
+uint32_t bmpSet(bmp_t b,uint32_t ndx)
+{
+  uint32_t *p,bit;
+
+  if ((p = bmpword(b,ndx,&bit)) != NULL)
+    *p |= bit;
+  return 1;
+}
+
+uint32_t bmpClr(bmp_t b,uint32_t ndx)
+{
+  uint32_t *p,bit;
+
+  if ((p = bmpword(b,ndx,&bit)) != NULL)
+    *p &= ~bit;
+  return 0;
+}
+
+uint32_t bmpTest(bmp_t b,uint32_t ndx)
+{
+  uint32_t *p,bit;
+
+  if ((p = bmpword(b, ndx,&bit)) != NULL)
+    bit &= *p;
+  return bit;
+}
+
+uint32_t bmpFlip(bmp_t b,uint32_t ndx)
+{
+  uint32_t *p,bit;
+
+  if ((p = bmpword(b, ndx, &bit)) != NULL) {
+   *p ^= bit;
+    bit &= *p;
+  }
+  return bit;
+}
+
+/***** Block operations */
+
+bmp_t bmpDup(bmp_t a)
+{
+
+  bmp_t b;
+  uint32_t *p;
+  uint32_t *q;
+  uint32_t  i;
+  
+  b = bmpNew();
+  i = bmpCnt(a);
+  bmpCnt(b) = i;
+  if (i > 0) {
+    i = (i / 32) / 4;
+    do {
+      p = vecGet(a,i);
+      q = vecGet(b,i);
+      memcpy(q,p,sizeof(bmpBlk));
+    } while (i-- > 0);
+  }
+  return b;
+}
+
+
+void bmpAnd(bmp_t a, bmp_t b)
+{
+  uint32_t  *p;
+  uint32_t  *q;
+  uint32_t i;
+
+  i = bmpCnt(a);
+  if (bmpCnt(b) < i) i = bmpCnt(b);
+  if (i > 0) {
+    i = (i / 32) / 4;
+    do {
+      p = vecGet(a,i);
+      q = vecGet(b,i);
+      *p++ &= *q++;
+      *p++ &= *q++;
+      *p++ &= *q++;
+      *p   &= *q;
+    } while (i-- > 0);
+  }
+}
+
+void bmpOr(bmp_t a, bmp_t b)
+{
+  bmpBlk  *p;
+  bmpBlk  *q;
+  uint32_t i;
+
+  i = bmpCnt(a);
+  if (bmpCnt(b) > i) i = bmpCnt(b);
+  bmpCnt(a) = i;
+  if (i > 0) {
+    i = (i / 32) / 4;
+    do {
+      p = vecGet(a,i);
+      q = vecGet(b,i);
+      (*p)[0] |= (*q)[0];
+      (*p)[1] |= (*q)[1];
+      (*p)[2] |= (*q)[2];
+      (*p)[3] |= (*q)[3];
+    } while (i-- > 0);
+  }
+}
+
+void bmpXor(bmp_t a, bmp_t b)
+{
+  bmpBlk  *p;
+  bmpBlk  *q;
+  uint32_t i;
+
+  i = bmpCnt(a);
+  if (bmpCnt(b) > i) i = bmpCnt(b);
+  bmpCnt(a) = i;
+  if (i > 0) {
+    i = (i / 32) / 4;
+    do {
+      p = vecGet(a,i);
+      q = vecGet(b,i);
+      (*p)[0] ^= (*q)[0];
+      (*p)[1] ^= (*q)[1];
+      (*p)[2] ^= (*q)[2];
+      (*p)[3] ^= (*q)[3];
+    } while (i-- > 0);
+  }
+}
+
+void bmpNeg(bmp_t a)
+{
+  bmpBlk  *p;
+  uint32_t i;
+
+  i = bmpCnt(a);
+  if (i > 0) {
+    i = (i / 32) / 4;
+    do {
+      p = vecGet(a,i);
+      (*p)[0] ^= 0xFFFFFFFF;
+      (*p)[1] ^= 0xFFFFFFFF;
+      (*p)[2] ^= 0xFFFFFFFF;
+      (*p)[3] ^= 0xFFFFFFFF;
+    } while (i-- > 0);
+  }
+}
+
+
 /**************************/
-
-
 

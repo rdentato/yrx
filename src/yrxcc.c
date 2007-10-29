@@ -24,7 +24,7 @@
 #include "hul.h"
 #include "vec.h"
 
-
+static const char *emptystr = "";
 
 /**************************************************/
 
@@ -159,7 +159,7 @@ static uint16_t *lbl_bmp(char *s)
 {
   int8_t negate = 0;
   int8_t range = 0;
-  int last;
+  int    last = ' ';
   int c;
   int i = 0;
   int h;
@@ -816,6 +816,9 @@ static void closedown()
 static void init()
 {
   cur_state = 1;
+  cur_pos = 0;
+  cur_rx = emptystr;
+  
   fa.graph = vecNew(sizeof(vec_t));
   fa.lbls  = mapNew(17 * sizeof(uint16_t), NULL);
   fa.tags  = vecNew(sizeof(tagNode));
@@ -826,8 +829,10 @@ static void init()
 aut *yrx_parse(char **rxs, int rxn)
 {
   int i;
-
   init();
+  
+  if (rxn > 2) yrxerr("Too many expressions");
+  
   for ( i = 1; i < rxn; i++) {
     parse(rxs[i],i);
   }
