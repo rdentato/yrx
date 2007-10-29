@@ -1355,6 +1355,89 @@ mapAdd(map_t T,void *e)
 
 
 
+#define lst_t vec_t
+
+
+typedef struct lstNode {
+  struct lstNode *next;
+  int8_t          elem[sizeof(void *)];
+} lstNode;
+
+
+typedef struct lstVec {
+  vec             nodes[1];
+  vec             heads[1];
+  struct mapNode *freelst;
+} lstVec;
+
+lst_t lstNew(uint16_t elemsz)
+{
+  lst_t l;
+
+  l = malloc(sizeof(lstVec));
+  if (l != NULL) {
+    vecinit(l->nodes,elemsz + offsetof(lstNode, elem));
+    vecinit(l->heads,sizeof(lstNode *));
+    l->freelst = NULL;
+  }
+  return l;
+}
+
+void *lstIns(lst_t l, uint32_t head, void *e)
+{
+
+}
+
+void *lstNewHead(lst_t l)
+{
+  lstNode *node;
+
+  if (l->freelst != NULL) {
+    node = l->freelst;
+    l->freelst = node->next;
+  }
+  else {
+    node = vecGet(l->nodes,vecCnt(l->nodes)++);
+  }
+  return l->elem;
+}
+
+
+lst
+
+
+
+void *lstCons(lst_t l, void *e)
+{
+
+}
+
+void *lstCar(lst_t l)
+{
+}
+
+void *lstNth(lst_t l, uint32_t ndx)
+{
+
+}
+
+lst_t lstSlice(lst_t l, uint32_t from, uint32_t to)
+{
+
+}
+
+lst_t lstCat(lst_t l1, lst_t l2)
+{
+}
+
+lst_t lstReverse(lst_t l)
+{
+}
+
+void *lstLen(lst_l)
+{
+}
+
 
 
 
@@ -1838,4 +1921,39 @@ void lstRelease(lpl_t pool, void *head)
   }
 }
 
+
+
+
+#define bmpClrAll(a)      bmpOp(a,NULL,bmp_ZRO)
+#define bmpSub(a)         bmpOp(a,b,bmp_SUB)
+#define bmpSetAll(a,max) (bmpSet(a,max),bmpOp(a,NULL,bmp_SET)
+
+void bmpOp(bmp_t a, bmp_t b, bmp_op op)
+{
+  uint32_t *p, *q;
+  uint32_t i;
+  uint32_t n;
+
+  i = bmpCnt(a);
+  if (b != NULL && bmpCnt(b) > i) i = bmpCnt(b);
+
+  if (i > 0) {
+    i = (i / 32) / 4;
+
+    do {
+      p = vecGet(a,i);
+      q = vecGet(b,i);
+      for (n = 0; n <= bmpBlkSize; n++) {
+        switch (op) {
+          case bmp_AND: *p++ &=  *q++        ; break;
+          case bmp_OR:  *p++ |=  *q++        ; break;
+          case bmp_NEG: *p++ ^=   0xFFFFFFFF ; break;
+          case bmp_ZRO: *p++  =   0x00000000 ; break;
+          case bmp_SET: *p++  =   0xFFFFFFFF ; break;
+          case bmp_SUB: *p++ &= ~*q++        ; break;
+        }
+      }
+    } while (i-- > 0);
+  }
+}
 

@@ -17,7 +17,7 @@ include ../config.mk
 
 YRXLUA=yrxdfa.lua yrxgraph.lua yrxasm.lua yrxc.lua yrxl.lua 
 
-CFLAGS = $(DEBUG) -Wall $(LOG2_ASM) -O2 -g -pg
+CFLAGS = $(DEBUG) -Wall $(LOG2_ASM) -O2 -g 
 LDFLAGS = -lprof
 
 yrxcc$(_EXE):	yrxcc.o vec.o
