@@ -871,7 +871,7 @@ bmp_t bmpDup(bmp_t a)
   uint32_t *p;
   uint32_t *q;
   uint32_t  i;
-  
+
   b = bmpNew();
   i = bmpCnt(a);
   bmpCnt(b) = i;
@@ -973,3 +973,9 @@ void bmpNeg(bmp_t a)
 
 /**************************/
 
+lst_t lstlstNew(elemsz)
+{
+
+}
+
+/**************************/
