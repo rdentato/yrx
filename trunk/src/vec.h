@@ -63,7 +63,7 @@ uint32_t  vecSize       (vec_t v);
 #define vecFree(v)         vecFreeClean(v,NULL)
 
 #define vecGetVal(v,n,t)   ((t *)vecGet(v,n))[0]
-#define vecSetVal(v,n,e,t) do{ t e__ = e; vecSet(v,n,&e__);} while(0)
+#define vecSetVal(v,n,e,t) do { t e__ = e; vecSet(v,n,&e__);} while(0)
 
 #define vecNxtNdx(v)       ((v)->cur_w == VEC_NULLNDX? 0 : (v)->cur_w + 1)
 
@@ -110,8 +110,6 @@ uint32_t  vecSize       (vec_t v);
 
 /**********************/
 
-
-
 #define buf_t       vec_t
 
 uint32_t   bufSeek  (buf_t b,uint32_t pos);
@@ -127,14 +125,14 @@ buf_t      bufNew   (void);
 
 /**********************/
 
-#define mapRoot(node)    ((node)->root)
-#define mapLnkLeft(node)    ((node)->lnk[0])
-#define mapLnkRight(node)   ((node)->lnk[1])
-#define mapLeft(node)    (node == NULL ? NULL : mapLnkLeft(node))
-#define mapRight(node)   (node == NULL ? NULL : mapLnkRight(node))
-#define mapKeySz(map)    ((map)->nodes->aux)
-#define mapCnt(map)      ((map)->cnt)
-#define mapNodePtr(p)    (p == NULL? NULL : (void *)(((char *)(p)) - offsetof(mapNode, elem)))
+#define mapRoot(node)     ((node)->root)
+#define mapLnkLeft(node)  ((node)->lnk[0])
+#define mapLnkRight(node) ((node)->lnk[1])
+#define mapLeft(node)     (node == NULL ? NULL : mapLnkLeft(node))
+#define mapRight(node)    (node == NULL ? NULL : mapLnkRight(node))
+#define mapKeySz(map)     ((map)->nodes->aux)
+#define mapCnt(map)       ((map)->cnt)
+#define mapNodePtr(p)     (p == NULL? NULL : (void *)(((char *)(p)) - offsetof(mapNode, elem)))
 
 typedef int (*mapCmp_t)();
 
@@ -182,15 +180,15 @@ char *stpDel  (stp_t pool, char *str);
 
 #define bmp_t    vec_t
 
-typedef uint32_t bmpBlk[4];
+#define bmpBlkSize 4
+#define bmpBlkMask (bmpBlkSize-1)
+
+typedef uint32_t  bmpBlk[bmpBlkSize];
 
 uint32_t bmpSet   (bmp_t b,uint32_t ndx);
 uint32_t bmpClr   (bmp_t b,uint32_t ndx);
 uint32_t bmpTest  (bmp_t b,uint32_t ndx);
 uint32_t bmpFlip  (bmp_t b,uint32_t ndx);
-
-#define bmpBlkSize 4
-#define bmpBlkMask (bmpBlkSize-1)
 
 #define bmpNew()  vecNew(sizeof(bmpBlk))
 #define bmpFree   vecFree
@@ -204,6 +202,29 @@ void bmpOp(bmp_t a, bmp_t b, bmp_op op);
 
 
 /**********************/
+
+
+typedef struct lstNode {
+   struct lstNode  *nxt;
+   uint32_t         cnt;
+   uint8_t          blk[sizeof(uint32_t)];
+} lstNode;
+
+typedef struct lst {
+  lstNode  *blk;
+  uint32_t  cnt;
+  uint32_t  cur;
+} lst;
+
+typedef union {
+    uint32_t       u;
+    int32_t        i;
+    void          *p;
+    lstNode       *l;
+} lstVal;
+
+typedef lst *lst_t;
+
 
 #endif  /* VEC_H */
 
