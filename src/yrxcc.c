@@ -12,6 +12,14 @@
 ** express or implied warranty.
 */
 
+/*
+  TOC:
+
+*/
+
+
+/* = Standard |#include|s */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -24,17 +32,17 @@
 #include "hul.h"
 #include "vec.h"
 
+/**************************************************/
 static const char *emptystr = "";
 
 /**************************************************/
 
-static char     *cur_rx;
-static int       cur_pos;
-static uint16_t  cur_nrx;
-static uint8_t   esc;
-static uint16_t  capt;
+static const char *cur_rx;
+static int         cur_pos;
+static uint16_t    cur_nrx;
 
-static uint16_t  cur_state;
+static uint8_t     esc;
+static uint16_t    capt;
 
 /**************************************************/
 
@@ -63,8 +71,9 @@ static char *str_set(int i,int j)
   return str;
 }
 
-
 /*************************************/
+
+/* = Handling tags */
 
 #define MAXCAPTURES  11
 
@@ -90,7 +99,6 @@ static char *str_set(int i,int j)
 #define tag_type(t)  ((((t) & 0x7F) == 0x7F)? t : (t) & 0x80)
 #define tag_capt(t)  ((((t) & 0x7F) == 0x7F)? 0 : (t) & 0x7F)
 
-
 typedef struct tagNode {
   struct tagNode *next;
   uint32_t tag;
@@ -106,20 +114,25 @@ typedef struct Arc {
 } Arc;
 
 typedef struct {
-   vec_t graph;
-   map_t lbls;
-   vec_t tags;
+   vec_t    graph;
+   map_t    lbls;
+   uint16_t nstates;
+   uint16_t freelst;
 } aut;
 
 static aut fa;
 
 
 /**************************************************/
+
 static void yrxerr(char *errmsg)
 {
-  err(121,"ERROR: %s\n%5d: %s\n%*s\n",errmsg,cur_nrx,cur_rx,cur_pos+8,"*");
+  err(333,"ERROR: %s\n%5d: %s\n%*s\n",errmsg,cur_nrx,cur_rx,cur_pos+8,"*");
 }
+
 /**************************************************/
+
+/* = Handling labels */
 
 static int c__;
 #define hex(c) ((c__=c),('0' <= c__ && c__ <= '9')? c__ - '0' :\
@@ -348,6 +361,166 @@ static void lbl_dump(FILE *f, uint16_t *lb)
 
 /**************************************************/
 
+/* == A special flavour of stack
+**  This function implements a stack of integers where values
+** can be pushed only once.
+**  For example in the code:
+** {{
+**    push(4);
+**    ...
+**    push(4);
+** }}
+** the value 4 will be pushed only the first time.
+**  Values must be strictly positive as pushing 0 has the effect
+** of resetting the stack.
+*/
+
+static uint16_t stkonce(uint16_t val,char op)
+{
+  static stk_t stack = NULL;
+  static bmp_t pushed = NULL;
+
+  if (val == 0) op = 'Z';
+
+  switch (op) {
+    case 'Z' : stack  = stkFree(stack);
+               pushed = bmpFree(pushed);
+               val = 0;
+               break;
+
+    case 'O' : if (stkIsEmpty(stack)) {
+                 val = 0;
+               }
+               else {
+                 val = stkTopVal(stack,uint16_t);
+                 stkPop(stack);
+               }
+               break;
+
+    case 'C' : return bmpTest(pushed,val);
+    
+    case 'H' : if (stack == NULL) {
+                 stack  = stkNew(sizeof(uint16_t));
+                 pushed = bmpNew();
+               }
+               if (!bmpTest(pushed,val)) {
+                 stkPush(stack,&val);
+                 bmpSet(pushed,val);
+               }
+               break;
+  }
+
+  return val;
+}
+
+/* {{ Macros to manage the stack */
+
+/*    Reset the stack */
+#define resetstack() stkonce(0,'Z')
+
+/*    Push a value (only once!) */
+#define pushonce(v)  stkonce(v,'H')
+
+/*    Pop the element on the stack (0 if it's empty) */
+#define pop()        stkonce(1,'O')
+
+/*    Check if a value has been ever pushed in the stack */
+#define pushed(v)    stkonce(v,'C')
+
+/* }} */
+
+/* |copyarcs()| will always be called with the two states
+**   belonging to the same expression. That's why tags can
+**   be merged simply xor-ing them.
+*/
+
+static void copyarcs(vec_t arcst, uint16_t fromst, uint32_t tags)
+{
+  vec_t arcsf ;
+  uint32_t k = 0;
+  Arc *a;
+
+  tags &= 0x00FFFFFF;
+
+  arcsf = vecGetVal(fa.graph,fromst,vec_t );
+
+  while (k < vecCnt(arcsf)) {
+    a = vecGet(arcsf,k++);
+    a = vecAdd(arcst,a);
+    a->tag |= tags;
+  }
+}
+
+static void removeeps()
+{
+  uint16_t from;
+  uint32_t k;
+  Arc *a,*b;
+  vec_t  arcs;
+  vec_t  marked;
+  vec_t *p;
+  
+  marked = vecNew(sizeof(uint16_t));
+  
+  resetstack();
+  pushonce(1);
+
+  while ((from = pop()) != 0) {
+    vecSet(marked,from,&from);
+
+    arcs = vecGetVal(fa.graph, from, vec_t );
+    k = 0;
+    if (arcs != NULL)  {
+      vecSet(marked,from,&from);
+      while (k < vecCnt(arcs)) {
+        a = vecGet(arcs,k);
+        if (a->to != 0) {
+          if (a->lbl == NULL) {
+            if (vecGetVal(marked, a->to, uint16_t) == from) {
+              yrxerr("Expression contains empty closures");
+            }
+            vecSet(marked, a->to, &from);
+            _dbgmsg("Copy from %d to %d\n",a->to,from);
+            copyarcs(arcs, a->to, a->tag);
+
+            /* Now delete the arc replacing it with the last one*/
+            b = vecGet(arcs, vecCnt(arcs)-1);
+           *a = *b;
+            vecCnt(arcs)--;
+
+            k--; /* and ensure the copied arc will be processed */
+          }
+          else
+            pushonce(a->to);
+        }
+        k++;
+      }
+    }
+  }
+
+  for (k = 1; k <= fa.nstates; k++) {
+    _dbgmsg("State: %d unreachable: %d\n",k,!pushed(k));
+    if (!pushed(k)) {
+      p = vecGet(fa.graph,k);
+     *p = vecFree(*p);  /* TODO: add a cleaner for tags! */
+    }
+  }
+  
+  resetstack();
+  marked = vecFree(marked);
+}
+
+static uint32_t intersect(uint32_t *a, uint32_t *b, uint32_t *c)
+{
+
+}
+
+static void mergearcs()
+{
+
+}
+
+/**************************************************/
 
 static void addarc(uint16_t from,uint16_t to,char *l,uint32_t tag)
 {
@@ -380,146 +553,12 @@ static void addarc(uint16_t from,uint16_t to,char *l,uint32_t tag)
   vecAdd(arcs,&arc);
 }
 
-/**************************************************/
 
-static uint16_t stkonce(uint16_t val,char op)
+static uint16_t nextstate()
 {
-  static stk_t stack = NULL;
-  static bmp_t pushed = NULL;
-
-  if (val == 0) op = 'Z';
-
-  switch (op) {
-    case 'Z' : stack  = stkFree(stack);
-               pushed = bmpFree(pushed);
-               val = 0;
-               break;
-
-    case 'O' : if (stkIsEmpty(stack)) val = 0;
-               else val = stkTopVal(stack,uint16_t);
-               stkPop(stack);
-               break;
-
-    case 'H' : if (stack == NULL) {
-                 stack  = stkNew(sizeof(uint16_t));
-                 pushed = bmpNew();
-               }
-               if (!bmpTest(pushed,val)) {
-                 stkPush(stack,&val);
-                 bmpSet(pushed,val);
-               }
-               break;
-  }
-
-  return val;
-}
-
-#define pushonce(v) stkonce(v,'H')
-#define poponce()  stkonce(1,'O')
-
-static vec_t marked;
-
-/* |copyarcs()| will always be called with the two states
-   belonging to the same expression. That's why tags can
-   be merged simply xor-ing them.
-*/
-static void copyarcs(uint16_t fromst, uint16_t tost, uint32_t tags)
-{
-  vec_t arcsf, arcst;
-  uint32_t k = 0;
-  Arc *a;
-
-  tags &= 0x00FFFFFF;
-
-  arcst = vecGetVal(fa.graph,tost,vec_t );
-  arcsf = vecGetVal(fa.graph,fromst,vec_t );
-
-  while (k < vecCnt(arcsf)) {
-    a = vecGet(arcsf,k++);
-    a = vecAdd(arcst,a);
-    a->tag |= tags;
-  }
-}
-
-static void removeeps()
-{
-  uint16_t from;
-  uint32_t k;
-  Arc *a,*b;
-  vec_t arcs;
-
-  marked = vecNew(sizeof(uint16_t));
-
-  pushonce(1);
-
-  while ((from = poponce()) != 0) {
-    vecSet(marked,from,&from);
-
-    arcs = vecGetVal(fa.graph, from, vec_t );
-    k = 0;
-    if (arcs != NULL)  {
-      vecSet(marked,from,&from);
-      while (k < vecCnt(arcs)) {
-        a = vecGet(arcs,k);
-        if (a->to != 0) {
-          pushonce(a->to);
-          if (a->lbl == NULL) {
-            if (vecGetVal(marked, a->to, uint16_t) == from) {
-              yrxerr("Expression contains empty closures");
-            }
-            vecSet(marked, a->to, &from);
-            _dbgmsg("Copy from %d to %d\n",a->to,from);
-            copyarcs(a->to, from, a->tag);
-
-            /* Now delete the arc replacing it with the last one*/
-            b = vecGet(arcs, vecCnt(arcs)-1);
-           *a = *b;
-            vecCnt(arcs)--;
-
-            k--; /* and ensure the copied arc will be processed */
-          }
-        }
-        k++;
-      }
-    }
-  }
-
-  pushonce(0);
-  marked = vecFree(marked);
-}
-
-static uint32_t intersect(uint32_t *a, uint32_t *b, uint32_t *c)
-{
-
-}
-
-static void mergearcs()
-{
-  uint16_t from;
-  uint32_t k,i;
-  Arc *a,*b;
-  vec_t arcs;
-
-  marked  = vecNew(sizeof(uint16_t));
-
-  pushonce(1);
-
-  while ((from = poponce()) != 0) {
-    vecSet(marked,from,&from);
-
-    arcs = vecGetVal(fa.graph, from, vec_t );
-    k = 0;
-    if (arcs != NULL)  {
-      vecSet(marked,from,&from);
-      while (k < vecCnt(arcs)) {
-        a = vecGet(arcs,k);
-        k++;
-      }
-    }
-  }
-
-  pushonce(0);
-  marked = vecFree(marked);
+  if (fa.nstates == 65500)
+    yrxerr("More than 65500 states!!");
+  return ++fa.nstates ;
 }
 
 /**************************************************/
@@ -540,11 +579,6 @@ static void mergearcs()
   */
 
 
-static uint16_t nextstate()
-{
-  if (cur_state == 65500)  yrxerr("More than 65500 states!!");
-  return ++cur_state ;
-}
 
 static int peekch(int n) {
   int c;
@@ -771,7 +805,7 @@ static uint16_t expr(uint16_t state)
   return state;
 }
 
-static uint16_t parse(char *rx,uint16_t nrx)
+static uint16_t parse(const char *rx,uint16_t nrx)
 {
   uint16_t state;
 
@@ -801,27 +835,27 @@ static void cleantemp()
 {
   if (str != NULL) free(str);
   str = NULL;
-  pushonce(0);
-  marked = vecFree(marked);
+  resetstack();
 }
 
 static void closedown()
 {
   fa.graph = vecFreeClean(fa.graph,(vecCleaner)statescleanup);
   fa.lbls = mapFree(fa.lbls);
-  fa.tags  = vecFree(fa.tags);
+  
   cleantemp();
 }
 
 static void init()
 {
-  cur_state = 1;
   cur_pos = 0;
   cur_rx = emptystr;
   
-  fa.graph = vecNew(sizeof(vec_t));
-  fa.lbls  = mapNew(17 * sizeof(uint16_t), NULL);
-  fa.tags  = vecNew(sizeof(tagNode));
+  fa.graph   = vecNew(sizeof(vec_t));
+  fa.lbls    = mapNew(17 * sizeof(uint16_t), NULL);
+  fa.nstates = 1;
+  fa.freelst = 0;
+
   atexit(closedown);
 }
 
@@ -831,7 +865,7 @@ aut *yrx_parse(char **rxs, int rxn)
   int i;
   init();
   
-  if (rxn > 2) yrxerr("Too many expressions");
+  if (rxn > 250) yrxerr("Too many expressions");
   
   for ( i = 1; i < rxn; i++) {
     parse(rxs[i],i);
@@ -851,9 +885,9 @@ void dump(aut *dfa)
   Arc *a;
   vec_t arcs;
 
-  pushonce(0);
+  resetstack();
   pushonce(1);
-  while ((from = poponce()) != 0) {
+  while ((from = pop()) != 0) {
     arcs = vecGetVal(dfa->graph, from, vec_t );
     if (arcs != NULL)  {
       for (i = vecCnt(arcs), a = vecGet(arcs,0) ;
@@ -865,7 +899,7 @@ void dump(aut *dfa)
       }
     }
   }
-  pushonce(0);
+  resetstack();
 }
 
 int main(int argc, char **argv)

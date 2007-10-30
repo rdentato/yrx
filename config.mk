@@ -28,7 +28,7 @@ LOG2_ASM=-DLOG2_ASM
 
 #### DEBUG
 ## Uncomment next line to compile a debugging instrumented code
-#DEBUG=-DDEBUG
+DEBUG=-DDEBUG
 
 #### LUA libraries
 ## PATH to the lua source code distribution. It is assumed that Lua 
