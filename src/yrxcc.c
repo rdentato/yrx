@@ -22,10 +22,16 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+
+#ifdef _MSC_VER
+/* MSVC does not have stdint.h!!! Paul Hsie graciously created one */
+#include "pstdint.h"
+#else
 #include <stdint.h>
+#endif
+
 #include <stddef.h>
 #include <string.h>
-#include <strings.h>
 #include <ctype.h>
 
 #define HUL_MAIN
@@ -42,13 +48,19 @@ static int         cur_pos;
 static uint16_t    cur_nrx;
 
 static uint8_t     esc;
-static uint16_t    capt;
+static uint8_t     capt;
 
 /**************************************************/
 
+typedef struct tagHead {
+  uint8_t   size;
+  uint8_t   cnt;
+  uint32_t  tags[1];
+} tagHead;
+
 typedef struct Arc {
   uint16_t *lbl;
-  vec_t     tags;
+  tagHead  *tags;
   uint16_t  to;
 } Arc;
 
@@ -125,40 +137,45 @@ static char *str_set(int i,int j)
 #define tag_type(t)  ((((t) & 0x7F) == 0x7F)? t : (t) & 0x80)
 #define tag_capt(t)  ((((t) & 0x7F) == 0x7F)? 0 : (t) & 0x7F)
 
-vec_t addtags(vec_t tl, uint32_t tag)
+tagHead *addtags(tagHead *tl, uint32_t tag)
 {
   uint32_t  rx;
   uint32_t *p;
-  int k;
-  
+  uint32_t  k;
+
   if (tl == NULL) {
-    tl = vecNew(sizeof(uint32_t));
-    vecSet(tl,0,&tag);
+    tl = malloc(sizeof(tagHead) + 3 * sizeof(uint32_t));
+    if (tl == NULL) yrxerr("Out of memory");
+    tl->size = 3; tl->cnt = 1;
+    tl->tags[0] = tag;
   }
   else {
     rx = tag & 0xFF000000;
-    for (k = 0; k < vecCnt(tl); k++) {
-      p = vecGet(tl,k);
+    for (k = 0, p = tl->tags;  k < tl->cnt;  k++, p++) {
       if ((*p & 0xFF000000) == rx) {
-        *p = *p | tag;
+       *p = *p | tag;
         return tl;
       }
-      vecAdd(tl,&tag);
     }
+    if (tl->cnt >= tl->size) {
+      tl->size += 4;
+      tl = realloc(tl,sizeof(tagHead) + tl->size * sizeof(uint32_t));
+    }
+    tl->tags[tl->cnt] = tag;
+    tl->cnt++;
   }
 
   return tl;
 }
 
-vec_t copytags(vec_t tl, vec_t newtl)
+tagHead *copytags(tagHead *tl, tagHead *newtl)
 {
   int k;
   uint32_t *p;
-  
+
   if (newtl == NULL) return tl;
-  
-  for (k = 0; k < vecCnt(newtl); k++) {
-    p = vecGet(newtl,k);
+
+  for (k = 0, p = newtl->tags;  k < newtl->cnt;  k++,p++) {
     tl = addtags(tl,*p);
   }
   return tl;
@@ -167,8 +184,9 @@ vec_t copytags(vec_t tl, vec_t newtl)
 static void tagclean(void *a)
 {
   _dbgmsg("tagclean: %p (%p)\n",a, a==NULL?a:((Arc *)a)->tags );
-  if (a != NULL) 
-     vecFree(((Arc *)a)->tags); 
+  if (a != NULL) {
+     free(((Arc *)a)->tags);
+  }
 }
 
 
@@ -440,8 +458,8 @@ static uint16_t stkonce(uint16_t val,char op)
                }
                break;
 
-    case 'C' : return bmpTest(pushed,val);
-    
+    case 'C' : return (bmpTest(pushed,val) != 0);
+
     case 'H' : if (stack == NULL) {
                  stack  = stkNew(sizeof(uint16_t));
                  pushed = bmpNew();
@@ -477,7 +495,7 @@ static uint16_t stkonce(uint16_t val,char op)
 **   be merged simply xor-ing them.
 */
 
-static void copyarcs(vec_t arcst, uint16_t fromst, vec_t tl)
+static void copyarcs(vec_t arcst, uint16_t fromst, tagHead *tl)
 {
   vec_t arcsf ;
   uint32_t k = 0;
@@ -492,7 +510,7 @@ static void copyarcs(vec_t arcst, uint16_t fromst, vec_t tl)
       a->tags = NULL;
     }
     else { /* tags need to be copied, not shared! */
-      a->tags = copytags(NULL, a->tags); 
+      a->tags = copytags(NULL, a->tags);
       a->tags = copytags(a->tags, tl);
     }
   }
@@ -506,9 +524,9 @@ static void removeeps()
   vec_t  arcs;
   vec_t  marked;
   vec_t *p;
-  
+
   marked = vecNew(sizeof(uint16_t));
-  
+
   resetstack();
   pushonce(1);
 
@@ -553,7 +571,7 @@ static void removeeps()
      *p = vecFreeClean(*p,tagclean);
     }
   }
-  
+
   resetstack();
   marked = vecFree(marked);
 }
@@ -580,7 +598,7 @@ static void addarc(uint16_t from,uint16_t to,char *l,uint32_t tag)
   arc.to = to;
   arc.lbl = 0;
   arc.tags = NULL;
-  
+
   if ((tag & 0x00FFFFFF) != TAG_NONE)
      arc.tags = addtags(arc.tags,tag);
 
@@ -590,7 +608,7 @@ static void addarc(uint16_t from,uint16_t to,char *l,uint32_t tag)
     lbl_type(lbmp) = (uint16_t)(l[0]);
 
     arc.lbl = lbl(lbmp);
-    
+
   }
 
   arcs = vecGetVal(fa.graph, from, vec_t );
@@ -888,11 +906,11 @@ static void cleantemp()
   resetstack();
 }
 
-static void closedown()
+static void closedown(void)
 {
   fa.graph = vecFreeClean(fa.graph,(vecCleaner)statescleanup);
   fa.lbls = mapFree(fa.lbls);
-  
+
   cleantemp();
 }
 
@@ -900,7 +918,7 @@ static void init()
 {
   cur_pos = 0;
   cur_rx = emptystr;
-  
+
   fa.graph   = vecNew(sizeof(vec_t));
   fa.lbls    = mapNew(17 * sizeof(uint16_t), NULL);
   fa.nstates = 1;
@@ -914,12 +932,14 @@ aut *yrx_parse(char **rxs, int rxn)
 {
   int i;
   init();
-  
+
   if (rxn > 250) yrxerr("Too many expressions");
-  
+  parse ("(((a)b)v)",1);
+#if 0
   for ( i = 1; i < rxn; i++) {
     parse(rxs[i],i);
   }
+#endif
   removeeps();
   /*mergearcs();*/
   cleantemp();
