@@ -46,6 +46,31 @@ static uint16_t    capt;
 
 /**************************************************/
 
+typedef struct Arc {
+  uint16_t *lbl;
+  vec_t     tags;
+  uint16_t  to;
+} Arc;
+
+typedef struct {
+   vec_t    graph;
+   map_t    lbls;
+   uint16_t nstates;
+   uint16_t freelst;
+} aut;
+
+static aut fa;
+
+
+/**************************************************/
+
+static void yrxerr(char *errmsg)
+{
+  err(333,"ERROR: %s\n%5d: %s\n%*s\n",errmsg,cur_nrx,cur_rx,cur_pos+8,"*");
+}
+
+/**************************************************/
+
 static char *str =  NULL;
 static int   str_len = 0;
 
@@ -81,7 +106,8 @@ static char *str_set(int i,int j)
 #define TAG_CE(n)  (1 << (n<<1))
 #define TAG_CB(n)  (TAG_CE(n) << 1)
 #define TAG_MRK    (1<<22)
-#define TAG_FIN    (1<<23)
+
+/*#define TAG_FIN    (1<<23)*/
 
 
 /* xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx
@@ -99,36 +125,52 @@ static char *str_set(int i,int j)
 #define tag_type(t)  ((((t) & 0x7F) == 0x7F)? t : (t) & 0x80)
 #define tag_capt(t)  ((((t) & 0x7F) == 0x7F)? 0 : (t) & 0x7F)
 
-typedef struct tagNode {
-  struct tagNode *next;
-  uint32_t tag;
-} tagNode;
-
-
-/**************************************************/
-
-typedef struct Arc {
-  uint16_t *lbl;
-  uint32_t  tag; /* set of tags of the same rx */
-  uint16_t  to;
-} Arc;
-
-typedef struct {
-   vec_t    graph;
-   map_t    lbls;
-   uint16_t nstates;
-   uint16_t freelst;
-} aut;
-
-static aut fa;
-
-
-/**************************************************/
-
-static void yrxerr(char *errmsg)
+vec_t addtags(vec_t tl, uint32_t tag)
 {
-  err(333,"ERROR: %s\n%5d: %s\n%*s\n",errmsg,cur_nrx,cur_rx,cur_pos+8,"*");
+  uint32_t  rx;
+  uint32_t *p;
+  int k;
+  
+  if (tl == NULL) {
+    tl = vecNew(sizeof(uint32_t));
+    vecSet(tl,0,&tag);
+  }
+  else {
+    rx = tag & 0xFF000000;
+    for (k = 0; k < vecCnt(tl); k++) {
+      p = vecGet(tl,k);
+      if ((*p & 0xFF000000) == rx) {
+        *p = *p | tag;
+        return tl;
+      }
+      vecAdd(tl,&tag);
+    }
+  }
+
+  return tl;
 }
+
+vec_t copytags(vec_t tl, vec_t newtl)
+{
+  int k;
+  uint32_t *p;
+  
+  if (newtl == NULL) return tl;
+  
+  for (k = 0; k < vecCnt(newtl); k++) {
+    p = vecGet(newtl,k);
+    tl = addtags(tl,*p);
+  }
+  return tl;
+}
+
+static void tagclean(void *a)
+{
+  _dbgmsg("tagclean: %p (%p)\n",a, a==NULL?a:((Arc *)a)->tags );
+  if (a != NULL) 
+     vecFree(((Arc *)a)->tags); 
+}
+
 
 /**************************************************/
 
@@ -153,11 +195,11 @@ static int c__;
 
 #define lbl_cpy(a,b) memset(a,b,17 * sizeof(uint16_t))
 
-#define lbl_neg(b) do { uint8_t i; for(i=0; i<16; i++) b[i] ^= 0xFFFF; } while (0)
+#define lbl_neg(b) do {uint8_t i; for(i=0; i<16; i++) b[i] ^= 0xFFFF; } while (0)
 
-#define minus(a,b)   do { uint8_t i; for(i=0; i<16; i++) a[i] &= ~b[i]; } while (0)
-#define lbl_or(a,b)  do { uint8_t i; for(i=0; i<16; i++) a[i] |=  b[i]; } while (0)
-/*#define lbl_and(a,b) do { uint8_t i; for(i=0; i<16; i++) a[i] &=  b[i]; } while (0)*/
+#define minus(a,b)   do {uint8_t i; for(i=0; i<16; i++) a[i] &= ~b[i]; } while (0)
+#define lbl_or(a,b)  do {uint8_t i; for(i=0; i<16; i++) a[i] |=  b[i]; } while (0)
+/*#define lbl_and(a,b) do {uint8_t i; for(i=0; i<16; i++) a[i] &=  b[i]; } while (0)*/
 
 #define lbl_and(a,b) do {\
                        uint32_t *a_=(uint32_t *)a; \
@@ -356,8 +398,9 @@ static void lbl_dump(FILE *f, uint16_t *lb)
       a++;
     }
   }
-
 }
+
+#define lbl(l)  mapAdd(fa.lbls, l);
 
 /**************************************************/
 
@@ -434,20 +477,24 @@ static uint16_t stkonce(uint16_t val,char op)
 **   be merged simply xor-ing them.
 */
 
-static void copyarcs(vec_t arcst, uint16_t fromst, uint32_t tags)
+static void copyarcs(vec_t arcst, uint16_t fromst, vec_t tl)
 {
   vec_t arcsf ;
   uint32_t k = 0;
   Arc *a;
-
-  tags &= 0x00FFFFFF;
 
   arcsf = vecGetVal(fa.graph,fromst,vec_t );
 
   while (k < vecCnt(arcsf)) {
     a = vecGet(arcsf,k++);
     a = vecAdd(arcst,a);
-    a->tag |= tags;
+    if (a->to == 0) { /* Final states need no tag! */
+      a->tags = NULL;
+    }
+    else { /* tags need to be copied, not shared! */
+      a->tags = copytags(NULL, a->tags); 
+      a->tags = copytags(a->tags, tl);
+    }
   }
 }
 
@@ -481,10 +528,11 @@ static void removeeps()
             }
             vecSet(marked, a->to, &from);
             _dbgmsg("Copy from %d to %d\n",a->to,from);
-            copyarcs(arcs, a->to, a->tag);
+            copyarcs(arcs, a->to, a->tags);
 
             /* Now delete the arc replacing it with the last one*/
             b = vecGet(arcs, vecCnt(arcs)-1);
+            tagclean(a);
            *a = *b;
             vecCnt(arcs)--;
 
@@ -502,7 +550,7 @@ static void removeeps()
     _dbgmsg("State: %d unreachable: %d\n",k,!pushed(k));
     if (!pushed(k)) {
       p = vecGet(fa.graph,k);
-     *p = vecFree(*p);  /* TODO: add a cleaner for tags! */
+     *p = vecFreeClean(*p,tagclean);
     }
   }
   
@@ -529,18 +577,20 @@ static void addarc(uint16_t from,uint16_t to,char *l,uint32_t tag)
   vec_t arcs;
 
 
-  if (tag == TAG_NONE) tag = tag_code(TAG_NONE,cur_nrx);
-
   arc.to = to;
-  arc.tag = tag;
   arc.lbl = 0;
+  arc.tags = NULL;
+  
+  if ((tag & 0x00FFFFFF) != TAG_NONE)
+     arc.tags = addtags(arc.tags,tag);
 
   if (l && l[0]) {
 
     lbmp = lbl_bmp(l+1);
     lbl_type(lbmp) = (uint16_t)(l[0]);
 
-    arc.lbl = mapAdd(fa.lbls, lbmp);
+    arc.lbl = lbl(lbmp);
+    
   }
 
   arcs = vecGetVal(fa.graph, from, vec_t );
@@ -819,7 +869,7 @@ static uint16_t parse(const char *rx,uint16_t nrx)
 
   if (peekch(0) != -1) yrxerr("Unexpected character ");
 
-  addarc(state,0,"",tag_code(TAG_FIN,cur_nrx));
+  addarc(state,0,"",tag_code(TAG_NONE,cur_nrx));
 
   return state;
 }
@@ -892,7 +942,7 @@ void dump(aut *dfa)
     if (arcs != NULL)  {
       for (i = vecCnt(arcs), a = vecGet(arcs,0) ;
            i>0; a = vecNext(arcs),i--) {
-        printf("%5d -> %-5d %08X (%p) ", from, a->to, a->tag, a->lbl);
+        printf("%5d -> %-5d %p (%p) ", from, a->to, a->tags, a->lbl);
         lbl_dump(stdout,a->lbl);
         printf("\n");
         if (a->to != 0) pushonce(a->to);
