@@ -22,14 +22,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
-#ifdef _MSC_VER
-/* MSVC does not have stdint.h!!! Paul Hsie graciously created one */
-#include "pstdint.h"
-#else
 #include <stdint.h>
-#endif
-
 #include <stddef.h>
 #include <string.h>
 #include <ctype.h>
@@ -48,19 +41,13 @@ static int         cur_pos;
 static uint16_t    cur_nrx;
 
 static uint8_t     esc;
-static uint8_t     capt;
+static uint16_t    capt;
 
 /**************************************************/
 
-typedef struct tagHead {
-  uint8_t   size;
-  uint8_t   cnt;
-  uint32_t  tags[1];
-} tagHead;
-
 typedef struct Arc {
   uint16_t *lbl;
-  tagHead  *tags;
+  vec_t     tags;
   uint16_t  to;
 } Arc;
 
@@ -118,18 +105,17 @@ static char *str_set(int i,int j)
 #define TAG_CE(n)  (1 << (n<<1))
 #define TAG_CB(n)  (TAG_CE(n) << 1)
 #define TAG_MRK    (1<<22)
-
-/*#define TAG_FIN    (1<<23)*/
+#define TAG_FIN    (1<<23)
 
 
 /* xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx
 **   nrx    ||()()() ()()()() ()()()()
-**          || |                    |
-**          || |                    \__ capture 1
-**          || |
-**          || \__ capture 11
-**          \\__MRK
-**           \__FIN
+**          |||                   | |
+**          |||        ...         \ \__ capture 1
+**          |||                     \___ capture 2
+**          || \_____ capture 11
+**          | \__ MRK
+**           \___ FIN
 */
 
 #define tag_code(t,n)((t) | ((n) << 24))
@@ -137,45 +123,57 @@ static char *str_set(int i,int j)
 #define tag_type(t)  ((((t) & 0x7F) == 0x7F)? t : (t) & 0x80)
 #define tag_capt(t)  ((((t) & 0x7F) == 0x7F)? 0 : (t) & 0x7F)
 
-tagHead *addtags(tagHead *tl, uint32_t tag)
+
+static vec_t tagspool;
+
+uint32_t *taglist(uint32_t *tl, uint8_t minsize)
+{
+  uint32_t firstfree;
+
+  firstfree = vecGetVal(tagspool,0,uint32_t);
+
+  if (firstfree == 0) {
+
+  }
+  else {
+
+  }
+}
+
+vec_t addtags(vec_t tl, uint32_t tag)
 {
   uint32_t  rx;
   uint32_t *p;
-  uint32_t  k;
-
+  int k;
+  
   if (tl == NULL) {
-    tl = malloc(sizeof(tagHead) + 3 * sizeof(uint32_t));
-    if (tl == NULL) yrxerr("Out of memory");
-    tl->size = 3; tl->cnt = 1;
-    tl->tags[0] = tag;
+    tl = vecNew(sizeof(uint32_t));
+    vecSet(tl,0,&tag);
   }
   else {
     rx = tag & 0xFF000000;
-    for (k = 0, p = tl->tags;  k < tl->cnt;  k++, p++) {
+    for (k = 0; k < vecCnt(tl); k++) {
+      p = vecGet(tl,k);
       if ((*p & 0xFF000000) == rx) {
-       *p = *p | tag;
+        *p = *p | tag;
         return tl;
       }
+      vecAdd(tl,&tag);
     }
-    if (tl->cnt >= tl->size) {
-      tl->size += 4;
-      tl = realloc(tl,sizeof(tagHead) + tl->size * sizeof(uint32_t));
-    }
-    tl->tags[tl->cnt] = tag;
-    tl->cnt++;
   }
 
   return tl;
 }
 
-tagHead *copytags(tagHead *tl, tagHead *newtl)
+vec_t copytags(vec_t tl, vec_t newtl)
 {
   int k;
   uint32_t *p;
-
+  
   if (newtl == NULL) return tl;
-
-  for (k = 0, p = newtl->tags;  k < newtl->cnt;  k++,p++) {
+  
+  for (k = 0; k < vecCnt(newtl); k++) {
+    p = vecGet(newtl,k);
     tl = addtags(tl,*p);
   }
   return tl;
@@ -185,7 +183,37 @@ static void tagclean(void *a)
 {
   _dbgmsg("tagclean: %p (%p)\n",a, a==NULL?a:((Arc *)a)->tags );
   if (a != NULL) {
-     free(((Arc *)a)->tags);
+    vecFree(((Arc *)a)->tags); 
+  }
+}
+
+static void t_dump(FILE *f, vec_t tags)
+{
+  uint32_t  rx;
+  uint32_t  p;  
+  uint32_t  k,j;
+
+  if (tags != NULL) {
+
+    fprintf(stdout," / ");
+
+    for (k=0; k<vecCnt(tags); k++) {
+      p = vecGetVal(tags,k,uint32_t);
+      if (p != 0) {
+
+        rx = (p & 0xFF000000) >> 24; 
+        if ( p & 0x00800000 ) {
+          fprintf(f,"FIN_%d ",rx);
+        }
+        else {
+          if ( p & 0x00400000 ) fprintf(f,"MRK_%d ",rx);
+          for (j=0; j < MAXCAPTURES; j++) {
+            if ( p & TAG_CE(j) ) fprintf(f,")%02d_%d ",j+1,rx);
+            if ( p & TAG_CB(j) ) fprintf(f,"(%02d_%d ",j+1,rx);
+          }
+        }
+      }
+    }
   }
 }
 
@@ -418,7 +446,8 @@ static void lbl_dump(FILE *f, uint16_t *lb)
   }
 }
 
-#define lbl(l)  mapAdd(fa.lbls, l);
+#define lbl(l)     mapAdd(fa.lbls, l);
+#define lbl_init() mapNew(17 * sizeof(uint16_t), NULL)
 
 /**************************************************/
 
@@ -458,8 +487,8 @@ static uint16_t stkonce(uint16_t val,char op)
                }
                break;
 
-    case 'C' : return (bmpTest(pushed,val) != 0);
-
+    case 'C' : return (0 != bmpTest(pushed,val));
+    
     case 'H' : if (stack == NULL) {
                  stack  = stkNew(sizeof(uint16_t));
                  pushed = bmpNew();
@@ -495,7 +524,7 @@ static uint16_t stkonce(uint16_t val,char op)
 **   be merged simply xor-ing them.
 */
 
-static void copyarcs(vec_t arcst, uint16_t fromst, tagHead *tl)
+static void copyarcs(vec_t arcst, uint16_t fromst, vec_t tl)
 {
   vec_t arcsf ;
   uint32_t k = 0;
@@ -506,62 +535,73 @@ static void copyarcs(vec_t arcst, uint16_t fromst, tagHead *tl)
   while (k < vecCnt(arcsf)) {
     a = vecGet(arcsf,k++);
     a = vecAdd(arcst,a);
-    if (a->to == 0) { /* Final states need no tag! */
-      a->tags = NULL;
-    }
-    else { /* tags need to be copied, not shared! */
-      a->tags = copytags(NULL, a->tags);
-      a->tags = copytags(a->tags, tl);
+    a->tags = copytags(NULL, a->tags); 
+    a->tags = copytags(a->tags, tl);
+  }
+}
+
+static vec_t  marked;
+
+
+static void removeeps(uint16_t from, vec_t  arcs)
+{
+  uint32_t k;
+  Arc *a,*b;
+
+  k = 0;
+  while (k < vecCnt(arcs)) {
+    a = vecGet(arcs,k++);
+    if ((a->to != 0) && (a->lbl == NULL)) {
+      if (vecGetVal(marked, a->to, uint16_t) == from) {
+        yrxerr("Expression contains empty closures");
+      }
+      vecSet(marked, a->to, &from);
+      _dbgmsg("Copy from %d to %d\n",a->to,from);
+      copyarcs(arcs, a->to, a->tags);
+
+      /* Now delete the arc replacing it with the last one */
+      b = vecGet(arcs, vecCnt(arcs)-1);
+      tagclean(a);
+     *a = *b;
+      vecCnt(arcs)--;
+      k--;
     }
   }
 }
 
-static void removeeps()
+static void mergearcs(uint16_t from, vec_t  arcs)
+{
+  uint32_t k,j;
+  Arc *a,*b;
+ 
+  for (k=0; k < vecCnt(arcs); k++) {
+    a = vecGet(arcs,k);
+    if (a->to != 0)
+      pushonce(a->to);
+  }
+}
+
+static void determinize()
 {
   uint16_t from;
-  uint32_t k;
-  Arc *a,*b;
-  vec_t  arcs;
-  vec_t  marked;
   vec_t *p;
+  uint32_t k;
+  vec_t  arcs;
 
   marked = vecNew(sizeof(uint16_t));
-
+  
   resetstack();
   pushonce(1);
 
   while ((from = pop()) != 0) {
     vecSet(marked,from,&from);
+    arcs = vecGetVal(fa.graph, from, vec_t);
 
-    arcs = vecGetVal(fa.graph, from, vec_t );
-    k = 0;
-    if (arcs != NULL)  {
-      vecSet(marked,from,&from);
-      while (k < vecCnt(arcs)) {
-        a = vecGet(arcs,k);
-        if (a->to != 0) {
-          if (a->lbl == NULL) {
-            if (vecGetVal(marked, a->to, uint16_t) == from) {
-              yrxerr("Expression contains empty closures");
-            }
-            vecSet(marked, a->to, &from);
-            _dbgmsg("Copy from %d to %d\n",a->to,from);
-            copyarcs(arcs, a->to, a->tags);
+    if (arcs == NULL) yrxerr("Unexpcted empty state");
 
-            /* Now delete the arc replacing it with the last one*/
-            b = vecGet(arcs, vecCnt(arcs)-1);
-            tagclean(a);
-           *a = *b;
-            vecCnt(arcs)--;
+    removeeps(from,arcs);
+    mergearcs(from,arcs);
 
-            k--; /* and ensure the copied arc will be processed */
-          }
-          else
-            pushonce(a->to);
-        }
-        k++;
-      }
-    }
   }
 
   for (k = 1; k <= fa.nstates; k++) {
@@ -571,17 +611,12 @@ static void removeeps()
      *p = vecFreeClean(*p,tagclean);
     }
   }
-
+  
   resetstack();
   marked = vecFree(marked);
 }
 
 static uint32_t intersect(uint32_t *a, uint32_t *b, uint32_t *c)
-{
-
-}
-
-static void mergearcs()
 {
 
 }
@@ -598,7 +633,7 @@ static void addarc(uint16_t from,uint16_t to,char *l,uint32_t tag)
   arc.to = to;
   arc.lbl = 0;
   arc.tags = NULL;
-
+  
   if ((tag & 0x00FFFFFF) != TAG_NONE)
      arc.tags = addtags(arc.tags,tag);
 
@@ -608,7 +643,7 @@ static void addarc(uint16_t from,uint16_t to,char *l,uint32_t tag)
     lbl_type(lbmp) = (uint16_t)(l[0]);
 
     arc.lbl = lbl(lbmp);
-
+    
   }
 
   arcs = vecGetVal(fa.graph, from, vec_t );
@@ -622,7 +657,7 @@ static void addarc(uint16_t from,uint16_t to,char *l,uint32_t tag)
 }
 
 
-static uint16_t nextstate()
+static uint16_t nextstate(void)
 {
   if (fa.nstates == 65500)
     yrxerr("More than 65500 states!!");
@@ -887,7 +922,7 @@ static uint16_t parse(const char *rx,uint16_t nrx)
 
   if (peekch(0) != -1) yrxerr("Unexpected character ");
 
-  addarc(state,0,"",tag_code(TAG_NONE,cur_nrx));
+  addarc(state,0,"",tag_code(TAG_FIN,cur_nrx));
 
   return state;
 }
@@ -906,11 +941,11 @@ static void cleantemp()
   resetstack();
 }
 
-static void closedown(void)
+static void closedown()
 {
   fa.graph = vecFreeClean(fa.graph,(vecCleaner)statescleanup);
   fa.lbls = mapFree(fa.lbls);
-
+  
   cleantemp();
 }
 
@@ -918,9 +953,9 @@ static void init()
 {
   cur_pos = 0;
   cur_rx = emptystr;
-
+  
   fa.graph   = vecNew(sizeof(vec_t));
-  fa.lbls    = mapNew(17 * sizeof(uint16_t), NULL);
+  fa.lbls    = lbl_init();
   fa.nstates = 1;
   fa.freelst = 0;
 
@@ -932,15 +967,14 @@ aut *yrx_parse(char **rxs, int rxn)
 {
   int i;
   init();
-
+  
   if (rxn > 250) yrxerr("Too many expressions");
-  parse ("(((a)b)v)",1);
-#if 0
+  
   for ( i = 1; i < rxn; i++) {
     parse(rxs[i],i);
   }
-#endif
-  removeeps();
+  determinize();
+  /**/
   /*mergearcs();*/
   cleantemp();
 
@@ -964,6 +998,7 @@ void dump(aut *dfa)
            i>0; a = vecNext(arcs),i--) {
         printf("%5d -> %-5d %p (%p) ", from, a->to, a->tags, a->lbl);
         lbl_dump(stdout,a->lbl);
+        t_dump(stdout,a->tags);
         printf("\n");
         if (a->to != 0) pushonce(a->to);
       }

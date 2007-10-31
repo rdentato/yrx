@@ -814,14 +814,31 @@ static uint32_t *bmpword(bmp_t b, uint32_t ndx, uint32_t *bit)
   uint32_t k;
   bmpBlk *p = NULL;
 
-  if (ndx >= b->cnt) b->cnt = ndx+1;
+  static uint32_t  last_ndx = VEC_NULLNDX;
+  static uint32_t *last_ptr = NULL;
+
  *bit = 1 << (ndx & 0x1F);  /* ndx % 32 */
-  ndx = ndx >> 5;           /* ndx / 32 */
-  k   = ndx & 0x03;         /* ndx % 4  */
-  ndx = ndx >> 2;           /* ndx / 4 */
-  p = vecGet(b, ndx);
-  if (p == NULL) return NULL;
-  return &((*p)[k]);
+
+  if (ndx != last_ndx) {
+
+    if (ndx >= b->cnt)
+      b->cnt = ndx+1;
+
+    ndx = ndx >> 5;           /* ndx / 32 */
+    k   = ndx & 0x03;         /* ndx % 4  */
+    ndx = ndx >> 2;           /* ndx / 4 */
+
+    p = vecGet(b, ndx);
+    if (p != NULL) {
+      last_ndx = ndx;
+      last_ptr = &((*p)[k]);
+    }
+    else {
+      last_ndx = VEC_NULLNDX;
+      last_ptr = NULL;
+    }
+  }
+  return last_ptr;
 }
 
 uint32_t bmpSet(bmp_t b,uint32_t ndx)
@@ -844,11 +861,11 @@ uint32_t bmpClr(bmp_t b,uint32_t ndx)
 
 uint32_t bmpTest(bmp_t b,uint32_t ndx)
 {
-  uint32_t *p,bit;
+  uint32_t *p, bit;
 
   if ((p = bmpword(b, ndx,&bit)) != NULL)
     bit &= *p;
-  return bit;
+  return (bit != 0);
 }
 
 uint32_t bmpFlip(bmp_t b,uint32_t ndx)
