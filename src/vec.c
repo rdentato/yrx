@@ -283,7 +283,7 @@ static void *vecslot(vec *v, uint16_t page, uint16_t n)
 
   if (v->pgs[page] == NULL) {
     v->pgs[page] = calloc(v->cur_s, v->esz); /* page is guaranteed to be filled with 0's */
-    if (v->pgs[page] == NULL)  err(3002,errNOMEM);
+    if (v->pgs[page] == NULL)  vecErr(3002,errNOMEM);
     _dbgmsg(" ]]]  page %d 0x%p\n", page, v->pgs[page]);
   }
 
@@ -300,7 +300,7 @@ void *vecGet(vec *v,uint32_t ndx)
 {
   uint16_t page, n;
 
-  if (v == NULL)  err(3003,errNOMEM);
+  if (v == NULL)  vecErr(3003,errNOMEM);
 
   if (ndx == VEC_NULLNDX) ndx = 0;
 
@@ -880,7 +880,7 @@ uint32_t bmpFlip(bmp_t b,uint32_t ndx)
 }
 
 /***** Block operations */
-
+/* TODO: TO BE FIXED, the block operations are broken! */
 bmp_t bmpDup(bmp_t a)
 {
 
@@ -987,7 +987,103 @@ void bmpNeg(bmp_t a)
   }
 }
 
+/**************************/
+
+uint32_t *blkNew()
+{
+  blk_t b;
+
+  b = malloc(sizeof(blk));
+  if (b != NULL) {
+    b->slt = 1;
+    b->cnt = 0;
+    return b->elem;
+  }
+  return NULL;
+}
+
+#define blkNodePtr(b) ((blk_t)(((uint8_t *)b) - offsetof(blk,elem)))
+
+uint16_t blkCnt(uint32_t *b)
+{
+   blk_t bl;
+
+   if (b == NULL) return 0;
+   bl = blkNodePtr(b);
+   return bl->cnt;
+}
+
+uint16_t blkSlt(uint32_t *b)
+{
+   blk_t bl;
+
+   bl = blkNodePtr(b);
+   return bl->slt;
+}
+
+static blk_t blksetsize(blk_t bl, uint16_t ndx)
+{
+  uint16_t t;
+  if (bl != NULL) {
+    t = bl->slt;
+    bl->slt = ndx + two_raised((llog2(ndx+1) >> 1) +1 );
+    bl = realloc(bl,sizeof(blk) + (bl->slt-1)*sizeof(uint32_t));
+    if (bl == NULL) vecErr(412,errNOMEM);
+
+    dbgmsg("blk realloc: %d\n",bl->slt);
+    if (t < bl->slt) {
+      memset(bl->elem + t, 0, (bl->slt - t) * sizeof(uint32_t));
+    }
+    if (bl->cnt > ndx)  bl->cnt = ndx + 1;
+  }
+  return bl;
+}
+
+
+uint32_t *blkSetSize(uint32_t *b, uint16_t ndx)
+{
+  blk_t bl;
+  if (b != NULL && ndx > 0) {
+    bl = blkNodePtr(b);
+    bl = blksetsize(bl,ndx);
+    return bl->elem;
+  }
+  return b;
+}
+
+uint32_t *blkSet(uint32_t *b, uint16_t ndx, uint32_t val)
+{
+  blk_t bl = blkNodePtr(b);
+
+  if (ndx > 0xFFF0) vecErr(545,"blk index out of range");
+
+  if (ndx >= bl->slt) {
+    bl = blksetsize(bl,ndx);
+  }
+  bl->elem[ndx] = val;
+  if (ndx >= bl->cnt) bl->cnt = ndx+1;
+  return bl->elem;
+}
+
+uint32_t blkGet(uint32_t *b, uint16_t ndx)
+{
+  blk_t bl = blkNodePtr(b);
+
+  if (ndx > 0xFFF0)  vecErr(545,"blk index out of range");
+  if (ndx >= bl->slt)
+    return 0;
+  return b[ndx];
+}
+
+uint32_t *blkFree(uint32_t *b)
+{
+  if (b != NULL)
+    free(blkNodePtr(b));
+  return NULL;
+}
 
 /**************************/
+
+
 
 /**************************/

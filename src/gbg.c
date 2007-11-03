@@ -1957,3 +1957,97 @@ void bmpOp(bmp_t a, bmp_t b, bmp_op op)
   }
 }
 
+
+arr_t arrNew()
+{
+  arr *a;
+
+  a = malloc(sizeof(arr));
+  if (a != NULL) {
+    a->slt = 1;
+    a->cnt = 0;
+  }
+  return a->elem;
+}
+
+#define arrNodePtr(a) ((arr *)(((uint8_t *)a) - offsetof(arr,elem)))
+
+uint16_t arrCnt(arr_t a)
+{
+   arr *ar;
+
+   if (a == NULL) return 0;
+   ar = arrNodePtr(a);
+   return ar->cnt;
+}
+
+uint16_t arrSlt(arr_t a)
+{
+   arr *ar;
+
+   ar = arrNodePtr(a);
+   return ar->slt;
+}
+
+static arr *arrsetsize(arr *ar, uint16_t ndx)
+{
+  uint16_t t;
+  if (ar != NULL) {
+    t = ar->slt;
+    ar->slt = ndx + two_raised((llog2(ndx+1) >> 1) +1 );
+    ar = realloc(ar,sizeof(arr) + (ar->slt-1)*sizeof(arrVal));
+
+    if (ar == NULL) vecErr(412,errNOMEM);
+
+    _dbgmsg("arr realloc: %d\n",ar->slt);
+    if (t < ar->slt) {
+      memset(ar->elem + t, 0, (ar->slt - t) * sizeof(arrVal));
+    }
+    if (ar->cnt > ndx) ar->cnt = ndx + 1;
+  }
+  return ar;
+}
+
+
+arr_t arrSetSize(arr_t a, uint16_t ndx)
+{
+  arr *ar;
+  if (a != NULL) {
+    ar = arrNodePtr(a);
+    ar = arrsetsize(ar,ndx);
+  }
+  return ar->elem;
+}
+
+arr_t arrSet_x(arr_t a, uint16_t ndx, arrVal val)
+{
+  arr * ar = arrNodePtr(a);
+
+  if (ndx > 0xFFF0) vecErr(545,"arr index out of range");
+
+  if (ndx >= ar->slt) {
+    ar = arrsetsize(ar,ndx);
+  }
+  ar->elem[ndx] = val;
+  if (ndx >= ar->cnt) ar->cnt = ndx+1;
+  return ar->elem;
+}
+
+arrVal arrGet_x(arr_t a, uint16_t ndx)
+{
+  arr * ar = arrNodePtr(a);
+  if (ndx > 0xFFF0)  vecErr(545,"arr index out of range");
+  if (ndx >= ar->slt) {
+    a__.UNS = 0;
+    return a__;
+  }
+  return a[ndx];
+}
+
+arr_t arrFree(arr_t a)
+{
+  if (a != NULL)
+    free(blkNodePtr(a));
+  return NULL;
+}
+
