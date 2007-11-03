@@ -31,12 +31,11 @@
 
 /**********************/
 
-typedef struct {
-  uint16_t      esz;
-  uint16_t      npg;
-  uint32_t      cnt;
-} vec0;
+#ifndef vecErr
+#define vecErr err
+#endif
 
+/**********************/
 typedef struct {
   uint16_t      esz;
   uint16_t      npg;
@@ -203,27 +202,25 @@ void bmpOp(bmp_t a, bmp_t b, bmp_op op);
 
 /**********************/
 
+typedef struct blk_ {
+  uint16_t slt;
+  uint16_t cnt;
+  uint32_t elem[1];
+} blk;
 
-typedef struct lstNode {
-   struct lstNode  *nxt;
-   uint32_t         cnt;
-   uint8_t          blk[sizeof(uint32_t)];
-} lstNode;
+typedef blk *blk_t;
 
-typedef struct lst {
-  lstNode  *blk;
-  uint32_t  cnt;
-  uint32_t  cur;
-} lst;
+uint32_t  *blkNew  ();
+uint16_t   blkCnt  (uint32_t *b);
+uint16_t   blkSlt  (uint32_t *b);
+uint32_t  *blkSet  (uint32_t *b, uint16_t ndx, uint32_t val);
+uint32_t   blkGet  (uint32_t *b, uint16_t ndx);
+uint32_t  *blkFree (uint32_t *b);
 
-typedef union {
-    uint32_t       u;
-    int32_t        i;
-    void          *p;
-    lstNode       *l;
-} lstVal;
+#define    blkAdd(b,v) blkSet(b, blkCnt(b), v)
 
-typedef lst *lst_t;
+/**********************/
+
 
 
 #endif  /* VEC_H */
