@@ -1002,8 +1002,10 @@ static const uint8_t sz[] = {0, blkSZ_CHR, blkSZ_U16, blkSZ_U32, blsSZ_PTR };
 uint8_t *blkNew(uint8_t ty)
 {
   blk_t b;
+  int newsz;
 
-  b = malloc(sizeof(blk)-offsetof(blk,elem) + sz[ty]);
+  newsz = offsetof(blk,elem) + sz[ty];
+  b = malloc(newsz);
   if (b != NULL) {
     b->slt = 1;
     b->cnt = 0;
@@ -1040,7 +1042,7 @@ static blk_t blksetsize(blk_t bl, uint16_t ndx, uint8_t sz)
   t = bl->slt;
   bl->slt = ndx + two_raised((llog2(ndx+1) >> 1) +1 );
 
-  bl = realloc(bl,(sizeof(blk)-offsetof(blk,elem)) + (bl->slt * sz));
+  bl = realloc(bl, offsetof(blk,elem) + (bl->slt * sz));
   if (bl == NULL) goto err;
 
   dbgmsg("blk realloc: %d\n",bl->slt);
