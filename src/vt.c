@@ -467,6 +467,7 @@ int main(int argc, char * argv[])
   TSTGROUP("Creating maps");
 
   v = mapNew(sizeof(Arc),NULL);
+
   TST("The new map is empty",(v != NULL && mapCnt(v) == 0 && mapRoot(v) == NULL));
   a.from = 12; a.to = 10;
   p = mapAdd(v,&a);  pn = mapNodePtr(p);
