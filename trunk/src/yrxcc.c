@@ -933,7 +933,7 @@ static state_t parse(const char *rx,uint16_t nrx)
 
 static void statescleanup(vec_t *arcs)
 {
-  vecFree(*arcs);
+  vecFreeClean(*arcs,tagclean);
 }
 
 static void cleantemp()
