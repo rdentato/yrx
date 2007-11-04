@@ -1112,7 +1112,7 @@ uint32_t blkGetInt(uint8_t *b, uint16_t ndx, uint8_t ty)
   switch (ty) {
     case blkCHR : return (uint32_t)(*((uint8_t *)b));
     case blkU16 : return (uint32_t)(*((uint16_t *)b));
-    case blkU32 : return (uint32_t)(*((uint32_t *)b)); 
+    case blkU32 : return (uint32_t)(*((uint32_t *)b));
   }
   return 0;
 }
@@ -1121,7 +1121,7 @@ void *blkGetPtr(uint8_t *b, uint16_t ndx)
 {
   b = blkget(b, ndx, sz[blkPTR]);
   if (b == NULL) return NULL;
-  return (void *)(*((void **)b)); 
+  return (void *)(*((void **)b));
 }
 
 uint8_t *blkFree(uint8_t *b)
