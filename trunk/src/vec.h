@@ -205,19 +205,39 @@ void bmpOp(bmp_t a, bmp_t b, bmp_op op);
 typedef struct blk_ {
   uint16_t slt;
   uint16_t cnt;
-  uint32_t elem[1];
+  uint8_t  elem[1];
 } blk;
 
 typedef blk *blk_t;
 
-uint32_t  *blkNew  ();
-uint16_t   blkCnt  (uint32_t *b);
-uint16_t   blkSlt  (uint32_t *b);
-uint32_t  *blkSet  (uint32_t *b, uint16_t ndx, uint32_t val);
-uint32_t   blkGet  (uint32_t *b, uint16_t ndx);
-uint32_t  *blkFree (uint32_t *b);
+uint8_t   *blkNew    (uint8_t ty);
+uint16_t   blkCnt    (uint8_t *b);
+uint16_t   blkSlt    (uint8_t *b);
+uint8_t   *blkSetInt (uint8_t *b, uint16_t ndx, uint32_t val, uint8_t ty);
+uint8_t   *blkSetPtr (uint8_t *b, uint16_t ndx, void *val);
+uint32_t   blkGetInt (uint8_t *b, uint16_t ndx, uint8_t ty);
+void*      blkGetPtr (uint8_t *b, uint16_t ndx);
+uint8_t   *blkFree   (uint8_t *b);
 
-#define    blkAdd(b,v) blkSet(b, blkCnt(b), v)
+#define blkCHR 1
+#define blkU16 2
+#define blkU32 3
+#define blkPTR 4
+
+/**********************/
+
+#define ulv_t blk_t
+
+#define ulvNew()  (uint32_t *)blkNew(blkU32)
+#define ulvFree(b) (uint32_t *)blkFree((uint8_t *)b)
+
+#define ulvCnt(b)  blkCnt((uint8_t *)b)
+#define ulvSlt(b)  blkSlt((uint8_t *)b)
+
+#define ulvGet(b,n)   ((uint32_t)blkGetInt((uint8_t *)b, n, blkU32))
+#define ulvSet(b,n,v) ((uint32_t *)blkSetInt((uint8_t *)b, n, (uint32_t)v, blkU32))
+
+#define    ulvAdd(b,v) ulvSet(b, ulvCnt(b), v)
 
 /**********************/
 

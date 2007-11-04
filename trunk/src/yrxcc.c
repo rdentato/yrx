@@ -367,25 +367,33 @@ static char *str_set(int i,int j)
 #define tag_type(t)  ((((t) & 0x7F) == 0x7F)? t : (t) & 0x80)
 #define tag_capt(t)  ((((t) & 0x7F) == 0x7F)? 0 : (t) & 0x7F)
 
-uint32_t *addtags(uint32_t *tl, uint32_t tag)
+uint32_t *searchtags(uint32_t *tl, uint32_t tag)
 {
   uint32_t rx;
-  uint32_t p;
   int k;
+  uint32_t *p;
+
+  rx = tag & 0xFF000000;
+  for (k = 0, p=tl; k < ulvCnt(tl); k++, p++) {
+    if ((*p & 0xFF000000) == rx)
+      return p;
+  }
+  return NULL;
+}
+
+uint32_t *addtags(uint32_t *tl, uint32_t tag)
+{
+  uint32_t *p;
 
   if (tl == NULL) {
-    tl = blkNew();
-    tl = blkSet(tl, 0, tag);
+    tl = ulvNew();
+    tl = ulvSet(tl, 0, tag);
   }
   else {
-    rx = tag & 0xFF000000;
-    for (k = 0; k < blkCnt(tl); k++) {
-      if ((tl[k] & 0xFF000000) == rx) {
-        tl[k] |= tag;
-        return tl;
-      }
-      blkAdd(tl,tag);
-    }
+    if ((p = searchtags(tl,tag)) != NULL)
+     *p |= tag;
+    else
+      ulvAdd(tl,tag);
   }
 
   return tl;
@@ -397,7 +405,7 @@ uint32_t *copytags(uint32_t *tl, uint32_t *newtl)
 
   if (newtl == NULL) return tl;
 
-  for (k = 0; k < blkCnt(newtl); k++) {
+  for (k = 0; k < ulvCnt(newtl); k++) {
     tl = addtags(tl,newtl[k]);
   }
   return tl;
@@ -406,9 +414,8 @@ uint32_t *copytags(uint32_t *tl, uint32_t *newtl)
 static void tagclean(void *a)
 {
   _dbgmsg("tagclean: %p (%p)\n",a, a==NULL?a:((Arc *)a)->tags );
-  if (a != NULL) {
-    blkFree(((Arc *)a)->tags);
-  }
+  if (a != NULL)
+    ulvFree(((Arc *)a)->tags);
 }
 
 static void t_dump(FILE *f, uint32_t *tags)
@@ -421,8 +428,8 @@ static void t_dump(FILE *f, uint32_t *tags)
 
     fprintf(stdout," / ");
 
-    for (k=0; k < blkCnt(tags); k++) {
-      p = blkGet(tags,k);
+    for (k=0; k < ulvCnt(tags); k++) {
+      p = ulvGet(tags,k);
       if (p != 0) {
 
         rx = (p & 0xFF000000) >> 24;

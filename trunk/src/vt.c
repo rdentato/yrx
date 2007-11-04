@@ -840,28 +840,28 @@ int main(int argc, char * argv[])
   TSTSECTION("uint blocks");
   TSTGROUP("Creating a block");
 
-  b = blkNew();
+  b = ulvNew();
 
-  TST("Created blk",(b != NULL && blkCnt(b)==0 && blkSlt(b)==1));
+  TST("Created ulv",(b != NULL && ulvCnt(b)==0 && ulvSlt(b)==1));
 
-  b = blkSet(b,0,444);
-  TST("Set element 0",((blkGet(b,0) == 444) && (b[0] == 444)));
+  b = ulvSet(b,0,444);
+  TST("Set element 0",((ulvGet(b,0) == 444) && (b[0] == 444)));
 
-  b = blkSet(b,1,445);
-  TST("Set element 1",((blkGet(b,1) == 445) && (b[1] == 445)));
-  TSTNOTE("Block slots: %d count: %d",blkSlt(b),blkCnt(b));
+  b = ulvSet(b,1,445);
+  TST("Set element 1",((ulvGet(b,1) == 445) && (b[1] == 445)));
+  TSTNOTE("Block slots: %d count: %d",ulvSlt(b),ulvCnt(b));
 
   for (k = 2; k < 1000; k++) {
-    b = blkSet(b,k,545+k);
+    b = ulvSet(b,k,545+k);
     if (k % 10 == 0)
-      TSTNOTE("Block (%d) slots: %d count: %d",k,blkSlt(b),blkCnt(b));
+      TSTNOTE("Block (%d) slots: %d count: %d",k,ulvSlt(b),ulvCnt(b));
   }
-  TSTNOTE("Block slots: %d count: %d",k,blkSlt(b),blkCnt(b));
+  TSTNOTE("Block (%d) slots: %d count: %d",k,ulvSlt(b),ulvCnt(b));
 
-  TST("Added 1000 elements!",(blkCnt(b) == 1000 && b[999] == 999+545 && b[999] == blkGet(b,999)));
+  TST("Added 1000 elements!",(ulvCnt(b) == 1000 && b[999] == 999+545 && b[999] == ulvGet(b,999)));
 
-  b = blkFree(b);
-  TST("blk freed",(b == NULL));
+  b = ulvFree(b);
+  TST("ulv freed",(b == NULL));
  }
  #endif
 
