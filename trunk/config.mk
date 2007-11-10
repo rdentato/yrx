@@ -16,11 +16,11 @@
 # Modify this file according your system before building yrx
 
 #### SYSTEM
-## Set up your platform type
+## Set up your platform type if the autodetect doesn't work for your
 
 SYS=LINUX
 SYS=MINGW
-SYS=$(shell ./config.sy)
+SYS=$(shell sh -c 'if [ `uname | grep -i -c mingw` =  '1' ]; then echo MINGW; else echo LINUX; fi' )
 
 #### LOG2_ASM
 ## Uncomment next line to use the inline assembler version of |llog2()|
