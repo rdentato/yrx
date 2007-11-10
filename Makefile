@@ -1,4 +1,3 @@
-  
 #  (C) 2007 by Remo Dentato (rdentato@users.sourceforge.net)
 #
 # Permission to use, copy, modify and distribute this code and
@@ -11,8 +10,10 @@
 # of this software for any purpose. It is provided "as is" without
 # express or implied warranty.
 
+# $Id$
+
 # This makefile is for GNU tool chain it has been tested under 
-# Windows (Mingw) and Linux (Slackware)
+# Windows (Mingw) and Linux (Slackware 11 and Xubuntu 7.10)
 
 
 TARG=YRX
