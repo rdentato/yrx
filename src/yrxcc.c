@@ -564,6 +564,7 @@ static void removeeps(state_t from, vec_t  arcs)
         b = vecGet(arcs, vecCnt(arcs)-1);
         tagclean(a);
        *a = *b;
+        b->tags = NULL;
         vecCnt(arcs)--;
         k--;
       }
