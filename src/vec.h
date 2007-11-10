@@ -1,4 +1,4 @@
-/*
+/* 
 **  (C) 2007 by Remo Dentato (rdentato@users.sourceforge.net)
 **
 ** Permission to use, copy, modify and distribute this code and
