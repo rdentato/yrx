@@ -5,12 +5,12 @@
 # fee, provided that the above copyright notice, or equivalent
 # attribution acknowledgement, appears in all copies and
 # supporting documentation.
-# 
+#
 # Copyright holder makes no representations about the suitability
 # of this software for any purpose. It is provided "as is" without
 # express or implied warranty.
 
-# This makefile is for GNU tool chain it has been tested under 
+# This makefile is for GNU tool chain it has been tested under
 # Windows (Mingw) and Linux (Slackware)
 
 # Modify this file according your system before building yrx
@@ -18,8 +18,8 @@
 #### SYSTEM
 ## Set up your platform type
 
-#SYS=LINUX
-SYS=MINGW
+SYS=LINUX
+#SYS=MINGW
 
 #### LOG2_ASM
 ## Uncomment next line to use the inline assembler version of |llog2()|
@@ -31,12 +31,12 @@ LOG2_ASM=-DLOG2_ASM
 DEBUG=-DDEBUG
 
 #### LUA libraries
-## PATH to the lua source code distribution. It is assumed that Lua 
+## PATH to the lua source code distribution. It is assumed that Lua
 ## libraries and executable have already been built.
 
-LUA=/d/0_Works/lua-5.1.2
+# LUA=/d/0_Works/lua-5.1.2
 
-#### UPX 
+#### UPX
 UPX=test
 ## If you want to compress the final executable with
 ## UPX, just uncomment next line.
@@ -53,5 +53,5 @@ endif
 _LIB=.a
 _OBJ=o
 
-AR=ar rcu 
+AR=ar rcu
 
