@@ -11,21 +11,21 @@
 # express or implied warranty.
 
 # This makefile is for GNU tool chain it has been tested under
-# Windows (Mingw) and Linux (Slackware)
+# Windows (Mingw) and Linux (Slackware 11 & Xubuntu 7.10)
+
+# $Id$
 
 # Modify this file according your system before building yrx
 
 #### SYSTEM
-## Set up your platform type if the autodetect doesn't work for your
-
-SYS=LINUX
-SYS=MINGW
+##
 SYS=$(shell sh -c 'if [ `uname | grep -i -c mingw` =  '1' ]; then echo MINGW; else echo LINUX; fi' )
+# SYS=LINUX
+# SYS=MINGW
 
 #### LOG2_ASM
 ## Uncomment next line to use the inline assembler version of |llog2()|
 LOG2_ASM=-DLOG2_ASM
-
 
 #### DEBUG
 ## Uncomment next line to compile a debugging instrumented code
