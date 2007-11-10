@@ -19,7 +19,8 @@
 ## Set up your platform type
 
 SYS=LINUX
-#SYS=MINGW
+SYS=MINGW
+SYS=$(shell ./config.sy)
 
 #### LOG2_ASM
 ## Uncomment next line to use the inline assembler version of |llog2()|
