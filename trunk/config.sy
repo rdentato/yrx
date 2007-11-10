@@ -1,4 +1,0 @@
-if [ `uname | grep -i -c mingw` =  '1' ];
-  then echo MINGW;
-  else echo LINUX;
-fi
