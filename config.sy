@@ -1,0 +1,4 @@
+if [ `uname | grep -i -c mingw` =  '1' ];
+  then echo SYS=MINGW;
+  else echo SYS=LINUX;
+fi
