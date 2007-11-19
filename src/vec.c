@@ -221,7 +221,7 @@ static void veccleanup (vec *v,vecCleaner cln)
         _dbgmsg("#  %d %p\n",i,v->pgs[i]);
         if (v->pgs[i] != NULL) {
           if (cln != NULL) {
-            for (k=0, p=v->pgs[i];  k<pgsize(i);  k++, p += v->esz)
+            for (k = 0, p = v->pgs[i];  k < pgsize(i);  k++, p += v->esz)
               if (p != NULL) cln(p);
           }
           free(v->pgs[i]);
@@ -470,8 +470,6 @@ int bufGets(vec *b,char *s)
   return n;
 }
 
-
-
 /**************************/
 
 /* Taken from Christopher Clark hash table implementation
@@ -526,7 +524,6 @@ map_t mapFreeClean(map_t m, vecCleaner cln)
   return NULL;
 }
 
-
 static mapNode *mapnewnode(map_t m)
 {
   mapNode *p;
@@ -543,7 +540,6 @@ static mapNode *mapnewnode(map_t m)
   mapCnt(m)++;
   return p;
 }
-
 
 /*http://en.wikipedia.org/wiki/Tree_rotation*/
 
@@ -716,7 +712,6 @@ void mapDel(map_t m, void *e)
    _dbgmsg("mapDel() Deleted: %p FROM: %p\n", node, parent);
   return;
 }
-
 
 static void mapgoleft(map_t m, mapNode *p)
 {
@@ -989,15 +984,7 @@ void bmpNeg(bmp_t a)
 
 /**************************/
 
-
-#define blkSZ_CHR sizeof(char)
-#define blkSZ_U16 sizeof(uint16_t)
-#define blkSZ_U32 sizeof(uint32_t)
-#define blsSZ_PTR sizeof(void *)
-
-
-static const uint8_t sz[] = {0, blkSZ_CHR, blkSZ_U16, blkSZ_U32, blsSZ_PTR };
-
+static const uint8_t sz[] = {0, blkCHRsz, blkU16sz, blkU32sz, blsPTRsz };
 
 uint8_t *blkNew(uint8_t ty)
 {
@@ -1014,8 +1001,7 @@ uint8_t *blkNew(uint8_t ty)
   return NULL;
 }
 
-#define blkNodePtr(b) ((blk_t)(((uint8_t *)b) - offsetof(blk,elem)))
-
+#if 0
 uint16_t blkCnt(uint8_t *b)
 {
    blk_t bl;
@@ -1032,20 +1018,23 @@ uint16_t blkSlt(uint8_t *b)
    bl = blkNodePtr(b);
    return bl->slt;
 }
+#endif
 
 static blk_t blksetsize(blk_t bl, uint16_t ndx, uint8_t sz)
 {
   uint16_t t;
 
-  if (bl == NULL) goto err;
+  if (bl == NULL)   {t = 411; goto err;}
+  if (ndx > 0xFFF0) {t = 413; goto err;}
 
   t = bl->slt;
   bl->slt = ndx + two_raised((llog2(ndx+1) >> 1) +1 );
+                  /* approx 2*sqrt(ndx) */
 
   bl = realloc(bl, offsetof(blk,elem) + (bl->slt * sz));
-  if (bl == NULL) goto err;
+  if (bl == NULL) {t = 415; goto err;}
 
-  dbgmsg("blk realloc: %d\n",bl->slt);
+  _dbgmsg("blk realloc: %d\n",bl->slt);
   if (t < bl->slt) {
     memset(bl->elem + t * sz, 0, (bl->slt - t) * sz);
   }
@@ -1053,14 +1042,14 @@ static blk_t blksetsize(blk_t bl, uint16_t ndx, uint8_t sz)
   return bl;
 
 err :
-  vecErr(412,errNOMEM);
+  vecErr(t,errNOMEM);
   return NULL;
 }
-
 
 uint8_t *blkSetSize(uint8_t *b, uint16_t ndx, uint8_t ty)
 {
   blk_t bl;
+
   if (b != NULL) {
     bl = blkNodePtr(b);
     bl = blksetsize(bl, ndx, sz[ty]);
@@ -1073,14 +1062,28 @@ static uint8_t *blkset(uint8_t *b, uint16_t ndx, void *val, uint8_t sz)
 {
   blk_t bl = blkNodePtr(b);
 
-  if (ndx > 0xFFF0) vecErr(545,"blk index out of range");
-
-  if (ndx >= bl->slt) {
+  if (ndx >= bl->slt)
     bl = blksetsize(bl,ndx,sz);
-  }
+
   b = bl->elem + ndx * sz;
   memcpy(b,val,sz);
   if (ndx >= bl->cnt) bl->cnt = ndx+1;
+  return bl->elem;
+}
+
+uint8_t *blkAppend(uint8_t *b, uint8_t *a, uint8_t sz)
+{
+  uint32_t k;
+  blk_t bl = blkNodePtr(b);
+
+  k = blkCnt(b) + blkCnt(a);
+
+  if (k > bl->slt)
+    bl = blksetsize(bl, k+1 ,sz);
+
+  memcpy(b+(bl->cnt * sz), a, blkCnt(a) * sz);
+  bl->cnt = k;
+
   return bl->elem;
 }
 
@@ -1121,7 +1124,7 @@ void *blkGetPtr(uint8_t *b, uint16_t ndx)
 {
   b = blkget(b, ndx, sz[blkPTR]);
   if (b == NULL) return NULL;
-  return (void *)(*((void **)b));
+  return (*((void **)b));
 }
 
 uint8_t *blkFree(uint8_t *b)
@@ -1133,7 +1136,31 @@ uint8_t *blkFree(uint8_t *b)
   return NULL;
 }
 
-/**************************/
+int blkU32cmp (const void *a, const void *b) { return *((uint32_t *)a) - *((uint32_t *)b) ; }
+int blkU16cmp (const void *a, const void *b) { return *((uint16_t *)a) - *((uint16_t *)b) ; }
+int blkCHRcmp (const void *a, const void *b) { return *((uint8_t *)a)  - *((uint8_t *)b) ; }
 
+void blkUniq(uint8_t *b,uint8_t sz)
+{
+  uint32_t j;
+  uint8_t *a, *p;
+
+  if (b == NULL) return;
+
+  j = blkCnt(b);
+  if (j < 2) return;
+
+  a = b+sz;
+  p = b+sz;
+  while (--j > 0) {
+     if (memcmp(a, a-sz, sz) != 0) {
+       if (p != a)
+         memcpy(p,a,sz);
+       p += sz;
+     }
+     a += sz;
+  }
+  blkCnt(b) = (p-b)/sz;
+}
 
 /**************************/

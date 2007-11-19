@@ -25,7 +25,7 @@
 #include "pstdint.h"
 #else
 #include <stdint.h>
-#endif 
+#endif
 
 #include <string.h>
 #include <stdarg.h>
@@ -85,6 +85,7 @@
 #endif /* DEBUG */
 
 #define _dbgmsg(...)
+#define _dbgif(x,y)
 
 /* Error Handling */
 /* The |err()| macros does a |fprintf()| on |stderr| and then |exit()|.

@@ -37,14 +37,29 @@
 #define state_t uint16_t
 
 /**************************************************/
+
+static const char *cur_rx;
+static int         cur_pos;
+static uint16_t    cur_nrx;
+
+static uint8_t     esc;
+static uint16_t    capt;
+
+/**************************************************/
+
+static const char *emptystr = "";
+
+static void yrxerr(char *errmsg)
+{
+  err(-1,"ERROR: %s\n%5d: %s\n%*s\n",errmsg,cur_nrx,cur_rx,cur_pos+8,"*");
+}
+
+/**************************************************/
+
 /* = Handling labels */
 
-static int c__;
-#define hex(c) ((c__=c),('0' <= c__ && c__ <= '9')? c__ - '0' :\
-                        ('A' <= c__ && c__ <= 'F')? c__ - 'A' +10:\
-                        ('a' <= c__ && c__ <= 'f')? c__ - 'a' +10: -1)\
-
-#define oct(c) ((c__=c),('0' <= c__ && c__ <= '7')? c__ - '0' : -1)
+typedef uint16_t  lbl_t[17];
+typedef uint16_t *lbl_ptr;
 
 /**************************************************/
 
@@ -56,48 +71,44 @@ static int c__;
 
 #define lbl_zro(b)   memset(b,0,16 * sizeof(uint16_t))
 
-#define lbl_cpy(a,b) memset(a,b,17 * sizeof(uint16_t))
+#define lbl_cpy(a,b) memcpy(a,b,sizeof(lbl_t))
 
-#define lbl_neg(b) do {uint8_t i; for(i=0; i<16; i++) b[i] ^= 0xFFFF; } while (0)
+#define lbl_neg(b)     do {uint8_t i; for(i=0; i<16; i++) (b)[i] ^= 0xFFFF;  } while (0)
+#define lbl_minus(a,b) do {uint8_t i; for(i=0; i<16; i++) (a)[i] &= ~(b)[i]; } while (0)
+#define lbl_or(a,b)    do {uint8_t i; for(i=0; i<16; i++) (a)[i] |=  (b)[i]; } while (0)
+#define lbl_and(a,b)   do {uint8_t i; for(i=0; i<16; i++) (a)[i] &=  (b)[i]; } while (0)
 
-#define minus(a,b)   do {uint8_t i; for(i=0; i<16; i++) a[i] &= ~b[i]; } while (0)
-#define lbl_or(a,b)  do {uint8_t i; for(i=0; i<16; i++) a[i] |=  b[i]; } while (0)
-/*#define lbl_and(a,b) do {uint8_t i; for(i=0; i<16; i++) a[i] &=  b[i]; } while (0)*/
+#define lbl_isempty(b) ((b == NULL) || \
+                        (((b)[0] | (b)[1] | (b)[2] | (b)[3] |\
+                          (b)[4] | (b)[5] | (b)[6] | (b)[7] |\
+                          (b)[8] | (b)[9] | (b)[10]| (b)[11]|\
+                          (b)[12]| (b)[13]| (b)[14]| (b)[15]) == 0))
 
-#define lbl_and(a,b) do {\
-                       uint32_t *a_=(uint32_t *)a; \
-                       uint32_t *b_=(uint32_t *)b; \
-                       *a++ &= *b++; *a++ &= *b++; *a++ &= *b++; *a++ &= *b++;\
-                       *a++ &= *b++; *a++ &= *b++; *a++ &= *b++; *a   &= *b;\
-                     } while (0)
+#define lbl_eq(a,b)    ((a == b) ||((a != NULL) && (b != NULL) &&\
+                        ((((a)[0] ^(b)[0] ) | ((a)[1] ^(b)[1] ) |\
+                          ((a)[2] ^(b)[2] ) | ((a)[3] ^(b)[3] ) |\
+                          ((a)[4] ^(b)[4] ) | ((a)[5] ^(b)[5] ) |\
+                          ((a)[6] ^(b)[6] ) | ((a)[7] ^(b)[7] ) |\
+                          ((a)[8] ^(b)[8] ) | ((a)[9] ^(b)[9] ) |\
+                          ((a)[10]^(b)[10]) | ((a)[11]^(b)[11]) |\
+                          ((a)[12]^(b)[12]) | ((a)[13]^(b)[13]) |\
+                          ((a)[14]^(b)[14]) | ((a)[15]^(b)[15]) )) == 0))
 
 #define lbl_type(a)  ((a)[16])
 
+#define lbl(l)     mapAdd(fa.lbls, l);
+#define lbl_init() mapNew(sizeof(lbl_t), NULL)
+
 
 /**************************************************/
 
-static const char *emptystr = "";
+static int c__;
 
-/**************************************************/
+#define hex(c) ((c__=c),('0' <= c__ && c__ <= '9')? c__ - '0' :\
+                        ('A' <= c__ && c__ <= 'F')? c__ - 'A' + 10:\
+                        ('a' <= c__ && c__ <= 'f')? c__ - 'a' + 10: -1)\
 
-static const char *cur_rx;
-static int         cur_pos;
-static uint16_t    cur_nrx;
-
-static uint8_t     esc;
-static uint16_t    capt;
-
-/**************************************************/
-
-static void yrxerr(char *errmsg)
-{
-  err(333,"ERROR: %s\n%5d: %s\n%*s\n",errmsg,cur_nrx,cur_rx,cur_pos+8,"*");
-}
-/**************************************************/
-
-
-typedef uint16_t  lbl_t[17];
-typedef uint16_t *lbl_ptr;
+#define oct(c) ((c__=c),('0' <= c__ && c__ <= '7')? c__ - '0' : -1)
 
 static lbl_ptr lbl_bmp(char *s)
 {
@@ -209,7 +220,7 @@ static lbl_ptr lbl_bmp(char *s)
       }
       c = *++s;
     }
-    if (range) lbl_set(ll,'-');
+    if (range)  lbl_set(ll,'-');
     if (negate) lbl_neg(ll);
   }
   return ll;
@@ -289,56 +300,6 @@ static void lbl_dump(FILE *f, lbl_ptr lb)
   }
 }
 
-#define lbl(l)     mapAdd(fa.lbls, l);
-#define lbl_init() mapNew(17 * sizeof(uint16_t), NULL)
-
-/**************************************************/
-
-
-typedef struct Arc {
-  lbl_ptr   lbl;
-  uint32_t *tags;
-  state_t   to;
-} Arc;
-
-typedef struct {
-   vec_t    graph;
-   vec_t    merged;
-   map_t    lbls;
-   state_t  nstates;
-   state_t  freelst;
-} aut;
-
-static aut fa;
-
-
-/**************************************************/
-
-static char *str =  NULL;
-static int   str_len = 0;
-
-static char *str_chk(int n)
-{
-  if (str == NULL || str_len < n) {
-    str = realloc(str,n+4);
-  }
-  return str;
-}
-
-static char *str_set(int i,int j)
-{
-  int n;
-
-  str = str_chk(j-i+2);
-
-  if (str != NULL) {
-    str[0] = '@';
-    for (n=1; i<j;n++,i++) str[n] = cur_rx[i];
-    str[n] = '\0';
-  }
-  return str;
-}
-
 /*************************************/
 
 /* = Handling tags */
@@ -350,7 +311,6 @@ static char *str_set(int i,int j)
 #define TAG_CB(n)  (TAG_CE(n) << 1)
 #define TAG_MRK    (1<<22)
 #define TAG_FIN    (1<<23)
-
 
 /* xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx
 **   nrx    ||()()() ()()()() ()()()()
@@ -364,8 +324,6 @@ static char *str_set(int i,int j)
 
 #define tag_code(t,n)((t) | ((n) << 24))
 #define tag_nrx(t)   ((t) >> 8)
-#define tag_type(t)  ((((t) & 0x7F) == 0x7F)? t : (t) & 0x80)
-#define tag_capt(t)  ((((t) & 0x7F) == 0x7F)? 0 : (t) & 0x7F)
 
 uint32_t *searchtags(uint32_t *tl, uint32_t tag)
 {
@@ -374,7 +332,7 @@ uint32_t *searchtags(uint32_t *tl, uint32_t tag)
   uint32_t *p;
 
   rx = tag & 0xFF000000;
-  for (k = 0, p=tl; k < ulvCnt(tl); k++, p++) {
+  for (k = 0, p = tl;  k < ulvCnt(tl);  k++, p++) {
     if ((*p & 0xFF000000) == rx)
       return p;
   }
@@ -393,7 +351,7 @@ uint32_t *addtags(uint32_t *tl, uint32_t tag)
     if ((p = searchtags(tl,tag)) != NULL)
      *p |= tag;
     else
-      ulvAdd(tl,tag);
+      tl = ulvAdd(tl,tag);
   }
 
   return tl;
@@ -409,13 +367,6 @@ uint32_t *copytags(uint32_t *tl, uint32_t *newtl)
     tl = addtags(tl,newtl[k]);
   }
   return tl;
-}
-
-static void tagclean(void *a)
-{
-  _dbgmsg("tagclean: %p (%p)\n",a, a==NULL?a:((Arc *)a)->tags );
-  if (a != NULL)
-    ulvFree(((Arc *)a)->tags);
 }
 
 static void t_dump(FILE *f, uint32_t *tags)
@@ -519,10 +470,49 @@ static state_t stkonce(state_t val,char op)
 
 /* }} */
 
-/* |copyarcs()| will always be called with the two states
-**   belonging to the same expression. That's why tags can
-**   be merged simply xor-ing them.
-*/
+
+/**************************************************/
+
+typedef struct {
+  lbl_ptr   lbl;
+  ulv_t     tags;
+  state_t   to;
+} Arc;
+
+typedef struct {
+   vec_t     states;
+   map_t     lbls;
+   state_t   nstates;
+} aut;
+
+static aut fa;
+
+static void addarc(state_t from, state_t to, char *l, uint32_t tag);
+static state_t nextstate(void);
+
+
+/**************************************************/
+
+static void cleantags(void *a)
+{
+  _dbgmsg("cleantags: %p (%p)\n",a, a==NULL?a:((Arc *)a)->tags );
+  if (a != NULL)
+    ulvFree(((Arc *)a)->tags);
+}
+
+static void delarc(vec_t  arcs, Arc *a)
+{
+  Arc *b;
+
+  b = vecGet(arcs, vecCnt(arcs)-1);
+
+  cleantags(a);
+  if (a != b) {
+   *a = *b;
+  }
+  b->tags = NULL;
+  vecCnt(arcs)--;
+}
 
 static void copyarcs(vec_t arcst, state_t fromst, uint32_t *tl)
 {
@@ -530,7 +520,7 @@ static void copyarcs(vec_t arcst, state_t fromst, uint32_t *tl)
   uint32_t k = 0;
   Arc *a;
 
-  arcsf = vecGetVal(fa.graph,fromst,vec_t );
+  arcsf = vecGetVal(fa.states, fromst, vec_t );
 
   while (k < vecCnt(arcsf)) {
     a = vecGet(arcsf,k++);
@@ -542,49 +532,235 @@ static void copyarcs(vec_t arcst, state_t fromst, uint32_t *tl)
 
 static vec_t  marked;
 
-
 static void removeeps(state_t from, vec_t  arcs)
 {
-  uint32_t k,j;
-  Arc *a,*b;
+  uint32_t k;
+  Arc *a;
 
   k = 0;
   while (k < vecCnt(arcs)) {
-    a = vecGet(arcs,k++);
+    a = vecGet(arcs, k++);
     if (a->to != 0) {
       if (a->lbl == NULL) {
-        if (vecGetVal(marked, a->to, state_t) == from) {
-          yrxerr("Expression contains empty closures");
+        dbgmsg("Copy from %d to %d\n",a->to,from);
+        if (vecGetVal(marked, a->to, state_t) != from) {
+          vecSet(marked, a->to, &from);
+          copyarcs(arcs, a->to, a->tags);
+          delarc(arcs, a);
+          k--; /* undo the index increment */
         }
-        vecSet(marked, a->to, &from);
-        _dbgmsg("Copy from %d to %d\n",a->to,from);
-        copyarcs(arcs, a->to, a->tags);
-
-        /* Now delete the arc replacing it with the last one */
-        b = vecGet(arcs, vecCnt(arcs)-1);
-        tagclean(a);
-       *a = *b;
-        b->tags = NULL;
-        vecCnt(arcs)--;
-        k--;
-      }
-      else {
-        /* Accumulate labels */
+        else {
+          dbgmsg("Already visited: %d\n",a->to);
+          yrxerr("Expression contains empty closures");/**/
+        }
       }
     }
   }
 }
 
+typedef struct {
+  usv_t   stlist;
+  state_t st;
+} mrgd;
+
+static vec_t merged;
+static map_t invmrgd;
+
+static void mrgcleanup(usv_t *sig)
+{
+  usvFree(*sig);
+}
+
+static state_t mergestates(state_t x, state_t y)
+{
+  state_t z;
+  usv_t s ;
+  usv_t t;
+  uint16_t k;
+  mrgd *m, mm;
+
+  if (x == y) return x;
+
+  s = usvNew();
+
+  s = usvSet(s, 0, x);
+  s = usvSet(s, 1, y);
+
+  k = 0;
+  while ( k < usvCnt(s)) {
+    t = vecGetVal(merged, s[k++], usv_t);
+    if (t != NULL) {
+      k--;
+      usvCnt(s)--;
+      s[k] = s[usvCnt(s)];
+      s = usvAppend(s, t);
+    }
+  }
+  usvSort(s);
+  usvUniq(s);
+  m = mapGet(invmrgd, s);
+
+  if (m == NULL) {
+    z = nextstate();
+    vecSet(merged, z, &s);
+    mm.stlist = s;
+    mm.st = z;
+    mapAdd(invmrgd, &mm);
+    addarc(z, x, "", 0);
+    addarc(z, y, "", 0);
+  }
+  else {
+    z = m->st;
+    s = usvFree(s);
+  }
+
+  return z;
+}
+
+int mrgcmp(mrgd *a, mrgd *b)
+{
+  int z;
+  int k;
+
+  if (a == b) return 0;
+  if (a == NULL) return -1;
+  if (b == NULL) return 1;
+
+  z = a->st - b->st;
+  if (z != 0) return z;
+
+  k = usvCnt(a->stlist);
+  z = k -  usvCnt(b->stlist);
+  if (z != 0) return z;
+
+  return memcmp(a->stlist, b->stlist, k * blkU16sz);
+}
+
 static void mergearcs(state_t from, vec_t  arcs)
 {
-  uint32_t k,j;
-  Arc *a,*b;
+  uint32_t k, j;
+  Arc *a, *b;
+  lbl_t lb;
 
-  for (k=0; k < vecCnt(arcs); k++) {
+  merged = vecNew(sizeof(usv_t));
+  invmrgd = mapNew(sizeof(mrgd), mrgcmp);
+
+  dbgmsg("  ** Mergearcs state: %d \n",from);
+  for (k = 0; k < vecCnt(arcs); k++) {
     a = vecGet(arcs,k);
+    j = k+1;
+    while (j < vecCnt(arcs)) {
+      b = vecGet(arcs, j++);
+    #if 10
+      if (lbl_eq(a->lbl, b->lbl)) {
+        a->to = mergestates(a->to, b->to);
+        a->tags = copytags(a->tags, b->tags);
+
+        delarc(arcs, b);
+        #if DEBUG
+        dbgmsg("Arcs: %d %d (same) ",k,j-1);
+        lbl_dump(stderr,a->lbl);
+        dbgmsg("\n");
+        #endif
+        j--;
+        continue;
+      }
+
+      if (a->to == 0 || b->to == 0) {
+        #if DEBUG
+        dbgmsg("Arcs: %d %d (one is final) ",k,j-1);
+        dbgmsg("\n");
+        #endif
+
+        continue;
+      }
+
+      /*  c = intersection(a,b)  */
+      lbl_cpy(lb,a->lbl);
+      lbl_and(lb,b->lbl);
+
+      if (lbl_isempty(lb)) {
+        #if DEBUG
+        dbgmsg("Arcs: %d %d (no intersection) ",k,j-1);
+        lbl_dump(stderr,a->lbl);
+        dbgmsg("  ");
+        lbl_dump(stderr,b->lbl);
+        dbgmsg("\n");
+        #endif
+        continue;
+      }
+
+      if (lbl_eq(lb, a->lbl)) {
+        a->to = mergestates(a->to, b->to);
+        a->tags = copytags(a->tags, b->tags);
+        pushonce(a->to);
+        lbl_cpy(lb,b->lbl);
+        lbl_minus(lb,a->lbl);
+        b->lbl = lbl(lb);
+        #if DEBUG
+        dbgmsg("Arcs: %d %d (a subset of intersection) ",k,j-1);
+        lbl_dump(stderr,a->lbl);
+        dbgmsg("  ");
+        lbl_dump(stderr,b->lbl);
+        dbgmsg("\n");
+        #endif
+        continue;
+      }
+
+      if (lbl_eq(lb, b->lbl)) {
+        b->to = mergestates(a->to, b->to);
+        b->tags = copytags(b->tags, a->tags);
+        pushonce(b->to);
+        lbl_cpy(lb,a->lbl);
+        lbl_minus(lb,b->lbl);
+        a->lbl = lbl(lb);
+        #if DEBUG
+        dbgmsg("Arcs: %d %d (b subset of intersection) ",k,j-1);
+        lbl_dump(stderr,a->lbl);
+        dbgmsg("  ");
+        lbl_dump(stderr,b->lbl);
+        dbgmsg("\n");
+        #endif
+        continue;
+      }
+
+      {
+        Arc  arc;
+        state_t tmp = 0;
+
+        arc.lbl  = lbl(lb);
+        arc.tags = copytags(NULL, a->tags);
+        arc.tags = copytags(arc.tags, b->tags);
+        arc.to   = mergestates(a->to, b->to);
+        vecSet(marked, a->to, &tmp);
+        vecSet(marked, b->to, &tmp);
+        vecAdd(arcs, &arc);
+
+        #if DEBUG
+        dbgmsg("Arcs: %d %d (intersection) ",k,j-1);
+        lbl_dump(stderr,a->lbl);
+        dbgmsg("  ");
+        lbl_dump(stderr,b->lbl);
+        dbgmsg("  ");
+        lbl_dump(stderr,arc.lbl);
+        dbgmsg("\n");
+        #endif
+
+        lbl_cpy(lb,a->lbl);
+        lbl_minus(lb, b->lbl);
+        a->lbl = lbl(lb);
+
+        lbl_cpy(lb,b->lbl);
+        lbl_minus(lb, a->lbl);
+        b->lbl = lbl(lb);
+      }
+    #endif
+    }
     if (a->to != 0)
       pushonce(a->to);
   }
+  invmrgd = mapFree(invmrgd);
+  merged = vecFreeClean(merged,(vecCleaner)mrgcleanup);
 }
 
 static void determinize()
@@ -601,20 +777,19 @@ static void determinize()
 
   while ((from = pop()) != 0) {
     vecSet(marked,from,&from);
-    arcs = vecGetVal(fa.graph, from, vec_t);
+    arcs = vecGetVal(fa.states, from, vec_t);
 
-    if (arcs == NULL) yrxerr("Unexpcted empty state");
+    if (arcs == NULL) yrxerr("Unexpected empty state");
 
     removeeps(from,arcs);
     mergearcs(from,arcs);
-
   }
 
   for (k = 1; k <= fa.nstates; k++) {
     _dbgmsg("State: %d unreachable: %d\n",k,!pushed(k));
     if (!pushed(k)) {
-      p = vecGet(fa.graph,k);
-     *p = vecFreeClean(*p,tagclean);
+      p = vecGet(fa.states,k);
+     *p = vecFreeClean(*p,cleantags);
     }
   }
 
@@ -622,18 +797,12 @@ static void determinize()
   marked = vecFree(marked);
 }
 
-static uint32_t intersect(uint32_t *a, uint32_t *b, uint32_t *c)
-{
-
-}
-
 /**************************************************/
 
-static void addarc(state_t from,state_t to,char *l,uint32_t tag)
+static void addarc(state_t from, state_t to, char *l, uint32_t tag)
 {
-  Arc     arc;
-  vec_t   arcs;
-
+  Arc   arc;
+  vec_t arcs;
 
   arc.to   = to;
   arc.lbl  = NULL;
@@ -648,11 +817,11 @@ static void addarc(state_t from,state_t to,char *l,uint32_t tag)
     arc.lbl = lbl(arc.lbl);
   }
 
-  arcs = vecGetVal(fa.graph, from, vec_t );
+  arcs = vecGetVal(fa.states, from, vec_t );
 
   if (arcs == NULL){
     arcs = vecNew(sizeof(Arc));
-    vecSet(fa.graph,from,&arcs);
+    vecSet(fa.states,from,&arcs);
   }
 
   vecAdd(arcs,&arc);
@@ -684,7 +853,30 @@ static state_t nextstate(void)
 
   */
 
+static char *str =  NULL;
+static int   str_len = 0;
 
+static char *str_chk(int n)
+{
+  if (str == NULL || str_len < n) {
+    str = realloc(str,n+4);
+  }
+  return str;
+}
+
+static char *str_set(int i,int j)
+{
+  int n;
+
+  str = str_chk(j-i+2);
+
+  if (str != NULL) {
+    str[0] = '@';
+    for (n=1; i<j;n++,i++) str[n] = cur_rx[i];
+    str[n] = '\0';
+  }
+  return str;
+}
 
 static int peekch(int n) {
   int c;
@@ -707,65 +899,66 @@ static int nextch() {
 
 static char* escaped()
 {
-   char * l;
-   int    c;
-   int    j;
+  char * l;
+  int    c;
+  int    j;
 
-   c = peekch(0);
+  c = peekch(0);
 
-   if ( c < 0 || c == '*' || c == '+' || c == '?' || c == '-' ||
-        c == '(' || c == ')' || c == ']' || c == '[' || c == '|') {
-     return NULL;
-   }
+  if ( c < 0 || c == '*' || c == '+' || c == '?' || c == '-' ||
+       c == '(' || c == ')' || c == ']' || c == '[' || c == '|') {
+    return NULL;
+  }
 
-   j = cur_pos;
-   if (c == '\\') {
-     c = nextch();
-     c = nextch();
-     if (c < 0) yrxerr ("Unexpected character (\\)");
-     if (c == 'x') {
-       c = peekch(0);
-       if (isxdigit(c)) {
-         c = nextch();
-         c = peekch(0);
-         if (isxdigit(c)) c = nextch();
-       }
-     }
-     else if ('0' <= c && c <= '7') {
-       c = peekch(0);
-       if ('0' <= c && c <= '7') {
-         c = nextch();
-         c = peekch(0);
-         if ('0' <= c && c <= '7') c = nextch();
-       }
-     }
-   }
-   else c = nextch();
-   l = str_set(j,cur_pos);
-   return l;
+  j = cur_pos;
+  if (c == '\\') {
+    c = nextch();
+    c = nextch();
+    if (c < 0) yrxerr ("Unexpected character (\\)");
+    if (c == 'x') {
+      c = peekch(0);
+      if (isxdigit(c)) {
+        c = nextch();
+        c = peekch(0);
+        if (isxdigit(c)) c = nextch();
+      }
+    }
+    else if ('0' <= c && c <= '7') {
+      c = peekch(0);
+      if ('0' <= c && c <= '7') {
+        c = nextch();
+        c = peekch(0);
+        if ('0' <= c && c <= '7') c = nextch();
+      }
+    }
+  }
+  else c = nextch();
+
+  l = str_set(j,cur_pos);
+  return l;
 }
 
 static char *cclass()
 {
-   char* l;
-   int c;
-   int j;
+  char* l;
+  int c;
+  int j;
 
-   c = peekch(0);
-   if (c < 0) return NULL;
-   j = cur_pos;
-   if (c == '[') {
-     c = nextch();
-     while (c != ']') {
-       c = nextch();
-       if (c == '\\') c = (nextch(), 0);
-       if (c < 0) yrxerr("Unterminated class");
-     }
-     l = str_set(j, cur_pos);
-   }
-   else l = escaped();
+  c = peekch(0);
+  if (c < 0) return NULL;
+  j = cur_pos;
+  if (c == '[') {
+    c = nextch();
+    while (c != ']') {
+      c = nextch();
+      if (c == '\\') c = (nextch(), 0);
+      if (c < 0) yrxerr("Unterminated class");
+    }
+    l = str_set(j, cur_pos);
+  }
+  else l = escaped();
 
-   return l;
+  return l;
 }
 
 static state_t expr(state_t state);
@@ -934,7 +1127,7 @@ static state_t parse(const char *rx,uint16_t nrx)
 
 static void statescleanup(vec_t *arcs)
 {
-  vecFreeClean(*arcs,tagclean);
+  vecFreeClean(*arcs,cleantags);
 }
 
 static void cleantemp()
@@ -942,11 +1135,14 @@ static void cleantemp()
   if (str != NULL) free(str);
   str = NULL;
   resetstack();
+  invmrgd = mapFree(invmrgd);
+  merged = vecFreeClean(merged,(vecCleaner)mrgcleanup);
+  marked = vecFree(marked);
 }
 
 static void closedown()
 {
-  fa.graph = vecFreeClean(fa.graph,(vecCleaner)statescleanup);
+  fa.states = vecFreeClean(fa.states,(vecCleaner)statescleanup);
   fa.lbls  = mapFree(fa.lbls);
 
   cleantemp();
@@ -955,30 +1151,30 @@ static void closedown()
 static void init()
 {
   cur_pos = 0;
-  cur_rx = emptystr;
+  cur_rx  = emptystr;
 
-  fa.graph   = vecNew(sizeof(vec_t));
+  fa.states  = vecNew(sizeof(vec_t));
   fa.lbls    = lbl_init();
   fa.nstates = 1;
-  fa.freelst = 0;
+  merged     = NULL;
+  invmrgd    = NULL;
+  marked     = NULL;
 
   atexit(closedown);
 }
 
-
 aut *yrx_parse(char **rxs, int rxn)
 {
   int i;
+
   init();
 
-  if (rxn > 250) yrxerr("Too many expressions");
+  if (rxn > 250) yrxerr("Too many expressions (max 250)");
 
-  for ( i = 1; i < rxn; i++) {
-    parse(rxs[i],i);
+  for ( i = 0; i < rxn; i++) {
+    parse(rxs[i],i+1);
   }
   determinize();
-  /**/
-  /*mergearcs();*/
   cleantemp();
 
   return &fa;
@@ -995,7 +1191,7 @@ void dump(aut *dfa)
   resetstack();
   pushonce(1);
   while ((from = pop()) != 0) {
-    arcs = vecGetVal(dfa->graph, from, vec_t );
+    arcs = vecGetVal(dfa->states, from, vec_t );
     if (arcs != NULL)  {
       for (i = vecCnt(arcs), a = vecGet(arcs,0) ;
            i>0; a = vecNext(arcs),i--) {
@@ -1014,7 +1210,7 @@ int main(int argc, char **argv)
 {
   aut *dfa;
 
-  dfa = yrx_parse(argv, argc);
+  dfa = yrx_parse(argv+1, argc-1);
   dump(dfa);
 
   exit(0);
