@@ -1,4 +1,4 @@
-/* 
+/*
 **  (C) 2007 by Remo Dentato (rdentato@users.sourceforge.net)
 **
 ** Permission to use, copy, modify and distribute this code and
@@ -211,37 +211,106 @@ typedef struct blk_ {
 typedef blk *blk_t;
 
 uint8_t   *blkNew    (uint8_t ty);
-uint16_t   blkCnt    (uint8_t *b);
-uint16_t   blkSlt    (uint8_t *b);
 uint8_t   *blkSetInt (uint8_t *b, uint16_t ndx, uint32_t val, uint8_t ty);
 uint8_t   *blkSetPtr (uint8_t *b, uint16_t ndx, void *val);
 uint32_t   blkGetInt (uint8_t *b, uint16_t ndx, uint8_t ty);
 void*      blkGetPtr (uint8_t *b, uint16_t ndx);
 uint8_t   *blkFree   (uint8_t *b);
+uint8_t   *blkAppend (uint8_t *b, uint8_t *a, uint8_t sz);
 
 #define blkCHR 1
 #define blkU16 2
 #define blkU32 3
 #define blkPTR 4
 
+#define blkCHRsz sizeof(char)
+#define blkU16sz sizeof(uint16_t)
+#define blkU32sz sizeof(uint32_t)
+#define blsPTRsz sizeof(void *)
+
+int blkU32cmp (const void *a, const void *b);
+int blkU16cmp (const void *a, const void *b);
+int blkCHRcmp (const void *a, const void *b);
+
+void blkUniq(uint8_t *b,uint8_t sz);
+
+#define blkNodePtr(b) ((blk_t)(((uint8_t *)b) - offsetof(blk,elem)))
+#define blkCnt(b)     (blkNodePtr(b)->cnt)
+#define blkSlt(b)     (blkNodePtr(b)->slt)
+
+/*uint16_t   blkCnt    (uint8_t *b);*/
+/*uint16_t   blkSlt    (uint8_t *b);*/
+
 /**********************/
 
-#define ulv_t blk_t
+typedef uint32_t *ulv_t ;
 
-#define ulvNew()  (uint32_t *)blkNew(blkU32)
-#define ulvFree(b) (uint32_t *)blkFree((uint8_t *)b)
+#define ulvNew()      (ulv_t)blkNew(blkU32)
+#define ulvFree(b)    (ulv_t)blkFree((uint8_t *)b)
 
-#define ulvCnt(b)  blkCnt((uint8_t *)b)
-#define ulvSlt(b)  blkSlt((uint8_t *)b)
+#define ulvCnt        blkCnt
+#define ulvSlt        blkSlt
 
 #define ulvGet(b,n)   ((uint32_t)blkGetInt((uint8_t *)b, n, blkU32))
-#define ulvSet(b,n,v) ((uint32_t *)blkSetInt((uint8_t *)b, n, (uint32_t)v, blkU32))
+#define ulvSet(b,n,v) ((ulv_t)blkSetInt((uint8_t *)b, n, (uint32_t)v, blkU32))
 
-#define    ulvAdd(b,v) ulvSet(b, ulvCnt(b), v)
+#define ulvAdd(b,v)     ulvSet(b, ulvCnt(b), v)
+#define ulvAppend(a,b)  (ulv_t)blkAppend(a,b,blkU32sz)
+#define ulvSort(b)      qsort(b, ulvCnt(b), blkU32sz, blkU32cmp)
+#define ulvUniq(b)      blkUniq((uint8_t *)b, blkU32sz)
 
 /**********************/
 
+typedef uint16_t *usv_t ;
 
+#define usvNew()        (usv_t)blkNew(blkU16)
+#define usvFree(b)      (usv_t)blkFree((uint8_t *)b)
+
+#define usvCnt          blkCnt
+#define usvSlt          blkSlt
+
+#define usvGet(b,n)     ((uint16_t)blkGetInt((uint8_t *)b, n, blkU16))
+#define usvSet(b,n,v)   ((usv_t)blkSetInt((uint8_t *)b, n, (uint16_t)v, blkU16))
+
+#define usvAdd(b,v)     usvSet(b, usvCnt(b), v)
+#define usvAppend(a,b)  (usv_t)blkAppend((uint8_t *)a,(uint8_t *)b,blkU16sz)
+#define usvSort(b)      qsort(b, usvCnt(b), blkU16sz, blkU16cmp)
+#define usvUniq(b)      blkUniq((uint8_t *)b, blkU16sz)
+
+/**********************/
+
+typedef uint8_t *ucv_t ;
+
+#define ucvNew()        (ucv_t)blkNew(blkCHR)
+#define ucvFree(b)      (ucv_t)blkFree(b)
+
+#define ucvCnt          blkCnt
+#define ucvSlt          blkSlt
+
+#define ucvGet(b,n)     ((uint8_t)blkGetInt(b, n, blkCHR))
+#define ucvSet(b,n,v)   ((ucv_t)blkSetInt(b, n, (uint8_t)v, blkCHR))
+
+#define ucvAdd(b,v)     ucvSet(b, ucvCnt(b), v)
+#define ucvAppend(a,b)  (ucv_t)blkAppend((uint8_t *)a,(uint8_t *)b,blkCHRsz)
+#define ucvSort(b)      qsort(b, ucvCnt(b), blkCHRsz, blkCHRcmp)
+#define ucvUniq(b)      blkUniq((uint8_t *)b, blkCHRsz)
+
+/**********************/
+
+typedef void **vpv_t ;
+
+#define vpvNew()      (vpv_t)blkNew(blkPTR)
+#define vpvFree(b)    (vpv_t)blkFree((uint8_t *)b)
+
+#define vpvCnt        blkCnt
+#define vpvSlt        blkSlt
+
+#define vpvGet(b,n)   ((void *)blkGetPtr((uint8_t *)b, n))
+#define vpvSet(b,n,v) ((vpv_t)blkSetPtr((uint8_t *)b, n, (void *)v))
+
+#define vpvAdd(b,v)   vpvSet(b, vpvCnt(b), v)
+
+/**********************/
 
 #endif  /* VEC_H */
 

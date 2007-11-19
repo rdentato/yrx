@@ -133,13 +133,12 @@ void arccleanup(Arc *a)
 }
 #include "time.h"
 
-int main(int argc, char * argv[])
+int main(void)
 {
   vec_t v;
 
-  uint32_t j,k,n=0;
+  uint32_t j,k;
   Arc a,*p;
-  uint32_t t;
   Arc *q;
 
   srand(time(0));
@@ -838,6 +837,8 @@ int main(int argc, char * argv[])
  #if 1
  {
   uint32_t *b;
+  uint16_t *c;
+
   TSTSECTION("uint blocks");
   TSTGROUP("Creating a block");
 
@@ -863,9 +864,69 @@ int main(int argc, char * argv[])
 
   b = ulvFree(b);
   TST("ulv freed",(b == NULL));
+
+  srand(time(NULL));
+  c = usvNew();
+
+  TST("Created usv",(c != NULL && usvCnt(c)==0 && usvSlt(c)==1));
+  TSTWRITE("elems: \n");
+
+  for (k = 0; k < 100; k++) {
+    c = usvSet(c,k,(uint16_t)rand() % 100);
+    TSTWRITE("%02X ",c[k]);
+  }
+  TSTWRITE(" (%d)\n",usvCnt(c));
+
+  usvSort(c);
+
+  for (k = 0; k < usvCnt(c); k++) {
+    TSTWRITE("%02X ",c[k]);
+  }
+  TSTWRITE(" (%d)\n",usvCnt(c));
+
+  usvUniq(c);
+
+  for (k = 0; k < usvCnt(c); k++) {
+    TSTWRITE("%02X ",c[k]);
+  }
+  TSTWRITE(" (%d)\n",usvCnt(c));
+
+  c = usvFree(c);
+  TST("usv freed",(c == NULL));
+
  }
  #endif
 
+ #if 0
+ {
+  vpv_t b;
+  TSTSECTION("voidptr blocks");
+  TSTGROUP("Creating a block");
+
+  b = vpvNew();
+
+  TST("Created vpv",(b != NULL && vpvCnt(b)==0 && vpvSlt(b)==1));
+
+  b = vpvSet(b,0,vecNew);
+  TST("Set element 0",((vpvGet(b,0) == vecNew) && (b[0] == vecNew)));
+
+  b = vpvSet(b,1,vecFreeClean);
+  TST("Set element 1",((vpvGet(b,1) == vecFreeClean) && (b[1] == vecFreeClean)));
+  TSTNOTE("Block slots: %d count: %d",ulvSlt(b),ulvCnt(b));
+
+  for (k = 2; k < 1000; k++) {
+    b = vpvSet(b,k,(void *)(545+k));
+    if (k % 10 == 0)
+      TSTNOTE("Block (%d) slots: %d count: %d",k,vpvSlt(b),vpvCnt(b));
+  }
+  TSTNOTE("Block (%d) slots: %d count: %d",k,ulvSlt(b),ulvCnt(b));
+
+  TST("Added 1000 elements!",(vpvCnt(b) == 1000 && b[999] == (void *)(999+545) && b[999] == vpvGet(b,999)));
+
+  b = vpvFree(b);
+  TST("vpv freed",(b == NULL));
+ }
+ #endif
   TSTDONE();
   exit(0);
 }
