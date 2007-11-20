@@ -657,7 +657,7 @@ static void mergearcs(state_t from, vec_t  arcs)
         a->tags = copytags(a->tags, b->tags);
 
         delarc(arcs, b);
-        #if DEBUG
+        #ifdef DEBUG
         dbgmsg("Arcs: %d %d (same) ",k,j-1);
         lbl_dump(stderr,a->lbl);
         dbgmsg("\n");
@@ -667,7 +667,7 @@ static void mergearcs(state_t from, vec_t  arcs)
       }
 
       if (a->to == 0 || b->to == 0) {
-        #if DEBUG
+        #ifdef DEBUG
         dbgmsg("Arcs: %d %d (one is final) ",k,j-1);
         dbgmsg("\n");
         #endif
@@ -680,7 +680,7 @@ static void mergearcs(state_t from, vec_t  arcs)
       lbl_and(lb,b->lbl);
 
       if (lbl_isempty(lb)) {
-        #if DEBUG
+        #ifdef DEBUG
         dbgmsg("Arcs: %d %d (no intersection) ",k,j-1);
         lbl_dump(stderr,a->lbl);
         dbgmsg("  ");
@@ -697,7 +697,7 @@ static void mergearcs(state_t from, vec_t  arcs)
         lbl_cpy(lb,b->lbl);
         lbl_minus(lb,a->lbl);
         b->lbl = lbl(lb);
-        #if DEBUG
+        #ifdef DEBUG
         dbgmsg("Arcs: %d %d (a subset of intersection) ",k,j-1);
         lbl_dump(stderr,a->lbl);
         dbgmsg("  ");
@@ -714,7 +714,7 @@ static void mergearcs(state_t from, vec_t  arcs)
         lbl_cpy(lb,a->lbl);
         lbl_minus(lb,b->lbl);
         a->lbl = lbl(lb);
-        #if DEBUG
+        #ifdef DEBUG
         dbgmsg("Arcs: %d %d (b subset of intersection) ",k,j-1);
         lbl_dump(stderr,a->lbl);
         dbgmsg("  ");
@@ -736,7 +736,7 @@ static void mergearcs(state_t from, vec_t  arcs)
         vecSet(marked, b->to, &tmp);
         vecAdd(arcs, &arc);
 
-        #if DEBUG
+        #ifdef DEBUG
         dbgmsg("Arcs: %d %d (intersection) ",k,j-1);
         lbl_dump(stderr,a->lbl);
         dbgmsg("  ");
@@ -1073,7 +1073,7 @@ static state_t term(state_t state)
     switch (c) {
       case '-' :
       case '*' :  addarc(state,to,"",TAG_NONE);
-                  addarc(to,to,l,0);
+                  addarc(state,state,l,0);
                   c = nextch();
                   break;
 
