@@ -64,5 +64,5 @@ _OBJ=o
 
 AR=ar rcu
 
-sys:
-	@echo ${SYS}
+#sys:
+#	@echo ${SYS}
