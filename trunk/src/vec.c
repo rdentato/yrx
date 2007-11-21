@@ -1079,10 +1079,10 @@ uint8_t *blkAppend(uint8_t *b, uint8_t *a, uint8_t sz)
   k = blkCnt(b) + blkCnt(a);
 
   if (k > bl->slt)
-    bl = blksetsize(bl, k+1 ,sz);
+    bl = blksetsize(bl, (uint16_t) (k+1) ,sz);
 
   memcpy(b+(bl->cnt * sz), a, blkCnt(a) * sz);
-  bl->cnt = k;
+  bl->cnt = (uint16_t)k;
 
   return bl->elem;
 }
@@ -1160,7 +1160,7 @@ void blkUniq(uint8_t *b,uint8_t sz)
      }
      a += sz;
   }
-  blkCnt(b) = (p-b)/sz;
+  blkCnt(b) = (uint16_t)((p-b)/sz);
 }
 
 /**************************/
