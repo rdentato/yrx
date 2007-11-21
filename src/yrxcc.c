@@ -12,21 +12,11 @@
 ** express or implied warranty.
 */
 
-/*
-  TOC:
-
-*/
-
 #define HUL_MAIN
-#include "hul.h"
-#include "vec.h"
+
+#include "yrx.h"
 
 /**************************************************/
-
-#define state_t uint16_t
-
-/**************************************************/
-
 static const char *cur_rx;
 static int         cur_pos;
 static uint16_t    cur_nrx;
@@ -468,12 +458,6 @@ typedef struct {
   state_t   to;
 } Arc;
 
-typedef struct {
-   vec_t     states;
-   map_t     lbls;
-   state_t   nstates;
-} aut;
-
 static aut fa;
 
 static void addarc(state_t from, state_t to, char *l, uint32_t tag);
@@ -525,6 +509,8 @@ static void copyarcs(vec_t arcst, state_t fromst, uint32_t *tl)
 }
 
 static vec_t  marked;
+static vec_t merged;
+static map_t invmrgd;
 
 static void removeeps(state_t from, vec_t  arcs)
 {
@@ -557,9 +543,6 @@ typedef struct {
   usv_t   stlist;
   state_t st;
 } mrgd;
-
-static vec_t merged;
-static map_t invmrgd;
 
 static void mrgcleanup(usv_t *sig)
 {
@@ -1205,6 +1188,35 @@ aut *yrx_parse(char **rxs, int rxn)
 
 /***********************************/
 
+static yarcn = 0;
+static vec_t yarcs = 0;
+
+static state_t yrxNext(state_t st)
+{
+  if (st == 0) {
+    resetstack();
+    pushonce(1);
+  }
+  yarcn = 0;
+  st = pop();
+  yarcs = vecGetVal(fa.states,st,vec_t);
+  return st;
+}
+
+#define yrxStartState() yrxNext(0);
+#define yrxNextState()  yrxNext(1);
+
+Arc *yrxGetArc()
+{
+  Arc *a;
+  if (yarcn >= vecCnt(yarcs)) return NULL;
+  a = vecGet(yarcs, yarcn++);
+  if (a->to != 0) pushonce(a->to);
+  return a;
+}
+
+/***********************************/
+#if 0
 void dump(aut *dfa)
 {
   uint32_t i,from;
@@ -1228,6 +1240,25 @@ void dump(aut *dfa)
     }
   }
   resetstack();
+}
+#endif
+
+void dump(aut *dfa)
+{
+  uint32_t i,from;
+  Arc *a;
+
+  from = yrxStartState();
+
+  while (from != 0) {
+    while ((a = yrxGetArc()) != NULL) {
+      printf("%5d -> %-5d %p / %p  ", from, a->to, a->lbl, a->tags);
+      lbl_dump(stdout,a->lbl);
+      t_dump(stdout,a->tags);
+      printf("\n");
+    }
+    from = yrxNextState();
+  }
 }
 
 
