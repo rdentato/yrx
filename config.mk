@@ -18,8 +18,7 @@
 # Modify this file according your system before building yrx
 
 #### SYSTEM
-##
-#SYS=$(shell sh -c 'if [ `uname | grep -i -c mingw` =  '1' ]; then echo MINGW; else echo LINUX; fi' )
+## Try to guess which system are we
 
 SYS=$(shell uname | grep -i -c mingw)
 ifeq ($(SYS),1)
@@ -27,6 +26,10 @@ SYS=MINGW
 else
 SYS=LINUX
 endif
+
+## Or simply uncoment the approriate line if guessing doesn't work
+#SYS=MINGW
+#SYS=LINUX
 
 #### LOG2_ASM
 ## Uncomment next line to use the inline assembler version of |llog2()|
