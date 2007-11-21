@@ -19,9 +19,14 @@
 
 #### SYSTEM
 ##
-SYS=$(shell sh -c 'if [ `uname | grep -i -c mingw` =  '1' ]; then echo MINGW; else echo LINUX; fi' )
-# SYS=LINUX
-# SYS=MINGW
+#SYS=$(shell sh -c 'if [ `uname | grep -i -c mingw` =  '1' ]; then echo MINGW; else echo LINUX; fi' )
+
+SYS=$(shell uname | grep -i -c mingw)
+ifeq ($(SYS),1)
+SYS=MINGW
+else
+SYS=LINUX
+endif
 
 #### LOG2_ASM
 ## Uncomment next line to use the inline assembler version of |llog2()|
@@ -56,3 +61,5 @@ _OBJ=o
 
 AR=ar rcu
 
+sys:
+	@echo ${SYS}
