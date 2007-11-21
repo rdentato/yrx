@@ -40,7 +40,7 @@ static const char *emptystr = "";
 
 static void yrxerr(char *errmsg)
 {
-  err(-1,"ERROR: %s\n%5d: %s\n%*s\n",errmsg,cur_nrx,cur_rx,cur_pos+8,"*");
+  err(123,"ERROR: %s\n%5d: %s\n%*s\n",errmsg,cur_nrx,cur_rx,cur_pos+8,"*");
 }
 
 /**************************************************/
@@ -516,6 +516,11 @@ static void copyarcs(vec_t arcst, state_t fromst, uint32_t *tl)
     a = vecAdd(arcst,a);
     a->tags = copytags(NULL, a->tags);
     a->tags = copytags(a->tags, tl);
+    #ifdef xDEBUG
+    dbgmsg(" -- arc to %d ",a->to);
+    lbl_dump(stderr,a->lbl);
+    dbgmsg("\n");
+    #endif
   }
 }
 
@@ -531,7 +536,7 @@ static void removeeps(state_t from, vec_t  arcs)
     a = vecGet(arcs, k++);
     if (a->to != 0) {
       if (a->lbl == NULL) {
-        dbgmsg("Copy from %d to %d\n",a->to,from);
+        _dbgmsg("Copy from %d to %d\n",a->to,from);
         if (vecGetVal(marked, a->to, state_t) != from) {
           vecSet(marked, a->to, &from);
           copyarcs(arcs, a->to, a->tags);
@@ -539,12 +544,13 @@ static void removeeps(state_t from, vec_t  arcs)
           k--; /* undo the index increment */
         }
         else {
-          dbgmsg("Already visited: %d\n",a->to);
+          _dbgmsg("Already visited: %d\n",a->to);
           yrxerr("Expression contains empty closures");/**/
         }
       }
     }
   }
+  _dbgmsg("Copy done\n");
 }
 
 typedef struct {
@@ -564,9 +570,11 @@ static state_t mergestates(state_t x, state_t y)
 {
   state_t z;
   usv_t s ;
-  usv_t t;
+  usv_t *t;
   uint16_t k;
   mrgd *m, mm;
+
+  _dbgmsg("Mergingstates %d %d\n",x,y);
 
   if (x == y) return x;
 
@@ -577,17 +585,29 @@ static state_t mergestates(state_t x, state_t y)
 
   k = 0;
   while ( k < usvCnt(s)) {
-    t = vecGetVal(merged, s[k++], usv_t);
-    if (t != NULL) {
+    t = vecGet(merged, s[k++]);
+    if (*t != NULL) {
       k--;
       usvCnt(s)--;
       s[k] = s[usvCnt(s)];
-      s = usvAppend(s, t);
+      s = usvAppend(s, *t);
     }
   }
+
   usvSort(s);
   usvUniq(s);
-  m = mapGet(invmrgd, s);
+
+  #if xDEBUG
+  dbgmsg("merged as: ");
+  for (k = 0; k < usvCnt(s); k++) {
+     fprintf(stderr,"%d ",s[k]);
+  }
+  fprintf(stderr,"\n");
+  #endif
+
+  mm.st = 0;
+  mm.stlist = s;
+  m = mapGet(invmrgd, &mm);
 
   if (m == NULL) {
     z = nextstate();
@@ -614,10 +634,10 @@ int mrgcmp(mrgd *a, mrgd *b)
   if (a == b) return 0;
   if (a == NULL) return -1;
   if (b == NULL) return 1;
-
+/*
   z = a->st - b->st;
   if (z != 0) return z;
-
+*/
   k = usvCnt(a->stlist);
   z = k -  usvCnt(b->stlist);
   if (z != 0) return z;
@@ -629,24 +649,22 @@ static void mergearcs(state_t from, vec_t  arcs)
 {
   uint32_t k, j;
   Arc *a, *b;
+  Arc  arc;
   lbl_t lb;
 
-  merged = vecNew(sizeof(usv_t));
-  invmrgd = mapNew(sizeof(mrgd), mrgcmp);
-
-  dbgmsg("  ** Mergearcs state: %d \n",from);
+  _dbgmsg("  ** Mergearcs state: %d \n",from);
   for (k = 0; k < vecCnt(arcs); k++) {
     a = vecGet(arcs,k);
     j = k+1;
     while (j < vecCnt(arcs)) {
       b = vecGet(arcs, j++);
-    #if 10
+      #if 10
       if (lbl_eq(a->lbl, b->lbl)) {
         a->to = mergestates(a->to, b->to);
         a->tags = copytags(a->tags, b->tags);
 
         delarc(arcs, b);
-        #ifdef DEBUG
+        #ifdef xDEBUG
         dbgmsg("Arcs: %d %d (same) ",k,j-1);
         lbl_dump(stderr,a->lbl);
         dbgmsg("\n");
@@ -656,7 +674,7 @@ static void mergearcs(state_t from, vec_t  arcs)
       }
 
       if (a->to == 0 || b->to == 0) {
-        #ifdef DEBUG
+        #ifdef xDEBUG
         dbgmsg("Arcs: %d %d (one is final) ",k,j-1);
         dbgmsg("\n");
         #endif
@@ -669,7 +687,7 @@ static void mergearcs(state_t from, vec_t  arcs)
       lbl_and(lb,b->lbl);
 
       if (lbl_isempty(lb)) {
-        #ifdef DEBUG
+        #ifdef xDEBUG
         dbgmsg("Arcs: %d %d (no intersection) ",k,j-1);
         lbl_dump(stderr,a->lbl);
         dbgmsg("  ");
@@ -686,8 +704,8 @@ static void mergearcs(state_t from, vec_t  arcs)
         lbl_cpy(lb,b->lbl);
         lbl_minus(lb,a->lbl);
         b->lbl = lbl(lb);
-        #ifdef DEBUG
-        dbgmsg("Arcs: %d %d (a subset of intersection) ",k,j-1);
+        #ifdef xDEBUG
+        dbgmsg("Arcs: %d %d new: %d (a subset of intersection) ",k,j-1, a->to);
         lbl_dump(stderr,a->lbl);
         dbgmsg("  ");
         lbl_dump(stderr,b->lbl);
@@ -703,8 +721,8 @@ static void mergearcs(state_t from, vec_t  arcs)
         lbl_cpy(lb,a->lbl);
         lbl_minus(lb,b->lbl);
         a->lbl = lbl(lb);
-        #ifdef DEBUG
-        dbgmsg("Arcs: %d %d (b subset of intersection) ",k,j-1);
+        #ifdef xDEBUG
+        dbgmsg("Arcs: %d %d new: %d (b subset of intersection) ",k,j-1, b->to);
         lbl_dump(stderr,a->lbl);
         dbgmsg("  ");
         lbl_dump(stderr,b->lbl);
@@ -714,7 +732,6 @@ static void mergearcs(state_t from, vec_t  arcs)
       }
 
       {
-        Arc  arc;
         state_t tmp = 0;
 
         arc.lbl  = lbl(lb);
@@ -725,7 +742,7 @@ static void mergearcs(state_t from, vec_t  arcs)
         vecSet(marked, b->to, &tmp);
         vecAdd(arcs, &arc);
 
-        #ifdef DEBUG
+        #ifdef xDEBUG
         dbgmsg("Arcs: %d %d (intersection) ",k,j-1);
         lbl_dump(stderr,a->lbl);
         dbgmsg("  ");
@@ -743,7 +760,7 @@ static void mergearcs(state_t from, vec_t  arcs)
         lbl_minus(lb, arc.lbl);
         b->lbl = lbl(lb);
 
-        #ifdef DEBUG
+        #ifdef xDEBUG
         lbl_dump(stderr,a->lbl);
         dbgmsg("  ");
         lbl_dump(stderr,b->lbl);
@@ -751,13 +768,17 @@ static void mergearcs(state_t from, vec_t  arcs)
         #endif
 
       }
-    #endif
+      #endif
     }
     if (a->to != 0)
       pushonce(a->to);
+    else if (k != 0) {
+      b = vecGet(arcs, 0);
+      arc = *b;
+      *b = *a;
+      *a = arc;
+    }
   }
-  invmrgd = mapFree(invmrgd);
-  merged = vecFreeClean(merged,(vecCleaner)mrgcleanup);
 }
 
 static void determinize()
@@ -768,6 +789,8 @@ static void determinize()
   vec_t  arcs;
 
   marked = vecNew(sizeof(state_t));
+  merged = vecNew(sizeof(usv_t));
+  invmrgd = mapNew(sizeof(mrgd), mrgcmp);
 
   resetstack();
   pushonce(1);
@@ -782,6 +805,10 @@ static void determinize()
     mergearcs(from,arcs);
   }
 
+  invmrgd = mapFree(invmrgd);
+  merged = vecFreeClean(merged,(vecCleaner)mrgcleanup);
+  marked = vecFree(marked);
+
   for (k = 1; k <= fa.nstates; k++) {
     _dbgmsg("State: %d unreachable: %d\n",k,!pushed(k));
     if (!pushed(k)) {
@@ -791,7 +818,6 @@ static void determinize()
   }
 
   resetstack();
-  marked = vecFree(marked);
 }
 
 /**************************************************/
@@ -1191,7 +1217,8 @@ void dump(aut *dfa)
     arcs = vecGetVal(dfa->states, from, vec_t );
     if (arcs != NULL)  {
       for (i = vecCnt(arcs), a = vecGet(arcs,0) ;
-           i>0; a = vecNext(arcs),i--) {
+           i > 0;
+		   a = vecNext(arcs),i--) {
         printf("%5d -> %-5d %p / %p  ", from, a->to, a->lbl, a->tags);
         lbl_dump(stdout,a->lbl);
         t_dump(stdout,a->tags);
@@ -1207,6 +1234,7 @@ void dump(aut *dfa)
 void usage()
 {
 	fprintf(stderr,"Usage: yrxcc rx1 [rx2 ... rx250]\n ");
+  exit(1);
 }
 
 int main(int argc, char **argv)
