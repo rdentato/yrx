@@ -18,15 +18,6 @@
 */
 
 
-/* = Standard |#include|s */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <stddef.h>
-#include <string.h>
-#include <ctype.h>
-
 #define HUL_MAIN
 #include "hul.h"
 #include "vec.h"
@@ -743,16 +734,24 @@ static void mergearcs(state_t from, vec_t  arcs)
         lbl_dump(stderr,b->lbl);
         dbgmsg("  ");
         lbl_dump(stderr,arc.lbl);
-        dbgmsg("\n");
+        dbgmsg("  ");
         #endif
 
         lbl_cpy(lb,a->lbl);
-        lbl_minus(lb, b->lbl);
+        lbl_minus(lb, arc.lbl);
         a->lbl = lbl(lb);
 
         lbl_cpy(lb,b->lbl);
-        lbl_minus(lb, a->lbl);
+        lbl_minus(lb, arc.lbl);
         b->lbl = lbl(lb);
+
+        #ifdef DEBUG
+        lbl_dump(stderr,a->lbl);
+        dbgmsg("  ");
+        lbl_dump(stderr,b->lbl);
+        dbgmsg("\n");
+        #endif
+
       }
     #endif
     }
@@ -1169,9 +1168,9 @@ aut *yrx_parse(char **rxs, int rxn)
 
   init();
 
-  if (rxn > 250) yrxerr("Too many expressions (max 250)");
+  if (rxn < 1 || 250 < rxn) return NULL;
 
-  for ( i = 0; i < rxn; i++) {
+  for (i = 0; i < rxn; i++) {
     parse(rxs[i],i+1);
   }
   determinize();
@@ -1206,12 +1205,20 @@ void dump(aut *dfa)
   resetstack();
 }
 
+
+void usage()
+{
+	fprintf(stderr,"Usage: yrxcc rx1 [rx2 ... rx250]\n ");
+}
+
 int main(int argc, char **argv)
 {
   aut *dfa;
 
+  if (argc < 2 || 251 < argc) usage();
+
   dfa = yrx_parse(argv+1, argc-1);
-  dump(dfa);
+  if (dfa != NULL) dump(dfa);
 
   exit(0);
 }
