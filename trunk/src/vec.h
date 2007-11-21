@@ -12,13 +12,18 @@
 ** express or implied warranty.
 */
 
+
 #ifndef VEC_H
 #define VEC_H
+
+
+/* = Standard |#include|s */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
+#include <ctype.h>
 
 #ifdef _MSC_VER
 #include "pstdint.h"
