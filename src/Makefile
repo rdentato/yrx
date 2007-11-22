@@ -18,14 +18,14 @@ include ../config.mk
 CFLAGS = $(DEBUG) -Wall $(LOG2_ASM) -O2 -g 
 LDFLAGS = -lprof
 
-yrxcc$(_EXE):	yrxcc.o vec.o
-	gcc -o yrxcc$(_EXE) yrxcc.o vec.o
+yrx$(_EXE):	yrxcc.$(_OBJ) yrx.$(_OBJ) vec.$(_OBJ)
+	gcc -o yrx$(_EXE) yrx.$(_OBJ) yrxcc.$(_OBJ) vec.$(_OBJ)
 
-vt$(_EXE):	vt.o vec.o
-	gcc $(CFLAGS) -o vt$(_EXE) vt.o vec.o
+vt$(_EXE):	vt.$(_OBJ) vec.$(_OBJ)
+	gcc $(CFLAGS) -o vt$(_EXE) vt.$(_OBJ) vec.$(_OBJ)
 
 clean:
-	rm -f yrxcc$(_EXE)
+	rm -f yrx$(_EXE) vt$(_EXE)
 	rm -f x.*
 	rm -f *.$(_OBJ)
 	

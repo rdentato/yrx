@@ -38,7 +38,6 @@ static void yrxerr(char *errmsg)
 /* = Handling labels */
 
 typedef uint16_t  lbl_t[17];
-typedef uint16_t *lbl_ptr;
 
 /**************************************************/
 
@@ -205,7 +204,7 @@ static lbl_ptr lbl_bmp(char *s)
   return ll;
 }
 
-static int lbl_rng(lbl_ptr bmp, uint16_t a)
+static int lbl_rng(lbl_ptr bmp, uint16_t a, uint16_t *min, uint16_t *max)
 {
   uint16_t b;
 
@@ -215,38 +214,41 @@ static int lbl_rng(lbl_ptr bmp, uint16_t a)
 
   while (a <=255 && !lbl_tst(bmp,a)) a++;
 
-  if (a > 255) return -1;
+  if (a > 255) return 0;
   b=a+1;
   while (b <= 255 && lbl_tst(bmp,b)) b++;
   b=b-1;
-  return ((a<<8) | b);
+
+ *min = a;
+ *max = b;
+  return 1;
 }
 
-static char *lbl_str(lbl_ptr lb)
+#define yrxArcLabel(a) lbl_str((a)->lbl)
+
+uint8_t *lbl_str(lbl_ptr lb)
 {
-  static char s[512];
-  int a,b;
+  static uint8_t s[512];
+  uint16_t a,b;
   int i=0;
 
   if (lb != NULL) {
     s[i++] = lbl_type(lb) | '@';
 
-    a=0;
-    while (a <= 255) {
-      b = lbl_rng(lb,a);
-      if (b<0) break;
-      a = b >> 8;
+    a = 0;
+    while (lbl_rng(lb, a, &a, &b) != 0) {
       s[i++] = a;
-      a = (b & 0xFF);
-      s[i++] = a;
-      a++;
+      s[i++] = b;
+      a = b +1 ;
     }
+    s[i++] = 1;
   }
+
   s[i] = '\0';
   return s;
 }
 
-static char *lbl_dumpchar(uint8_t c)
+char *yrxLabelChr(uint8_t c)
 {
   static char s[16];
   if (c <= 32   || c > 126  || c == '\\' || c == '"' ||
@@ -257,26 +259,6 @@ static char *lbl_dumpchar(uint8_t c)
     s[0] = c; s[1] = '\0';
   }
   return s;
-}
-
-static void lbl_dump(FILE *f, lbl_ptr lb)
-{
-  int a,b;
-
-  if (lb != NULL) {
-    fputc(lbl_type(lb) | '@' , f);
-
-    a=0;
-    while (a <= 255) {
-      b = lbl_rng(lb,a);
-      if (b<0) break;
-      a = b >> 8;
-      fputs(lbl_dumpchar(a),f);
-      a = (b & 0xFF);
-      fputs(lbl_dumpchar(a),f);
-      a++;
-    }
-  }
 }
 
 /*************************************/
@@ -348,7 +330,7 @@ uint32_t *copytags(uint32_t *tl, uint32_t *newtl)
   return tl;
 }
 
-static void t_dump(FILE *f, uint32_t *tags)
+void t_dump(FILE *f, uint32_t *tags)
 {
   uint32_t  rx;
   uint32_t  p;
@@ -451,12 +433,6 @@ static state_t stkonce(state_t val,char op)
 
 
 /**************************************************/
-
-typedef struct {
-  lbl_ptr   lbl;
-  ulv_t     tags;
-  state_t   to;
-} Arc;
 
 static aut fa;
 
@@ -715,14 +691,11 @@ static void mergearcs(state_t from, vec_t  arcs)
       }
 
       {
-        state_t tmp = 0;
 
         arc.lbl  = lbl(lb);
         arc.tags = copytags(NULL, a->tags);
         arc.tags = copytags(arc.tags, b->tags);
         arc.to   = mergestates(a->to, b->to);
-        vecSet(marked, a->to, &tmp);
-        vecSet(marked, b->to, &tmp);
         vecAdd(arcs, &arc);
 
         #ifdef xDEBUG
@@ -749,22 +722,23 @@ static void mergearcs(state_t from, vec_t  arcs)
         lbl_dump(stderr,b->lbl);
         dbgmsg("\n");
         #endif
-
+        continue;
       }
       #endif
     }
     if (a->to != 0)
       pushonce(a->to);
     else if (k != 0) {
-      b = vecGet(arcs, 0);
+    /* ensure that arc to the final state is the first one in the arcs list */
+      b   = vecGet(arcs, 0);
       arc = *b;
-      *b = *a;
-      *a = arc;
+     *b   = *a;
+     *a   = arc;
     }
   }
 }
 
-static void determinize()
+static void determinize(void)
 {
   state_t from;
   vec_t *p;
@@ -842,22 +816,25 @@ static state_t nextstate(void)
 
 /**************************************************/
 /* = Parsing expressions
-*/
-
-  /*
+**  Parsing is implemented as a Recursive Descent Parser for the following grammar:
+ 
        <expr>     ::= <term>+
 
-       <term>     ::= \( <expr> ( '|' <expr> )*\)[\+\-\*\?]? |
-                      \\E<escaped> | \\: |
-                      \[eNQI][\+\-\*\?]? |
-                      <cclass>[\+\-\*\?]?
+       <term>     ::=   \( <expr> ( '|' <expr> )* \) [\+\-\*\?]?
+                      | \\E <escaped>
+                      | \\:
+                      | \[eNQI] [\+\-\*\?]?
+                      | <cclass> [\+\-\*\?]?
 
-       <cclass>   ::= \[\e*\] | <escaped>
+       <cclass>   ::=   \[ \e* \]
+                      | <escaped>
 
-       <escaped>  ::= \\x\h?\h? | \\\o\o?\o? |
-                      \\. | [^\|\*\+\-\?\(\)]
+       <escaped>  ::=   \\x\h?\h?
+                      | \\\o\o?\o?
+                      | \\.
+                      | [^\|\*\+\-\?\(\)]
 
-  */
+ */
 
 static char *str =  NULL;
 static int   str_len = 0;
@@ -893,9 +870,10 @@ static int peekch(int n) {
     if (i == n ) return c;
     i++;
   }
+  return 0;
 }
 
-static int nextch() {
+static int nextch(void) {
   int c;
   c = cur_rx[cur_pos];
   if (c == '\0') return -1;
@@ -903,7 +881,7 @@ static int nextch() {
   return c;
 }
 
-static char* escaped()
+static char* escaped(void)
 {
   char * l;
   int    c;
@@ -944,7 +922,7 @@ static char* escaped()
   return l;
 }
 
-static char *cclass()
+static char *cclass(void)
 {
   char* l;
   int c;
@@ -1136,7 +1114,7 @@ static void statescleanup(vec_t *arcs)
   vecFreeClean(*arcs,cleantags);
 }
 
-static void cleantemp()
+static void cleantemp(void)
 {
   if (str != NULL) free(str);
   str = NULL;
@@ -1146,7 +1124,7 @@ static void cleantemp()
   marked = vecFree(marked);
 }
 
-static void closedown()
+static void closedown(void)
 {
   fa.states = vecFreeClean(fa.states,(vecCleaner)statescleanup);
   fa.lbls  = mapFree(fa.lbls);
@@ -1154,7 +1132,7 @@ static void closedown()
   cleantemp();
 }
 
-static void init()
+static void init(void)
 {
   cur_pos = 0;
   cur_rx  = emptystr;
@@ -1169,7 +1147,7 @@ static void init()
   atexit(closedown);
 }
 
-aut *yrx_parse(char **rxs, int rxn)
+aut *yrxParse(char **rxs, int rxn)
 {
   int i;
 
@@ -1188,95 +1166,43 @@ aut *yrx_parse(char **rxs, int rxn)
 
 /***********************************/
 
-static yarcn = 0;
-static vec_t yarcs = 0;
 
-static state_t yrxNext(state_t st)
+state_t yrxNext(aut *dfa, state_t st)
 {
   if (st == 0) {
     resetstack();
     pushonce(1);
   }
-  yarcn = 0;
+  dfa->yarcn = 0;
   st = pop();
-  yarcs = vecGetVal(fa.states,st,vec_t);
+  dfa->yarcs = vecGetVal(dfa->states,st,vec_t);
   return st;
 }
 
-#define yrxStartState() yrxNext(0);
-#define yrxNextState()  yrxNext(1);
-
-Arc *yrxGetArc()
+Arc *yrxGetArc(aut *dfa)
 {
   Arc *a;
-  if (yarcn >= vecCnt(yarcs)) return NULL;
-  a = vecGet(yarcs, yarcn++);
+  if (dfa->yarcn >= vecCnt(dfa->yarcs)) return NULL;
+  a = vecGet(dfa->yarcs, dfa->yarcn++);
   if (a->to != 0) pushonce(a->to);
   return a;
 }
 
-/***********************************/
-#if 0
-void dump(aut *dfa)
+Arc *yrxIsFinal(aut *dfa, state_t st)
 {
-  uint32_t i,from;
-  Arc *a;
+  Arc *a = NULL;
   vec_t arcs;
 
-  resetstack();
-  pushonce(1);
-  while ((from = pop()) != 0) {
-    arcs = vecGetVal(dfa->states, from, vec_t );
-    if (arcs != NULL)  {
-      for (i = vecCnt(arcs), a = vecGet(arcs,0) ;
-           i > 0;
-		   a = vecNext(arcs),i--) {
-        printf("%5d -> %-5d %p / %p  ", from, a->to, a->lbl, a->tags);
-        lbl_dump(stdout,a->lbl);
-        t_dump(stdout,a->tags);
-        printf("\n");
-        if (a->to != 0) pushonce(a->to);
-      }
-    }
+  arcs = vecGetVal(dfa->states,st,vec_t);
+  if (arcs != NULL) {
+    a = vecGet(arcs,0);
+    if (a->to != 0) a = NULL;
   }
-  resetstack();
-}
-#endif
 
-void dump(aut *dfa)
-{
-  uint32_t i,from;
-  Arc *a;
-
-  from = yrxStartState();
-
-  while (from != 0) {
-    while ((a = yrxGetArc()) != NULL) {
-      printf("%5d -> %-5d %p / %p  ", from, a->to, a->lbl, a->tags);
-      lbl_dump(stdout,a->lbl);
-      t_dump(stdout,a->tags);
-      printf("\n");
-    }
-    from = yrxNextState();
-  }
+  return a;
 }
 
 
-void usage()
-{
-	fprintf(stderr,"Usage: yrxcc rx1 [rx2 ... rx250]\n ");
-  exit(1);
-}
+/***********************************/
 
-int main(int argc, char **argv)
-{
-  aut *dfa;
-
-  if (argc < 2 || 251 < argc) usage();
-
-  dfa = yrx_parse(argv+1, argc-1);
-  if (dfa != NULL) dump(dfa);
-
-  exit(0);
-}
 
