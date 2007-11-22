@@ -26,6 +26,17 @@ static uint16_t    capt;
 
 /**************************************************/
 
+static ucv_t buf = NULL;
+
+static ucv_t buf_chk(int n)
+{
+  if (buf == NULL)
+    buf = ucvNew();
+  if (ucvSlt(buf) < n)
+    buf = ucvSet(buf,n,'\0');
+  return buf;
+}
+
 static const char *emptystr = "";
 
 static void yrxerr(char *errmsg)
@@ -226,9 +237,12 @@ static int lbl_rng(lbl_ptr bmp, uint16_t a, uint16_t *min, uint16_t *max)
 
 uint8_t *lbl_str(lbl_ptr lb)
 {
-  static uint8_t s[512];
+  ucv_t s;
   uint16_t a,b;
+
   int i=0;
+
+  s = buf_chk(512);
 
   if (lb != NULL) {
     s[i++] = lbl_type(lb) | '@';
@@ -246,7 +260,7 @@ uint8_t *lbl_str(lbl_ptr lb)
   return s;
 }
 
-char *yrxLabelChr(uint8_t c)
+char *yrxLabelStr(uint8_t c)
 {
   static char s[16];
   if (c <= 32   || c > 126  || c == '\\' || c == '"' ||
@@ -344,10 +358,10 @@ void t_dump(FILE *f, uint32_t *tags)
 
         rx = (p & 0xFF000000) >> 24;
         if ( p & 0x00800000 ) {
-          fprintf(f,"FIN_%d ",rx);
+          fprintf(f,"$%d ",rx);
         }
         else {
-          if ( p & 0x00400000 ) fprintf(f,"MRK_%d ",rx);
+          if ( p & 0x00400000 ) fprintf(f,"!%d ",rx);
           for (j=0; j < MAXCAPTURES; j++) {
             if ( p & TAG_CE(j) ) fprintf(f,")%02d_%d ",j+1,rx);
             if ( p & TAG_CB(j) ) fprintf(f,"(%02d_%d ",j+1,rx);
@@ -358,6 +372,69 @@ void t_dump(FILE *f, uint32_t *tags)
   }
 }
 
+uint8_t *yrxArcTags(Arc *a)
+{
+  uint8_t   rx;
+  uint8_t   j;
+  uint32_t  p;
+  uint16_t  k;
+  uint32_t *tags;
+  uint32_t  n = 0;
+
+  tags = a->tags;
+  
+  if (tags != NULL) {
+    for (k=0; k < ulvCnt(tags); k++) {
+      p = ulvGet(tags,k);
+      if (p != 0) {
+        buf = buf_chk(n + 24);
+        rx = (p & 0xFF000000) >> 24;
+        if ( p & 0x00800000 ) {
+          buf[n++] = '$';
+          buf[n++] = rx;
+        }
+        else {
+          if ( p & 0x00400000 ) {
+            buf[n++] = '!';
+            buf[n++] = rx;
+          }
+          for (j=0; j < MAXCAPTURES; j++) {
+            if (p & TAG_CB(j)) {
+              buf[n++] = 'A' + j;
+              buf[n++] = rx;
+            }
+            if (p & TAG_CE(j)) {
+              buf[n++] = 'a' + j;
+              buf[n++] = rx;
+            }
+          }
+        }
+      }
+    }
+  }
+  buf = buf_chk(n + 2);
+  buf[n++] = '\0';
+  buf[n] = '\0';
+  return buf;
+}
+
+
+char *yrxTagStr(uint8_t tag, uint8_t rx)
+{
+  static char tbuf[16];
+
+  if (tag >= 'a') {
+    sprintf(tbuf,")%d_%d", tag - 'a' + 1, rx);
+  }
+  else if (tag >= 'A') {
+    sprintf(tbuf,"(%d_%d", tag - 'A' + 1, rx);
+  }
+  else {
+    sprintf(tbuf,"%c_%d", tag, rx);
+  }
+
+  return tbuf;
+}
 
 /**************************************************/
 
@@ -817,7 +894,7 @@ static state_t nextstate(void)
 /**************************************************/
 /* = Parsing expressions
 **  Parsing is implemented as a Recursive Descent Parser for the following grammar:
- 
+
        <expr>     ::= <term>+
 
        <term>     ::=   \( <expr> ( '|' <expr> )* \) [\+\-\*\?]?
@@ -836,29 +913,20 @@ static state_t nextstate(void)
 
  */
 
-static char *str =  NULL;
-static int   str_len = 0;
-
-static char *str_chk(int n)
-{
-  if (str == NULL || str_len < n) {
-    str = realloc(str,n+4);
-  }
-  return str;
-}
 
 static char *str_set(int i,int j)
 {
-  int n;
+  int n = 0;
 
-  str = str_chk(j-i+2);
-
-  if (str != NULL) {
-    str[0] = '@';
-    for (n=1; i<j;n++,i++) str[n] = cur_rx[i];
-    str[n] = '\0';
+  buf = buf_chk(j-i+2);
+  if (buf != NULL) {
+    buf[n++] = '@';
+    while(i < j) {
+      buf[n++] = cur_rx[i++];
+    }
+    buf[n] = '\0';
   }
-  return str;
+  return buf;
 }
 
 static int peekch(int n) {
@@ -1019,7 +1087,7 @@ static state_t term(state_t state)
       case 'e' :  c = nextch(); c = nextch();
                   c = peekch(0);
 
-                  l=str_chk(16);
+                  l=buf_chk(16);
                   sprintf(l,"@[^\\x%02X] @\\x%02X",esc,esc);
                   l[8]='\0';
                   if (c == '-') l[0] = '-';
@@ -1116,8 +1184,7 @@ static void statescleanup(vec_t *arcs)
 
 static void cleantemp(void)
 {
-  if (str != NULL) free(str);
-  str = NULL;
+  if (buf != NULL) buf=ucvFree(buf);
   resetstack();
   invmrgd = mapFree(invmrgd);
   merged = vecFreeClean(merged,(vecCleaner)mrgcleanup);

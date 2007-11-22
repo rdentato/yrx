@@ -300,6 +300,7 @@ typedef uint8_t *ucv_t ;
 #define ucvSort(b)      qsort(b, ucvCnt(b), blkCHRsz, blkCHRcmp)
 #define ucvUniq(b)      blkUniq((uint8_t *)b, blkCHRsz)
 
+
 /**********************/
 
 typedef void **vpv_t ;
