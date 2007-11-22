@@ -16,9 +16,34 @@
 #include "vec.h"
 
 #define state_t uint16_t
+typedef uint16_t *lbl_ptr;
 
 typedef struct {
    vec_t     states;
    map_t     lbls;
    state_t   nstates;
+
+   vec_t     yarcs;
+   uint32_t  yarcn;
 } aut;
+
+typedef struct {
+  lbl_ptr   lbl;
+  ulv_t     tags;
+  state_t   to;
+} Arc;
+
+uint8_t *lbl_str(lbl_ptr lb);
+state_t yrxNext(aut *dfa, state_t st);
+
+#define yrxStartState(a) yrxNext(a,0);
+#define yrxNextState(a)  yrxNext(a,1);
+
+Arc *yrxGetArc(aut *dfa);
+Arc *yrxIsFinal(aut *dfa, state_t st);
+aut *yrxParse(char **rxs, int rxn);
+
+#define yrxArcLabel(a)  lbl_str((a)->lbl)
+
+
+
