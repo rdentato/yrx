@@ -21,10 +21,24 @@ void dump_lbl(uint8_t *l)
   putchar(*l++);
 
   while (l[0] <= l[1]) {
-    printf("%s",yrxLabelChr(*l++));
-    printf("%s",yrxLabelChr(*l++));
+    printf("%s",yrxLabelStr(*l++));
+    printf("%s",yrxLabelStr(*l++));
   }
 }
+
+void dump_tags(uint8_t *t)
+{
+  if (*t == 0) return;
+
+  printf(" / ");
+
+  while (t[0] != '\0') {
+    printf("%s ",yrxTagStr(t[0],t[1]));
+    t += 2;
+  }
+}
+
+
 
 void dump(aut *dfa)
 {
@@ -37,7 +51,7 @@ void dump(aut *dfa)
     while ((a = yrxGetArc(dfa)) != NULL) {
       printf("%5d -> %-5d %p / %p  ", from, a->to, a->lbl, a->tags);
       dump_lbl(yrxArcLabel(a));
-      t_dump(stdout,a->tags);
+      dump_tags(yrxArcTags(a));
       printf("\n");
     }
     from = yrxNextState(dfa);
