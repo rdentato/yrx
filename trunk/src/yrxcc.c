@@ -224,8 +224,6 @@ static int lbl_rng(lbl_ptr bmp, uint16_t a, uint16_t *min, uint16_t *max)
   return 1;
 }
 
-#define yrxArcLabel(a) lbl_str((a)->lbl)
-
 uint8_t *lbl_str(lbl_ptr lb)
 {
   static uint8_t s[512];
@@ -318,7 +316,7 @@ uint32_t *addtags(uint32_t *tl, uint32_t tag)
   return tl;
 }
 
-uint32_t *copytags(uint32_t *tl, uint32_t *newtl)
+static uint32_t *copytags(uint32_t *tl, uint32_t *newtl)
 {
   int k;
 
@@ -484,7 +482,7 @@ static void copyarcs(vec_t arcst, state_t fromst, uint32_t *tl)
   }
 }
 
-static vec_t  marked;
+static vec_t marked;
 static vec_t merged;
 static map_t invmrgd;
 
@@ -502,13 +500,13 @@ static void removeeps(state_t from, vec_t  arcs)
         if (vecGetVal(marked, a->to, state_t) != from) {
           vecSet(marked, a->to, &from);
           copyarcs(arcs, a->to, a->tags);
-          delarc(arcs, a);
-          k--; /* undo the index increment */
         }
         else {
           _dbgmsg("Already visited: %d\n",a->to);
-          yrxerr("Expression contains empty closures");/**/
+          /*yrxerr("Expression contains empty closures");*/
         }
+        delarc(arcs, a);
+        k--; /* undo the index increment */
       }
     }
   }
@@ -533,7 +531,7 @@ static state_t mergestates(state_t x, state_t y)
   uint16_t k;
   mrgd *m, mm;
 
-  _dbgmsg("Mergingstates %d %d\n",x,y);
+  _dbgmsg("Merging states %d %d ",x,y);
 
   if (x == y) return x;
 
@@ -556,12 +554,11 @@ static state_t mergestates(state_t x, state_t y)
   usvSort(s);
   usvUniq(s);
 
-  #if xDEBUG
-  dbgmsg("merged as: ");
+  #ifdef xDEBUG
+  fprintf(stderr,"as: ");
   for (k = 0; k < usvCnt(s); k++) {
      fprintf(stderr,"%d ",s[k]);
   }
-  fprintf(stderr,"\n");
   #endif
 
   mm.st = 0;
@@ -582,6 +579,9 @@ static state_t mergestates(state_t x, state_t y)
     s = usvFree(s);
   }
 
+  #ifdef xDEBUG
+  fprintf(stderr," to: %d\n",z);
+  #endif
   return z;
 }
 
@@ -1203,6 +1203,5 @@ Arc *yrxIsFinal(aut *dfa, state_t st)
 }
 
 
-/***********************************/
 
 

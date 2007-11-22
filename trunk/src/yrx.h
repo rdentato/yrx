@@ -44,6 +44,5 @@ Arc *yrxIsFinal(aut *dfa, state_t st);
 aut *yrxParse(char **rxs, int rxn);
 
 #define yrxArcLabel(a)  lbl_str((a)->lbl)
-
-
+char *yrxLabelChr(uint8_t c);
 
