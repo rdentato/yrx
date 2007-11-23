@@ -24,11 +24,20 @@ void usage(void)
 int main(int argc, char **argv)
 {
   aut *dfa;
+  int argn = 1;
 
-  if (argc < 2 || 251 < argc) usage();
 
-  dfa = yrxParse(argv+1, argc-1);
-  if (dfa != NULL) yrxDump(dfa, DMP_PLAIN);
+  while (argn < argc) {
+    if (argv[argn][0] != '-') break;
+    argn++; 
+  }
+
+  argn = argc - argn;
+
+  if (argn < 1 || 250 < argn) usage();
+
+  dfa = yrxParse(argv+argn, argn);
+  if (dfa != NULL) yrxDump(dfa, DMP_DOT);
 
   exit(0);
 }

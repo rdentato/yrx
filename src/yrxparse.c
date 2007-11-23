@@ -430,7 +430,7 @@ char *yrxTagStr(uint8_t tag, uint8_t rx)
     sprintf(tbuf,"(%d_%d", tag - 'A' + 1, rx);
   }
   else {
-    sprintf(tbuf,"%c_%d", tag, rx);
+    sprintf(tbuf,"%c%d", tag, rx);
   }
 
   return tbuf;
@@ -1130,7 +1130,7 @@ static state_t term(state_t state)
                   break;
 
       case '+' :  addarc(state,to,l,TAG_NONE);
-                  addarc(to,to,l,0);
+                  addarc(state,state,l,0);
                   c = nextch();
                   break;
 
