@@ -25,18 +25,19 @@ int main(int argc, char **argv)
 {
   aut *dfa;
   int argn = 1;
+  char **rxs;
 
 
   while (argn < argc) {
     if (argv[argn][0] != '-') break;
     argn++; 
   }
-
+  rxs = argv + argn;
   argn = argc - argn;
 
   if (argn < 1 || 250 < argn) usage();
 
-  dfa = yrxParse(argv+argn, argn);
+  dfa = yrxParse(rxs, argn);
   if (dfa != NULL) yrxDump(dfa, DMP_DOT);
 
   exit(0);
