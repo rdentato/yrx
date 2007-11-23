@@ -249,8 +249,8 @@ uint8_t *lbl_str(lbl_ptr lb)
 
     a = 0;
     while (lbl_rng(lb, a, &a, &b) != 0) {
-      s[i++] = a;
-      s[i++] = b;
+      s[i++] = (uint8_t)a;
+      s[i++] = (uint8_t)b;
       a = b +1 ;
     }
     s[i++] = 1;
@@ -295,36 +295,45 @@ char *yrxLabelStr(uint8_t c)
 **           \___ FIN
 */
 
-#define tag_code(t,n)((t) | ((n) << 24))
-#define tag_nrx(t)   ((t) >> 8)
+#define tag_code(t,n) ((t) | ((n) << 24))
+#define tag_nrx(t)    ((t) & 0xFF000000)
 
-uint32_t *searchtags(uint32_t *tl, uint32_t tag)
+uint32_t *searchtags(uint32_t *tl, uint32_t tag, uint32_t *k)
 {
   uint32_t rx;
-  int k;
   uint32_t *p;
 
-  rx = tag & 0xFF000000;
-  for (k = 0, p = tl;  k < ulvCnt(tl);  k++, p++) {
-    if ((*p & 0xFF000000) == rx)
-      return p;
+  rx = tag_nrx(tag);
+  *k = 0; p = tl;
+  while (*k < ulvCnt(tl) && (tag_nrx(*p) > rx)) {
+     *k++; p++; 
   }
+  if ((*k < ulvCnt(tl)) && (tag_nrx(*p) == rx)) return p;
   return NULL;
 }
 
 uint32_t *addtags(uint32_t *tl, uint32_t tag)
 {
   uint32_t *p;
+  uint32_t k,j;
 
   if (tl == NULL) {
     tl = ulvNew();
     tl = ulvSet(tl, 0, tag);
   }
   else {
-    if ((p = searchtags(tl,tag)) != NULL)
+    if ((p = searchtags(tl, tag, &k)) != NULL)
      *p |= tag;
-    else
+    else {
       tl = ulvAdd(tl,tag);
+      /* keep sorted on rx */
+      j = ulvCnt(tl)-1;
+      while (j > k) {
+        tl[j] = tl[j-1];
+        j--;
+      }
+      tl[k] = tag;
+    }
   }
 
   return tl;
@@ -342,6 +351,22 @@ static uint32_t *copytags(uint32_t *tl, uint32_t *newtl)
   return tl;
 }
 
+static int tagscmp(ulv_t a, ulv_t b)
+{
+  int ret = 0;
+  int k;
+
+  if (a == b) return 0;
+  if (a == NULL) return -1;
+  if (b == NULL) return 1;
+  k = ulvCnt(a);
+  ret = k - ulvCnt(b);
+  while ((k-- > 0) && (ret == 0)) {
+    ret = a[k] - b[k];
+  }
+  return ret;
+}
+#if 0
 void t_dump(FILE *f, uint32_t *tags)
 {
   uint32_t  rx;
@@ -371,6 +396,7 @@ void t_dump(FILE *f, uint32_t *tags)
     }
   }
 }
+#endif
 
 uint8_t *yrxArcTags(Arc *a)
 {
@@ -395,7 +421,7 @@ uint8_t *yrxArcTags(Arc *a)
         }
         else {
           if ( p & 0x00400000 ) {
-            buf[n++] = '!';
+            buf[n++] = '%';
             buf[n++] = rx;
           }
           for (j=0; j < MAXCAPTURES; j++) {
@@ -552,9 +578,9 @@ static void copyarcs(vec_t arcst, state_t fromst, uint32_t *tl)
     a->tags = copytags(NULL, a->tags);
     a->tags = copytags(a->tags, tl);
     #ifdef xDEBUG
-    dbgmsg(" -- arc to %d ",a->to);
+    _dbgmsg(" -- arc to %d ",a->to);
     lbl_dump(stderr,a->lbl);
-    dbgmsg("\n");
+    _dbgmsg("\n");
     #endif
   }
 }
@@ -691,30 +717,36 @@ static void mergearcs(state_t from, vec_t  arcs)
   _dbgmsg("  ** Mergearcs state: %d \n",from);
   for (k = 0; k < vecCnt(arcs); k++) {
     a = vecGet(arcs,k);
+    _dbgmsg("      arc %d ",k);
+    _dbgmsg("%s \n",lbl_str(a->lbl));
     j = k+1;
     while (j < vecCnt(arcs)) {
       b = vecGet(arcs, j++);
-      #if 10
+      _dbgmsg("          cmp %d %s\n",j-1,lbl_str(b->lbl));
+      #if 00
+
+      if ((a->to != 0) && (a->to == b->to) && (tagscmp(a->tags, b->tags) == 0)) {
+        _dbgmsg("     (same dest)\n");
+        lbl_cpy(lb,a->lbl);
+        lbl_or(lb,b->lbl);
+        b->lbl = lbl(lb);
+        delarc(arcs, a);
+        k--;
+        break;
+      }
+
       if (lbl_eq(a->lbl, b->lbl)) {
+        _dbgmsg("     (same)\n");
         a->to = mergestates(a->to, b->to);
         a->tags = copytags(a->tags, b->tags);
 
         delarc(arcs, b);
-        #ifdef xDEBUG
-        dbgmsg("Arcs: %d %d (same) ",k,j-1);
-        lbl_dump(stderr,a->lbl);
-        dbgmsg("\n");
-        #endif
         j--;
         continue;
       }
 
       if (a->to == 0 || b->to == 0) {
-        #ifdef xDEBUG
-        dbgmsg("Arcs: %d %d (one is final) ",k,j-1);
-        dbgmsg("\n");
-        #endif
-
+        _dbgmsg("     (one is final)\n");
         continue;
       }
 
@@ -723,67 +755,38 @@ static void mergearcs(state_t from, vec_t  arcs)
       lbl_and(lb,b->lbl);
 
       if (lbl_isempty(lb)) {
-        #ifdef xDEBUG
-        dbgmsg("Arcs: %d %d (no intersection) ",k,j-1);
-        lbl_dump(stderr,a->lbl);
-        dbgmsg("  ");
-        lbl_dump(stderr,b->lbl);
-        dbgmsg("\n");
-        #endif
+        _dbgmsg("     (no intersection)\n");
         continue;
       }
 
       if (lbl_eq(lb, a->lbl)) {
+        _dbgmsg("     (a is a subset of intersection)\n");
         a->to = mergestates(a->to, b->to);
         a->tags = copytags(a->tags, b->tags);
         pushonce(a->to);
         lbl_cpy(lb,b->lbl);
         lbl_minus(lb,a->lbl);
         b->lbl = lbl(lb);
-        #ifdef xDEBUG
-        dbgmsg("Arcs: %d %d new: %d (a subset of intersection) ",k,j-1, a->to);
-        lbl_dump(stderr,a->lbl);
-        dbgmsg("  ");
-        lbl_dump(stderr,b->lbl);
-        dbgmsg("\n");
-        #endif
         continue;
       }
 
       if (lbl_eq(lb, b->lbl)) {
+        _dbgmsg("     (b is a subset of intersection) ");
         b->to = mergestates(a->to, b->to);
         b->tags = copytags(b->tags, a->tags);
         pushonce(b->to);
         lbl_cpy(lb,a->lbl);
         lbl_minus(lb,b->lbl);
         a->lbl = lbl(lb);
-        #ifdef xDEBUG
-        dbgmsg("Arcs: %d %d new: %d (b subset of intersection) ",k,j-1, b->to);
-        lbl_dump(stderr,a->lbl);
-        dbgmsg("  ");
-        lbl_dump(stderr,b->lbl);
-        dbgmsg("\n");
-        #endif
         continue;
       }
 
-      {
-
+      { _dbgmsg("     (intersection)\n");
         arc.lbl  = lbl(lb);
         arc.tags = copytags(NULL, a->tags);
         arc.tags = copytags(arc.tags, b->tags);
         arc.to   = mergestates(a->to, b->to);
         vecAdd(arcs, &arc);
-
-        #ifdef xDEBUG
-        dbgmsg("Arcs: %d %d (intersection) ",k,j-1);
-        lbl_dump(stderr,a->lbl);
-        dbgmsg("  ");
-        lbl_dump(stderr,b->lbl);
-        dbgmsg("  ");
-        lbl_dump(stderr,arc.lbl);
-        dbgmsg("  ");
-        #endif
 
         lbl_cpy(lb,a->lbl);
         lbl_minus(lb, arc.lbl);
@@ -793,12 +796,6 @@ static void mergearcs(state_t from, vec_t  arcs)
         lbl_minus(lb, arc.lbl);
         b->lbl = lbl(lb);
 
-        #ifdef xDEBUG
-        lbl_dump(stderr,a->lbl);
-        dbgmsg("  ");
-        lbl_dump(stderr,b->lbl);
-        dbgmsg("\n");
-        #endif
         continue;
       }
       #endif
@@ -819,12 +816,12 @@ static void determinize(void)
 {
   state_t from;
   vec_t *p;
-  uint32_t k;
+  uint16_t k;
   vec_t  arcs;
 
   marked = vecNew(sizeof(state_t));
   merged = vecNew(sizeof(usv_t));
-  invmrgd = mapNew(sizeof(mrgd), mrgcmp);
+  invmrgd = mapNew(sizeof(mrgd), (int (*)())mrgcmp);
 
   resetstack();
   pushonce(1);
@@ -926,7 +923,7 @@ static char *str_set(int i,int j)
     }
     buf[n] = '\0';
   }
-  return buf;
+  return (char *)buf;
 }
 
 static int peekch(int n) {
@@ -1019,7 +1016,7 @@ static state_t term(state_t state)
 {
   state_t to,t1,alt,start;
   int c;
-  uint8_t ncapt;
+  uint16_t ncapt;
   char *l;
 
   c = peekch(0);
@@ -1044,17 +1041,17 @@ static state_t term(state_t state)
       addarc(t1,alt,"",TAG_NONE);
       t1 = expr(start);
     }
-    addarc(t1,alt,"",TAG_NONE);
     if (c != ')') yrxerr("Unclosed capture");
+    addarc(t1,alt,"",TAG_NONE);
 
     switch (peekch(0)) {
-       case '?':  addarc(start,alt,"",TAG_NONE);
-                  addarc(state,start,"",tag_code(TAG_CB(ncapt),cur_nrx));
+       case '?':  addarc(start, alt, "", TAG_NONE);
+                  addarc(state, start, "", tag_code(TAG_CB(ncapt), cur_nrx));
                   c = nextch();
                   break;
 
-       case '*':  addarc(alt,start,"",TAG_NONE);
-                  addarc(state,alt,"",tag_code(TAG_CB(ncapt),cur_nrx));
+       case '*':  addarc(alt, start, "", TAG_NONE);
+                  addarc(state, alt, "", tag_code(TAG_CB(ncapt), cur_nrx));
                   c = nextch();
                   break;
 
@@ -1087,7 +1084,7 @@ static state_t term(state_t state)
       case 'e' :  c = nextch(); c = nextch();
                   c = peekch(0);
 
-                  l=buf_chk(16);
+                  l = (char *)buf_chk(16);
                   sprintf(l,"@[^\\x%02X] @\\x%02X",esc,esc);
                   l[8]='\0';
                   if (c == '-') l[0] = '-';
@@ -1124,19 +1121,19 @@ static state_t term(state_t state)
 
     switch (c) {
       case '-' :
-      case '*' :  addarc(state,to,"",TAG_NONE);
-                  addarc(state,state,l,0);
+      case '*' :  addarc(state, to, "", TAG_NONE);
+                  addarc(state, state, l, TAG_NONE);
                   c = nextch();
                   break;
 
-      case '+' :  addarc(state,to,l,TAG_NONE);
-                  addarc(state,state,l,0);
+      case '+' :  addarc(state, to, l, TAG_NONE);
+                  addarc(to, to, l, TAG_NONE);
                   c = nextch();
                   break;
 
-      case '?' :  addarc(state,to,"",TAG_NONE);
+      case '?' :  addarc(state, to, "", TAG_NONE);
                   c = nextch();
-      default  :  addarc(state,to,l,TAG_NONE);
+      default  :  addarc(state, to, l, TAG_NONE);
                   break;
     }
 
@@ -1170,7 +1167,7 @@ static state_t parse(const char *rx,uint16_t nrx)
 
   if (peekch(0) != -1) yrxerr("Unexpected character ");
 
-  addarc(state,0,"",tag_code(TAG_FIN,cur_nrx));
+  addarc(state, 0, "", tag_code(TAG_FIN, cur_nrx));
 
   return state;
 }
