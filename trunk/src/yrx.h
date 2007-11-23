@@ -43,10 +43,10 @@ Arc *yrxGetArc(aut *dfa);
 Arc *yrxIsFinal(aut *dfa, state_t st);
 aut *yrxParse(char **rxs, int rxn);
 
-#define yrxArcLabel(a)  lbl_str((a)->lbl)
-uint8_t *yrxArcTags(Arc *a);
-char *yrxLabelStr(uint8_t c);
-char *yrxTagStr(uint8_t tag, uint8_t rx);
+#define  yrxArcLabel(a)  lbl_str((a)->lbl)
+uint8_t *yrxArcTags  (Arc *a);
+char    *yrxLabelStr (uint8_t c);
+char    *yrxTagStr   (uint8_t tag, uint8_t rx);
 
 #define TAG_CB1   0x41
 #define TAG_CB2   0x42
