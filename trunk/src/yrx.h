@@ -75,3 +75,12 @@ char *yrxTagStr(uint8_t tag, uint8_t rx);
 #define TAG_MARK  '!'
 #define TAG_FINAL '$'
 
+#define DMP_PLAIN   1
+#define DMP_COMPACT 2
+#define DMP_CTAB    3
+#define DMP_DOT     4
+#define DMP_VCG     5
+#define DMP_UCG     6
+
+void yrxDump(aut *dfa, uint8_t fmt);
+

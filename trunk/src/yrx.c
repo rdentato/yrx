@@ -14,49 +14,6 @@
 
 #include "yrx.h"
 
-void dump_lbl(uint8_t *l)
-{
-  if (*l == 0) return;
-
-  putchar(*l++);
-
-  while (l[0] <= l[1]) {
-    printf("%s",yrxLabelStr(*l++));
-    printf("%s",yrxLabelStr(*l++));
-  }
-}
-
-void dump_tags(uint8_t *t)
-{
-  if (*t == 0) return;
-
-  printf(" / ");
-
-  while (t[0] != '\0') {
-    printf("%s ",yrxTagStr(t[0],t[1]));
-    t += 2;
-  }
-}
-
-
-
-void dump(aut *dfa)
-{
-  uint32_t from;
-  Arc *a;
-
-  from = yrxStartState(dfa);
-
-  while (from != 0) {
-    while ((a = yrxGetArc(dfa)) != NULL) {
-      printf("%5d -> %-5d %p / %p  ", from, a->to, a->lbl, a->tags);
-      dump_lbl(yrxArcLabel(a));
-      dump_tags(yrxArcTags(a));
-      printf("\n");
-    }
-    from = yrxNextState(dfa);
-  }
-}
 
 void usage(void)
 {
@@ -71,7 +28,7 @@ int main(int argc, char **argv)
   if (argc < 2 || 251 < argc) usage();
 
   dfa = yrxParse(argv+1, argc-1);
-  if (dfa != NULL) dump(dfa);
+  if (dfa != NULL) yrxDump(dfa, DMP_PLAIN);
 
   exit(0);
 }

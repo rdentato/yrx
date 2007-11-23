@@ -18,8 +18,10 @@ include ../config.mk
 CFLAGS = $(DEBUG) -Wall $(LOG2_ASM) -O2 -g 
 LDFLAGS = -lprof
 
-yrx$(_EXE):	yrxcc.$(_OBJ) yrx.$(_OBJ) vec.$(_OBJ)
-	gcc -o yrx$(_EXE) yrx.$(_OBJ) yrxcc.$(_OBJ) vec.$(_OBJ)
+OFILES = yrxparse.$(_OBJ) yrxdump.$(_OBJ) vec.$(_OBJ) 
+
+yrx$(_EXE):	 $(OFILES) yrx.$(_OBJ) 
+	gcc -o yrx$(_EXE) yrx.$(_OBJ) $(OFILES) 
 
 vt$(_EXE):	vt.$(_OBJ) vec.$(_OBJ)
 	gcc $(CFLAGS) -o vt$(_EXE) vt.$(_OBJ) vec.$(_OBJ)
