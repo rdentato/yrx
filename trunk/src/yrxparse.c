@@ -83,7 +83,11 @@ typedef uint16_t  lbl_t[17];
                           ((a)[12]^(b)[12]) | ((a)[13]^(b)[13]) |\
                           ((a)[14]^(b)[14]) | ((a)[15]^(b)[15]) )) == 0))
 
-#define lbl_type(a)  ((a)[16])
+#define lbl_type(a)       ((a)[16] & 0xFF)
+#define lbl_settype(a,v)  ((a)[16] = ((a)[16] & 0xFF00) | ((v) & 0xFF))
+
+#define lbl_pos(a)        ((a)[16] >> 8)
+#define lbl_setpos(a,p)   ((a)[16] = ((a)[16] & 0xFF) | (((p) & 0xFF) << 8))
 
 #define lbl(l)     mapAdd(fa.lbls, l);
 #define lbl_init() mapNew(sizeof(lbl_t), NULL)
@@ -634,7 +638,7 @@ static state_t mergestates(state_t x, state_t y)
   uint16_t k;
   mrgd *m, mm;
 
-  _dbgmsg("Merging states %d %d ",x,y);
+  dbgmsg("Merging states %d %d ",x,y);
 
   if (x == y) return x;
 
@@ -681,10 +685,7 @@ static state_t mergestates(state_t x, state_t y)
     z = m->st;
     s = usvFree(s);
   }
-
-  #ifdef xDEBUG
-  fprintf(stderr," to: %d\n",z);
-  #endif
+  dbgmsg(" to: %d\n",z);
   return z;
 }
 
@@ -714,19 +715,19 @@ static void mergearcs(state_t from, vec_t  arcs)
   Arc  arc;
   lbl_t lb;
 
-  _dbgmsg("  ** Mergearcs state: %d \n",from);
+  dbgmsg("  ** Mergearcs state: %d \n",from);
   for (k = 0; k < vecCnt(arcs); k++) {
     a = vecGet(arcs,k);
-    _dbgmsg("      arc %d ",k);
-    _dbgmsg("%s \n",lbl_str(a->lbl));
+    dbgmsg("      arc %d ",k);
+    dbgmsg("%s \n",lbl_str(a->lbl));
     j = k+1;
     while (j < vecCnt(arcs)) {
       b = vecGet(arcs, j++);
-      _dbgmsg("          cmp %d %s\n",j-1,lbl_str(b->lbl));
-      #if 00
+      dbgmsg("          cmp %d %s\n",j-1,lbl_str(b->lbl));
 
+      #if 0
       if ((a->to != 0) && (a->to == b->to) && (tagscmp(a->tags, b->tags) == 0)) {
-        _dbgmsg("     (same dest)\n");
+        dbgmsg("     (same dest)\n");
         lbl_cpy(lb,a->lbl);
         lbl_or(lb,b->lbl);
         b->lbl = lbl(lb);
@@ -736,7 +737,7 @@ static void mergearcs(state_t from, vec_t  arcs)
       }
 
       if (lbl_eq(a->lbl, b->lbl)) {
-        _dbgmsg("     (same)\n");
+        dbgmsg("     (same)\n");
         a->to = mergestates(a->to, b->to);
         a->tags = copytags(a->tags, b->tags);
 
@@ -746,7 +747,7 @@ static void mergearcs(state_t from, vec_t  arcs)
       }
 
       if (a->to == 0 || b->to == 0) {
-        _dbgmsg("     (one is final)\n");
+        dbgmsg("     (one is final)\n");
         continue;
       }
 
@@ -755,12 +756,12 @@ static void mergearcs(state_t from, vec_t  arcs)
       lbl_and(lb,b->lbl);
 
       if (lbl_isempty(lb)) {
-        _dbgmsg("     (no intersection)\n");
+        dbgmsg("     (no intersection)\n");
         continue;
       }
 
       if (lbl_eq(lb, a->lbl)) {
-        _dbgmsg("     (a is a subset of intersection)\n");
+        dbgmsg("     (a is a subset of intersection)\n");
         a->to = mergestates(a->to, b->to);
         a->tags = copytags(a->tags, b->tags);
         pushonce(a->to);
@@ -771,7 +772,7 @@ static void mergearcs(state_t from, vec_t  arcs)
       }
 
       if (lbl_eq(lb, b->lbl)) {
-        _dbgmsg("     (b is a subset of intersection) ");
+        dbgmsg("     (b is a subset of intersection)\n");
         b->to = mergestates(a->to, b->to);
         b->tags = copytags(b->tags, a->tags);
         pushonce(b->to);
@@ -781,7 +782,7 @@ static void mergearcs(state_t from, vec_t  arcs)
         continue;
       }
 
-      { _dbgmsg("     (intersection)\n");
+      { dbgmsg("     (intersection)\n");
         arc.lbl  = lbl(lb);
         arc.tags = copytags(NULL, a->tags);
         arc.tags = copytags(arc.tags, b->tags);
@@ -867,7 +868,7 @@ static void addarc(state_t from, state_t to, char *l, uint32_t tag)
 
   if (l && l[0]) {
     arc.lbl = lbl_bmp(l+1);
-    lbl_type(arc.lbl) = (uint16_t)(l[0]);
+    lbl_settype(arc.lbl , l[0]);
     arc.lbl = lbl(arc.lbl);
   }
 
