@@ -67,17 +67,25 @@ different formats}
 @PP
 The following diagrams show how to convert a regular expression into a TNFA.
 
-
+@PP
+@CD @Figure
+@Caption { Construction of NFA }
+@Location {TryAfterLine}
+{
+@PP
 @Diag {
 @Tbl
-aformat { @Cell A | @Cell B | @Cell C }
-marginhorizontal { 0.5c }
+aformat { @Cell A | @Cell i {ctr} B | @Cell C }
+marginhorizontal { 0.3c }
 marginvertical { 0.25c }
 {
 @Rowa
 A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
 C { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
+@Rowa
+B { a }
 }
+
 //
 @Arrow from { A } to { B } ylabel { 1.2f @Font {@I a}}
 }
@@ -85,18 +93,91 @@ C { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
 @Diag {
 @Tbl
 aformat { @Cell A | @Cell B | @Cell C }
-marginhorizontal { 0.5c }
+marginhorizontal { 0.3c }
 marginvertical { 0.25c }
 {
 @Rowa
 A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
 C { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
+@Rowa
+B { a* }
+}
+//
+@Arrow from { A } to { B } ylabel { 1.2f @Font {@Sym epsilon}}
+@CurveArrow arrowstyle { solid } bias {1c} from { A@NE } to { A@NW } ylabel { 1.2f @Font {@I a}}
+}
+
+@Diag {
+@Tbl
+aformat { @Cell A | @Cell B | @Cell C }
+marginhorizontal { 0.3c }
+marginvertical { 0.25c }
+{
+@Rowa
+A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
+C { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
+@Rowa
+B { a+ }
 }
 //
 @Arrow from { A } to { B } ylabel { 1.2f @Font {@I a}}
-@Link arrowstyle { solid } path {ccurve} bias {2c} from { B@E } to { B@N } ylabel { 1.2f @Font {@I a}}
+@CurveArrow arrowstyle { solid } bias {1c} from { B@E } to { B@N } ylabel { 1.2f @Font {@I a}}
 }
 
+@PP @PP @PP
+
+@Diag {
+@Tbl
+aformat { @Cell A | @Cell i {ctr} B | @Cell C }
+marginhorizontal { 0.3c }
+marginvertical { 0.25c }
+{
+@Rowa
+A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
+C { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
+@Rowa
+B { a }
+}
+
+//
+@Arrow from { A } to { B } ylabel { 1.2f @Font {@I a}}
+}
+
+@Diag {
+@Tbl
+aformat { @Cell A | @Cell B | @Cell C }
+marginhorizontal { 0.3c }
+marginvertical { 0.25c }
+{
+@Rowa
+A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
+C { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
+@Rowa
+B { a* }
+}
+//
+@Arrow from { A } to { B } ylabel { 1.2f @Font {@Sym epsilon}}
+@CurveArrow arrowstyle { solid } bias {1c} from { A@NE } to { A@NW } ylabel { 1.2f @Font {@I a}}
+}
+
+@Diag {
+@Tbl
+aformat { @Cell A | @Cell B | @Cell C }
+marginhorizontal { 0.3c }
+marginvertical { 0.25c }
+{
+@Rowa
+A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
+C { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
+@Rowa
+B { a+ }
+}
+//
+@Arrow from { A } to { B } ylabel { 1.2f @Font {@I a}}
+@CurveArrow arrowstyle { solid } bias {1c} from { B@E } to { B@N } ylabel { 1.2f @Font {@I a}}
+}
+
+}
 
 @End @Section
     
