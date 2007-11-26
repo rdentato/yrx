@@ -50,7 +50,8 @@ different formats}
 @Title { Regular Expressions }
 @Begin
 @PP
-...
+Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Etiam a risus. In lacus metus, accumsan ut, gravida vehicula, rutrum lacinia, risus. Suspendisse non pede. Mauris mattis cursus velit. In in tellus vitae nibh euismod tempus. Vivamus pretium, massa eu tincidunt posuere, elit mi eleifend metus, ac malesuada velit lorem at justo. Cras malesuada adipiscing dolor. Etiam molestie lacus a metus. Etiam laoreet pulvinar metus. Pellentesque luctus est in leo. Donec arcu. Quisque ut erat a sapien posuere feugiat. Cras id risus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. In tincidunt quam at arcu. Praesent ultricies. Praesent rhoncus velit id urna. 
+
 @End @Section
 
 
@@ -58,26 +59,27 @@ different formats}
 @Title { Tagged automata }
 @Begin
 @PP
-...
+Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Etiam a risus. In lacus metus, accumsan ut, gravida vehicula, rutrum lacinia, risus. Suspendisse non pede. Mauris mattis cursus velit. In in tellus vitae nibh euismod tempus. Vivamus pretium, massa eu tincidunt posuere, elit mi eleifend metus, ac malesuada velit lorem at justo. Cras malesuada adipiscing dolor. Etiam molestie lacus a metus. Etiam laoreet pulvinar metus. Pellentesque luctus est in leo. Donec arcu. Quisque ut erat a sapien posuere feugiat. Cras id risus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. In tincidunt quam at arcu. Praesent ultricies. Praesent rhoncus velit id urna. 
+
 @End @Section
 
 @Section
 @Title { From RE to TNFA }
 @Begin
 @PP
-The following diagrams show how to convert a regular expression into a TNFA.
+The diagrams in figure @NumberOf{re2nfa} shows how to convert a regular expression into a TNFA.
 
 @PP
 @CD @Figure
 @Caption { Construction of NFA }
-@Location {TryAfterLine}
+@Tag { re2nfa }
 {
 @PP
 @Diag {
 @Tbl
 aformat { @Cell A | @Cell i {ctr} B | @Cell C }
 marginhorizontal { 0.3c }
-marginvertical { 0.25c }
+marginvertical { 0.2c }
 {
 @Rowa
 A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
@@ -94,7 +96,7 @@ B { a }
 @Tbl
 aformat { @Cell A | @Cell B | @Cell C }
 marginhorizontal { 0.3c }
-marginvertical { 0.25c }
+marginvertical { 0.2c }
 {
 @Rowa
 A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
@@ -111,7 +113,7 @@ B { a* }
 @Tbl
 aformat { @Cell A | @Cell B | @Cell C }
 marginhorizontal { 0.3c }
-marginvertical { 0.25c }
+marginvertical { 0.2c }
 {
 @Rowa
 A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
@@ -124,59 +126,186 @@ B { a+ }
 @CurveArrow arrowstyle { solid } bias {1c} from { B@E } to { B@N } ylabel { 1.2f @Font {@I a}}
 }
 
-@PP @PP @PP
+@PP @PP
 
 @Diag {
 @Tbl
 aformat { @Cell A | @Cell i {ctr} B | @Cell C }
 marginhorizontal { 0.3c }
-marginvertical { 0.25c }
+marginvertical { 0.2c }
 {
 @Rowa
 A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
 C { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
 @Rowa
-B { a }
+B { a? }
 }
 
 //
 @Arrow from { A } to { B } ylabel { 1.2f @Font {@I a}}
+@CCurveArrow bias {0.5c} from { A } to { B } ylabel { 1.2f @Font {@I @Sym epsilon}}
 }
 
 @Diag {
 @Tbl
-aformat { @Cell A | @Cell B | @Cell C }
+aformat { @Cell A | @Cell B | @Cell C | @Cell D | @Cell E }
+marginhorizontal { 0.25c }
+marginvertical { 0.2c }
+{
+@Rowa
+A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
+C { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
+E { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
+@Rowa
+C { @Center {ab} }
+}
+//
+@Arrow from { A } to { B } ylabel { 1.2f @Font {@I a}}
+@Arrow from { B } to { C } ylabel { 1.2f @Font {@I b}}
+}
+@Diag {
+@Tbl
+aformat { @Cell A | @Cell i {ctr} B | @Cell C }
+marginhorizontal { 0.3c }
+marginvertical { 0.2c }
+{
+@Rowa
+A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
+C { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
+@Rowa
+B { [ab] }
+}
+
+//
+@Arrow from { A } to { B } ylabel { 1.2f @Font {@I [ab]}}
+}
+
+@PP @PP
+
+@Diag {
+@Tbl
+aformat { @Cell A | @Cell B | @Cell C | @Cell D | @Cell i {ctr} E | @Cell F | @Cell G | @Cell H | @Cell I }
+marginhorizontal { 0.3c }
+marginvertical { 0.2c }
+{
+@Rowa
+A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
+C { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
+E { C:: @Circle hsize {0.5f} {0.75f @Font {5}}}
+G { D:: @Circle hsize {0.5f} {0.75f @Font {3}}}
+I { E:: @Circle hsize {0.5f} {0.75f @Font {4}}}
+@Rowa
+E { (X) }
+}
+
+//
+@Arrow from { A } to { B } ylabel { 1.2f @Font {@Sym epsilon "/\(" }}
+@Arrow from { B } to { C } ylabel { 1.2f @Font {@I X}} pathstyle { dashed } pathwidth {thick}
+@Arrow from { C } to { D } ylabel { 1.2f @Font {@Sym epsilon }}
+@Arrow from { D } to { E } ylabel { 1.2f @Font {@Sym epsilon "/\)" }}
+}
+
+@PP @PP
+
+@Diag {
+@Tbl
+aformat { @Cell A | @Cell B | @Cell C | @Cell D | @Cell i {ctr} E | @Cell F | @Cell G | @Cell H | @Cell I }
+marginhorizontal { 0.3c }
+marginvertical { 0.2c }
+{
+@Rowa
+A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
+C { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
+E { C:: @Circle hsize {0.5f} {0.75f @Font {5}}}
+G { D:: @Circle hsize {0.5f} {0.75f @Font {3}}}
+I { E:: @Circle hsize {0.5f} {0.75f @Font {4}}}
+@Rowa
+E { (X)? }
+}
+//
+@Arrow from { A } to { B } ylabel { 1.2f @Font {@Sym epsilon "/\(" }}
+@Arrow from { B } to { C } ylabel { 1.2f @Font {@I X}} pathstyle { dashed } pathwidth {thick}
+@Arrow from { C } to { D } ylabel { 1.2f @Font {@Sym epsilon }}
+@CCurveArrow from { B } to { D } ylabel { 1.2f @Font {@Sym epsilon }}
+@Arrow from { D } to { E } ylabel { 1.2f @Font {@Sym epsilon "/\)" }}
+}
+@PP @PP
+
+@Diag {
+@Tbl
+aformat { @Cell A | @Cell B | @Cell C | @Cell D | @Cell i {ctr} E | @Cell F | @Cell G | @Cell H | @Cell I }
+marginhorizontal { 0.3c }
+marginvertical { 0.3c }
+{
+@Rowa
+A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
+C { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
+E { C:: @Circle hsize {0.5f} {0.75f @Font {5}}}
+G { D:: @Circle hsize {0.5f} {0.75f @Font {3}}}
+I { E:: @Circle hsize {0.5f} {0.75f @Font {4}}}
+@Rowa
+E { (X)+ }
+}
+//
+@Arrow from { A } to { B } ylabel { 1.2f @Font {@Sym epsilon "/\(" }}
+@Arrow from { B } to { C } ylabel { 1.2f @Font {@I X}} pathstyle { dashed } pathwidth {thick}
+@Arrow from { C } to { D } ylabel { 1.2f @Font {@Sym epsilon }}
+@CCurveArrow from { D } to { B } ylabel { 1.2f @Font {@Sym epsilon }}
+@Arrow from { D } to { E } ylabel { 1.2f @Font {@Sym epsilon "/\)" }}
+}
+
+@PP @PP
+
+@Diag {
+@Tbl
+aformat { @Cell A | @Cell B | @Cell C | @Cell D | @Cell i {ctr} E | @Cell F | @Cell G | @Cell H | @Cell I }
+marginhorizontal { 0.3c }
+marginvertical { 0.3c }
+{
+@Rowa
+A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
+C { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
+E { C:: @Circle hsize {0.5f} {0.75f @Font {5}}}
+G { D:: @Circle hsize {0.5f} {0.75f @Font {3}}}
+I { E:: @Circle hsize {0.5f} {0.75f @Font {4}}}
+@Rowa
+E { (X)* }
+}
+//
+@CCurveArrow from { A } to { D } ylabel { 1.2f @Font {@Sym epsilon "/\(" }}
+@Arrow from { B } to { C } ylabel { 1.2f @Font {@I X}} pathstyle { dashed } pathwidth {thick}
+@Arrow from { C } to { D } ylabel { 1.2f @Font {@Sym epsilon }}
+@CCurveArrow from { D } to { B } ylabel { 1.2f @Font {@Sym epsilon }}
+@Arrow from { D } to { E } ylabel { 1.2f @Font {@Sym epsilon "/\)" }}
+}
+
+@PP @PP
+
+@Diag {
+@Tbl
+aformat { @Cell iv {ctr} A | @Cell B | @Cell iv {ctr} C | @Cell D | @Cell i {ctr} E | @Cell F | @Cell iv {ctr} G | @Cell H | @Cell iv {ctr} I }
 marginhorizontal { 0.3c }
 marginvertical { 0.25c }
 {
 @Rowa
 A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
 C { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
+E { C:: @Circle hsize {0.5f} {0.75f @Font {5}} /0.5c F:: @Circle hsize {0.5f} {0.75f @Font {6}} }
+G { D:: @Circle hsize {0.5f} {0.75f @Font {3}}}
+I { E:: @Circle hsize {0.5f} {0.75f @Font {4}}}
 @Rowa
-B { a* }
-}
-//
-@Arrow from { A } to { B } ylabel { 1.2f @Font {@Sym epsilon}}
-@CurveArrow arrowstyle { solid } bias {1c} from { A@NE } to { A@NW } ylabel { 1.2f @Font {@I a}}
+E { (X"|"Y) }
 }
 
-@Diag {
-@Tbl
-aformat { @Cell A | @Cell B | @Cell C }
-marginhorizontal { 0.3c }
-marginvertical { 0.25c }
-{
-@Rowa
-A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
-C { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
-@Rowa
-B { a+ }
-}
 //
-@Arrow from { A } to { B } ylabel { 1.2f @Font {@I a}}
-@CurveArrow arrowstyle { solid } bias {1c} from { B@E } to { B@N } ylabel { 1.2f @Font {@I a}}
+@Arrow from { A } to { B } ylabel { 1.2f @Font {@Sym epsilon "/\(" }}
+@CCurveArrow bias {0.25c} from { B } to { C } ylabel { 1.2f @Font {@I X}} pathstyle { dashed } pathwidth {thick}
+@CurveArrow  bias {0.25c} from { B } to { F } ylabel { 1.2f @Font {@I Y}} pathstyle { dashed } pathwidth {thick} ylabelprox {below } 
+@CCurveArrow bias {0.25c} from { C } to { D } ylabel { 1.2f @Font {@Sym epsilon }}
+@CurveArrow  bias {0.25c} from { F } to { D } ylabel { 1.2f @Font {@Sym epsilon }} ylabelprox {below } 
+@Arrow from { D } to { E } ylabel { 1.2f @Font {@Sym epsilon "/\)" }}
 }
-
+                              
 }
 
 @End @Section
@@ -185,21 +314,26 @@ B { a+ }
 @Title { From NFA to DFA }
 @Begin
 @PP
-...
+Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Etiam a risus. In lacus metus, accumsan ut, gravida vehicula, rutrum lacinia, risus. Suspendisse non pede. Mauris mattis cursus velit. In in tellus vitae nibh euismod tempus. Vivamus pretium, massa eu tincidunt posuere, elit mi eleifend metus, ac malesuada velit lorem at justo. Cras malesuada adipiscing dolor. Etiam molestie lacus a metus. Etiam laoreet pulvinar metus. Pellentesque luctus est in leo. Donec arcu. Quisque ut erat a sapien posuere feugiat. Cras id risus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. In tincidunt quam at arcu. Praesent ultricies. Praesent rhoncus velit id urna. 
+
 @BeginSubSections
+
 @SubSection
 @Title { Elimination of empty transitions }
 @Begin
 @PP
-...
+Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Etiam a risus. In lacus metus, accumsan ut, gravida vehicula, rutrum lacinia, risus. Suspendisse non pede. Mauris mattis cursus velit. In in tellus vitae nibh euismod tempus. Vivamus pretium, massa eu tincidunt posuere, elit mi eleifend metus, ac malesuada velit lorem at justo. Cras malesuada adipiscing dolor. Etiam molestie lacus a metus. Etiam laoreet pulvinar metus. Pellentesque luctus est in leo. Donec arcu. Quisque ut erat a sapien posuere feugiat. Cras id risus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. In tincidunt quam at arcu. Praesent ultricies. Praesent rhoncus velit id urna. 
+
 @End @SubSection
 
 @SubSection
 @Title { Resolving ambigous transitions }
 @Begin
 @PP
-...
+Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Etiam a risus. In lacus metus, accumsan ut, gravida vehicula, rutrum lacinia, risus. Suspendisse non pede. Mauris mattis cursus velit. In in tellus vitae nibh euismod tempus. Vivamus pretium, massa eu tincidunt posuere, elit mi eleifend metus, ac malesuada velit lorem at justo. Cras malesuada adipiscing dolor. Etiam molestie lacus a metus. Etiam laoreet pulvinar metus. Pellentesque luctus est in leo. Donec arcu. Quisque ut erat a sapien posuere feugiat. Cras id risus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. In tincidunt quam at arcu. Praesent ultricies. Praesent rhoncus velit id urna. 
+
 @End @SubSection
+
 @EndSubSections
 
 @End @Section
