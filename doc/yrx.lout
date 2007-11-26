@@ -1,0 +1,125 @@
+@SysInclude { report }
+@SysInclude { tbl }
+@SysInclude { diag }
+@Report
+@Title {YRX - A regular expression package for C}
+@Author {Remo Dentato}
+@Institution {rdentato@users.sourceforge.net}
+@DateLine {Yes }
+@AtEnd {}
+@CoverSheet { No }
+@ContentsSeparate { No }
+@InitialFont { Times Base 12p }
+@InitialBreak { hyphen adjust 1.2fx }
+@InitialSpace { lout }
+@InitialLanguage { English }
+@PageOrientation { Portrait }
+@PageHeaders { Simple }
+@ColumnNumber { 1 }
+@FirstPageNumber { 1 }
+@OptimizePages { No }
+@AbstractDisplay { No }
+@AbstractTitle { Abstract }
+@Abstract {}
+@GlossaryText { @Null }
+@IndexText { @Null }
+@IndexAText { @Null }
+@IndexBText { @Null }
+//
+
+@Section
+@Title { Introduction }
+@Begin
+@PP
+YRX contains many different things:
+@DashList 
+ @LI {A C library that allow the conversion of a set of regular
+expressions to a @I{tagged deterministic finite automata} (TDFA)}
+       
+ @LI {A tool that generate a grafical representation of a TDFA in
+different formats}
+      
+ @LI {A tool to}
+@EL
+
+  This document contains the back
+@End @Section
+
+
+@Section
+@Title { Regular Expressions }
+@Begin
+@PP
+...
+@End @Section
+
+
+@Section
+@Title { Tagged automata }
+@Begin
+@PP
+...
+@End @Section
+
+@Section
+@Title { From RE to TNFA }
+@Begin
+@PP
+The following diagrams show how to convert a regular expression into a TNFA.
+
+
+@Diag {
+@Tbl
+aformat { @Cell A | @Cell B | @Cell C }
+marginhorizontal { 0.5c }
+marginvertical { 0.25c }
+{
+@Rowa
+A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
+C { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
+}
+//
+@Arrow from { A } to { B } ylabel { 1.2f @Font {@I a}}
+}
+
+@Diag {
+@Tbl
+aformat { @Cell A | @Cell B | @Cell C }
+marginhorizontal { 0.5c }
+marginvertical { 0.25c }
+{
+@Rowa
+A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
+C { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
+}
+//
+@Arrow from { A } to { B } ylabel { 1.2f @Font {@I a}}
+@Link arrowstyle { solid } path {ccurve} bias {2c} from { B@E } to { B@N } ylabel { 1.2f @Font {@I a}}
+}
+
+
+@End @Section
+    
+@Section
+@Title { From NFA to DFA }
+@Begin
+@PP
+...
+@BeginSubSections
+@SubSection
+@Title { Elimination of empty transitions }
+@Begin
+@PP
+...
+@End @SubSection
+
+@SubSection
+@Title { Resolving ambigous transitions }
+@Begin
+@PP
+...
+@End @SubSection
+@EndSubSections
+
+@End @Section
+
