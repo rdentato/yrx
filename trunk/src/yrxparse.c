@@ -302,7 +302,7 @@ char *yrxLabelStr(uint8_t c)
 #define tag_code(t,n) ((t) | ((n) << 24))
 #define tag_nrx(t)    ((t) & 0xFF000000)
 
-uint32_t *searchtags(uint32_t *tl, uint32_t tag, uint32_t *k)
+static uint32_t *searchtags(uint32_t *tl, uint32_t tag, uint32_t *k)
 {
   uint32_t rx;
   uint32_t *p;
@@ -316,7 +316,7 @@ uint32_t *searchtags(uint32_t *tl, uint32_t tag, uint32_t *k)
   return NULL;
 }
 
-uint32_t *addtags(uint32_t *tl, uint32_t tag)
+static uint32_t *addtags(uint32_t *tl, uint32_t tag)
 {
   uint32_t *p;
   uint32_t k,j;
@@ -343,7 +343,7 @@ uint32_t *addtags(uint32_t *tl, uint32_t tag)
   return tl;
 }
 
-static uint32_t *copytags(uint32_t *tl, uint32_t *newtl)
+static uint32_t *uniontags(uint32_t *tl, uint32_t *newtl)
 {
   int k;
 
@@ -370,37 +370,7 @@ static int tagscmp(ulv_t a, ulv_t b)
   }
   return ret;
 }
-#if 0
-void t_dump(FILE *f, uint32_t *tags)
-{
-  uint32_t  rx;
-  uint32_t  p;
-  uint32_t  k,j;
 
-  if (tags != NULL) {
-
-    fprintf(stdout," / ");
-
-    for (k=0; k < ulvCnt(tags); k++) {
-      p = ulvGet(tags,k);
-      if (p != 0) {
-
-        rx = (p & 0xFF000000) >> 24;
-        if ( p & 0x00800000 ) {
-          fprintf(f,"$%d ",rx);
-        }
-        else {
-          if ( p & 0x00400000 ) fprintf(f,"!%d ",rx);
-          for (j=0; j < MAXCAPTURES; j++) {
-            if ( p & TAG_CE(j) ) fprintf(f,")%02d_%d ",j+1,rx);
-            if ( p & TAG_CB(j) ) fprintf(f,"(%02d_%d ",j+1,rx);
-          }
-        }
-      }
-    }
-  }
-}
-#endif
 
 uint8_t *yrxArcTags(Arc *a)
 {
@@ -579,8 +549,8 @@ static void copyarcs(vec_t arcst, state_t fromst, uint32_t *tl)
   while (k < vecCnt(arcsf)) {
     a = vecGet(arcsf,k++);
     a = vecAdd(arcst,a);
-    a->tags = copytags(NULL, a->tags);
-    a->tags = copytags(a->tags, tl);
+    a->tags = uniontags(NULL, a->tags);
+    a->tags = uniontags(a->tags, tl);
     #ifdef xDEBUG
     _dbgmsg(" -- arc to %d ",a->to);
     lbl_dump(stderr,a->lbl);
@@ -739,7 +709,7 @@ static void mergearcs(state_t from, vec_t  arcs)
       if (lbl_eq(a->lbl, b->lbl)) {
         dbgmsg("     (same)\n");
         a->to = mergestates(a->to, b->to);
-        a->tags = copytags(a->tags, b->tags);
+        a->tags = uniontags(a->tags, b->tags);
 
         delarc(arcs, b);
         j--;
@@ -763,7 +733,7 @@ static void mergearcs(state_t from, vec_t  arcs)
       if (lbl_eq(lb, a->lbl)) {
         dbgmsg("     (a is a subset of intersection)\n");
         a->to = mergestates(a->to, b->to);
-        a->tags = copytags(a->tags, b->tags);
+        a->tags = uniontags(a->tags, b->tags);
         pushonce(a->to);
         lbl_cpy(lb,b->lbl);
         lbl_minus(lb,a->lbl);
@@ -774,7 +744,7 @@ static void mergearcs(state_t from, vec_t  arcs)
       if (lbl_eq(lb, b->lbl)) {
         dbgmsg("     (b is a subset of intersection)\n");
         b->to = mergestates(a->to, b->to);
-        b->tags = copytags(b->tags, a->tags);
+        b->tags = uniontags(b->tags, a->tags);
         pushonce(b->to);
         lbl_cpy(lb,a->lbl);
         lbl_minus(lb,b->lbl);
@@ -784,8 +754,8 @@ static void mergearcs(state_t from, vec_t  arcs)
 
       { dbgmsg("     (intersection)\n");
         arc.lbl  = lbl(lb);
-        arc.tags = copytags(NULL, a->tags);
-        arc.tags = copytags(arc.tags, b->tags);
+        arc.tags = uniontags(NULL, a->tags);
+        arc.tags = uniontags(arc.tags, b->tags);
         arc.to   = mergestates(a->to, b->to);
         vecAdd(arcs, &arc);
 
@@ -1073,7 +1043,7 @@ static state_t term(state_t state)
       case 'E' :  c = nextch(); c = nextch();
                   l = escaped();
                   if (l == NULL) yrxerr("Invalid escape sequence");
-                  esc = l[1];  /*** BUG Need to properly handle \x and \0 ***/
+                  esc = l[1];  /*** TODO: Need to properly handle \x and \0 ***/
                   if (esc == '\\') esc = l[2];
                   return state;
 
