@@ -130,48 +130,48 @@ The tag @I increment operation @M{()sup{+}} is defined such that:
   @M{({@tag supp d on {x}}) sup {+} =  {@tag supp {(d+1)} on x} }
   
 @LP
-  Given a set of tags @M{S} and a tag @M{@tag supp d on x} the operation
-of adding a tag to @M {S} is defined as:
+  Given a set of tags @M{S = {lbrace s sub 1, s sub 2 ,..., s sub n rbrace }}
+and a tag @M{@tag supp d on x} the operation of adding a tag to
+@M {S} is defined as:
 
-@DP
- @Center @Math {
+@DP @Center @Math {
   S circleplus @tag supp d on {x} = 
       matrix atleft { blbrace  }  {
         row col {{lbrace s sub 1, s sub 2 ,..., s sub n, @tag supp d on {x} rbrace } /0.3c
-        {lbrace s sub 1 ,..., s sub j-1 , @tag supp {min(k,d)} on x ,..., s sub j+1 , s sub n, @tag supp d on {x} rbrace }}
+        {lbrace s sub 1 ,..., s sub j-1 , @tag supp {min(k,d)} on x ,..., s sub j+1 , s sub n rbrace }}
             col {{@R if " " not exists " " j @R" : " s sub j = @tag supp k on x in S } /0.3c
-                {@R if " "  exists " " j @R" : " s sub j = @tag supp k on x in S @HExpand}}
+                {@R if " "  exists " " j @R" : " s sub j = @tag supp k on x in S }}
       }
 }
-@DP 
-
-@LP The @I addition operation between tags is defined such that:
 @DP
-@Center @Math {
-  @tag supp k on {y} circleplus @tag supp n on {w} = 
-      matrix atleft { blbrace  }  {
-        row col {lbrace  @tag supp k on {y} , @tag supp n on {w}  rbrace }
-            col {@R if y != w}
-            
-        row col {lbrace @tag supp {sel sub y (k,n)} on {y} rbrace}
-            col {@R if y = w}
-      }
-}
 
-@DP
-where @M{sel sub y (k,n)} is a function that returns one of its arguments.
-
-@LP
-Informally, the @I addition of two tags is a set which contains both tags
-if they are of different types or a single tag of the same type with a
-displacement that is chosen between the two displacements in a way that is
-dependant on the type of the tag.
-
-@LP
+## The @I addition operation between tags is defined such that:
+## @DP
+## @Center @Math {
+##   @tag supp k on {y} circleplus @tag supp n on {w} = 
+##       matrix atleft { blbrace  }  {
+##         row col {lbrace  @tag supp k on {y} , @tag supp n on {w}  rbrace }
+##             col {@R if y != w}
+##             
+##         row col {lbrace @tag supp {sel sub y (k,n)} on {y} rbrace}
+##             col {@R if y = w}
+##       }
+## }
+## 
+## @DP
+## where @M{sel sub y (k,n)} is a function that returns one of its arguments.
+## 
+## @LP
+## Informally, the @I addition of two tags is a set which contains both tags
+## if they are of different types or a single tag of the same type with a
+## displacement that is chosen between the two displacements in a way that is
+## dependant on the type of the tag.
+## 
+## @LP
 The increment operation over a set of tags is defined such that:
 @DP @Center 
   @Math {{(lbrace s sub 1, s sub 2 ,..., s sub n rbrace }) sup{+} 
-              = lbrace (s sub {1}) sup {+}, (s sub {2}) sup {+} ,..., (s sub {3}) sup {+} rbrace }
+              = lbrace (s sub {1}) sup {+}, (s sub {2}) sup {+} ,..., (s sub {n}) sup {+} rbrace }
 
 @DP
 Given two sets of tags S and R, their union is defined as:
@@ -193,13 +193,22 @@ tags is relevant, not their displacement.
   @Math { S cap R =  {lbrace  @tag supp d on x " | " @tag supp k on x in S "  " logicaland "  " @tag supp n on x in S "  " logicaland "  " d = sel sub x (k,n) rbrace }}
   
 @DP
-Given the above definitions it's easy to check that the usual property
-@M{S minus R = S minus (S cap R)} holds.
+## Given the above definitions it's easy to check that the usual property
+## @M{S minus R = S minus (S cap R)} holds.
+
+Given two regular expressions @M{r} and @M{s}, the equivalence relation @M{r = s}
+means that the language accepted by @M{r} is the same as the language accepted by @M{s}.
+
+@LP
+The tag-equivalence relation @M{ r = tsub{@tag} s }  implies that @M{r = s} and 
+the two expressions specify the same sets of tags. For example
+@M{ a(bc)d = (ab)(cd)}  but  @M{ a(bc)d notequal tsub{@tag} (ab)(cd)}
+
 
 @LP
 In the following we'll refer to four types of tags:
 
-@CD @Tbl
+@CD 0.9 @Scale @Tbl
 aformat{ @Cell width {8f} A| @Cell  width {5f} i {ctr} B | @Cell  width {8f} C | @Cell  width {5f} D}
 {
 @Rowa
@@ -238,15 +247,42 @@ C { @M{end leftarrow (pos -d)} }
 @PP
 The diagrams in figure @NumberOf{re2nfa} shows how to convert a regular
 expression into a TNFA. 
+
+@LP
 As the last diagram shows, final states are denoted using transition to 
 state 0 under a special character {@Sym lambda} tagged with '$'. This 
 implies that at the end of the string to be matched, the value of @M{pos}
 is 1 past the position of the last character.
 
+@LP
+Introducing tags as described, will generate {@Sym epsilon}-automata
+with a fairly high number of states. Most of those states, however, will
+become unreachable once the tags will be propagated to arcs that carry
+actual labels. Infact we have:
+
+@LD @Theorem
+{Given a regular expression @M{r}, the corresponding {@Sym epsilon}-free
+NFA has at most @M{bar r bar + 1} states.
+@LP
+@Proof Yet to be figured out. And also, I'm not sure this theorem holds 
+for @M{(X bar Y)}@EndProof
+}
+
+There is one thing to note in the construction of terms like @M{(X)*}
+and @M{(X)+}. The arc that expresses the {@I looping} goes from state 3
+to state 1, thus reassigning the start value of the term capture. This
+implies that @M{(a)* " " notequal " " (a*)}.
+
+@LP
+This might aIn the expression @M{a(b)*c}, given the string @F {abbbc}, we should
+expect the length of the capture to be 1, not 3 or we would have
+written  @M{a(b*)c}.
+
+
 @Figure
 @Caption { Construction of NFA }
 @Tag { re2nfa }
-1.0 @Scale {
+0.8 @Scale {
 {
 @LP
 @Diag {
@@ -424,7 +460,7 @@ E { }
 @Arrow from { A } to { B } ylabel { 1.2f @Font {@Sym epsilon "/\(" }}
 @Arrow from { B } to { C } ylabel { 1.2f @Font {@I X}} pathstyle { dashed } pathwidth {thick}
 @Arrow from { C } to { D } ylabel { 1.2f @Font {@Sym epsilon }}
-@CCurveArrow from { D } to { B } ylabel { 1.2f @Font {@Sym epsilon }}
+@CCurveArrow from { D } to { A } ylabel { 1.2f @Font {@Sym epsilon }}
 @Arrow from { D } to { E } ylabel { 1.2f @Font {@Sym epsilon "/\)" }}
 }
 
@@ -447,10 +483,11 @@ J { (X)* }
 E {  }
 }
 //
-@CCurveArrow from { A } to { D } ylabel { 1.2f @Font {@Sym epsilon "/\(" }}
+@Arrow from { A } to { B } ylabel { 1.2f @Font {@Sym epsilon "/\(" }}
 @Arrow from { B } to { C } ylabel { 1.2f @Font {@I X}} pathstyle { dashed } pathwidth {thick}
 @Arrow from { C } to { D } ylabel { 1.2f @Font {@Sym epsilon }}
-@CCurveArrow from { D } to { B } ylabel { 1.2f @Font {@Sym epsilon }}
+@CCurveArrow from { D } to { A } ylabel { 1.2f @Font {@Sym epsilon }}
+@CCurveArrow from { B } to { D } ylabel { 1.2f @Font {@Sym epsilon }}
 @Arrow from { D } to { E } ylabel { 1.2f @Font {@Sym epsilon "/\)" }}
 }
 
@@ -494,8 +531,7 @@ C { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
 E { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
 G { D:: @Circle hsize {0.5f} {0.75f @Font {4}}}
 H { "a\\!b" }
-@Rowa
-A { }
+
 }
 //
 @Arrow from { A } to { B } ylabel { 1.2f @Font a} 
@@ -520,6 +556,7 @@ F { "a" }
 @Arrow from { B } to { C } ylabel { 1.2f @Font {@Sym lambda "/ $" }}
 }
 }
+
 }
 
 @End @Section
