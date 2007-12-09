@@ -41,7 +41,7 @@ static void dmp_plain_tags(uint8_t *t)
 }
 
 
-static void dmp_plain(aut *dfa)
+static void dmp_plain(Automata *dfa)
 {
   uint32_t from;
   Arc *a;
@@ -60,7 +60,7 @@ static void dmp_plain(aut *dfa)
 }
 
 
-static void dmp_dot(aut *dfa)
+static void dmp_dot(Automata *dfa)
 {
   uint32_t from;
   Arc *a;
@@ -91,7 +91,7 @@ static void dmp_dot(aut *dfa)
 }
 
 
-void yrxDump(aut *dfa, uint8_t fmt)
+void yrxDump(Automata *dfa, uint8_t fmt)
 {
 
   switch (fmt) {

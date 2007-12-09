@@ -25,7 +25,7 @@ typedef struct {
 
    vec_t     yarcs;
    uint32_t  yarcn;
-} aut;
+} Automata;
 
 typedef struct {
   lbl_ptr   lbl;
@@ -34,14 +34,14 @@ typedef struct {
 } Arc;
 
 uint8_t *lbl_str(lbl_ptr lb);
-state_t yrxNext(aut *dfa, state_t st);
+state_t yrxNext(Automata *dfa, state_t st);
 
 #define yrxStartState(a) yrxNext(a,0);
 #define yrxNextState(a)  yrxNext(a,1);
 
-Arc *yrxGetArc(aut *dfa);
-Arc *yrxIsFinal(aut *dfa, state_t st);
-aut *yrxParse(char **rxs, int rxn);
+Arc *yrxGetArc(Automata *dfa);
+Arc *yrxIsFinal(Automata *dfa, state_t st);
+Automata *yrxParse(char **rxs, int rxn);
 
 #define  yrxArcLabel(a)  lbl_str((a)->lbl)
 uint8_t *yrxArcTags  (Arc *a);
@@ -82,5 +82,10 @@ char    *yrxTagStr   (uint8_t tag, uint8_t rx);
 #define DMP_VCG     5
 #define DMP_UCG     6
 
-void yrxDump(aut *dfa, uint8_t fmt);
+typedef uint32_t tag_t;
+typedef ulv_t    tagset_t;
+
+TagSet addtag(TagSet ts, Tag t);
+
+void yrxDump(Automata *dfa, uint8_t fmt);
 
