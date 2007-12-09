@@ -477,11 +477,11 @@ J { (X)* }
 E {  }
 }
 //
-@Arrow from { A } to { B } ylabel { 1.2f @Font {@Sym epsilon "/\(" }}
+# @Arrow from { A } to { B } ylabel { 1.2f @Font {@Sym epsilon "/\(" }}
 @Arrow from { B } to { C } ylabel { 1.2f @Font {@I X}} pathstyle { dashed } pathwidth {thick}
 @Arrow from { C } to { D } ylabel { 1.2f @Font {@Sym epsilon }}
 @CCurveArrow from { D } to { B } ylabel { 1.2f @Font {@Sym epsilon }}
-@CCurveArrow bias {1.2c} from { B } to { E } ylabel { 1.2f @Font {@Sym epsilon "/\)"}}
+@CCurveArrow bias {1.2c} from { A } to { D } ylabel { 1.2f @Font {@Sym epsilon "/\("}}
 @Arrow from { D } to { E } ylabel { 1.2f @Font {@Sym epsilon "/\)" }}
 }
 
@@ -573,41 +573,41 @@ for @M{(X bar Y)}. If changing @M{a+} will be enough, good otherwise
 I'll introduce a term to take it into account.@EndProof
 }
 
-There is one thing to note in the construction of terms like @M{(X)*}
-and @M{(X)+}. Due to the way the determinization algorithm works,
+Note that in the construction of the terms @M{(X)*}
+and @M{(X)+}, due to the way the determinization algorithm works,
 the arc that expresses the {@I looping} goes from state 3
-to state 2, thus not reassigning the start value of the term capture.
+to state 2, not reassigning the start value of the term capture.
 This means that we forced @M{(a)* " " equal sub @tag " " (a*)} even if
-the opposite choice could have been done.
+the opposite should have been done.
 
 @LP
 For example, in the expression @M{a(b)*c}, given the string @F {abbbc},
 the length of the capture will be 3, exactly as if we had 
 written  @M{a(b*)c}.
 
-
-
 @End @Section
+
     
 @Section
 @Title { From NFA to DFA }
 @Begin
 @PP
-There are two source of non-determinism in a NFA constructed using the
-rules defined in figure @NumberOf{re2nfa} transitions that can be followed
-without consuming any input ({@Sym epsilon}-transitions) and multiple
-transitions under the same character (ambiguous transition).
 
+## There are two source of non-determinism in a NFA constructed using the
+## rules defined in figure @NumberOf{re2nfa} transitions that can be followed
+## without consuming any input ({@Sym epsilon}-transitions) and multiple
+## transitions under the same character (ambiguous transition).
+ 
 The determinization algorithm processes each state once removing
-{@Sym epsilon}-transitions first (possibly introducing ne ambiguous
+{@Sym epsilon}-transitions first (possibly introducing new ambiguous
 transitions) and then resolving any ambiguities:
 
 @ID @OneRow @Pas {
 pushonce( stack, 1 )
 while not isempty( stack ) do
-  state = pop( stack )
-  removeeps( state )
-  mergearcs( state )
+    state = pop( stack )
+    removeeps( state )
+    mergearcs( state )
 end
 }
 
@@ -686,14 +686,15 @@ E { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
 
 @ID @OneRow @Pas {
 for arc in arcsfrom(state) do
-  if arc.lbl = @Sym epsilon then
-    for tmparc in arcsfrom(arc.@ttt) do
-      if state.mark <> state then 
-        addarc(state, tmparc.@ttt , tmparc.lbl , arc.tags @Sym union tmparc.tags)
-        tmparc.mark = state
-      end
+    if arc.lbl = @Sym epsilon then
+        if arc.@ttt.mark <> state then 
+            for tmparc in arcsfrom(arc.@ttt) do
+                addarc(state, tmparc.@ttt , tmparc.lbl , arc.tags @Sym circleplus tmparc.tags)
+            end
+            arc.@ttt.mark = state
+        end
+        deletarc(arc)
     end
-  end
 end
 }
 
@@ -820,13 +821,13 @@ E { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
 }
 
 @DP
-The intuition behind figure @NumberOf{mergearcs_a} is that in state 1 we are not
-able to determinstically choose between going to state 2 or state 3 so we postpone
-the decision for when we will have read a new character in state 4.
-@LP
-At that point if we can disambiguate, we have to take into consideration the fact
-that we one position ahead in the string than we should.
+The intuition behind figure @NumberOf{mergearcs_a} is that in state 1, if we get
+@F {a}, we are not able to choose between going to state 2 or state 3 so we postpone
+the decision in state 4 (when we will have access to another character).
 
+@LP
+The increment on tag will take into account the fact that we should have applied
+the tag one position earlier.
 
 ## @LP
 ## Let's now provide an example in figure @NumberOf{detaaa} of the determinization

@@ -82,10 +82,12 @@ char    *yrxTagStr   (uint8_t tag, uint8_t rx);
 #define DMP_VCG     5
 #define DMP_UCG     6
 
+#if 0
 typedef uint32_t tag_t;
 typedef ulv_t    tagset_t;
 
 TagSet addtag(TagSet ts, Tag t);
+#endif 
 
 void yrxDump(Automata *dfa, uint8_t fmt);
 

@@ -18,7 +18,10 @@ static FILE *outf;
 
 static void dmp_plain_lbl(uint8_t *l)
 {
-  if (*l == 0) return;
+  if (*l == 0) {
+    printf("(e)");
+    return;
+  }
 
   /*putchar(*l);*/
   l++;

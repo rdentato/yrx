@@ -392,22 +392,20 @@ uint8_t *yrxArcTags(Arc *a)
           buf[n++] = '$';
           buf[n++] = rx;
         }
-        else {
-          if ( p & 0x00400000 ) {
-            buf[n++] = '%';
+        if ( p & 0x00400000 ) {
+          buf[n++] = '%';
+          buf[n++] = rx;
+        }
+        for (j=0; j < MAXCAPTURES; j++) {
+          if (p & TAG_CB(j)) {
+            buf[n++] = 'A' + j;
             buf[n++] = rx;
           }
-          for (j=0; j < MAXCAPTURES; j++) {
-            if (p & TAG_CB(j)) {
-              buf[n++] = 'A' + j;
-              buf[n++] = rx;
-            }
-            if (p & TAG_CE(j)) {
-              buf[n++] = 'a' + j;
-              buf[n++] = rx;
-            }
+          if (p & TAG_CE(j)) {
+            buf[n++] = 'a' + j;
+            buf[n++] = rx;
           }
-        }
+        }        
       }
     }
   }
@@ -1013,20 +1011,26 @@ static state_t term(state_t state)
     if (c != ')') yrxerr("Unclosed capture");
     addarc(t1,alt,"",TAG_NONE);
 
+    /* state -> (1)
+    ** start -> (2)
+    ** alt   -> (3)
+    ** to    -> (4)
+    ** t1    -> (5)
+    */
+    
     switch (peekch(0)) {
        case '?':  addarc(start, alt, "", TAG_NONE);
                   addarc(state, start, "", tag_code(TAG_CB(ncapt), cur_nrx));
                   c = nextch();
                   break;
 
-       case '*':  addarc(alt, state, "", TAG_NONE);
-                  addarc(start, alt, "", TAG_NONE);
-                  addarc(state, start, "", tag_code(TAG_CB(ncapt), cur_nrx));
+       case '+':  addarc(alt,start,"",TAG_NONE);
+                  addarc(state,start,"",tag_code(TAG_CB(ncapt),cur_nrx));
                   c = nextch();
                   break;
 
-       case '+':  addarc(alt,state,"",TAG_NONE);
-                  addarc(state,start,"",tag_code(TAG_CB(ncapt),cur_nrx));
+       case '*':  addarc(alt, start, "", TAG_NONE);
+                  addarc(state, alt, "", tag_code(TAG_CB(ncapt), cur_nrx));
                   c = nextch();
                   break;
 
@@ -1192,9 +1196,11 @@ Automata *yrxParse(char **rxs, int rxn)
   for (i = 0; i < rxn; i++) {
     parse(rxs[i],i+1);
   }
+  #if 1
   determinize();
   cleantemp();
-
+  #endif
+  
   return &fa;
 }
 
