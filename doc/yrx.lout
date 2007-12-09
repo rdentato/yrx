@@ -1,4 +1,5 @@
 def @tag { {Symbol Base} @Font t }
+def @ttt { {Italic} @Font to }
 @SysInclude { tbl }
 @SysInclude { diag }
 @SysInclude { math }
@@ -108,7 +109,7 @@ the regular character is matched.}
 @Rowa A {"\\Y"} B{Equivalent to ["\^ \\t"]} 
 }
 }
-@DP
+## @DP
 
 @End @Section
 
@@ -130,115 +131,138 @@ The tag @I increment operation @M{()sup{+}} is defined such that:
   @M{({@tag supp d on {x}}) sup {+} =  {@tag supp {(d+1)} on x} }
   
 @LP
-  Given a set of tags @M{S = {lbrace s sub 1, s sub 2 ,..., s sub n rbrace }}
-and a tag @M{@tag supp d on x} the operation of adding a tag to
-@M {S} is defined as:
-
-@DP @Center @Math {
-  S circleplus @tag supp d on {x} = 
-      matrix atleft { blbrace  }  {
-        row col {{lbrace s sub 1, s sub 2 ,..., s sub n, @tag supp d on {x} rbrace } /0.3c
-        {lbrace s sub 1 ,..., s sub j-1 , @tag supp {min(k,d)} on x ,..., s sub j+1 , s sub n rbrace }}
-            col {{@R if " " not exists " " j @R" : " s sub j = @tag supp k on x in S } /0.3c
-                {@R if " "  exists " " j @R" : " s sub j = @tag supp k on x in S }}
-      }
-}
-@DP
-
-## The @I addition operation between tags is defined such that:
-## @DP
-## @Center @Math {
-##   @tag supp k on {y} circleplus @tag supp n on {w} = 
-##       matrix atleft { blbrace  }  {
-##         row col {lbrace  @tag supp k on {y} , @tag supp n on {w}  rbrace }
-##             col {@R if y != w}
-##             
-##         row col {lbrace @tag supp {sel sub y (k,n)} on {y} rbrace}
-##             col {@R if y = w}
-##       }
-## }
-## 
-## @DP
-## where @M{sel sub y (k,n)} is a function that returns one of its arguments.
-## 
-## @LP
-## Informally, the @I addition of two tags is a set which contains both tags
-## if they are of different types or a single tag of the same type with a
-## displacement that is chosen between the two displacements in a way that is
-## dependant on the type of the tag.
-## 
-## @LP
-The increment operation over a set of tags is defined such that:
+The increment operation over a set of tags @M{S = {lbrace s sub 1, s sub 2 ,..., s sub n rbrace }} 
+is defined such that:
 @DP @Center 
-  @Math {{(lbrace s sub 1, s sub 2 ,..., s sub n rbrace }) sup{+} 
+  @Math {(S) sup{+} 
               = lbrace (s sub {1}) sup {+}, (s sub {2}) sup {+} ,..., (s sub {n}) sup {+} rbrace }
 
 @DP
-Given two sets of tags S and R, their union is defined as:
+##   Given a set of tags @M{S = {lbrace s sub 1, s sub 2 ,..., s sub n rbrace }}
+## and a tag @M{@tag supp d on x}, @I adding a tag to @M {S} is defined as:
+## 
+## @DP @Center @Math {
+##   S circleplus @tag supp d on {x} = 
+##       matrix atleft { blbrace  }  {
+##         row col {{lbrace s sub 1, s sub 2 ,..., s sub n, @tag supp d on {x} rbrace } /0.3c
+##         {lbrace s sub 1 ,..., s sub {j-1} , @tag supp {min(k,d)} on x , s sub {j+1} ,..., s sub n rbrace }}
+##             col {{@R if " " not exists " " j @R" : " s sub j = @tag supp k on x in S } /0.3c
+##                 {@R if " "  exists " " j @R" : " s sub j = @tag supp k on x in S }}
+##       }
+## }
+## @DP
+## 
+The @I addition operation between tags is defined such that:
+@DP
+@Center @Math {
+  @tag supp k on {y} circleplus @tag supp d on {w} = 
+      matrix atleft { blbrace  }  {
+        row col {{lbrace  @tag supp k on {y} , @tag supp d on {w}  rbrace } /0.3c
+                 {lbrace @tag supp {min(k,d)} on {y} rbrace}
+                }
+            col {{@R if " " y != w} /0.3c
+                 {@R if " " y = w}
+                }
+      }
+}
+
+@DP
+Informally, the @I addition of two tags is a set which contains both tags
+if they are of different types or a tag of the same type with a
+displacement that is the minimum of the two displacements.
+
+@LP
+
+Given two sets of tags @M{S = {lbrace s sub 1, s sub 2 ,..., s sub n rbrace }},
+and @M{R = {lbrace r sub 1, r sub 2 ,..., r sub m rbrace }} 
+their @I sum is defined as:
 @DP @Center
-   @Math {{lbrace s sub 1, s sub 2 ,..., s sub n rbrace } cup {lbrace r sub 1, r sub 2 ,..., r sub m rbrace }
-              = big bcup atop {0.7f @Font {{1 <= i <= n} atop {1<=j<=m}}} (s sub i circleplus r sub j ) }
+   @Math { S circleplus R 
+              = big bcup atop {0.7f @Font {{1 <= i <= n} // {1 <= j <= m}} } (s sub i circleplus r sub j ) }
               
-## @DP  
+@DP  
 ## Given two sets of tags S and R, their difference is defined as:
 ## @DP @Center
 ## @Math { S minus R =  {lbrace @tag supp d on x " | " @tag supp d on x in S "  " logicaland "  " not exists " " k @R": " @tag supp k on x in R rbrace } }
- 
-@DP  
-Informally, when subtracting a set of tags from another, only the type of
-tags is relevant, not their displacement.
+##  
+## @DP  
+## Informally, when subtracting a set of tags from another, only the type of
+## tags is relevant, not their displacement.
 
-@LP Given two sets of tags S and R, their intersection is defined as:
-@DP @Center
-  @Math { S cap R =  {lbrace  @tag supp d on x " | " @tag supp k on x in S "  " logicaland "  " @tag supp n on x in S "  " logicaland "  " d = sel sub x (k,n) rbrace }}
-  
-@DP
+## @LP Given two sets of tags @M{S} and @M{R}, their @I intersection is defined as:
+## @DP @Center
+##   @Math { S cap R =  {lbrace  @tag supp {min(k,d)} on x " | " @tag supp k on x in S "  " logicaland "  " @tag supp d on x in R  rbrace }}
+##   
+## @DP
 ## Given the above definitions it's easy to check that the usual property
 ## @M{S minus R = S minus (S cap R)} holds.
 
-Given two regular expressions @M{r} and @M{s}, the equivalence relation @M{r = s}
-means that the language accepted by @M{r} is the same as the language accepted by @M{s}.
+Two regular expressions @M{r} and @M{s}, are @I equivalent (@M{r = s})
+if they accept the same language.
 
 @LP
-The tag-equivalence relation @M{ r = tsub{@tag} s }  implies that @M{r = s} and 
-the two expressions specify the same sets of tags. For example
-@M{ a(bc)d = (ab)(cd)}  but  @M{ a(bc)d notequal tsub{@tag} (ab)(cd)}
+Two regular expressions @M{r} and @M{s}, are @I {tag-equivalent}
+(@M{r = sub @tag " " s}) if they are equivalent and specify the same
+sets of tags.
 
+@LP
+For example @M{ a(bc)d =  (ab)cd} as they both accept the
+language containing the only string @F {abcd}, but  
+@M{ a(bc)d  notequal sub @tag  (ab)cd} as the tags variables
+will have different values upon successful match.
 
 @LP
 In the following we'll refer to four types of tags:
 
 @CD 0.9 @Scale @Tbl
-aformat{ @Cell width {8f} A| @Cell  width {5f} i {ctr} B | @Cell  width {8f} C | @Cell  width {5f} D}
+aformat{ @Cell width {8f} A| @Cell  width {5f} i {ctr} B | @Cell  width {3f} C }
 {
 @Rowa
 A { Tag }
 B { Symbol }
-C { Operation}
+C { Var}
 #D { @M{sel()} }
 rulebelow { yes }
 @Rowa
 A { Begin Capture }
 B { @M{( supp d on n} }
-C { @M{bc sub n leftarrow (pos -d)} }
+C { @M{bc sub n } }
 #D { @M{max(x,y) } }
 @Rowa
 A { End Capture }
 B { @M{) supp d on n} }
-C { @M{ec sub n leftarrow (pos -d)} }
+C { @M{ec sub n } }
 #D { @M{min(x,y) }}
 @Rowa
 A { Mark }
 B { @M{"#" sup d} }
-C { @M{mrk leftarrow (pos -d)} }
+C { @M{mrk} }
 #D { @M{min(x,y) }}
 @Rowa
 A { Match }
 B { @M{$ sup d} }
-C { @M{end leftarrow (pos -d)} }
+C { @M{end} }
 #D { @M{min(x,y) }}
 }
 
+@LP
+ The interpretation of
+a tagged transition labeled with @M{ @F{a} " / " @tag supp d on x}
+is that upon reading the character @F{a}, the
+value of the @M{v sub x} is set to current position 
+minus @M{d} and the FA moves from a state to the other.
+
+@LP
+No interpretation is given for {@Sym epsilon}-transitions
+as their only purpose will be to help propagating tags.
+
+## @Diag{
+##  { A:: @Circle hsize {0.45f} {0.7f @Font {1}}} |1.5c 
+##  { B:: @Circle hsize {0.45f} {0.7f @Font {2}}}
+##  //
+##  @Arrow from {A} to {B} ylabel { @M{epsilon " / " @tag supp d on x}} 
+## }
+ 
 @End @Section
 
 @Section
@@ -248,41 +272,11 @@ C { @M{end leftarrow (pos -d)} }
 The diagrams in figure @NumberOf{re2nfa} shows how to convert a regular
 expression into a TNFA. 
 
-@LP
-As the last diagram shows, final states are denoted using transition to 
-state 0 under a special character {@Sym lambda} tagged with '$'. This 
-implies that at the end of the string to be matched, the value of @M{pos}
-is 1 past the position of the last character.
-
-@LP
-Introducing tags as described, will generate {@Sym epsilon}-automata
-with a fairly high number of states. Most of those states, however, will
-become unreachable once the tags will be propagated to arcs that carry
-actual labels. Infact we have:
-
-@LD @Theorem
-{Given a regular expression @M{r}, the corresponding {@Sym epsilon}-free
-NFA has at most @M{bar r bar + 1} states.
-@LP
-@Proof Yet to be figured out. And also, I'm not sure this theorem holds 
-for @M{(X bar Y)}@EndProof
-}
-
-There is one thing to note in the construction of terms like @M{(X)*}
-and @M{(X)+}. The arc that expresses the {@I looping} goes from state 3
-to state 1, thus reassigning the start value of the term capture. This
-implies that @M{(a)* " " notequal " " (a*)}.
-
-@LP
-This might aIn the expression @M{a(b)*c}, given the string @F {abbbc}, we should
-expect the length of the capture to be 1, not 3 or we would have
-written  @M{a(b*)c}.
-
 
 @Figure
 @Caption { Construction of NFA }
 @Tag { re2nfa }
-0.8 @Scale {
+0.9 @Scale {
 {
 @LP
 @Diag {
@@ -435,7 +429,7 @@ E { }
 @Arrow from { A } to { B } ylabel { 1.2f @Font {@Sym epsilon "/\(" }}
 @Arrow from { B } to { C } ylabel { 1.2f @Font {@I X}} pathstyle { dashed } pathwidth {thick}
 @Arrow from { C } to { D } ylabel { 1.2f @Font {@Sym epsilon }}
-@CCurveArrow from { B } to { D } ylabel { 1.2f @Font {@Sym epsilon }}
+@CCurveArrow bias {1.2c} from { B } to { E } ylabel { 1.2f @Font {@Sym epsilon "/\)" }}
 @Arrow from { D } to { E } ylabel { 1.2f @Font {@Sym epsilon "/\)" }}
 }
 @LP
@@ -460,7 +454,7 @@ E { }
 @Arrow from { A } to { B } ylabel { 1.2f @Font {@Sym epsilon "/\(" }}
 @Arrow from { B } to { C } ylabel { 1.2f @Font {@I X}} pathstyle { dashed } pathwidth {thick}
 @Arrow from { C } to { D } ylabel { 1.2f @Font {@Sym epsilon }}
-@CCurveArrow from { D } to { A } ylabel { 1.2f @Font {@Sym epsilon }}
+@CCurveArrow from { D } to { B } ylabel { 1.2f @Font {@Sym epsilon }}
 @Arrow from { D } to { E } ylabel { 1.2f @Font {@Sym epsilon "/\)" }}
 }
 
@@ -486,8 +480,8 @@ E {  }
 @Arrow from { A } to { B } ylabel { 1.2f @Font {@Sym epsilon "/\(" }}
 @Arrow from { B } to { C } ylabel { 1.2f @Font {@I X}} pathstyle { dashed } pathwidth {thick}
 @Arrow from { C } to { D } ylabel { 1.2f @Font {@Sym epsilon }}
-@CCurveArrow from { D } to { A } ylabel { 1.2f @Font {@Sym epsilon }}
-@CCurveArrow from { B } to { D } ylabel { 1.2f @Font {@Sym epsilon }}
+@CCurveArrow from { D } to { B } ylabel { 1.2f @Font {@Sym epsilon }}
+@CCurveArrow bias {1.2c} from { B } to { E } ylabel { 1.2f @Font {@Sym epsilon "/\)"}}
 @Arrow from { D } to { E } ylabel { 1.2f @Font {@Sym epsilon "/\)" }}
 }
 
@@ -556,8 +550,42 @@ F { "a" }
 @Arrow from { B } to { C } ylabel { 1.2f @Font {@Sym lambda "/ $" }}
 }
 }
-
 }
+
+@LP
+As the last diagram shows, final states are denoted using transition to 
+state 0 under a special character {@Sym lambda} tagged with '$'. This 
+implies that at the end of the string to be matched, the value of @M{pos}
+is 1 past the position of the last character.
+
+@LP
+Introducing tags as described, will generate {@Sym epsilon}-automata
+with a fairly high number of states. Most of those states, however, will
+become unreachable once the tags will be propagated to arcs that carry
+actual labels. Infact we have:
+
+@LD @Theorem
+{Given a regular expression @M{r}, the corresponding {@Sym epsilon}-free
+NFA has at most @M{bar r bar + 1} states.
+@LP
+@Proof Yet to be figured out. And also, the theorem does not hold
+for @M{(X bar Y)}. If changing @M{a+} will be enough, good otherwise
+I'll introduce a term to take it into account.@EndProof
+}
+
+There is one thing to note in the construction of terms like @M{(X)*}
+and @M{(X)+}. Due to the way the determinization algorithm works,
+the arc that expresses the {@I looping} goes from state 3
+to state 2, thus not reassigning the start value of the term capture.
+This means that we forced @M{(a)* " " equal sub @tag " " (a*)} even if
+the opposite choice could have been done.
+
+@LP
+For example, in the expression @M{a(b)*c}, given the string @F {abbbc},
+the length of the capture will be 3, exactly as if we had 
+written  @M{a(b*)c}.
+
+
 
 @End @Section
     
@@ -590,6 +618,14 @@ value in the the stack if that value has not already been pushed previously.
 @LP
 The functions @F{removeeps()} and @F{mergearcs()} will push into the stack
 the destination states so that the computation continues.
+
+@LD @Theorem
+{
+The algorithm x is equivalent to the classical subset construction
+algorithm.
+@LP
+@Proof To be figured out.@EndProof
+}
 
 @BeginSubSections
 
@@ -642,11 +678,26 @@ C { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
 E { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
 }
 //
-@CCurveArrow from { A } to { C } ylabel { 1.2f @Font {a"/"@M{T sub 1 cup T sub 2} }}
+@CCurveArrow from { A } to { C } ylabel { 1.2f @Font {a"/"@M{T sub 1 circleplus T sub 2} }}
 @Arrow from { B } to { C } ylabel { 1.2f @Font a"/"@M{T sub 2}} 
 }
 }
 @DP
+
+@ID @OneRow @Pas {
+for arc in arcsfrom(state) do
+  if arc.lbl = @Sym epsilon then
+    for tmparc in arcsfrom(arc.@ttt) do
+      if state.mark <> state then 
+        addarc(state, tmparc.@ttt , tmparc.lbl , arc.tags @Sym union tmparc.tags)
+        tmparc.mark = state
+      end
+    end
+  end
+end
+}
+
+
 A survey on how to handle @Sym epsilon transitions is given in
 @Cite {$vannoord00}. The idea of @I copying arcs is outlined in
 @Cite {$ilieyu02}.
@@ -671,6 +722,8 @@ aformat { @Cell A | @Cell B | @Cell C | @Cell D | @Cell  E | @Cell iv{ctr} i{ctr
 marginhorizontal { 0.3c }
 marginvertical { 0.2c }
 {
+@Rowa
+B {   }
 @Rowa
 E { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
 @Rowa
@@ -703,7 +756,7 @@ E { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
 //
 @CCurveArrow  from { A } to { B } ylabel { 1.2f @Font {@M{A minus B} "/" @M{T sub 1}}}
 @CurveArrow   from { A } to { C } ylabel { 1.2f @Font {@M{B minus A} "/" @M{T sub 2}}} ylabelprox {below}
-@Arrow from { A } to { D } ylabel { 1.2f @Font {@M{A cap B} "/" @M{T sub 1 cap T sub 2}}}
+@Arrow from { A } to { D } ylabel { 1.2f @Font {@M{A cap B} }} # "/" @M{T sub 1 cap T sub 2}
 @CurveArrow   bias {0.2c} from { D@NE } to { B } zlabel { 1.2f @Font {{@Sym epsilon} "/" @M{( T sub 1 ) sup {+}}}} zlabelprox {right}
 @CCurveArrow  bias {0.2c} from { D@SE } to { C } zlabel { 1.2f @Font {{@Sym epsilon} "/" @M{( T sub 2 ) sup {+}}}} zlabelprox {right}
 }
@@ -720,185 +773,241 @@ Figure @NumberOf{mergearcs} shows the general case where
 possible cases.
 
 @LP
-Let's now provide an example in figure @NumberOf{detaaa} of the determinization
-of  @I {(a*)(a)a}. During the example we'll skip the details on some trivial
-semplification to focus on the key aspects of the algorithm.
-
-@LP
-The NFA created using the process outlined in figure @NumberOf{re2nfa}
-is shown in step @B {(1)}. Consider now the string "\"" @F {aaaa} "\"",
-the following table shows the trace of the NFA execution.
-@DP 
-
-@Center 0.9 @Scale @Tbl
-i {ctr}
-marginvertical {0.1c}
-aformat { @Cell A | @Cell @F B | @Cell C | @Cell D | @Cell E | @Cell F | @Cell G | }
-{
-@Rowa A {@I state} B{@I char} C{@I pos} D{@M{bc sub 1}} E{@M{ec sub 1}} F{@M{bc sub 2}} G{@M{ec sub 2}}
-rulebelow{yes}
-@Rowa A {1}  B {a}  C{0} D{-} E{-} F{-} G{-}
-@Rowa A {2}  B {a}  C{0} D{0} E{-} F{-} G{-}
-@Rowa A {2}  B {a}  C{1} D{0} E{-} F{-} G{-}
-@Rowa A {2}  B {a}  C{2} D{0} E{-} F{-} G{-}
-@Rowa A {3}  B {a}  C{2} D{0} E{-} F{-} G{-}
-@Rowa A {4}  B {a}  C{2} D{0} E{2} F{-} G{-}
-}
-
 
 @Figure
-@Caption { Determinzation of @I {(a*)(a)a}}
-@Tag { detaaa }
+@Location {TryAfterLine}
+@Caption { Merging transitions}
+@Tag { mergearcs_a }
 {
 @Diag {
 @Tbl
-i{ctr}
-width{expand}
-aformat { @Cell A | @Cell B | @Cell C | @Cell D | @Cell E | @Cell F | @Cell G | @Cell H | @Cell I  | @Cell J | @Cell i {right} iv {ctr} K }
+aformat { @Cell A | @Cell B | @Cell C | @Cell D | @Cell  E | @Cell iv{ctr} i{ctr} F }
+marginhorizontal { 0.3c }
+marginvertical { 0.2c }
 {
 @Rowa
-A { "  " A:: @Circle hsize {0.5f} {0.75f @Font {1}} "  "}
-B { "  " B:: @Circle hsize {0.5f} {0.75f @Font {2}} "  "}
-C { "  " C:: @Circle hsize {0.5f} {0.75f @Font {3}} "  "}
-D { "  " D:: @Circle hsize {0.5f} {0.75f @Font {4}} "  "}
-E { "  " E:: @Circle hsize {0.5f} {0.75f @Font {5}} "  "}
-F { "  " F:: @Circle hsize {0.5f} {0.75f @Font {6}} "  "}
-G { "  " G:: @Circle hsize {0.5f} {0.75f @Font {7}} "  "}
-H { "  " H:: @Circle hsize {0.5f} {0.75f @Font {8}} "  "}
-I { "  " I:: @Circle hsize {0.5f} {0.75f @Font {0}} "  "}
-K {(1)}
-
-@Rowa E {  }
+E { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
 @Rowa
-A { "  " AA:: @Circle hsize {0.5f} {0.75f @Font {1}} "  "}
-B { "  " AB:: @Circle hsize {0.5f} {0.75f @Font {2}} "  "}
-C { "  " AC:: @Circle hsize {0.5f} {0.75f @Font {3}} "  "}
-D { "  " AD:: @Circle hsize {0.5f} {0.75f @Font {4}} "  "}
-E { "  " AE:: @Circle hsize {0.5f} {0.75f @Font {5}} "  "}
-F { "  " AF:: @Circle hsize {0.5f} {0.75f @Font {6}} "  "}
-G { "  " AG:: @Circle hsize {0.5f} {0.75f @Font {7}} "  "}
-H { "  " AH:: @Circle hsize {0.5f} {0.75f @Font {8}} "  "}
-I { "  " AI:: @Circle hsize {0.5f} {0.75f @Font {0}} "  "}
-K {(2)}
-
-@Rowa E {  } @Rowa E {  }
+A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
+F { ==> }
 @Rowa
-A { "  " BA:: @Circle hsize {0.5f} {0.75f @Font {1}} "  "}
-B { "  " BB:: @Circle hsize {0.5f}alabel {0.75f @Font {"{2;6}"}} alabelpos {S}  {0.75f @Font {9}} "  "}
-D { "  " BC:: @Circle hsize {0.5f} {0.75f @Font {2}} "  "}
-F { "  " BF:: @Circle hsize {0.5f} {0.75f @Font {6}} "  "}
-G { "  " BH:: @Circle hsize {0.5f} {0.75f @Font {8}} "  "}
-H { "  " BI:: @Circle hsize {0.5f} {0.75f @Font {0}} "  "}
-K {(3)}
-
-@Rowa E {  } @Rowa E {  }
-@Rowa
-A { "  " CA:: @Circle hsize {0.5f} {0.75f @Font {1}} "  "}
-B { "  " CB:: @Circle hsize {0.5f} alabel {0.75f @Font {"{2;6}"}} alabelpos {S} {0.75f @Font {9}} "  "}
-D { "  " CC:: @Circle hsize {0.5f} {0.75f @Font {2}} "  "}
-F { "  " CF:: @Circle hsize {0.5f} {0.75f @Font {6}} "  "}
-G { "  " CH:: @Circle hsize {0.5f} {0.75f @Font {8}} "  "}
-H { "  " CI:: @Circle hsize {0.5f} {0.75f @Font {0}} "  "}
-K {(4)}
-
-@Rowa E {  } @Rowa  E {  } @Rowa E {  }
-@Rowa
-A { "  " DA:: @Circle hsize {0.5f} {0.75f @Font {1}} "  "}
-B { "  " DB:: @Circle hsize {0.5f} alabel {0.75f @Font {"{2;6}"}} alabelpos {S} {0.75f @Font {9}} "  "}
-C { "  " DD:: @Circle hsize {0.5f} alabel {0.75f @Font {"{2;6;8}"}} alabelpos {S} {0.5f @Font {10}} "  "}
-E { "  " DC:: @Circle hsize {0.5f} {0.75f @Font {2}} "  "}
-G { "  " DF:: @Circle hsize {0.5f} {0.75f @Font {6}} "  "}
-H { "  " DH:: @Circle hsize {0.5f} {0.75f @Font {8}} "  "}
-I { "  " DI:: @Circle hsize {0.5f} {0.75f @Font {0}} "  "}
-K {(5)}
-
-@Rowa E {  } @Rowa E {  } @Rowa E {  }
-@Rowa
-A { "  " EA:: @Circle hsize {0.5f} {0.75f @Font {1}} "  "}
-B { "  " EB:: @Circle hsize {0.5f} alabel {0.75f @Font {"{2;6}"}} alabelpos {S} {0.75f @Font {9}} "  "}
-C { "  " ED:: @Circle hsize {0.5f} alabel {0.75f @Font {"{2;6;8}"}} alabelpos {S} {0.5f @Font {10}} "  "}
-E { "  " EC:: @Circle hsize {0.5f} {0.75f @Font {2}} "  "}
-G { "  " EF:: @Circle hsize {0.5f} {0.75f @Font {6}} "  "}
-H { "  " EH:: @Circle hsize {0.5f} {0.75f @Font {8}} "  "}
-I { "  " EI:: @Circle hsize {0.5f} {0.75f @Font {0}} "  "}
-K {(6)}
-
-@Rowa E {  } @Rowa E {  } @Rowa E {  } @Rowa E {  }
-@Rowa
-A { "  " FA:: @Circle hsize {0.5f} {0.75f @Font {1}} "  "}
-B { "  " FB:: @Circle hsize {0.5f} alabel {0.75f @Font {"{2;6}"}} alabelpos {S} {0.75f @Font {9}} "  "}
-C { "  " FD:: @Circle hsize {0.5f} alabel {0.75f @Font {"{2;6;8}"}} alabelpos {S} {0.5f @Font {10}} "  "}
-E { "  " FI:: @Circle hsize {0.5f} {0.75f @Font {0}} "  "}
-K {(7)}
- @Rowa E {  }
+E { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
 }
 //
-@Arrow from { A } to { B } ylabel { "  " {@Sym epsilon}"/"@M{( supp 0 on 1} }
-@CurveArrow from { B@NE } to { B@NW } ylabel { a } bias {0.7c}
-@Arrow from { B } to { C } ylabel { "  " {@Sym epsilon} }
-@Arrow from { C } to { D } ylabel { "  " {@Sym epsilon}"/"@M{ ) supp 0 on 1} }
-@Arrow from { D } to { E } ylabel { "  " {@Sym epsilon}"/"@M{ ( supp 0 on 2} }
-@Arrow from { E } to { F } ylabel { a }
-@Arrow from { F } to { G } ylabel { "  " {@Sym epsilon}"/"@M{ ) supp 0 on 2} }
-@Arrow from { G } to { H } ylabel { a }
-@Arrow from { H } to { I } ylabel { "  " {@Sym lambda}"/"$ "  " }
+@CCurveArrow bias {0.5c} from { A } to { B } ylabel { 1.2f @Font a"/"@M{@tag supp 0 on 1}}
+@CurveArrow  bias {0.5c} from { A } to { C } ylabel { 1.2f @Font a"/"@M{@tag supp 0 on 2}} ylabelprox {below}
+}
 
-@Arrow from { AA } to { AB } ylabel { "  " {a}"/"@M{( supp 0 on 1} }
-@CurveArrow from { AB@NE } to { AB@NW } ylabel { a } bias {0.7c}
-@Arrow from { AB } to { AC } ylabel { "  " {@Sym epsilon} }
-@Arrow from { AC } to { AD } ylabel { "  " {@Sym epsilon}"/"@M{ ) supp 0 on 1} }
-@Arrow from { AD } to { AE } ylabel { "  " {@Sym epsilon}"/"@M{ ( supp 0 on 2} }
-@Arrow from { AE } to { AF } ylabel { a }
-@Arrow from { AF } to { AG } ylabel { "  " {@Sym epsilon}"/"@M{ ) supp 0 on 2} }
-@Arrow from { AG } to { AH } ylabel { a }
-@Arrow from { AH } to { AI } ylabel { "  " {@Sym lambda}"/"$ "  " }
-@CurveArrow from { AA } to { AF } ylabel { "  " {a}"/" @M{( supp 0 on 1} @M{) supp 0 on 1} @M{( supp 0 on 2} } ylabelprox{below}
-
-@Arrow from { BA } to { BB } ylabel { "  " {a}"/"@M{( supp 0 on 1} }
-@Arrow from { BB } to { BC } ylabel { "  " {@Sym epsilon} }
-@CurveArrow from { BC@NE } to { BC@NW } ylabel { a } bias {0.7c}
-@Arrow from { BC } to { BF } ylabel { "  " {a}"/"@M{ ) supp 0 on 1 " " ( supp 0 on 2} }
-@Arrow from { BF } to { BH } ylabel { "  " {a}"/"@M{ ) supp 0 on 2} }
-@Arrow from { BH } to { BI } ylabel { "  " {@Sym lambda}"/"$ "  " }
-@CurveArrow from { BB } to { BF } ylabel { "  " {@Sym epsilon}"/" @M{) supp 1 on 1} @M{( supp 1 on 2} } ylabelprox{below}
-
-@Arrow      from { CA } to { CB } ylabel { "  " {a}"/"@M{( supp 0 on 1} }
-@Arrow      from { CB } to { CC } ylabel { "  " {a} }
-@CurveArrow from { CC@NE } to { CC@NW } ylabel { a } bias {0.7c}
-@Arrow      from { CC } to { CF } ylabel { "  " {a}"/"@M{ ) supp 0 on 1 " " ( supp 0 on 2} }
-@Arrow      from { CF } to { CH } ylabel { "  " {a}"/"@M{ ) supp 0 on 2} }
-@Arrow      from { CH } to { CI } ylabel { "  " {@Sym lambda} "/"$ "  " }
-@CurveArrow from { CB } to { CF } ylabel { "  " {a}"/" @M{) supp 0 on 1} @M{( supp 0 on 2} } ylabelprox{above} bias {1.2c}
-@CurveArrow from { CB } to { CH } ylabel { "  " {a}"/" @M{) supp 1 on 1} @M{( supp 1 on 2} @M{) supp 0 on 2}} ylabelprox{above} bias {2.0c}
-
-@Arrow      from { DA } to { DB } ylabel { "  " {a}"/"@M{( supp 0 on 1} }
-@Arrow      from { DB } to { DD } ylabel { "  " {a} }
-@Arrow      from { DD } to { DC } ylabel { "  " {@Sym epsilon} }
-@CurveArrow from { DC@NE } to { DC@NW } ylabel { a } bias {0.7c}
-@Arrow      from { DC } to { DF } ylabel { "  " {a}"/"@M{ ) supp 0 on 1 " " ( supp 0 on 2} }
-@Arrow      from { DF } to { DH } ylabel { "  " {a}"/"@M{ ) supp 0 on 2} }
-@Arrow      from { DH } to { DI } ylabel { "  " {@Sym lambda} "/"$ "  " }
-@CurveArrow from { DD } to { DF } ylabel { "  " {@Sym epsilon}"/" @M{) supp 1 on 1} @M{( supp 1 on 2} } ylabelprox{above} bias {1.2c}
-@CurveArrow from { DD } to { DH } ylabel { "  " {@Sym epsilon}"/" @M{) supp 2 on 1} @M{( supp 2 on 2} @M{) supp 1 on 2}} ylabelprox{above} bias {2.0c}
-
-@Arrow      from { EA } to { EB } ylabel { "  " {a}"/"@M{( supp 0 on 1} }
-@Arrow      from { EB } to { ED } ylabel { "  " {a} }
-@Arrow      from { ED } to { EC } ylabel { "  " {a} }
-@CurveArrow from { EC@NE } to { EC@NW } ylabel { a } bias {0.7c}
-@Arrow      from { EC } to { EF } ylabel { "  " {a}"/"@M{ ) supp 0 on 1 " " ( supp 0 on 2} }
-@Arrow      from { EF } to { EH } ylabel { "  " {a}"/"@M{ ) supp 0 on 2} }
-@Arrow      from { EH } to { EI } ylabel { "  " {@Sym lambda} "/"$ "  " }
-@CurveArrow from { ED } to { EF } ylabel { "  " {a}"/" @M{) supp 0 on 1} @M{( supp 0 on 2} } ylabelprox{above} bias {1.2c}
-@CurveArrow from { ED } to { EH } ylabel { "  " {a}"/" @M{) supp 1 on 1} @M{( supp 1 on 2} @M{) supp 0 on 2} } ylabelprox{above} bias {2.0c}
-@CurveArrow from { ED } to { EI } ylabel { "  " {@Sym lambda}"/"$ @M{) supp 2 on 1} @M{( supp 2 on 2} @M{) supp 1 on 2}} ylabelprox{above} bias {2.8c}
-
-@Arrow      from { FA } to { FB } ylabel { "  " {a}"/"@M{( supp 0 on 1} }
-@Arrow      from { FB } to { FD } ylabel { "  " {a} }
-@CurveArrow from { FD@NE } to { FD@NW } ylabel { a } bias {0.7c}
-@Arrow from { FD } to { FI } ylabel { "  " {@Sym lambda}"/"$ @M{) supp 2 on 1} @M{( supp 2 on 2} @M{) supp 1 on 2}} ylabelprox{above} bias {2.8c}
-
+@Diag {
+@Tbl
+aformat { @Cell A | @Cell B | @Cell C | @Cell D | @Cell  E | @Cell iv{ctr} i{ctr} F }
+marginhorizontal { 0.3c }
+marginvertical { 0.2c }
+{
+@Rowa
+E { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
+@Rowa
+A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
+C { D:: @Circle hsize {0.5f} {0.75f @Font {4}}}
+@Rowa
+E { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
+}
+//
+@CCurveArrow  bias {0.5c} from {D } to { B } ylabel { 1.2f @Font {@Sym epsilon "/"@M{@tag supp 1 on 1}}}
+@CurveArrow  bias {0.5c} from { D } to { C } ylabel { 1.2f @Font {@Sym epsilon "/"@M{@tag supp 1 on 2}}} ylabelprox {below}
+@Arrow from {A} to {D} ylabel {1.2f @Font a}
 }
 }
+
+@DP
+The intuition behind figure @NumberOf{mergearcs_a} is that in state 1 we are not
+able to determinstically choose between going to state 2 or state 3 so we postpone
+the decision for when we will have read a new character in state 4.
+@LP
+At that point if we can disambiguate, we have to take into consideration the fact
+that we one position ahead in the string than we should.
+
+
+## @LP
+## Let's now provide an example in figure @NumberOf{detaaa} of the determinization
+## of  @I {(a*)(a)a}. During the example we'll skip the details on some trivial
+## semplification to focus on the key aspects of the algorithm.
+## 
+## @LP
+## The NFA created using the process outlined in figure @NumberOf{re2nfa}
+## is shown in step @B {(1)}. Consider now the string "\"" @F {aaaa} "\"",
+## the following table shows the trace of the NFA execution.
+## @DP 
+## 
+## @Center 0.9 @Scale @Tbl
+## i {ctr}
+## marginvertical {0.1c}
+## aformat { @Cell A | @Cell @F B | @Cell C | @Cell D | @Cell E | @Cell F | @Cell G | }
+## {
+## @Rowa A {@I state} B{@I char} C{@I pos} D{@M{bc sub 1}} E{@M{ec sub 1}} F{@M{bc sub 2}} G{@M{ec sub 2}}
+## rulebelow{yes}
+## @Rowa A {1}  B {a}  C{0} D{-} E{-} F{-} G{-}
+## @Rowa A {2}  B {a}  C{0} D{0} E{-} F{-} G{-}
+## @Rowa A {2}  B {a}  C{1} D{0} E{-} F{-} G{-}
+## @Rowa A {2}  B {a}  C{2} D{0} E{-} F{-} G{-}
+## @Rowa A {3}  B {a}  C{2} D{0} E{-} F{-} G{-}
+## @Rowa A {4}  B {a}  C{2} D{0} E{2} F{-} G{-}
+## }
+## 
+## 
+## @Figure
+## @Caption { Determinzation of @I {(a*)(a)a}}
+## @Tag { detaaa }
+## {
+## @Diag {
+## @Tbl
+## i{ctr}
+## width{expand}
+## aformat { @Cell A | @Cell B | @Cell C | @Cell D | @Cell E | @Cell F | @Cell G | @Cell H | @Cell I  | @Cell J | @Cell i {right} iv {ctr} K }
+## {
+## @Rowa
+## A { "  " A:: @Circle hsize {0.5f} {0.75f @Font {1}} "  "}
+## B { "  " B:: @Circle hsize {0.5f} {0.75f @Font {2}} "  "}
+## C { "  " C:: @Circle hsize {0.5f} {0.75f @Font {3}} "  "}
+## D { "  " D:: @Circle hsize {0.5f} {0.75f @Font {4}} "  "}
+## E { "  " E:: @Circle hsize {0.5f} {0.75f @Font {5}} "  "}
+## F { "  " F:: @Circle hsize {0.5f} {0.75f @Font {6}} "  "}
+## G { "  " G:: @Circle hsize {0.5f} {0.75f @Font {7}} "  "}
+## H { "  " H:: @Circle hsize {0.5f} {0.75f @Font {8}} "  "}
+## I { "  " I:: @Circle hsize {0.5f} {0.75f @Font {0}} "  "}
+## K {(1)}
+## 
+## @Rowa E {  }
+## @Rowa
+## A { "  " AA:: @Circle hsize {0.5f} {0.75f @Font {1}} "  "}
+## B { "  " AB:: @Circle hsize {0.5f} {0.75f @Font {2}} "  "}
+## C { "  " AC:: @Circle hsize {0.5f} {0.75f @Font {3}} "  "}
+## D { "  " AD:: @Circle hsize {0.5f} {0.75f @Font {4}} "  "}
+## E { "  " AE:: @Circle hsize {0.5f} {0.75f @Font {5}} "  "}
+## F { "  " AF:: @Circle hsize {0.5f} {0.75f @Font {6}} "  "}
+## G { "  " AG:: @Circle hsize {0.5f} {0.75f @Font {7}} "  "}
+## H { "  " AH:: @Circle hsize {0.5f} {0.75f @Font {8}} "  "}
+## I { "  " AI:: @Circle hsize {0.5f} {0.75f @Font {0}} "  "}
+## K {(2)}
+## 
+## @Rowa E {  } @Rowa E {  }
+## @Rowa
+## A { "  " BA:: @Circle hsize {0.5f} {0.75f @Font {1}} "  "}
+## B { "  " BB:: @Circle hsize {0.5f}alabel {0.75f @Font {"{2;6}"}} alabelpos {S}  {0.75f @Font {9}} "  "}
+## D { "  " BC:: @Circle hsize {0.5f} {0.75f @Font {2}} "  "}
+## F { "  " BF:: @Circle hsize {0.5f} {0.75f @Font {6}} "  "}
+## G { "  " BH:: @Circle hsize {0.5f} {0.75f @Font {8}} "  "}
+## H { "  " BI:: @Circle hsize {0.5f} {0.75f @Font {0}} "  "}
+## K {(3)}
+## 
+## @Rowa E {  } @Rowa E {  }
+## @Rowa
+## A { "  " CA:: @Circle hsize {0.5f} {0.75f @Font {1}} "  "}
+## B { "  " CB:: @Circle hsize {0.5f} alabel {0.75f @Font {"{2;6}"}} alabelpos {S} {0.75f @Font {9}} "  "}
+## D { "  " CC:: @Circle hsize {0.5f} {0.75f @Font {2}} "  "}
+## F { "  " CF:: @Circle hsize {0.5f} {0.75f @Font {6}} "  "}
+## G { "  " CH:: @Circle hsize {0.5f} {0.75f @Font {8}} "  "}
+## H { "  " CI:: @Circle hsize {0.5f} {0.75f @Font {0}} "  "}
+## K {(4)}
+## 
+## @Rowa E {  } @Rowa  E {  } @Rowa E {  }
+## @Rowa
+## A { "  " DA:: @Circle hsize {0.5f} {0.75f @Font {1}} "  "}
+## B { "  " DB:: @Circle hsize {0.5f} alabel {0.75f @Font {"{2;6}"}} alabelpos {S} {0.75f @Font {9}} "  "}
+## C { "  " DD:: @Circle hsize {0.5f} alabel {0.75f @Font {"{2;6;8}"}} alabelpos {S} {0.5f @Font {10}} "  "}
+## E { "  " DC:: @Circle hsize {0.5f} {0.75f @Font {2}} "  "}
+## G { "  " DF:: @Circle hsize {0.5f} {0.75f @Font {6}} "  "}
+## H { "  " DH:: @Circle hsize {0.5f} {0.75f @Font {8}} "  "}
+## I { "  " DI:: @Circle hsize {0.5f} {0.75f @Font {0}} "  "}
+## K {(5)}
+## 
+## @Rowa E {  } @Rowa E {  } @Rowa E {  }
+## @Rowa
+## A { "  " EA:: @Circle hsize {0.5f} {0.75f @Font {1}} "  "}
+## B { "  " EB:: @Circle hsize {0.5f} alabel {0.75f @Font {"{2;6}"}} alabelpos {S} {0.75f @Font {9}} "  "}
+## C { "  " ED:: @Circle hsize {0.5f} alabel {0.75f @Font {"{2;6;8}"}} alabelpos {S} {0.5f @Font {10}} "  "}
+## E { "  " EC:: @Circle hsize {0.5f} {0.75f @Font {2}} "  "}
+## G { "  " EF:: @Circle hsize {0.5f} {0.75f @Font {6}} "  "}
+## H { "  " EH:: @Circle hsize {0.5f} {0.75f @Font {8}} "  "}
+## I { "  " EI:: @Circle hsize {0.5f} {0.75f @Font {0}} "  "}
+## K {(6)}
+## 
+## @Rowa E {  } @Rowa E {  } @Rowa E {  } @Rowa E {  }
+## @Rowa
+## A { "  " FA:: @Circle hsize {0.5f} {0.75f @Font {1}} "  "}
+## B { "  " FB:: @Circle hsize {0.5f} alabel {0.75f @Font {"{2;6}"}} alabelpos {S} {0.75f @Font {9}} "  "}
+## C { "  " FD:: @Circle hsize {0.5f} alabel {0.75f @Font {"{2;6;8}"}} alabelpos {S} {0.5f @Font {10}} "  "}
+## E { "  " FI:: @Circle hsize {0.5f} {0.75f @Font {0}} "  "}
+## K {(7)}
+##  @Rowa E {  }
+## }
+## //
+## @Arrow from { A } to { B } ylabel { "  " {@Sym epsilon}"/"@M{( supp 0 on 1} }
+## @CurveArrow from { B@NE } to { B@NW } ylabel { a } bias {0.7c}
+## @Arrow from { B } to { C } ylabel { "  " {@Sym epsilon} }
+## @Arrow from { C } to { D } ylabel { "  " {@Sym epsilon}"/"@M{ ) supp 0 on 1} }
+## @Arrow from { D } to { E } ylabel { "  " {@Sym epsilon}"/"@M{ ( supp 0 on 2} }
+## @Arrow from { E } to { F } ylabel { a }
+## @Arrow from { F } to { G } ylabel { "  " {@Sym epsilon}"/"@M{ ) supp 0 on 2} }
+## @Arrow from { G } to { H } ylabel { a }
+## @Arrow from { H } to { I } ylabel { "  " {@Sym lambda}"/"$ "  " }
+## 
+## @Arrow from { AA } to { AB } ylabel { "  " {a}"/"@M{( supp 0 on 1} }
+## @CurveArrow from { AB@NE } to { AB@NW } ylabel { a } bias {0.7c}
+## @Arrow from { AB } to { AC } ylabel { "  " {@Sym epsilon} }
+## @Arrow from { AC } to { AD } ylabel { "  " {@Sym epsilon}"/"@M{ ) supp 0 on 1} }
+## @Arrow from { AD } to { AE } ylabel { "  " {@Sym epsilon}"/"@M{ ( supp 0 on 2} }
+## @Arrow from { AE } to { AF } ylabel { a }
+## @Arrow from { AF } to { AG } ylabel { "  " {@Sym epsilon}"/"@M{ ) supp 0 on 2} }
+## @Arrow from { AG } to { AH } ylabel { a }
+## @Arrow from { AH } to { AI } ylabel { "  " {@Sym lambda}"/"$ "  " }
+## @CurveArrow from { AA } to { AF } ylabel { "  " {a}"/" @M{( supp 0 on 1} @M{) supp 0 on 1} @M{( supp 0 on 2} } ylabelprox{below}
+## 
+## @Arrow from { BA } to { BB } ylabel { "  " {a}"/"@M{( supp 0 on 1} }
+## @Arrow from { BB } to { BC } ylabel { "  " {@Sym epsilon} }
+## @CurveArrow from { BC@NE } to { BC@NW } ylabel { a } bias {0.7c}
+## @Arrow from { BC } to { BF } ylabel { "  " {a}"/"@M{ ) supp 0 on 1 " " ( supp 0 on 2} }
+## @Arrow from { BF } to { BH } ylabel { "  " {a}"/"@M{ ) supp 0 on 2} }
+## @Arrow from { BH } to { BI } ylabel { "  " {@Sym lambda}"/"$ "  " }
+## @CurveArrow from { BB } to { BF } ylabel { "  " {@Sym epsilon}"/" @M{) supp 1 on 1} @M{( supp 1 on 2} } ylabelprox{below}
+## 
+## @Arrow      from { CA } to { CB } ylabel { "  " {a}"/"@M{( supp 0 on 1} }
+## @Arrow      from { CB } to { CC } ylabel { "  " {a} }
+## @CurveArrow from { CC@NE } to { CC@NW } ylabel { a } bias {0.7c}
+## @Arrow      from { CC } to { CF } ylabel { "  " {a}"/"@M{ ) supp 0 on 1 " " ( supp 0 on 2} }
+## @Arrow      from { CF } to { CH } ylabel { "  " {a}"/"@M{ ) supp 0 on 2} }
+## @Arrow      from { CH } to { CI } ylabel { "  " {@Sym lambda} "/"$ "  " }
+## @CurveArrow from { CB } to { CF } ylabel { "  " {a}"/" @M{) supp 0 on 1} @M{( supp 0 on 2} } ylabelprox{above} bias {1.2c}
+## @CurveArrow from { CB } to { CH } ylabel { "  " {a}"/" @M{) supp 1 on 1} @M{( supp 1 on 2} @M{) supp 0 on 2}} ylabelprox{above} bias {2.0c}
+## 
+## @Arrow      from { DA } to { DB } ylabel { "  " {a}"/"@M{( supp 0 on 1} }
+## @Arrow      from { DB } to { DD } ylabel { "  " {a} }
+## @Arrow      from { DD } to { DC } ylabel { "  " {@Sym epsilon} }
+## @CurveArrow from { DC@NE } to { DC@NW } ylabel { a } bias {0.7c}
+## @Arrow      from { DC } to { DF } ylabel { "  " {a}"/"@M{ ) supp 0 on 1 " " ( supp 0 on 2} }
+## @Arrow      from { DF } to { DH } ylabel { "  " {a}"/"@M{ ) supp 0 on 2} }
+## @Arrow      from { DH } to { DI } ylabel { "  " {@Sym lambda} "/"$ "  " }
+## @CurveArrow from { DD } to { DF } ylabel { "  " {@Sym epsilon}"/" @M{) supp 1 on 1} @M{( supp 1 on 2} } ylabelprox{above} bias {1.2c}
+## @CurveArrow from { DD } to { DH } ylabel { "  " {@Sym epsilon}"/" @M{) supp 2 on 1} @M{( supp 2 on 2} @M{) supp 1 on 2}} ylabelprox{above} bias {2.0c}
+## 
+## @Arrow      from { EA } to { EB } ylabel { "  " {a}"/"@M{( supp 0 on 1} }
+## @Arrow      from { EB } to { ED } ylabel { "  " {a} }
+## @Arrow      from { ED } to { EC } ylabel { "  " {a} }
+## @CurveArrow from { EC@NE } to { EC@NW } ylabel { a } bias {0.7c}
+## @Arrow      from { EC } to { EF } ylabel { "  " {a}"/"@M{ ) supp 0 on 1 " " ( supp 0 on 2} }
+## @Arrow      from { EF } to { EH } ylabel { "  " {a}"/"@M{ ) supp 0 on 2} }
+## @Arrow      from { EH } to { EI } ylabel { "  " {@Sym lambda} "/"$ "  " }
+## @CurveArrow from { ED } to { EF } ylabel { "  " {a}"/" @M{) supp 0 on 1} @M{( supp 0 on 2} } ylabelprox{above} bias {1.2c}
+## @CurveArrow from { ED } to { EH } ylabel { "  " {a}"/" @M{) supp 1 on 1} @M{( supp 1 on 2} @M{) supp 0 on 2} } ylabelprox{above} bias {2.0c}
+## @CurveArrow from { ED } to { EI } ylabel { "  " {@Sym lambda}"/"$ @M{) supp 2 on 1} @M{( supp 2 on 2} @M{) supp 1 on 2}} ylabelprox{above} bias {2.8c}
+## 
+## @Arrow      from { FA } to { FB } ylabel { "  " {a}"/"@M{( supp 0 on 1} }
+## @Arrow      from { FB } to { FD } ylabel { "  " {a} }
+## @CurveArrow from { FD@NE } to { FD@NW } ylabel { a } bias {0.7c}
+## @Arrow from { FD } to { FI } ylabel { "  " {@Sym lambda}"/"$ @M{) supp 2 on 1} @M{( supp 2 on 2} @M{) supp 1 on 2}} ylabelprox{above} bias {2.8c}
+## 
+## }
+## }
 
 @DP
 

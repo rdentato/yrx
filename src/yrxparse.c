@@ -371,7 +371,6 @@ static int tagscmp(ulv_t a, ulv_t b)
   return ret;
 }
 
-
 uint8_t *yrxArcTags(Arc *a)
 {
   uint8_t   rx;
@@ -417,7 +416,6 @@ uint8_t *yrxArcTags(Arc *a)
   buf[n] = '\0';
   return buf;
 }
-
 
 char *yrxTagStr(uint8_t tag, uint8_t rx)
 {
@@ -509,7 +507,7 @@ static state_t stkonce(state_t val,char op)
 
 /**************************************************/
 
-static aut fa;
+static Automata fa;
 
 static void addarc(state_t from, state_t to, char *l, uint32_t tag);
 static state_t nextstate(void);
@@ -1021,12 +1019,13 @@ static state_t term(state_t state)
                   c = nextch();
                   break;
 
-       case '*':  addarc(alt, start, "", TAG_NONE);
-                  addarc(state, alt, "", tag_code(TAG_CB(ncapt), cur_nrx));
+       case '*':  addarc(alt, state, "", TAG_NONE);
+                  addarc(start, alt, "", TAG_NONE);
+                  addarc(state, start, "", tag_code(TAG_CB(ncapt), cur_nrx));
                   c = nextch();
                   break;
 
-       case '+':  addarc(alt,start,"",TAG_NONE);
+       case '+':  addarc(alt,state,"",TAG_NONE);
                   addarc(state,start,"",tag_code(TAG_CB(ncapt),cur_nrx));
                   c = nextch();
                   break;
@@ -1182,7 +1181,7 @@ static void init(void)
   atexit(closedown);
 }
 
-aut *yrxParse(char **rxs, int rxn)
+Automata *yrxParse(char **rxs, int rxn)
 {
   int i;
 
@@ -1202,7 +1201,7 @@ aut *yrxParse(char **rxs, int rxn)
 /***********************************/
 
 
-state_t yrxNext(aut *dfa, state_t st)
+state_t yrxNext(Automata *dfa, state_t st)
 {
   if (st == 0) {
     resetstack();
@@ -1214,7 +1213,7 @@ state_t yrxNext(aut *dfa, state_t st)
   return st;
 }
 
-Arc *yrxGetArc(aut *dfa)
+Arc *yrxGetArc(Automata *dfa)
 {
   Arc *a;
   if (dfa->yarcn >= vecCnt(dfa->yarcs)) return NULL;
@@ -1223,7 +1222,7 @@ Arc *yrxGetArc(aut *dfa)
   return a;
 }
 
-Arc *yrxIsFinal(aut *dfa, state_t st)
+Arc *yrxIsFinal(Automata *dfa, state_t st)
 {
   Arc *a = NULL;
   vec_t arcs;

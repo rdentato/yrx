@@ -23,10 +23,9 @@ void usage(void)
 
 int main(int argc, char **argv)
 {
-  aut *dfa;
+  Automata *dfa;
   int argn = 1;
   char **rxs;
-
 
   while (argn < argc) {
     if (argv[argn][0] != '-') break;
