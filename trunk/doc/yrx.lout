@@ -131,7 +131,8 @@ The tag @I increment operation @M{()sup{+}} is defined such that:
   @M{({@tag supp d on {x}}) sup {+} =  {@tag supp {(d+1)} on x} }
   
 @LP
-The increment operation over a set of tags @M{S = {lbrace s sub 1, s sub 2 ,..., s sub n rbrace }} 
+The increment operation over a set of tags
+@M{S = {lbrace s sub 1, s sub 2 ,..., s sub n rbrace }} 
 is defined such that:
 @DP @Center 
   @Math {(S) sup{+} 
@@ -175,40 +176,46 @@ displacement that is the minimum of the two displacements.
 
 Given two sets of tags @M{S = {lbrace s sub 1, s sub 2 ,..., s sub n rbrace }},
 and @M{R = {lbrace r sub 1, r sub 2 ,..., r sub m rbrace }} 
-their @I sum is defined as:
-@DP @Center
-   @Math { S circleplus R 
-              = big bcup atop {0.7f @Font {{1 <= i <= n} // {1 <= j <= m}} } (s sub i circleplus r sub j ) }
-              
-@DP  
-## Given two sets of tags S and R, their difference is defined as:
-## @DP @Center
-## @Math { S minus R =  {lbrace @tag supp d on x " | " @tag supp d on x in S "  " logicaland "  " not exists " " k @R": " @tag supp k on x in R rbrace } }
-##  
-## @DP  
-## Informally, when subtracting a set of tags from another, only the type of
-## tags is relevant, not their displacement.
+the following operations are defined:
 
-## @LP Given two sets of tags @M{S} and @M{R}, their @I intersection is defined as:
-## @DP @Center
-##   @Math { S cap R =  {lbrace  @tag supp {min(k,d)} on x " | " @tag supp k on x in S "  " logicaland "  " @tag supp d on x in R  rbrace }}
-##   
-## @DP
+@DP @Center
+@Math {
+  matrix  {
+    row mcol {S cup tsub @tag " " R 
+              ^= big bcup atop {0.7f @Font {{1 <= i <= n} /0.1c {1 <= j <= m}} } (s sub i circleplus r sub j ) }
+        lcol {"   "} lcol {@R{"tag-union"}}
+    row lcol {" "}             
+              
+    row mcol { S " " minus " " R
+              ^=  {lbrace @tag supp d on x " | " @tag supp d on x in S "  " logicaland "  " @tag supp d on x notin R rbrace } }
+        lcol {"   "} lcol {@R{"difference"}}
+    row lcol {" "}             
+    row mcol { S " " cap " " R 
+              ^= {lbrace  @tag supp {d} on x " | " @tag supp d on x in S "  " logicaland "  " @tag supp d on x in R  rbrace }}
+        lcol {"   "} lcol {@R{"intersection"}}
+  }
+}
+
+@DP
+Note that only the union had to be redefined to take tags into account,
+the other oprations are the standard ones. 
+
 ## Given the above definitions it's easy to check that the usual property
 ## @M{S minus R = S minus (S cap R)} holds.
 
+@LP 
 Two regular expressions @M{r} and @M{s}, are @I equivalent (@M{r = s})
 if they accept the same language.
 
 @LP
 Two regular expressions @M{r} and @M{s}, are @I {tag-equivalent}
-(@M{r = sub @tag " " s}) if they are equivalent and specify the same
+(@M{r = tsub @tag " " s}) if they are equivalent and specify the same
 sets of tags.
 
 @LP
-For example @M{ a(bc)d =  (ab)cd} as they both accept the
+For example @M{ a(bc)d = (ab)cd} as they both accept the
 language containing the only string @F {abcd}, but  
-@M{ a(bc)d  notequal sub @tag  (ab)cd} as the tags variables
+@M{ a(bc)d  notequal sub @tag " " (ab)cd} as the tags variables
 will have different values upon successful match.
 
 @LP
@@ -309,7 +316,8 @@ B { a* }
 }
 //
 @Arrow from { A } to { B } ylabel { 1.2f @Font {@Sym epsilon}}
-@CurveArrow arrowstyle { solid } bias {1c} from { A@NE } to { A@NW } ylabel { 1.2f @Font {@I a}}
+@CurveArrow arrowstyle { solid } bias {1c} from { A@NE } to { A@NW }
+            ylabel { 1.2f @Font {@I a}}
 }
 
 @Diag {
@@ -326,7 +334,8 @@ B { a+ }
 }
 //
 @Arrow from { A } to { B } ylabel { 1.2f @Font {@I a}}
-@CurveArrow arrowstyle { solid } bias {1c} from { B@E } to { B@N } ylabel { 1.2f @Font {@I a}}
+@CurveArrow arrowstyle { solid } bias {1c} from { B@E }
+            to { B@N } ylabel { 1.2f @Font {@I a}}
 }
 
 @LP @LP
@@ -678,7 +687,7 @@ C { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
 E { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
 }
 //
-@CCurveArrow from { A } to { C } ylabel { 1.2f @Font {a"/"@M{T sub 1 circleplus T sub 2} }}
+@CCurveArrow from { A } to { C } ylabel { 1.2f @Font {a "/" @M{T sub 1 {cup tsub {@tag}} T sub 2} }}
 @Arrow from { B } to { C } ylabel { 1.2f @Font a"/"@M{T sub 2}} 
 }
 }
@@ -689,7 +698,7 @@ for arc in arcsfrom(state) do
     if arc.lbl = @Sym epsilon then
         if arc.@ttt.mark <> state then 
             for tmparc in arcsfrom(arc.@ttt) do
-                addarc(state, tmparc.@ttt , tmparc.lbl , arc.tags @Sym circleplus tmparc.tags)
+                addarc(state, tmparc.@ttt , tmparc.lbl , arc.tags @Sym union tsub {@tag} tmparc.tags)
             end
             arc.@ttt.mark = state
         end
@@ -757,9 +766,9 @@ E { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
 //
 @CCurveArrow  from { A } to { B } ylabel { 1.2f @Font {@M{A minus B} "/" @M{T sub 1}}}
 @CurveArrow   from { A } to { C } ylabel { 1.2f @Font {@M{B minus A} "/" @M{T sub 2}}} ylabelprox {below}
-@Arrow from { A } to { D } ylabel { 1.2f @Font {@M{A cap B} }} # "/" @M{T sub 1 cap T sub 2}
-@CurveArrow   bias {0.2c} from { D@NE } to { B } zlabel { 1.2f @Font {{@Sym epsilon} "/" @M{( T sub 1 ) sup {+}}}} zlabelprox {right}
-@CCurveArrow  bias {0.2c} from { D@SE } to { C } zlabel { 1.2f @Font {{@Sym epsilon} "/" @M{( T sub 2 ) sup {+}}}} zlabelprox {right}
+@Arrow from { A } to { D } ylabel { 1.2f @Font {@M{A cap B " / " @M{T sub 1 cap T sub 2}} }} 
+@CurveArrow   bias {0.2c} from { D@NE } to { B } zlabel { 1.2f @Font {{@Sym epsilon} "/" @M{( T sub 1 - T sub 2 ) sup {+}}}} zlabelprox {right}
+@CCurveArrow  bias {0.2c} from { D@SE } to { C } zlabel { 1.2f @Font {{@Sym epsilon} "/" @M{( T sub 2 - T sub 2 ) sup {+}}}} zlabelprox {right}
 }
 }
 
@@ -768,10 +777,10 @@ Following the NFA construction rules of figure @NumberOf{re2nfa}, arcs
 may be labeled with set of characters; if two arcs have
 labels whose intersection is not empty, we have an ambigous transition.
 
-Figure @NumberOf{mergearcs} shows the general case where
-@M{A cap B notequal emptyset " " logicaland " "  A - B notequal emptyset
-" " logicaland " " B - A notequal emptyset}. Table xx shows all the
+Figure @NumberOf{mergearcs} shows the general case, table xx shows all the
 possible cases.
+# @M{A cap B notequal emptyset " " logicaland " "  A - B notequal emptyset
+# " " logicaland " " B - A notequal emptyset}. 
 
 @LP
 
@@ -782,7 +791,8 @@ possible cases.
 {
 @Diag {
 @Tbl
-aformat { @Cell A | @Cell B | @Cell C | @Cell D | @Cell  E | @Cell iv{ctr} i{ctr} F }
+aformat { @Cell A | @Cell B | @Cell C | @Cell D |
+          @Cell E | @Cell iv{ctr} i{ctr} F }
 marginhorizontal { 0.3c }
 marginvertical { 0.2c }
 {
@@ -795,13 +805,17 @@ F { ==> }
 E { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
 }
 //
-@CCurveArrow bias {0.5c} from { A } to { B } ylabel { 1.2f @Font a"/"@M{@tag supp 0 on 1}}
-@CurveArrow  bias {0.5c} from { A } to { C } ylabel { 1.2f @Font a"/"@M{@tag supp 0 on 2}} ylabelprox {below}
+@CCurveArrow bias {0.5c} from { A } to { B }
+             ylabel { 1.2f @Font a" / "@M{@tag supp 0 on 1}}
+@CurveArrow  bias {0.5c} from { A } to { C }
+             ylabel { 1.2f @Font a" / "@M{@tag supp 0 on 2}}
+             ylabelprox {below}
 }
 
 @Diag {
 @Tbl
-aformat { @Cell A | @Cell B | @Cell C | @Cell D | @Cell  E | @Cell iv{ctr} i{ctr} F }
+aformat { @Cell A | @Cell B | @Cell C | @Cell D |
+          @Cell E | @Cell iv{ctr} i{ctr} F }
 marginhorizontal { 0.3c }
 marginvertical { 0.2c }
 {
@@ -814,20 +828,82 @@ C { D:: @Circle hsize {0.5f} {0.75f @Font {4}}}
 E { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
 }
 //
-@CCurveArrow  bias {0.5c} from {D } to { B } ylabel { 1.2f @Font {@Sym epsilon "/"@M{@tag supp 1 on 1}}}
-@CurveArrow  bias {0.5c} from { D } to { C } ylabel { 1.2f @Font {@Sym epsilon "/"@M{@tag supp 1 on 2}}} ylabelprox {below}
+@CCurveArrow bias {0.5c} from {D } to { B } 
+             ylabel { 1.2f @Font {@Sym epsilon "/"@M{@tag supp 1 on 1}}}
+@CurveArrow  bias {0.5c} from { D } to { C } 
+             ylabel { 1.2f @Font {@Sym epsilon "/"@M{@tag supp 1 on 2}}}
+             ylabelprox {below}
 @Arrow from {A} to {D} ylabel {1.2f @Font a}
 }
 }
 
 @DP
-The intuition behind figure @NumberOf{mergearcs_a} is that in state 1, if we get
-@F {a}, we are not able to choose between going to state 2 or state 3 so we postpone
-the decision in state 4 (when we will have access to another character).
+The intuition behind figure @NumberOf{mergearcs_a} is that in state 1,
+if we get @F {a}, we are not able to choose between going to state 2
+or state 3 so we postpone the decision in state 4 (when we will have
+access to another character).
 
 @LP
-The increment on tag will take into account the fact that we should have applied
-the tag one position earlier.
+The increment on tag will take into account the fact that we should
+have applied the tag one position earlier.
+
+@LP
+Unfortunately an algorithm based on that simple intuition doesn't
+always converge. There are times where ambiguities cannot be resolved
+simply merging states and postponing decisions and we would enter
+an endless loop, merging the same states over and over again.
+
+@Figure
+@Location {TryAfterLine}
+@Caption { Merging transitions}
+@Tag { mergearcs_b }
+{
+@Diag {
+@Tbl
+aformat { @Cell A | @Cell B | @Cell C | @Cell D | @Cell  E | @Cell iv{ctr} i{ctr} F }
+marginhorizontal { 0.3c }
+marginvertical { 0.2c }
+{
+@Rowa
+B {   }
+@Rowa
+E { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
+@Rowa
+A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
+F { ==> }
+@Rowa
+E { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
+}
+//
+@CCurveArrow bias {0.5c} from { A } to { B } ylabel { 1.2f @Font A"/"@M{T sub 1}}
+@CurveArrow  bias {0.5c} from { A } to { C } ylabel { 1.2f @Font B"/"@M{T sub 2}} ylabelprox {below}
+}
+
+@Diag {
+@Tbl
+aformat { @Cell  iv{ctr} A | @Cell width {2c} B | @Cell C | @Cell iv{ctr} D | @Cell  E | @Cell iv{ctr} i{ctr} F }
+marginhorizontal { 0.3c }
+marginvertical { 0.2c }
+{
+@Rowa
+E { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
+@Rowa
+height{2.5c}
+A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
+B {   }
+D { D:: @Circle hsize {0.5f} {0.75f @Font {4}}}
+@Rowa
+E { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
+}
+//
+@CCurveArrow  from { A } to { B } ylabel { 1.2f @Font {@M{A minus B} "/" @M{T sub 1}}}
+@CurveArrow   from { A } to { C } ylabel { 1.2f @Font {@M{B minus A} "/" @M{T sub 2}}} ylabelprox {below}
+@Arrow from { A } to { D } ylabel { 1.2f @Font {@M{A cap B " / " @M{T sub 1 {cup tsub @tag " "} T sub 2}} }} 
+# @CurveArrow   bias {0.2c} from { D@NE } to { B } zlabel { 1.2f @Font {{@Sym epsilon} "/" @M{( T sub 1 - T sub 2 ) sup {+}}}} zlabelprox {right}
+# @CCurveArrow  bias {0.2c} from { D@SE } to { C } zlabel { 1.2f @Font {{@Sym epsilon} "/" @M{( T sub 2 - T sub 2 ) sup {+}}}} zlabelprox {right}
+}
+}
+
 
 ## @LP
 ## Let's now provide an example in figure @NumberOf{detaaa} of the determinization
