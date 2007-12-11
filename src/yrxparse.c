@@ -420,10 +420,10 @@ char *yrxTagStr(uint8_t tag, uint8_t rx)
   static char tbuf[16];
 
   if (tag >= 'a') {
-    sprintf(tbuf,")%d_%d", tag - 'a' + 1, rx);
+    sprintf(tbuf,"%c_%d", tag, rx);
   }
   else if (tag >= 'A') {
-    sprintf(tbuf,"(%d_%d", tag - 'A' + 1, rx);
+    sprintf(tbuf,"%c_%d", tag, rx);
   }
   else {
     sprintf(tbuf,"%c%d", tag, rx);
@@ -786,15 +786,15 @@ static void determinize(void)
   uint16_t k;
   vec_t  arcs;
 
-  marked = vecNew(sizeof(state_t));
-  merged = vecNew(sizeof(usv_t));
+  marked  = vecNew(sizeof(state_t));
+  merged  = vecNew(sizeof(usv_t));
   invmrgd = mapNew(sizeof(mrgd), (int (*)())mrgcmp);
 
   resetstack();
   pushonce(1);
 
   while ((from = pop()) != 0) {
-    vecSet(marked,from,&from);
+    vecSet(marked, from, &from);
     arcs = vecGetVal(fa.states, from, vec_t);
 
     if (arcs == NULL) yrxerr("Unexpected empty state");
@@ -804,8 +804,8 @@ static void determinize(void)
   }
 
   invmrgd = mapFree(invmrgd);
-  merged = vecFreeClean(merged,(vecCleaner)mrgcleanup);
-  marked = vecFree(marked);
+  merged  = vecFreeClean(merged, (vecCleaner)mrgcleanup);
+  marked  = vecFree(marked);
 
   for (k = 1; k <= fa.nstates; k++) {
     _dbgmsg("State: %d unreachable: %d\n",k,!pushed(k));
@@ -857,7 +857,8 @@ static state_t nextstate(void)
 
 /**************************************************/
 /* = Parsing expressions
-**  Parsing is implemented as a Recursive Descent Parser for the following grammar:
+**  Parsing is implemented as a Recursive Descent Parser
+** for the following grammar:
 
        <expr>     ::= <term>+
 
@@ -1024,8 +1025,8 @@ static state_t term(state_t state)
                   c = nextch();
                   break;
 
-       case '+':  addarc(alt,start,"",TAG_NONE);
-                  addarc(state,start,"",tag_code(TAG_CB(ncapt),cur_nrx));
+       case '+':  addarc(alt, start, "", TAG_NONE);
+                  addarc(state, start, "", tag_code(TAG_CB(ncapt),cur_nrx));
                   c = nextch();
                   break;
 
@@ -1034,7 +1035,7 @@ static state_t term(state_t state)
                   c = nextch();
                   break;
 
-       default :  addarc(state,start,"",tag_code(TAG_CB(ncapt),cur_nrx));
+       default :  addarc(state, start, "", tag_code(TAG_CB(ncapt),cur_nrx));
                   break;
     }
 
@@ -1051,7 +1052,7 @@ static state_t term(state_t state)
                   return state;
 
       case ':' :  to = nextstate();
-                  addarc(state,to,"",tag_code(TAG_MRK,cur_nrx));
+                  addarc(state, to, "", tag_code(TAG_MRK,cur_nrx));
                   c = nextch(); c = nextch();
                   return to;
 
@@ -1065,18 +1066,18 @@ static state_t term(state_t state)
 
                   t1 = nextstate();
                   to = nextstate();
-                  addarc(state,to,l,TAG_NONE);
-                  addarc(state,t1,l+9,TAG_NONE);
-                  addarc(t1,to,"@.",TAG_NONE);
+                  addarc(state, to, l, TAG_NONE);
+                  addarc(state, t1, l+9, TAG_NONE);
+                  addarc(t1, to, "@.", TAG_NONE);
                   switch (c) {
                     case '-' :
-                    case '*' :  addarc(state,to,"",TAG_NONE);
-                    case '+' :  addarc(to,to,l,TAG_NONE);
-                                addarc(to,t1,l+9,TAG_NONE);
+                    case '*' :  addarc(state, to, "", TAG_NONE);
+                    case '+' :  addarc(to, to, l, TAG_NONE);
+                                addarc(to, t1, l+9, TAG_NONE);
                                 c = nextch();
                                 break;
 
-                    case '?' :  addarc(state,to,"",TAG_NONE);
+                    case '?' :  addarc(state, to, "", TAG_NONE);
                                 c = nextch();
                                 break;
                     default  :  break;
@@ -1155,17 +1156,17 @@ static void statescleanup(vec_t *arcs)
 
 static void cleantemp(void)
 {
-  if (buf != NULL) buf=ucvFree(buf);
+  if (buf != NULL) buf = ucvFree(buf);
   resetstack();
   invmrgd = mapFree(invmrgd);
-  merged = vecFreeClean(merged,(vecCleaner)mrgcleanup);
-  marked = vecFree(marked);
+  merged  = vecFreeClean(merged,(vecCleaner)mrgcleanup);
+  marked  = vecFree(marked);
 }
 
 static void closedown(void)
 {
   fa.states = vecFreeClean(fa.states,(vecCleaner)statescleanup);
-  fa.lbls  = mapFree(fa.lbls);
+  fa.lbls   = mapFree(fa.lbls);
 
   cleantemp();
 }
