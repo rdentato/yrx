@@ -153,6 +153,7 @@ is defined such that:
 ## }
 ## @DP
 ## 
+
 The @I addition operation between tags is defined such that:
 @DP
 @Center @Math {
@@ -316,7 +317,7 @@ B { a* }
 }
 //
 @Arrow from { A } to { B } ylabel { 1.2f @Font {@Sym epsilon}}
-@CurveArrow arrowstyle { solid } bias {1c} from { A@NE } to { A@NW }
+@CurveArrow arrowstyle { solid } bias {1c} from { B@NE } to { B@NW }
             ylabel { 1.2f @Font {@I a}}
 }
 
@@ -334,8 +335,8 @@ B { a+ }
 }
 //
 @Arrow from { A } to { B } ylabel { 1.2f @Font {@I a}}
-@CurveArrow arrowstyle { solid } bias {1c} from { B@E }
-            to { B@N } ylabel { 1.2f @Font {@I a}}
+@CurveArrow arrowstyle { solid } bias {1c} from { B@NE }
+            to { B@NW } ylabel { 1.2f @Font {@I a}}
 }
 
 @LP @LP
