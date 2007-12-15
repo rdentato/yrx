@@ -868,41 +868,61 @@ marginvertical { 0.2c }
 @Rowa
 B {   }
 @Rowa
-E { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
-@Rowa
-A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
-F { ==> }
-@Rowa
+A { A:: @Circle hsize {0.5f} {0.75f @Font {8}} //0.1c {0.8f @Font "{2,3}"}}
+C { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
 E { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
+@Rowa
 }
 //
-@CCurveArrow bias {0.5c} from { A } to { B } ylabel { 1.2f @Font A"/"@M{T sub 1}}
-@CurveArrow  bias {0.5c} from { A } to { C } ylabel { 1.2f @Font B"/"@M{T sub 2}} ylabelprox {below}
+@CCurveArrow bias {0.5c} from { A } to { B } ylabel { 1.0f @Font A"/"@M{T sub 1}}
+@CurveArrow  bias {0.7c} from { A } to { C } ylabel { 1.0f @Font B"/"@M{T sub 2}} ylabelprox {below}
 }
 
 @Diag {
 @Tbl
-aformat { @Cell  iv{ctr} A | @Cell width {2c} B | @Cell C | @Cell iv{ctr} D | @Cell  E | @Cell iv{ctr} i{ctr} F }
+aformat { @Cell A | @Cell B | @Cell C | @Cell D | @Cell  E | @Cell iv{ctr} i{ctr} F | @Cell G }
 marginhorizontal { 0.3c }
 marginvertical { 0.2c }
 {
 @Rowa
-E { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
-@Rowa
-height{2.5c}
-A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
 B {   }
-D { D:: @Circle hsize {0.5f} {0.75f @Font {4}}}
 @Rowa
-E { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
+A { D:: @Circle hsize {0.5f} {0.75f @Font {8}} //0.1c {0.8f @Font "{2,3}"}}
+C { A:: @Circle hsize {0.5f} {0.75f @Font {9}} //0.1c {0.8f @Font "{2,3}"}}
+E { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
+G { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
+@Rowa
 }
 //
-@CCurveArrow  from { A } to { B } ylabel { 1.2f @Font {@M{A minus B} "/" @M{T sub 1}}}
-@CurveArrow   from { A } to { C } ylabel { 1.2f @Font {@M{B minus A} "/" @M{T sub 2}}} ylabelprox {below}
-@Arrow from { A } to { D } ylabel { 1.2f @Font {@M{A cap B " / " @M{T sub 1 {cup tsub @tag " "} T sub 2}} }} 
-# @CurveArrow   bias {0.2c} from { D@NE } to { B } zlabel { 1.2f @Font {{@Sym epsilon} "/" @M{( T sub 1 - T sub 2 ) sup {+}}}} zlabelprox {right}
-# @CCurveArrow  bias {0.2c} from { D@SE } to { C } zlabel { 1.2f @Font {{@Sym epsilon} "/" @M{( T sub 2 - T sub 2 ) sup {+}}}} zlabelprox {right}
+
+@CCurveArrow bias {0.5c} from { A } to { B } ylabel { 1.0f @Font A"/"@M{(T sub 1 ) sup {+} }}
+@CurveArrow  bias {0.7c} from { A } to { C } ylabel { 1.0f @Font B"/"@M{(T sub 2 ) sup {+} }} ylabelprox {below}
+@Arrow from { D } to { A } ylabel { 0.8f @Font {@M{A cap B " /" // @M{T sub 1 {cup tsub @tag " "} T sub 2}} }} 
 }
+
+## @Diag {
+## @Tbl
+## aformat { @Cell  iv{ctr} A | @Cell width {2c} B | @Cell C | @Cell iv{ctr} D | @Cell  E | @Cell iv{ctr} i{ctr} F }
+## marginhorizontal { 0.3c }
+## marginvertical { 0.2c }
+## {
+## @Rowa
+## E { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
+## @Rowa
+## height{2.5c}
+## A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
+## B {   }
+## D { D:: @Circle hsize {0.5f} {0.75f @Font {4}}}
+## @Rowa
+## E { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
+## }
+## //
+## @CCurveArrow  from { A } to { B } ylabel { 1.2f @Font {@M{A minus B} "/" @M{T sub 1}}}
+## @CurveArrow   from { A } to { C } ylabel { 1.2f @Font {@M{B minus A} "/" @M{T sub 2}}} ylabelprox {below}
+## @Arrow from { A } to { D } ylabel { 1.2f @Font {@M{A cap B " / " @M{T sub 1 {cup tsub @tag " "} T sub 2}} }} 
+## # @CurveArrow   bias {0.2c} from { D@NE } to { B } zlabel { 1.2f @Font {{@Sym epsilon} "/" @M{( T sub 1 - T sub 2 ) sup {+}}}} zlabelprox {right}
+## # @CCurveArrow  bias {0.2c} from { D@SE } to { C } zlabel { 1.2f @Font {{@Sym epsilon} "/" @M{( T sub 2 - T sub 2 ) sup {+}}}} zlabelprox {right}
+## }
 }
 
 
