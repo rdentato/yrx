@@ -1175,6 +1175,7 @@ the tag sets on the arcs.
 @Title { Code Generation }
 @Begin
 @PP
+
 A DFA can be directly translate into code.
 @End @Section
 
