@@ -574,7 +574,7 @@ with a fairly high number of states. Most of those states, however, will
 become unreachable once the tags will be propagated to arcs that carry
 actual labels. Infact we have:
 
-@LD @Theorem
+@LD @Proposition
 {Given a regular expression @M{r}, the corresponding {@Sym epsilon}-free
 NFA has at most @M{bar r bar + 1} states.
 @LP
@@ -629,7 +629,7 @@ value in the the stack if that value has not already been pushed previously.
 The functions @F{removeeps()} and @F{mergearcs()} will push into the stack
 the destination states so that the computation continues.
 
-@LD @Theorem
+@LD @Proposition
 {
 The algorithm x is equivalent to the classical subset construction
 algorithm.
@@ -769,7 +769,7 @@ E { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
 @CurveArrow   from { A } to { C } ylabel { 1.2f @Font {@M{B minus A} "/" @M{T sub 2}}} ylabelprox {below}
 @Arrow from { A } to { D } ylabel { 1.2f @Font {@M{A cap B " / " @M{T sub 1 cap T sub 2}} }} 
 @CurveArrow   bias {0.2c} from { D@NE } to { B } zlabel { 1.2f @Font {{@Sym epsilon} "/" @M{( T sub 1 - T sub 2 ) sup {+}}}} zlabelprox {right}
-@CCurveArrow  bias {0.2c} from { D@SE } to { C } zlabel { 1.2f @Font {{@Sym epsilon} "/" @M{( T sub 2 - T sub 2 ) sup {+}}}} zlabelprox {right}
+@CCurveArrow  bias {0.2c} from { D@SE } to { C } zlabel { 1.2f @Font {{@Sym epsilon} "/" @M{( T sub 2 - T sub 1 ) sup {+}}}} zlabelprox {right}
 }
 }
 
@@ -849,82 +849,138 @@ The increment on tag will take into account the fact that we should
 have applied the tag one position earlier.
 
 @LP
-Unfortunately an algorithm based on that simple intuition doesn't
+Unfortunately an algorithm based on this simple intuition doesn't
 always converge. There are times where ambiguities cannot be resolved
-simply merging states and postponing decisions and we would enter
-an endless loop, merging the same states over and over again.
+and we would enter in an endless loop, merging the same states over and
+over. Figure @NumberOf{infinite_a} shows the case for the 
+expression @F {(a*)a }.
 
 @Figure
 @Location {TryAfterLine}
 @Caption { Merging transitions}
-@Tag { mergearcs_b }
+@Tag { infinite_a }
 {
 @Diag {
 @Tbl
-aformat { @Cell A | @Cell B | @Cell C | @Cell D | @Cell  E | @Cell iv{ctr} i{ctr} F }
+aformat { @Cell A | @Cell B | @Cell C | @Cell D | @Cell  E | @Cell F | @Cell  G | @Cell H | @Cell  I | @Cell J }
 marginhorizontal { 0.3c }
 marginvertical { 0.2c }
 {
 @Rowa
 B {   }
 @Rowa
-A { A:: @Circle hsize {0.5f} {0.75f @Font {8}} //0.1c {0.8f @Font "{2,3}"}}
+A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
 C { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
 E { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
+G { D:: @Circle paint {lightgrey} hsize {0.5f} {0.75f @Font {0}}}
+I { " " }
+J { i) }
+
 @Rowa
 }
 //
-@CCurveArrow bias {0.5c} from { A } to { B } ylabel { 1.0f @Font A"/"@M{T sub 1}}
-@CurveArrow  bias {0.7c} from { A } to { C } ylabel { 1.0f @Font B"/"@M{T sub 2}} ylabelprox {below}
+@Arrow from { A } to { B } ylabel { 1.0f @Font a" / "@M{{@F (} sup 0}}
+@Arrow from { B } to { C } ylabel { 1.0f @Font a" / "@M{{@F )} sup 0}}
+@CurveArrow  bias {0.7c} from { A } to { C }
+   ylabel { 1.0f @Font {a" / "@M{{{@F (} sup 0} " " {{@F )} sup 0}}}}
+   ylabelprox {below}
+@Arrow from { C } to { D } ylabel { 1.0f @Font {@Sym lambda "/ $" }}
+@CurveArrow from { B@NE } to { B@NW } ylabel { a } bias {0.7c}
 }
 
 @Diag {
 @Tbl
-aformat { @Cell A | @Cell B | @Cell C | @Cell D | @Cell  E | @Cell iv{ctr} i{ctr} F | @Cell G }
+aformat { @Cell A | @Cell B | @Cell C | @Cell D | @Cell  E | @Cell F | @Cell  G | @Cell H | @Cell  I | @Cell J}
 marginhorizontal { 0.3c }
 marginvertical { 0.2c }
 {
 @Rowa
 B {   }
 @Rowa
-A { D:: @Circle hsize {0.5f} {0.75f @Font {8}} //0.1c {0.8f @Font "{2,3}"}}
-C { A:: @Circle hsize {0.5f} {0.75f @Font {9}} //0.1c {0.8f @Font "{2,3}"}}
+A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
+C { E:: @Circle hsize {0.5f} {0.75f @Font {4}} //0.1c {0.8f @Font "{2,3}"} }
 E { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
 G { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
+I { D:: @Circle paint {lightgrey} hsize {0.5f} {0.75f @Font {0}}}
+J { ii) }
 @Rowa
 }
 //
-
-@CCurveArrow bias {0.5c} from { A } to { B } ylabel { 1.0f @Font A"/"@M{(T sub 1 ) sup {+} }}
-@CurveArrow  bias {0.7c} from { A } to { C } ylabel { 1.0f @Font B"/"@M{(T sub 2 ) sup {+} }} ylabelprox {below}
-@Arrow from { D } to { A } ylabel { 0.8f @Font {@M{A cap B " /" // @M{T sub 1 {cup tsub @tag " "} T sub 2}} }} 
+@Arrow from { A } to { E } ylabel { 1.0f @Font a" / "@M{{@F (} sup 0}}
+@Arrow from { E } to { B } ylabel { 1.0f @Font {@Sym epsilon}}
+@Arrow from { B } to { C } ylabel { 1.0f @Font a" / "@M{{@F )} sup 0}}
+@CurveArrow  bias {0.7c} from { E } to { C }
+   ylabel { 1.0f @Font {@Sym epsilon} " / " @M{{@F )} sup 1}}
+   ylabelprox {below}
+@Arrow from { C } to { D } ylabel { 1.0f @Font {@Sym lambda "/ $" }}
+@CurveArrow from { B@NE } to { B@NW } ylabel { a } bias {0.7c}
 }
 
-## @Diag {
-## @Tbl
-## aformat { @Cell  iv{ctr} A | @Cell width {2c} B | @Cell C | @Cell iv{ctr} D | @Cell  E | @Cell iv{ctr} i{ctr} F }
-## marginhorizontal { 0.3c }
-## marginvertical { 0.2c }
-## {
-## @Rowa
-## E { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
-## @Rowa
-## height{2.5c}
-## A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
-## B {   }
-## D { D:: @Circle hsize {0.5f} {0.75f @Font {4}}}
-## @Rowa
-## E { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
-## }
-## //
-## @CCurveArrow  from { A } to { B } ylabel { 1.2f @Font {@M{A minus B} "/" @M{T sub 1}}}
-## @CurveArrow   from { A } to { C } ylabel { 1.2f @Font {@M{B minus A} "/" @M{T sub 2}}} ylabelprox {below}
-## @Arrow from { A } to { D } ylabel { 1.2f @Font {@M{A cap B " / " @M{T sub 1 {cup tsub @tag " "} T sub 2}} }} 
-## # @CurveArrow   bias {0.2c} from { D@NE } to { B } zlabel { 1.2f @Font {{@Sym epsilon} "/" @M{( T sub 1 - T sub 2 ) sup {+}}}} zlabelprox {right}
-## # @CCurveArrow  bias {0.2c} from { D@SE } to { C } zlabel { 1.2f @Font {{@Sym epsilon} "/" @M{( T sub 2 - T sub 2 ) sup {+}}}} zlabelprox {right}
-## }
+@Diag {
+@Tbl
+aformat { @Cell A | @Cell B | @Cell C | @Cell D | @Cell  E | @Cell F | @Cell  G | @Cell H | @Cell  I | @Cell J }
+marginhorizontal { 0.3c }
+marginvertical { 0.2c }
+{
+@Rowa
+B {   }
+@Rowa
+A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
+C { E:: @Circle hsize {0.5f} {0.75f @Font {4}} //0.1c {0.8f @Font "{2,3}"} }
+E { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
+G { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
+I { D:: @Circle paint {lightgrey} hsize {0.5f} {0.75f @Font {0}}}
+J { iii) }
+
+@Rowa
+}
+//
+@Arrow from { A } to { E } ylabel { 1.0f @Font a" / "@M{{@F (} sup 0}}
+@Arrow from { E } to { B } ylabel { 1.0f @Font a}
+@Arrow from { B } to { C } ylabel { 1.0f @Font a" / "@M{{@F )} sup 0}}
+@CurveArrow  bias {0.7c} from { E } to { C }
+   ylabel { 1.0f @Font a " / " @M{{@F )} sup 0}}
+   ylabelprox {below}
+   ylabeladjust {0.0001c,0.0001c}
+@CurveArrow  bias {1.3c} from { E } to { D }
+   zlabel { 1.0f @Font {@Sym lambda} "/ $ " @M{{@F )} sup 1}}
+   zlabelprox {below}
+@Arrow from { C } to { D } ylabel { 1.0f @Font {@Sym lambda "/ $" }}
+@CurveArrow from { B@NE } to { B@NW } ylabel { a } bias {0.7c}
 }
 
+
+@Diag {
+@Tbl
+aformat { @Cell A | @Cell B | @Cell C | @Cell D | @Cell  E | @Cell F | @Cell  G | @Cell H | @Cell  I | @Cell J }
+marginhorizontal { 0.3c }
+marginvertical { 0.2c }
+{
+@Rowa
+B {   }
+@Rowa
+A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
+C { E:: @Circle hsize {0.5f} {0.75f @Font {4}} //0.1c {0.8f @Font "{2,3}"} }
+F { D:: @Circle paint {lightgrey} hsize {0.5f} {0.75f @Font {0}}}
+J { iv) }
+
+@Rowa
+}
+//
+@Arrow from { A } to { E } ylabel { 1.0f @Font a" / "@M{{@F (} sup 0}}
+@Arrow  bias {1.3c} from { E } to { D }
+   ylabel { 1.0f @Font {@Sym lambda} "/ $ " @M{{@F )} sup 1}}
+@CurveArrow from { E@NE } to { E@NW } ylabel { 1.0f @Font a " / " @M{{@F )} sup 0}} bias {0.7c}
+}
+
+}
+
+We merged the states 2 and 3 in step 1 (creating a new state 4) and
+if we would try to do the same in step iii), we would never stop. To
+avoid the infinite loop, we introduce a new rule: if a state is the
+result of merge, we would add a loop to itself rather than merging 
+the states again. The new arc will be tagged with the tag-union of
+the tag sets on the arcs.
 
 ## @LP
 ## Let's now provide an example in figure @NumberOf{detaaa} of the determinization
@@ -1113,6 +1169,13 @@ G { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
 
 @EndSubSections
 
+@End @Section
+
+@Section
+@Title { Code Generation }
+@Begin
+@PP
+A DFA can be directly translate into code.
 @End @Section
 
 
