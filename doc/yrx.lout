@@ -699,7 +699,7 @@ for arc in arcsfrom(state) do
     if arc.lbl = @Sym epsilon then
         if arc.@ttt.mark <> state then 
             for tmparc in arcsfrom(arc.@ttt) do
-                addarc(state, tmparc.@ttt , tmparc.lbl , arc.tags @Sym union tsub {@tag} tmparc.tags)
+                addarc(state, tmparc.@ttt , tmparc.lbl , arc.tags @M {union sub {@tag}} tmparc.tags)
             end
             arc.@ttt.mark = state
         end
@@ -851,9 +851,9 @@ have applied the tag one position earlier.
 @LP
 Unfortunately an algorithm based on this simple intuition doesn't
 always converge. There are times where ambiguities cannot be resolved
-and we would enter in an endless loop, merging the same states over and
-over. Figure @NumberOf{infinite_a} shows the case for the 
-expression @F {(a*)a }.
+simply looking ahead and we would enter in an endless loop, merging
+the same states over and over.
+Figure @NumberOf{infinite_a} shows the case for the expression @F {(a*)a }.
 
 @Figure
 @Location {TryAfterLine}
@@ -862,7 +862,7 @@ expression @F {(a*)a }.
 {
 @Diag {
 @Tbl
-aformat { @Cell A | @Cell B | @Cell C | @Cell D | @Cell  E | @Cell F | @Cell  G | @Cell H | @Cell  I | @Cell J }
+aformat { @Cell i {left} iv {ctr} J | @Cell A | @Cell B | @Cell C | @Cell D | @Cell  E | @Cell F | @Cell  G | @Cell H | @Cell  I }
 marginhorizontal { 0.3c }
 marginvertical { 0.2c }
 {
@@ -875,8 +875,40 @@ E { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
 G { D:: @Circle paint {lightgrey} hsize {0.5f} {0.75f @Font {0}}}
 I { " " }
 J { i) }
+@Rowa
+A {   }
+@Rowa
+A {   }
+@Rowa
+A { AA:: @Circle hsize {0.5f} {0.75f @Font {1}}}
+C { AE:: @Circle hsize {0.5f} {0.75f @Font {4}} //0.1c {0.8f @Font "{2,3}"} }
+E { AB:: @Circle hsize {0.5f} {0.75f @Font {2}}}
+G { AC:: @Circle hsize {0.5f} {0.75f @Font {3}}}
+I { AD:: @Circle paint {lightgrey} hsize {0.5f} {0.75f @Font {0}}}
+J { ii) }
+@Rowa
+A {   }
+@Rowa
+A {   }
+@Rowa
+A { BA:: @Circle hsize {0.5f} {0.75f @Font {1}}}
+C { BE:: @Circle hsize {0.5f} {0.75f @Font {4}} //0.1c {0.8f @Font "{2,3}"} }
+E { BB:: @Circle hsize {0.5f} {0.75f @Font {2}}}
+G { BC:: @Circle hsize {0.5f} {0.75f @Font {3}}}
+I { BD:: @Circle paint {lightgrey} hsize {0.5f} {0.75f @Font {0}}}
+J { iii) }
+@Rowa
+A {   }
+@Rowa
+A {   }
+@Rowa
+A { CA:: @Circle hsize {0.5f} {0.75f @Font {1}}}
+C { CE:: @Circle hsize {0.5f} {0.75f @Font {4}} //0.1c {0.8f @Font "{2,3}"} }
+F { CD:: @Circle paint {lightgrey} hsize {0.5f} {0.75f @Font {0}}}
+J { iv) }
 
 @Rowa
+
 }
 //
 @Arrow from { A } to { B } ylabel { 1.0f @Font a" / "@M{{@F (} sup 0}}
@@ -886,101 +918,166 @@ J { i) }
    ylabelprox {below}
 @Arrow from { C } to { D } ylabel { 1.0f @Font {@Sym lambda "/ $" }}
 @CurveArrow from { B@NE } to { B@NW } ylabel { a } bias {0.7c}
-}
 
-@Diag {
-@Tbl
-aformat { @Cell A | @Cell B | @Cell C | @Cell D | @Cell  E | @Cell F | @Cell  G | @Cell H | @Cell  I | @Cell J}
-marginhorizontal { 0.3c }
-marginvertical { 0.2c }
-{
-@Rowa
-B {   }
-@Rowa
-A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
-C { E:: @Circle hsize {0.5f} {0.75f @Font {4}} //0.1c {0.8f @Font "{2,3}"} }
-E { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
-G { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
-I { D:: @Circle paint {lightgrey} hsize {0.5f} {0.75f @Font {0}}}
-J { ii) }
-@Rowa
-}
-//
-@Arrow from { A } to { E } ylabel { 1.0f @Font a" / "@M{{@F (} sup 0}}
-@Arrow from { E } to { B } ylabel { 1.0f @Font {@Sym epsilon}}
-@Arrow from { B } to { C } ylabel { 1.0f @Font a" / "@M{{@F )} sup 0}}
-@CurveArrow  bias {0.7c} from { E } to { C }
+@Arrow from { AA } to { AE } ylabel { 1.0f @Font a" / "@M{{@F (} sup 0}}
+@Arrow from { AE } to { AB } ylabel { 1.0f @Font {@Sym epsilon}}
+@Arrow from { AB } to { AC } ylabel { 1.0f @Font a" / "@M{{@F )} sup 0}}
+@CurveArrow  bias {0.7c} from { AE } to { AC }
    ylabel { 1.0f @Font {@Sym epsilon} " / " @M{{@F )} sup 1}}
    ylabelprox {below}
-@Arrow from { C } to { D } ylabel { 1.0f @Font {@Sym lambda "/ $" }}
-@CurveArrow from { B@NE } to { B@NW } ylabel { a } bias {0.7c}
-}
+@Arrow from { AC } to { AD } ylabel { 1.0f @Font {@Sym lambda "/ $" }}
+@CurveArrow from { AB@NE } to { AB@NW } ylabel { a } bias {0.7c}
 
-@Diag {
-@Tbl
-aformat { @Cell A | @Cell B | @Cell C | @Cell D | @Cell  E | @Cell F | @Cell  G | @Cell H | @Cell  I | @Cell J }
-marginhorizontal { 0.3c }
-marginvertical { 0.2c }
-{
-@Rowa
-B {   }
-@Rowa
-A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
-C { E:: @Circle hsize {0.5f} {0.75f @Font {4}} //0.1c {0.8f @Font "{2,3}"} }
-E { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
-G { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
-I { D:: @Circle paint {lightgrey} hsize {0.5f} {0.75f @Font {0}}}
-J { iii) }
-
-@Rowa
-}
-//
-@Arrow from { A } to { E } ylabel { 1.0f @Font a" / "@M{{@F (} sup 0}}
-@Arrow from { E } to { B } ylabel { 1.0f @Font a}
-@Arrow from { B } to { C } ylabel { 1.0f @Font a" / "@M{{@F )} sup 0}}
-@CurveArrow  bias {0.7c} from { E } to { C }
+@Arrow from { BA } to { BE } ylabel { 1.0f @Font a" / "@M{{@F (} sup 0}}
+@Arrow from { BE } to { BB } ylabel { 1.0f @Font a}
+@Arrow from { BB } to { BC } ylabel { 1.0f @Font a" / "@M{{@F )} sup 0}}
+@CurveArrow  bias {0.7c} from { BE } to { BC }
    ylabel { 1.0f @Font a " / " @M{{@F )} sup 0}}
    ylabelprox {below}
    ylabeladjust {0.0001c,0.0001c}
-@CurveArrow  bias {1.3c} from { E } to { D }
+@CurveArrow  bias {1.3c} from { BE } to { BD }
    zlabel { 1.0f @Font {@Sym lambda} "/ $ " @M{{@F )} sup 1}}
    zlabelprox {below}
-@Arrow from { C } to { D } ylabel { 1.0f @Font {@Sym lambda "/ $" }}
-@CurveArrow from { B@NE } to { B@NW } ylabel { a } bias {0.7c}
-}
+@Arrow from { BC } to { BD } ylabel { 1.0f @Font {@Sym lambda "/ $" }}
+@CurveArrow from { BB@NE } to { BB@NW } ylabel { a } bias {0.7c}
 
-
-@Diag {
-@Tbl
-aformat { @Cell A | @Cell B | @Cell C | @Cell D | @Cell  E | @Cell F | @Cell  G | @Cell H | @Cell  I | @Cell J }
-marginhorizontal { 0.3c }
-marginvertical { 0.2c }
-{
-@Rowa
-B {   }
-@Rowa
-A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
-C { E:: @Circle hsize {0.5f} {0.75f @Font {4}} //0.1c {0.8f @Font "{2,3}"} }
-F { D:: @Circle paint {lightgrey} hsize {0.5f} {0.75f @Font {0}}}
-J { iv) }
-
-@Rowa
-}
-//
-@Arrow from { A } to { E } ylabel { 1.0f @Font a" / "@M{{@F (} sup 0}}
-@Arrow  bias {1.3c} from { E } to { D }
+@Arrow from { CA } to { CE } ylabel { 1.0f @Font a" / "@M{{@F (} sup 0}}
+@Arrow  bias {1.3c} from { CE } to { CD }
    ylabel { 1.0f @Font {@Sym lambda} "/ $ " @M{{@F )} sup 1}}
-@CurveArrow from { E@NE } to { E@NW } ylabel { 1.0f @Font a " / " @M{{@F )} sup 0}} bias {0.7c}
+@CurveArrow from { CE@NE } to { CE@NW }
+   ylabel { 1.0f @Font a " / " @M{{@F )} sup 0}} bias {0.7c}
 }
 
 }
 
-We merged the states 2 and 3 in step 1 (creating a new state 4) and
-if we would try to do the same in step iii), we would never stop. To
-avoid the infinite loop, we introduce a new rule: if a state is the
+We merged the states 2 and 3 in step i), creating state 4. In step iii),
+starting from 4, we should merge 2 and 3 again, and we would never stop.
+To avoid the infinite loop, if a state @I x is the 
 result of merge, we would add a loop to itself rather than merging 
 the states again. The new arc will be tagged with the tag-union of
 the tag sets on the arcs.
+
+@DP
+
+@End @SubSection
+
+@SubSection
+@Title { Merging arcs }
+@Begin
+@PP
+We are now ready to give an algorithm to implment the @F {mergearcs()}
+function:
+
+@DP
+
+@ID @OneRow @Pas {
+lbls = @R "\{\}"
+for arc in arcsfrom(state) do
+    lbl = arc.lbl
+    for (tmp in lbls) and (lbl @M{notequal emptyset} ) do
+        if lbl @M{supseteq} arc.lbl then
+            tmp.arcs = tmp.arcs @M{union} arc
+        else if tmp.lbl @M{subset} arc.lbl then
+            tmp.arcs = tmp.arcs @M{union} arc
+        else if tmp.lbl @M{intersection} arc.lbl @M{notequal emptyset} then
+            l = @R "{" lbl , arc @R "}"
+            lbls = lbls @M{union} @R "{" lbl , arc @R "}"
+            tmp.arcs = tmp.arcs @M{union} arc
+        end
+        lbl = lbl "\\" tmp.lbl
+    end
+    if lbl @M{notequal emptyset} then
+        lbls = lbls @M{union} @R "{" lbl , arc @R "}"
+    end
+end
+}
+
+@End @SubSection
+
+@EndSubSections
+@End @Section
+
+@Section
+@Title { Matching multiple regular expressions}
+@Begin
+@PP
+YRX tries to match a string against more than one regular expression
+at the time. This will result in possbile ambiguities: given
+the expressions "\""@M {[ab]0}"\"" and "\""@M {b[01]}"\"" 
+the string "\""@F{b1}"\""  matches both.
+
+@End @Section
+
+@Section
+@Title { Code Generation }
+@Begin
+@PP
+A DFA can be directly translate into code.
+@End @Section
+
+#### REFERENCE #####################################
+
+{ @Reference
+@Tag { AhoUllman77 }
+@Type { Book }
+@Author { Alfred V. Aho and Jeffrey D. Ullman }
+@Title { Principles of Compiler Design  }
+@Publisher { Addison-Wesley Longman Publishing Co., Inc }
+@Edition { ed. I }
+@Year { 1977 }
+}
+
+{ @Reference
+@Tag {Laurikari}
+@Type {MastersThesis}
+@Author {Ville Laurikari}
+@Institution {Helsinki University of Technology}
+@Publisher {}
+@Title {Efficient submatch addressing for regular expressions}
+@URL {http://citeseer.ist.psu.edu/480392.html}
+@Year {2001}
+}
+
+{ @Reference
+@Tag {dube00}
+@Type {Article}
+@Author {Danny Dube and Marc Feeley}
+@Journal {Acta Informatica}
+@Number {2}
+@Title {Efficiently building a parse tree from a regular expression}
+@URL {http://citeseer.ist.psu.edu/340667.html}
+@Volume {37}
+@Year {2000}
+}
+
+{ @Reference
+@Tag {ilieyu02}
+@Type {InProceedings}
+@Author {Lucian Ilie and Sheng Yu}
+@Journal {}
+@Pages {279-288}
+@Publisher {Springer-Verlag}
+@Title {Constructing NFA s by Optimal Use of Positions in Regular Expressions}
+@URL {http://www.springerlink.com/content/emvg6jgyyfxm1apv/}
+@Volume {2373}
+@Year {2002}
+@InTitle {CPM '02: Proceedings of the 13th Annual Symposium on Combinatorial Pattern Matching}
+}
+
+{ @Reference
+@Tag {vannoord00}
+@Type {InBook}
+@Author {Gertjan Van Noord}
+@Title {Treatment of @Sym epsilon -- Moves in Subset Construction}
+@URL {http://citeseer.ist.psu.edu/vannoord98treatment.html}
+@Volume {26}
+@Year {2000}
+@InTitle {Computational Linguistics, {MIT} Press for the Association for Computational Linguistics}
+}
+
+
+
+
 
 ## @LP
 ## Let's now provide an example in figure @NumberOf{detaaa} of the determinization
@@ -1162,81 +1259,3 @@ the tag sets on the arcs.
 ## 
 ## }
 ## }
-
-@DP
-
-@End @SubSection
-
-@EndSubSections
-
-@End @Section
-
-@Section
-@Title { Code Generation }
-@Begin
-@PP
-
-A DFA can be directly translate into code.
-@End @Section
-
-
-#### REFERENCE #####################################
-
-{ @Reference
-@Tag { AhoUllman77 }
-@Type { Book }
-@Author { Alfred V. Aho and Jeffrey D. Ullman }
-@Title { Principles of Compiler Design  }
-@Publisher { Addison-Wesley Longman Publishing Co., Inc }
-@Edition { ed. I }
-@Year { 1977 }
-}
-
-{ @Reference
-@Tag {Laurikari}
-@Type {MastersThesis}
-@Author {Ville Laurikari}
-@Institution {Helsinki University of Technology}
-@Publisher {}
-@Title {Efficient submatch addressing for regular expressions}
-@URL {http://citeseer.ist.psu.edu/480392.html}
-@Year {2001}
-}
-
-{ @Reference
-@Tag {dube00}
-@Type {Article}
-@Author {Danny Dube and Marc Feeley}
-@Journal {Acta Informatica}
-@Number {2}
-@Title {Efficiently building a parse tree from a regular expression}
-@URL {http://citeseer.ist.psu.edu/340667.html}
-@Volume {37}
-@Year {2000}
-}
-
-{ @Reference
-@Tag {ilieyu02}
-@Type {InProceedings}
-@Author {Lucian Ilie and Sheng Yu}
-@Journal {}
-@Pages {279-288}
-@Publisher {Springer-Verlag}
-@Title {Constructing NFA s by Optimal Use of Positions in Regular Expressions}
-@URL {http://www.springerlink.com/content/emvg6jgyyfxm1apv/}
-@Volume {2373}
-@Year {2002}
-@InTitle {CPM '02: Proceedings of the 13th Annual Symposium on Combinatorial Pattern Matching}
-}
-
-{ @Reference
-@Tag {vannoord00}
-@Type {InBook}
-@Author {Gertjan Van Noord}
-@Title {Treatment of @Sym epsilon -- Moves in Subset Construction}
-@URL {http://citeseer.ist.psu.edu/vannoord98treatment.html}
-@Volume {26}
-@Year {2000}
-@InTitle {Computational Linguistics, {MIT} Press for the Association for Computational Linguistics}
-}
-
