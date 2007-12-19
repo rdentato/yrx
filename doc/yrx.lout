@@ -74,7 +74,7 @@ aformat {@Cell A | @Cell B}
 @Rowa A {"\\"} B{escape next character. If there's no special
 meaning associated with the escaped sequence,
 the regular character is matched.}
-@Rowa A {[]} B{delimit character class}
+@Rowa A {[]} B{delimit character class. "[\^...]" complements the class.}
 @Rowa A {*} B{Matches preceding expression zero or more times.}
 @Rowa A {+} B{As above but matches one or more repetitions.}
 @Rowa A {?} B{As above but matches only zero or one repetitions.}
@@ -102,9 +102,10 @@ the regular character is matched.}
 @Rowa A {"\\u"} B{Equivalent to [A-Z]} 
 @Rowa A {"\\U"} B{Equivalent to "[\^A-Z]"}
 @Rowa A {"\\v"} B{Matches a vertical tab (ASCII x)}
-@Rowa A {"\\x"@I{hh}} B{matches the character whose code is @I{hh} in hexadecimal}
 @Rowa A {"\\w"} B{Equivalent to [_"\\a"]} 
 @Rowa A {"\\W"} B{Equivalent to ["\^\\w]"}
+@Rowa A {"\\x"@I{hh}} 
+      B {matches the character whose code is @I{hh} in hexadecimal}
 @Rowa A {"\\y"} B{Equivalent to [" \\t"]} 
 @Rowa A {"\\Y"} B{Equivalent to ["\^ \\t"]} 
 }
@@ -159,11 +160,11 @@ The @I addition operation between tags is defined such that:
 @Center @Math {
   @tag supp k on {y} circleplus @tag supp d on {w} = 
       matrix atleft { blbrace  }  {
-        row col {{lbrace  @tag supp k on {y} , @tag supp d on {w}  rbrace } /0.3c
-                 {lbrace @tag supp {min(k,d)} on {y} rbrace}
+        row col {{lbrace  @tag supp k on {y} , @tag supp d on {w}  rbrace }
+                 /0.3c {lbrace @tag supp {min(k,d)} on {y} rbrace}
                 }
-            col {{@R if " " y != w} /0.3c
-                 {@R if " " y = w}
+            col {{@R if " " y != w}
+                 /0.5c {@R if " " y = w}
                 }
       }
 }
@@ -576,11 +577,9 @@ actual labels. Infact we have:
 
 @LD @Proposition
 {Given a regular expression @M{r}, the corresponding {@Sym epsilon}-free
-NFA has at most @M{bar r bar + 1} states.
+NFA has @M{O(bar r bar)} states.
 @LP
-@Proof Yet to be figured out. And also, the theorem does not hold
-for @M{(X bar Y)}. If changing @M{a+} will be enough, good otherwise
-I'll introduce a term to take it into account.@EndProof
+@Proof Yet to be figured out.  @EndProof
 }
 
 Note that in the construction of the terms @M{(X)*}
@@ -643,11 +642,11 @@ algorithm.
 @Title { Elimination of {@Sym epsilon}-transitions }
 @Begin
 @PP
-The key idea is that an {@Sym epsilon}-transition from a state @I x to a state
-@I y implies that all states reachable from @I y are also reachable from @I x.
-In other words the {@Sym epsilon}-transition from @I x to @I y can be removed
-and replaced with the set of arcs @I x to the states to the states reachable
-from @I y.
+The key idea is that an {@Sym epsilon}-transition from a state
+@I x to a state @I y implies that all states reachable from @I y
+are also reachable from @I x. In other words the {@Sym epsilon}-transition
+from @I x to @I y can be removed and replaced with the set of arcs
+@I x to the states to the states reachable from @I y.
 
 @LP
 Figure @NumberOf{removeeps} shows how labels and tags are propagated during
@@ -673,9 +672,12 @@ E { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
 F { ==> }
 }
 //
-@Arrow from { A } to { B } ylabel { 1.2f @Font {@Sym epsilon "/"@M{T sub 1} }}
-@Arrow from { B } to { C } ylabel { 1.2f @Font a"/"@M{T sub 2}} 
+@Arrow from { A } to { B }
+       ylabel { 1.2f @Font {@Sym epsilon "/"@M{T sub 1} }}
+@Arrow from { B } to { C }
+       ylabel { 1.2f @Font a"/"@M{T sub 2}} 
 }
+
 @Diag {
 @Tbl
 aformat { @Cell A | @Cell B | @Cell C | @Cell D | @Cell i {ctr} E | @Cell iv{ctr} i{ctr} F }
@@ -688,8 +690,10 @@ C { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
 E { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
 }
 //
-@CCurveArrow from { A } to { C } ylabel { 1.2f @Font {a "/" @M{T sub 1 {cup tsub {@tag}} T sub 2} }}
+@CCurveArrow from { A } to { C }
+        ylabel { 1.2f @Font {a "/" @M{T sub 1 {cup tsub {@tag}} T sub 2} }}
 @Arrow from { B } to { C } ylabel { 1.2f @Font a"/"@M{T sub 2}} 
+
 }
 }
 @DP
@@ -744,8 +748,12 @@ F { ==> }
 E { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
 }
 //
-@CCurveArrow bias {0.5c} from { A } to { B } ylabel { 1.2f @Font A"/"@M{T sub 1}}
-@CurveArrow  bias {0.5c} from { A } to { C } ylabel { 1.2f @Font B"/"@M{T sub 2}} ylabelprox {below}
+@CCurveArrow bias {0.5c} from { A } to { B }
+             ylabel { 1.2f @Font A"/"@M{T sub 1}}
+             
+@CurveArrow  bias {0.5c} from { A } to { C }
+             ylabel { 1.2f @Font B"/"@M{T sub 2}}
+             ylabelprox {below}
 }
 
 @Diag {
@@ -765,11 +773,23 @@ D { D:: @Circle hsize {0.5f} {0.75f @Font {4}}}
 E { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
 }
 //
-@CCurveArrow  from { A } to { B } ylabel { 1.2f @Font {@M{A minus B} "/" @M{T sub 1}}}
-@CurveArrow   from { A } to { C } ylabel { 1.2f @Font {@M{B minus A} "/" @M{T sub 2}}} ylabelprox {below}
-@Arrow from { A } to { D } ylabel { 1.2f @Font {@M{A cap B " / " @M{T sub 1 cap T sub 2}} }} 
-@CurveArrow   bias {0.2c} from { D@NE } to { B } zlabel { 1.2f @Font {{@Sym epsilon} "/" @M{( T sub 1 - T sub 2 ) sup {+}}}} zlabelprox {right}
-@CCurveArrow  bias {0.2c} from { D@SE } to { C } zlabel { 1.2f @Font {{@Sym epsilon} "/" @M{( T sub 2 - T sub 1 ) sup {+}}}} zlabelprox {right}
+@CCurveArrow  from { A } to { B }
+              ylabel { 1.2f @Font {@M{A minus B} "/" @M{T sub 1}}}
+              
+@CurveArrow   from { A } to { C } 
+              ylabel { 1.2f @Font {@M{B minus A} "/" @M{T sub 2}}}
+              ylabelprox {below}
+              
+@Arrow from { A } to { D } 
+       ylabel { 1.2f @Font {@M{A cap B " / " @M{T sub 1 cap T sub 2}} }} 
+       
+@CurveArrow   bias {0.2c} from { D@NE } to { B }
+ zlabel { 1.2f @Font {{@Sym epsilon} "/" @M{( T sub 1 - T sub 2 ) sup {+}}}}
+ zlabelprox {right}
+              
+@CCurveArrow  bias {0.2c} from { D@SE } to { C } 
+ zlabel { 1.2f @Font {{@Sym epsilon} "/" @M{( T sub 2 - T sub 1 ) sup {+}}}}
+ zlabelprox {right}
 }
 }
 
@@ -857,7 +877,7 @@ Figure @NumberOf{infinite_a} shows the case for the expression @F {(a*)a }.
 
 @Figure
 @Location {TryAfterLine}
-@Caption { Merging transitions}
+@Caption { Avoiding infinite loop }
 @Tag { infinite_a }
 {
 @Diag {
@@ -947,7 +967,6 @@ J { iv) }
 @CurveArrow from { CE@NE } to { CE@NW }
    ylabel { 1.0f @Font a " / " @M{{@F )} sup 0}} bias {0.7c}
 }
-
 }
 
 We merged the states 2 and 3 in step i), creating state 4. In step iii),
@@ -996,6 +1015,41 @@ end
 
 @EndSubSections
 @End @Section
+
+
+@Section
+@Title { Extended regular expressions }
+@Begin
+@PP
+YRX introduces several extensions to the standard regular expressions.
+
+@BeginSubSections
+
+@SubSection
+@Title { Escaped characters }
+@Begin
+@PP
+xxxx
+@End @SubSection
+
+@SubSection
+@Title { Complement }
+@Begin
+@PP
+xxxx
+@End @SubSection
+
+@SubSection
+@Title { Intersection }
+@Begin
+@PP
+xxxx
+@End @SubSection
+
+@EndSubSections
+
+@End @Section
+
 
 @Section
 @Title { Matching multiple regular expressions}
