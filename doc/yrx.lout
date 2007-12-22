@@ -119,17 +119,49 @@ the regular character is matched.}
 @Begin
 
 @PP
-Each tag @M{ @tag supp d on x } assigns to an associated variable
-@M{v sub x} the value @M{pos - d} where @M{pos} is the current position
+The concept of @I {tag-equivalence} explains why the usual
+algorithms on regular expressions need to be modifiad to handle
+tagged regular expression. 
+
+@LP
+Two regular expressions @M{r} and @M{s}, are @I equivalent (@M{r = s})
+if they accept the same language.
+
+@LP
+Two regular expressions @M{r} and @M{s}, are @I {tag-equivalent}
+(@M{r = tsub @tag " " s}) if they are equivalent and specify the same
+sets of tags upon successful match.
+
+@LP
+For example @M{ a(bc)d = (ab)cd} but
+@M{a(bc)d " " notequal sub @tag " " (ab)cd} 
+because they both accept the same language (the string @F {abcd}) but  
+specify different values for the tags.
+
+@LP
+ The interpretation of a tagged transition labeled with
+@M{ @F{a} " / " @tag supp d on {x,k}}
+is that upon reading the character @F{a}, the
+value of a variable @M{v sub {x,k}} is set to current position 
+minus @M{d} and the FA moves to the next state.
+
+@LP 
+Each tag @M{ @tag supp d on {x,k} } assigns to an associated variable
+@M{v sub {x,k}} the value @M{pos - d} where @M{pos} is the current position
 within the input text.
 
 @LP
-Given a tag @M{s = @tag supp d on x } , @I {x} is said to be the @I type
-of @I{s} and @I{d} the @I displacement of @I{s}.
+No interpretation is given for tagged {@Sym epsilon}-transitions
+as their only purpose will be to help propagating tags.
+
+@LP
+Given a tag @M{s = @tag supp d on {x,k} }, @I {x} is the @I type
+of @I{s}, @I{d} the @I displacement of @I{s} and @M{k} is
+the index of the expression the tag is related to.
 
 @LP
 The tag @I increment operation @M{()sup{+}} is defined such that:
-  @M{({@tag supp d on {x}}) sup {+} =  {@tag supp {(d+1)} on x} }
+  @M{({@tag supp d on {x,k}}) sup {+} =  {@tag supp {(d+1)} on {x,k}} }
   
 @LP
 The increment operation over a set of tags
@@ -140,20 +172,20 @@ is defined such that:
               = lbrace (s sub {1}) sup {+}, (s sub {2}) sup {+} ,..., (s sub {n}) sup {+} rbrace }
 
 @DP
-##   Given a set of tags @M{S = {lbrace s sub 1, s sub 2 ,..., s sub n rbrace }}
-## and a tag @M{@tag supp d on x}, @I adding a tag to @M {S} is defined as:
-## 
-## @DP @Center @Math {
-##   S circleplus @tag supp d on {x} = 
-##       matrix atleft { blbrace  }  {
-##         row col {{lbrace s sub 1, s sub 2 ,..., s sub n, @tag supp d on {x} rbrace } /0.3c
-##         {lbrace s sub 1 ,..., s sub {j-1} , @tag supp {min(k,d)} on x , s sub {j+1} ,..., s sub n rbrace }}
-##             col {{@R if " " not exists " " j @R" : " s sub j = @tag supp k on x in S } /0.3c
-##                 {@R if " "  exists " " j @R" : " s sub j = @tag supp k on x in S }}
-##       }
-## }
-## @DP
-## 
+   Given a set of tags @M{S = {lbrace s sub 1, s sub 2 ,..., s sub n rbrace }}
+ and a tag @M{@tag supp d on {x,k}}, @I adding a tag to @M {S} is defined as:
+ 
+ @DP @Center @Math {
+   S circleplus @tag supp d on {x} = 
+       matrix atleft { blbrace  }  {
+         row col {{lbrace s sub 1, s sub 2 ,..., s sub n, @tag supp d on {x} rbrace } /0.3c
+         {lbrace s sub 1 ,..., s sub {j-1} , @tag supp {min(k,d)} on {x,k} , s sub {j+1} ,..., s sub n rbrace }}
+             col {{@R if " " not exists " " j @R" : " s sub j = @tag supp k on {x,k} in S } /0.3c
+                 {@R if " "  exists " " j @R" : " s sub j = @tag supp k on {x,k} in S }}
+       }
+ }
+ @DP
+ 
 
 The @I addition operation between tags is defined such that:
 @DP
@@ -189,36 +221,44 @@ the following operations are defined:
     row lcol {" "}             
               
     row mcol { S " " minus " " R
-              ^=  {lbrace @tag supp d on x " | " @tag supp d on x in S "  " logicaland "  " @tag supp d on x notin R rbrace } }
+              ^=  {lbrace @tag supp d on {x,k} " | " @tag supp d on {x,k} in S "  " logicaland "  " @tag supp d on {x,k} notin R rbrace } }
         lcol {"   "} lcol {@R{"difference"}}
     row lcol {" "}             
     row mcol { S " " cap " " R 
-              ^= {lbrace  @tag supp {d} on x " | " @tag supp d on x in S "  " logicaland "  " @tag supp d on x in R  rbrace }}
+              ^= {lbrace  @tag supp {d} on {x,k} " | " @tag supp d on {x,k} in S "  " logicaland "  " @tag supp d on {x,k} in R  rbrace }}
         lcol {"   "} lcol {@R{"intersection"}}
   }
 }
 
 @DP
-Note that only the union had to be redefined to take tags into account,
-the other oprations are the standard ones. 
 
-## Given the above definitions it's easy to check that the usual property
-## @M{S minus R = S minus (S cap R)} holds.
+@DP @Center
+@Math {
+  matrix  {
+    row mcol {S cup tsub @tag " " R 
+              ^= lbrace @tag supp d on {x,k} " " bar ^ "   " 
+                                 (@tag supp d on {x,k} in S "  " logicaland "  "
+                                  not exists " " {d'} @R ": " @tag supp {d'} on {x,k} in R )  }
+        lcol {"   "} lcol {@R{"tag-union"}}
+    row mcol {^ ^ logicalor " " (@tag supp d on {x,k} in R "  " logicaland "  "
+                                  not exists " " {d'} @R ": " @tag supp {d'} on {x,k} in S ) }
+    row mcol {^ ^ logicalor " " (exists {d'}, {d''} @R ": " @tag supp {d'} on {x,k} in S "  " logicaland "  "
+                                                         @tag supp {d''} on {x,k} in R "  " logicaland "  "
+                                 d = min({d'}, {d''}) rbrace}
+    row lcol {" "}             
+              
+    row mcol { S " " minus " " R
+              ^=  {lbrace @tag supp d on {x,k} " | " @tag supp d on {x,k} in S "  " logicaland "  " @tag supp d on {x,k} notin R rbrace } }
+        lcol {"   "} lcol {@R{"difference"}}
+    row lcol {" "}             
+    row mcol { S " " cap " " R 
+              ^= {lbrace  @tag supp {d} on {x,k} " | " @tag supp d on {x,k} in S "  " logicaland "  " @tag supp d on {x,k} in R  rbrace }}
+        lcol {"   "} lcol {@R{"intersection"}}
+  }
+}
 
-@LP 
-Two regular expressions @M{r} and @M{s}, are @I equivalent (@M{r = s})
-if they accept the same language.
+@DP
 
-@LP
-Two regular expressions @M{r} and @M{s}, are @I {tag-equivalent}
-(@M{r = tsub @tag " " s}) if they are equivalent and specify the same
-sets of tags.
-
-@LP
-For example @M{ a(bc)d = (ab)cd} as they both accept the
-language containing the only string @F {abcd}, but  
-@M{ a(bc)d  notequal sub @tag " " (ab)cd} as the tags variables
-will have different values upon successful match.
 
 @LP
 In the following we'll refer to four types of tags:
@@ -254,22 +294,12 @@ C { @M{end} }
 #D { @M{min(x,y) }}
 }
 
-@LP
- The interpretation of
-a tagged transition labeled with @M{ @F{a} " / " @tag supp d on x}
-is that upon reading the character @F{a}, the
-value of the @M{v sub x} is set to current position 
-minus @M{d} and the FA moves from a state to the other.
-
-@LP
-No interpretation is given for {@Sym epsilon}-transitions
-as their only purpose will be to help propagating tags.
 
 ## @Diag{
 ##  { A:: @Circle hsize {0.45f} {0.7f @Font {1}}} |1.5c 
 ##  { B:: @Circle hsize {0.45f} {0.7f @Font {2}}}
 ##  //
-##  @Arrow from {A} to {B} ylabel { @M{epsilon " / " @tag supp d on x}} 
+##  @Arrow from {A} to {B} ylabel { @M{epsilon " / " @tag supp d on {x,k}}} 
 ## }
  
 @End @Section

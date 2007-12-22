@@ -281,6 +281,56 @@ char *yrxLabelStr(uint8_t c)
 
 /* = Handling tags */
 
+
+
+
+
+tagset *ts_new()
+{
+  return (tagset *)mapNew(sizeof(tag_t)); 
+}
+
+tagset *ts_add(tagset *ts, tag_t tg)
+{
+
+}
+
+tagset *ts_union(tagset *tsa, tagset *tsb)
+{
+
+}
+
+tagset *ts_intersection(tagset *tsa, tagset *tsb)
+{
+
+}
+
+tagset *ts_minus(tagset *tsa, tagset *tsb)
+{
+
+}
+
+tagset *ts_dup(tagset *ts)
+{
+
+}
+
+tagset *ts_cpy(tagset *ts)
+{
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
 #define MAXCAPTURES  11
 
 #define TAG_NONE   0
