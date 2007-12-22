@@ -1,6 +1,6 @@
 %!PS-Adobe-3.0
 %%Creator: Basser Lout Version 3.36 (July 2007)
-%%CreationDate: Tue Dec 18 18:38:57 2007
+%%CreationDate: Sat Dec 22 10:06:59 2007
 %%DocumentData: Binary
 %%DocumentNeededResources: (atend)
 %%DocumentSuppliedResources: (atend)
@@ -3810,7 +3810,7 @@ grestore
 2965(-)s 3093(A)s 3319(r)s 4(egular)k 4130(expr)s 4(ession)k
 5258(package)s 6152(f)s 6(or)k 6509(C)s 240 fnt3
 3852 11909(Remo)m 4450(Dentato)s 240 fnt1 3017 11455(rdentato@users.sourcefor)m 4(ge.net)k
-3615 10952(18)m 3902(December)s 9(,)k 4982(2007)s 240 fnt2
+3612 10952(22)m 3906(December)s 9(,)k 4986(2007)s 240 fnt2
 0 10329(1.)m 291(Intr)s 4(oduction)k 
 [ /Dest /LOUT20_677_yrx_lout_1 /DEST pdfmark
 240 fnt1 480 9898(YRX)m
@@ -3871,7 +3871,8 @@ grestore
 4510(meaning)s 5312(associated)s 6259(with)s 6708(the)s 7036(escaped)s
 7783(sequence,)s 8680(the)s 762 3614(re)m 3(gular)k 1417(character)s
 2253(is)s 2440(matched.)s 129 3284([])m 762(delimit)s 1420(character)s
-2256(class)s 129 2941(*)m 762(Matches)s 1532(preceding)s 2422(e)s 3(xpression)k
+2256(class.)s 2763([^...])s 3199(complements)s 4385(the)s 4695(class.)s
+129 2941(*)m 762(Matches)s 1532(preceding)s 2422(e)s 3(xpression)k
 3383(zero)s 3798(or)s 4029(more)s 4518(times.)s 129 2598(+)m
 762(As)s 1045(abo)s 3(v)k 3(e)k 1599(b)s 4(ut)k
 1921(matches)s 2667(one)s 3025(or)s 3256(more)s 3745(repetitions.)s
@@ -3907,6 +3908,7 @@ showpage
 %%+ font Times-Italic
 %%+ font Times-Bold
 %%+ font Symbol
+%%+ font Courier
 /pgsave save def
 %%IncludeResource: font Times-Roman
 /Times-Romanfnt1 vec2 /Times-Roman LoutRecode
@@ -3919,6 +3921,9 @@ showpage
 /fnt2 { /Times-Boldfnt2 LoutFont } def
 %%IncludeResource: font Symbol
 /fnt4 { /Symbol LoutFont } def
+%%IncludeResource: font Courier
+/Courierfnt5 vec2 /Courier LoutRecode
+/fnt5 { /Courierfnt5 LoutFont } def
 0.0500 dup scale 10 setlinewidth
 %%EndPageSetup
 gsave
@@ -3956,83 +3961,81 @@ grestore
 1731(to)s 1944([A-Z])s 129 7712(\\U)m 762(Equi)s 5(v)k 5(alent)k
 1731(to)s 1944([^A-Z])s 129 7369(\\v)m 762(Matches)s 1532(a)s
 1680(v)s 3(ertical)k 2366(tab)s 2674(\(ASCII)s 3354(x\))s
-129 7026(\\x)m 215 fnt3 291 7027(hh)m 215 fnt1 762 7026(matches)m
-1508(the)s 1818(character)s 2654(whose)s 3250(code)s 3703(is)s
-215 fnt3 3890 7027(hh)m 215 fnt1 4153 7026(in)m 4369(he)s 3(xadecimal)k
-129 6683(\\w)m 762(Equi)s 5(v)k 5(alent)k 1731(to)s
-1944([_\\a])s 129 6340(\\W)m 762(Equi)s 5(v)k 5(alent)k
-1731(to)s 1944([^\\w])s 129 5997(\\y)m 762(Equi)s 5(v)k 5(alent)k
+129 7026(\\w)m 762(Equi)s 5(v)k 5(alent)k 1731(to)s
+1944([_\\a])s 129 6683(\\W)m 762(Equi)s 5(v)k 5(alent)k
+1731(to)s 1944([^\\w])s 129 6340(\\x)m 215 fnt3 291 6341(hh)m
+215 fnt1 762 6340(matches)m 1508(the)s 1818(character)s 2654(whose)s
+3250(code)s 3703(is)s 215 fnt3 3890 6341(hh)m 215 fnt1
+4153 6340(in)m 4369(he)s 3(xadecimal)k 129 5997(\\y)m 762(Equi)s 5(v)k 5(alent)k
 1731(to)s 1944([ \\t])s 129 5654(\\Y)m 762(Equi)s 5(v)k 5(alent)k
 1731(to)s 1944([^ \\t])s 240 fnt2 0 4790(3.)m 291(T)s 22(agged)k
 1083(automata)s 
 [ /Dest /LOUT20_677_yrx_lout_3 /DEST pdfmark
-240 fnt1 480 4313(Each)m 1026(tag)s 240 fnt4
-1382 4307(t)m 167 fnt3 1482 4414(d)m 1482 4248(x)m 240 fnt1
-1641 4313(assigns)m 2394(to)s 2645(an)s 2939(associated)s 3991(v)s 6(ariable)k
-240 fnt3 4821 4315(v)m 167 fnt3 4906 4248(x)m 240 fnt1
-5051 4313(the)m 5411(v)s 6(alue)k 240 fnt3 5990 4315(pos)m
-240 fnt4 6375 4307(-)m 240 fnt3 6560 4315(d)m 240 fnt1
-6758 4313(where)m 240 fnt3 7409 4315(pos)m 240 fnt1 7809 4313(is)m
-8030(the)s 8390(current)s 0 4025(position)m 828(within)s 1496(the)s
-1844(input)s 2396(te)s 3(xt.)k 0 3651(Gi)m 6(v)k 3(en)k
-633(a)s 799(tag)s 240 fnt3 1144 3653(s)m 240 fnt4
-1304 3645(=)m 1505(t)s 167 fnt3 1605 3752(d)m 1605 3586(x)m
-240 fnt1 1752 3651(,)m 240 fnt3 1859 3653(x)m 240 fnt1
-2025 3651(is)m 2235(said)s 2678(to)s 2917(be)s 3199(the)s
-240 fnt3 3547 3653(type)m 240 fnt1 3998 3651(of)m 240 fnt3
-4269 3653(s)m 240 fnt1 4417 3651(and)m 240 fnt3 4821 3653(d)m
-240 fnt1 5007 3651(the)m 240 fnt3 5355 3653(displacement)m 240 fnt1
-6681 3651(of)m 240 fnt3 6952 3653(s)m 240 fnt1 7040 3651(.)m
-0 3277(The)m 428(tag)s 240 fnt3 773 3279(incr)m 8(ement)k
-240 fnt1 1785 3277(operation)m 167 fnt4 2908 3391(+)m 240 fnt4
-2745 3271(\()m 2829(\))s 240 fnt1 3071 3277(is)m 3281(de\207ned)s
-4044(such)s 4540(that:)s 240 fnt4 5124 3271(\()m 5208(t)s
-167 fnt3 5308 3378(d)m 5308 3212(x)m 167 fnt4 5486 3391(+)m
-240 fnt4 5407 3271(\))m 5661(=)s 5862(t)s 167 fnt4
-5962 3373(\()m 167 fnt3 6020 3378(d)m 167 fnt4 6120 3373(+)m
-6223(1)s 6296(\))s 167 fnt3 5962 3212(x)m 240 fnt1
-0 2903(The)m 428(increment)s 1443(operation)s 2403(o)s 3(v)k 3(er)k
-2882(a)s 3048(set)s 3373(of)s 3644(tags)s 240 fnt3
-4080 2905(S)m 240 fnt4 4273 2897(=)m 4474({)s 240 fnt3
-4582 2905(s)m 167 fnt4 4670 2833(1)m 240 fnt4 4735 2897(,)m
-240 fnt3 4825 2905(s)m 167 fnt4 4913 2833(2)m 240 fnt4
-5004 2897(,)m 5094(\274)s 5392(,)s 240 fnt3 5494 2905(s)m
-167 fnt3 5582 2838(n)m 240 fnt4 5673 2897(})m 240 fnt1
-5834 2903(is)m 6044(de\207ned)s 6807(such)s 7303(that:)s 167 fnt4
-3426 2457(+)m 240 fnt4 3130 2331(\()m 240 fnt3 3214 2339(S)m
-240 fnt4 3347 2331(\))m 3601(=)s 3802({)s 3910(\()s
-240 fnt3 3994 2339(s)m 167 fnt4 4082 2245(1)m 4238 2451(+)m
-240 fnt4 4159 2331(\))m 4341(,)s 4431(\()s 240 fnt3
-4515 2339(s)m 167 fnt4 4603 2245(2)m 4773 2451(+)m 240 fnt4
-4694 2331(\))m 4888(,)s 4978(\274)s 5276(,)s 5378(\()s
-240 fnt3 5462 2339(s)m 167 fnt3 5550 2250(n)m 167 fnt4
-5720 2451(+)m 240 fnt4 5641 2331(\))m 5835(})s 240 fnt1
-0 1792(The)m 240 fnt3 428 1794(addition)m 240 fnt1 1280 1792(operation)m
-2240(between)s 3094(tags)s 3530(is)s 3740(de\207ned)s 4503(such)s
-4999(that:)s 240 fnt4 3097 936(t)m 167 fnt3 3197 1043(k)m
-3197 877(y)m 240 fnt4 3285 936(\305)m 3473(t)s 167 fnt3
-3573 1043(d)m 3573 877(w)m 240 fnt4 3753 936(=)m gsave
-0 942 translate
-1.0000 1.2632 scale
-3954 182(\354)m
-3954 -60(\355)m 3954 -302(\356)m 
-grestore
-4102 1175({)m 4210(t)s 167 fnt3
-4310 1282(k)m 4310 1116(y)m 240 fnt4 4386 1175(,)m 4476(t)s
-167 fnt3 4576 1282(d)m 4576 1116(w)m 240 fnt4 4696 1175(})m
-4102 691({)m 4210(t)s 167 fnt1 4310 797(min)m 167 fnt4
-4574 793(\()m 167 fnt3 4632 798(k)m 167 fnt4 4708 793(,)m
-167 fnt3 4750 798(d)m 167 fnt4 4845 793(\))m 167 fnt3
-4310 632(y)m 240 fnt4 4903 691(})m 240 fnt1 5196 1181(if)m
-240 fnt3 5365 1183( )m 5437(y)s 240 fnt4 5611 1175(\271)m
-240 fnt3 5812 1183(w)m 240 fnt1 5196 800(if)m 240 fnt3
-5365 802( )m 5437(y)s 240 fnt4 5611 794(=)m 240 fnt3
-5812 802(w)m 240 fnt1 0 87(Informally)m 15(,)k 1106(the)s
-240 fnt3 1446 89(addition)m 240 fnt1 2290 87(of)m 2553(tw)s 2(o)k
-2955(tags)s 3383(is)s 3585(a)s 3743(set)s 4060(which)s
-4694(contains)s 5534(both)s 6009(tags)s 6437(if)s 6646(the)s 3(y)k
-7101(are)s 7440(of)s 7703(dif)s 6(ferent)k 8570(types)s
-
+240 fnt1 480 4313(The)m 915(concept)s 1726(of)s
+240 fnt3 2004 4315(ta)m 2(g-equivalence)k 240 fnt1 3589 4313(e)m 3(xplains)k
+4441(wh)s 1(y)k 4915(the)s 5270(usual)s 5837(algorithms)s
+6917(on)s 7221(re)s 3(gular)k 7962(e)s 3(xpressions)k
+0 4025(need)m 510(to)s 749(be)s 1031(modi\207ad)s 1940(to)s
+2179(handle)s 2873(tagged)s 3569(re)s 3(gular)k 4302(e)s 3(xpression.)k
+0 3651(T)m 19(w)k 2(o)k 471(re)s 3(gular)k
+1204(e)s 3(xpressions)k 240 fnt3 2368 3653(r)m 240 fnt1
+2526 3651(and)m 240 fnt3 2930 3653(s)m 240 fnt1 3018 3651(,)m
+3125(are)s 240 fnt3 3472 3653(equivalent)m 240 fnt1 4532 3651(\()m
+240 fnt3 4605 3653(r)m 240 fnt4 4775 3645(=)m 240 fnt3
+4976 3653(s)m 240 fnt1 5064 3651(\))m 5192(if)s 5409(the)s 3(y)k
+5872(accept)s 6542(the)s 6890(same)s 7437(language.)s 0 3277(T)m 19(w)k 2(o)k
+463(re)s 3(gular)k 1188(e)s 3(xpressions)k 240 fnt3
+2344 3279(r)m 240 fnt1 2494 3277(and)m 240 fnt3 2890 3279(s)m
+240 fnt1 2978 3277(,)m 3077(are)s 240 fnt3 3416 3279(ta)m 2(g-equivalent)k
+240 fnt1 4850 3277(\()m 240 fnt3 4923 3279(r)m 240 fnt4
+5093 3271(=)m 167 fnt4 5246 3207(t)m 240 fnt3 5328 3279( )m
+5400(s)s 240 fnt1 5488 3277(\))m 5608(if)s 5817(the)s 3(y)k
+6272(are)s 6611(equi)s 6(v)k 6(alent)k 7647(and)s
+8043(specify)s 8778(the)s 0 2989(same)m 547(sets)s 956(of)s
+1227(tags)s 1663(upon)s 2200(successful)s 3237(match.)s 0 2615(F)m 3(or)k
+383(e)s 3(xample)k 240 fnt3 1240 2617(a)m 240 fnt4
+1367 2609(\()m 240 fnt3 1451 2617(bc)m 240 fnt4 1685 2609(\))m
+240 fnt3 1763 2617(d)m 240 fnt4 1961 2609(=)m 2162(\()s
+240 fnt3 2246 2617(ab)m 240 fnt4 2492 2609(\))m 240 fnt3
+2570 2617(cd)m 240 fnt1 2855 2615(b)m 4(ut)k 240 fnt3
+3211 2617(a)m 240 fnt4 3338 2609(\()m 240 fnt3 3422 2617(bc)m
+240 fnt4 3656 2609(\))m 240 fnt3 3734 2617(d)m 3872( )s
+240 fnt4 3944 2609(\271)m 167 fnt4 4073 2545(t)m 240 fnt3
+4155 2617( )m 240 fnt4 4227 2609(\()m 240 fnt3 4311 2617(ab)m
+240 fnt4 4557 2609(\))m 240 fnt3 4635 2617(cd)m 240 fnt1
+4921 2615(because)m 5727(the)s 3(y)k 6184(both)s 6661(accept)s
+7324(the)s 7666(same)s 8206(language)s 0 2327(\(the)m 427(string)s
+220 fnt5 1024 2335(abcd)m 240 fnt1 1552 2327(\))m 1680(b)s 4(ut)k
+2042(specify)s 2786(dif)s 6(ferent)k 3661(v)s 6(alues)k
+4317(for)s 4655(the)s 5003(tags.)s 0 1953(The)m 421(interpretation)s
+1756(of)s 2019(a)s 2177(tagged)s 2865(transition)s 3817(labeled)s
+4557(with)s 220 fnt5 5031 1961(a)m 240 fnt3 5175 1955( / )m
+240 fnt4 5373 1947(t)m 167 fnt3 5473 2054(d)m 5473 1888(x)m
+167 fnt4 5547 1883(,)m 167 fnt3 5589 1888(k)m 240 fnt1
+5717 1953(is)m 5919(that)s 6330(upon)s 6859(reading)s 7621(the)s
+7961(character)s 220 fnt5 8887 1961(a)m 240 fnt1 9019 1953(,)m
+0 1664(the)m 348(v)s 6(alue)k 916(of)s 1187(a)s
+1353(v)s 6(ariable)k 240 fnt3 2172 1666(v)m 167 fnt3
+2257 1599(x)m 167 fnt4 2331 1594(,)m 167 fnt3 2373 1599(k)m
+240 fnt1 2509 1664(is)m 2719(set)s 3044(to)s 3283(current)s
+4019(position)s 4847(minus)s 240 fnt3 5483 1666(d)m 240 fnt1
+5669 1664(and)m 6073(the)s 6421(F)s 17(A)k 6767(mo)s 3(v)k 3(es)k
+7437(to)s 7676(the)s 8024(ne)s 3(xt)k 8493(state.)s
+0 1290(Each)m 562(tag)s 240 fnt4 935 1284(t)m 167 fnt3
+1035 1391(d)m 1035 1225(x)m 167 fnt4 1109 1220(,)m 167 fnt3
+1151 1225(k)m 240 fnt1 1314 1290(assigns)m 2084(to)s 2350(an)s
+2661(associated)s 3728(v)s 6(ariable)k 240 fnt3 4575 1292(v)m
+167 fnt3 4660 1225(x)m 167 fnt4 4734 1220(,)m 167 fnt3
+4776 1225(k)m 240 fnt1 4939 1290(the)m 5315(v)s 6(alue)k
+240 fnt3 5910 1292(pos)m 240 fnt4 6295 1284(-)m 240 fnt3
+6480 1292(d)m 240 fnt1 6694 1290(where)m 240 fnt3 7361 1292(pos)m
+240 fnt1 7777 1290(is)m 8014(the)s 8390(current)s 0 1002(position)m
+828(within)s 1496(the)s 1844(input)s 2396(te)s 3(xt.)k
+0 628(No)m 344(interpretation)s 1685(is)s 1893(gi)s 6(v)k 3(en)k
+2471(for)s 2807(tagged)s 240 fnt4 3501 622(e)m 240 fnt1
+3604 628(-transitions)m 4727(as)s 4974(their)s 5469(only)s 5947(purpose)s
+6759(will)s 7183(be)s 7463(to)s 7700(help)s 8162(propag)s 1(at)k
+8998(-)s 0 340(ing)m 359(tags.)s 
 grestore
 0 0 0 0 240 288 60 1417 -15423 LoutGr2
 0 LoutMargSet
@@ -4052,8 +4055,6 @@ showpage
 %%PageResources: font Times-Roman
 %%+ font Times-Italic
 %%+ font Symbol
-%%+ font Courier
-%%+ font Times-Bold
 /pgsave save def
 %%IncludeResource: font Times-Roman
 /Times-Romanfnt1 vec2 /Times-Roman LoutRecode
@@ -4063,12 +4064,6 @@ showpage
 /fnt3 { /Times-Italicfnt3 LoutFont } def
 %%IncludeResource: font Symbol
 /fnt4 { /Symbol LoutFont } def
-%%IncludeResource: font Courier
-/Courierfnt5 vec2 /Courier LoutRecode
-/fnt5 { /Courierfnt5 LoutFont } def
-%%IncludeResource: font Times-Bold
-/Times-Boldfnt2 vec2 /Times-Bold LoutRecode
-/fnt2 { /Times-Boldfnt2 LoutFont } def
 0.0500 dup scale 10 setlinewidth
 %%EndPageSetup
 gsave
@@ -4081,167 +4076,238 @@ gsave
 0 16840 translate
 0.0000 rotate
 5770 -1579(-)m 5898(3)s
-6062(-)s 9066 13416 0 13307 240 288 60 1417 -15423 LoutGr2
+6062(-)s 9066 13416 0 13256 240 288 60 1417 -15423 LoutGr2
 1 LoutMargSet
 grestore
-0 13253(or)m 259(a)s 425(tag)s 770(of)s
-1041(the)s 1389(same)s 1936(type)s 2404(with)s 2886(a)s
-3052(displacement)s 4373(that)s 4791(is)s 5001(the)s 5349(minimum)s
-6339(of)s 6610(the)s 6958(tw)s 2(o)k 7368(displacements.)s
-0 12879(Gi)m 6(v)k 3(en)k 695(tw)s 2(o)k
-1168(sets)s 1639(of)s 1973(tags)s 240 fnt3 2472 12881(S)m
-240 fnt4 2665 12873(=)m 2866({)s 240 fnt3 2974 12881(s)m
-167 fnt4 3062 12809(1)m 240 fnt4 3127 12873(,)m 240 fnt3
-3217 12881(s)m 167 fnt4 3305 12809(2)m 240 fnt4 3396 12873(,)m
-3486(\274)s 3784(,)s 240 fnt3 3886 12881(s)m 167 fnt3
-3974 12814(n)m 240 fnt4 4065 12873(})m 240 fnt1 4166 12879(,)m
-4335(and)s 240 fnt3 4802 12881(R)m 240 fnt4 5015 12873(=)m
-5216({)s 240 fnt3 5324 12881(r)m 167 fnt4 5396 12809(1)m
-240 fnt4 5461 12873(,)m 240 fnt3 5551 12881(r)m 167 fnt4
-5623 12809(2)m 240 fnt4 5714 12873(,)m 5804(\274)s 6102(,)s
-240 fnt3 6204 12881(r)m 167 fnt3 6276 12814(m)m 240 fnt4
-6405 12873(})m 240 fnt1 6628 12879(the)m 7039(follo)s 6(wing)k
-8079(operations)s 0 12591(are)m 347(de\207ned:)s 240 fnt3 2136 12049(S)m
-240 fnt4 2314 12041(\310)m 167 fnt4 2499 11977(t)m 240 fnt3
-2581 12049( )m 2653(R)s 240 fnt4 2878 12041(=)m 404 fnt4
-3233 12000(\310)m 167 fnt4 3079 11799(1)m 3194(\243)s 167 fnt3
-3332 11804(i)m 167 fnt4 3426 11799(\243)m 167 fnt3 3564 11804(n)m
-167 fnt4 3079 11630(1)m 3194(\243)s 167 fnt3 3332 11635(j)m
-167 fnt4 3428 11630(\243)m 167 fnt3 3566 11635(m)m 240 fnt4
-3695 12041(\()m 240 fnt3 3779 12049(s)m 167 fnt3 3867 11960(i)m
-240 fnt4 3923 12041(\305)m 240 fnt3 4111 12049(r)m 167 fnt3
-4183 11982(j)m 240 fnt4 4241 12041(\))m 240 fnt3 5485 12049(   )m
-240 fnt1 5857 12047(tag-union)m 240 fnt3 2806 11428( )m 2236 11096(S)m
-2369( )s 240 fnt4 2441 11088(-)m 240 fnt3 2581 11096( )m
-2653(R)s 240 fnt4 2878 11088(=)m 3079({)s 3187(t)s
-167 fnt3 3287 11195(d)m 3287 11029(x)m 240 fnt3 3386 11096( | )m
-240 fnt4 3584 11088(t)m 167 fnt3 3684 11195(d)m 3684 11029(x)m
-240 fnt4 3843 11088(\316)m 240 fnt3 4037 11096(S)m 4170(  )s
-240 fnt4 4302 11088(\331)m 240 fnt3 4454 11096(  )m 240 fnt4
-4586 11088(t)m 167 fnt3 4686 11195(d)m 4686 11029(x)m 240 fnt4
-4845 11088(\317)m 240 fnt3 5039 11096(R)m 240 fnt4 5192 11088(})m
-240 fnt3 5485 11096(   )m 240 fnt1 5857 11094(dif)m 6(ference)k
-240 fnt3 2806 10855( )m 2098 10523(S)m 2231( )s 240 fnt4
-2348 10515(\307)m 240 fnt3 2581 10523( )m 2653(R)s 240 fnt4
-2878 10515(=)m 3079({)s 3187(t)s 167 fnt3 3287 10622(d)m
-3287 10456(x)m 240 fnt3 3386 10523( | )m 240 fnt4 3584 10515(t)m
-167 fnt3 3684 10622(d)m 3684 10456(x)m 240 fnt4 3843 10515(\316)m
-240 fnt3 4037 10523(S)m 4170(  )s 240 fnt4 4302 10515(\331)m
-240 fnt3 4454 10523(  )m 240 fnt4 4586 10515(t)m 167 fnt3
-4686 10622(d)m 4686 10456(x)m 240 fnt4 4845 10515(\316)m 240 fnt3
-5039 10523(R)m 240 fnt4 5192 10515(})m 240 fnt3 5485 10523(   )m
-240 fnt1 5857 10521(intersection)m 0 9946(Note)m 518(that)s 933(only)s
-1410(the)s 1755(union)s 2355(had)s 2756(to)s 2992(be)s
-3271(rede\207ned)s 4216(to)s 4452(tak)s 2(e)k 4901(tags)s
-5334(into)s 5756(account,)s 6604(the)s 6949(other)s 7497(oprations)s
-8435(are)s 8778(the)s 0 9658(standard)m 868(ones.)s 0 9284(T)m 19(w)k 2(o)k
-471(re)s 3(gular)k 1204(e)s 3(xpressions)k 240 fnt3
-2368 9286(r)m 240 fnt1 2526 9284(and)m 240 fnt3 2930 9286(s)m
-240 fnt1 3018 9284(,)m 3125(are)s 240 fnt3 3472 9286(equivalent)m
-240 fnt1 4532 9284(\()m 240 fnt3 4605 9286(r)m 240 fnt4
-4775 9278(=)m 240 fnt3 4976 9286(s)m 240 fnt1 5064 9284(\))m
-5192(if)s 5409(the)s 3(y)k 5872(accept)s 6542(the)s
-6890(same)s 7437(language.)s 0 8910(T)m 19(w)k 2(o)k
-463(re)s 3(gular)k 1188(e)s 3(xpressions)k 240 fnt3
-2344 8912(r)m 240 fnt1 2494 8910(and)m 240 fnt3 2890 8912(s)m
-240 fnt1 2978 8910(,)m 3077(are)s 240 fnt3 3416 8912(ta)m 2(g-equivalent)k
-240 fnt1 4850 8910(\()m 240 fnt3 4923 8912(r)m 240 fnt4
-5093 8904(=)m 167 fnt4 5246 8840(t)m 240 fnt3 5328 8912( )m
-5400(s)s 240 fnt1 5488 8910(\))m 5608(if)s 5817(the)s 3(y)k
-6272(are)s 6611(equi)s 6(v)k 6(alent)k 7647(and)s
-8043(specify)s 8778(the)s 0 8622(same)m 547(sets)s 956(of)s
-1227(tags.)s 0 8248(F)m 3(or)k 389(e)s 3(xample)k
-240 fnt3 1252 8250(a)m 240 fnt4 1379 8242(\()m 240 fnt3
-1463 8250(bc)m 240 fnt4 1697 8242(\))m 240 fnt3 1775 8250(d)m
-240 fnt4 1973 8242(=)m 2174(\()s 240 fnt3 2258 8250(ab)m
-240 fnt4 2504 8242(\))m 240 fnt3 2582 8250(cd)m 240 fnt1
-2873 8248(as)m 3123(the)s 3(y)k 3586(both)s 4068(accept)s
-4738(the)s 5085(language)s 6005(containing)s 7068(the)s 7415(only)s
-7895(string)s 220 fnt5 8491 8256(abcd)m 240 fnt1 9019 8248(,)m
-0 7960(b)m 4(ut)k 240 fnt3 362 7962(a)m 240 fnt4
-489 7954(\()m 240 fnt3 573 7962(bc)m 240 fnt4 807 7954(\))m
-240 fnt3 885 7962(d)m 240 fnt4 1023 7954(\271)m 167 fnt4
-1152 7890(t)m 240 fnt3 1234 7962( )m 240 fnt4 1306 7954(\()m
-240 fnt3 1390 7962(ab)m 240 fnt4 1636 7954(\))m 240 fnt3
-1714 7962(cd)m 240 fnt1 2006 7960(as)m 2256(the)s 2604(tags)s
-3040(v)s 6(ariables)k 3947(will)s 4373(ha)s 4(v)k 3(e)k
-4874(dif)s 6(ferent)k 5749(v)s 6(alues)k 6405(upon)s
-6942(successful)s 7979(match.)s 0 7586(In)m 256(the)s 604(follo)s 6(wing)k
-1581(we')s 2(ll)k 2124(refer)s 2633(to)s 2872(four)s
-3330(types)s 3886(of)s 4157(tags:)s gsave
-2808 7246 translate
-0.8984 0.8984 scale
-1920 12 0 12 240 288 60 0 -396 LoutGr2
-LoutBox 0.0 0.0 0.0 LoutSetRGBColor fill
+0 13202(Gi)m 6(v)k 3(en)k 628(a)s
+789(tag)s 240 fnt3 1129 13204(s)m 240 fnt4 1289 13196(=)m
+1490(t)s 167 fnt3 1590 13303(d)m 1590 13137(x)m 167 fnt4
+1664 13132(,)m 167 fnt3 1706 13137(k)m 240 fnt1 1782 13202(,)m
+240 fnt3 1884 13204(x)m 240 fnt1 2045 13202(is)m 2250(the)s
+240 fnt3 2593 13204(type)m 240 fnt1 3039 13202(of)m 240 fnt3
+3305 13204(s)m 240 fnt1 3393 13202(,)m 240 fnt3 3495 13204(d)m
+240 fnt1 3676 13202(the)m 240 fnt3 4019 13204(displacement)m 240 fnt1
+5340 13202(of)m 240 fnt3 5606 13204(s)m 240 fnt1 5749 13202(and)m
+240 fnt3 6148 13204(k)m 240 fnt1 6313 13202(is)m 6518(the)s
+6861(inde)s 3(x)k 7440(of)s 7706(the)s 8049(e)s 3(xpression)k
+0 12914(the)m 348(tag)s 693(is)s 903(related)s 1610(to.)s
+0 12540(The)m 428(tag)s 240 fnt3 773 12542(incr)m 8(ement)k
+240 fnt1 1785 12540(operation)m 167 fnt4 2908 12654(+)m 240 fnt4
+2745 12534(\()m 2829(\))s 240 fnt1 3071 12540(is)m 3281(de\207ned)s
+4044(such)s 4540(that:)s 240 fnt4 5124 12534(\()m 5208(t)s
+167 fnt3 5308 12641(d)m 5308 12475(x)m 167 fnt4 5382 12470(,)m
+167 fnt3 5424 12475(k)m 167 fnt4 5591 12654(+)m 240 fnt4
+5512 12534(\))m 5766(=)s 5967(t)s 167 fnt4 6067 12636(\()m
+167 fnt3 6125 12641(d)m 167 fnt4 6225 12636(+)m 6328(1)s
+6401(\))s 167 fnt3 6067 12475(x)m 167 fnt4 6141 12470(,)m
+167 fnt3 6183 12475(k)m 240 fnt1 0 12166(The)m 428(increment)s
+1443(operation)s 2403(o)s 3(v)k 3(er)k 2882(a)s
+3048(set)s 3373(of)s 3644(tags)s 240 fnt3 4080 12168(S)m
+240 fnt4 4273 12160(=)m 4474({)s 240 fnt3 4582 12168(s)m
+167 fnt4 4670 12096(1)m 240 fnt4 4735 12160(,)m 240 fnt3
+4825 12168(s)m 167 fnt4 4913 12096(2)m 240 fnt4 5004 12160(,)m
+5094(\274)s 5392(,)s 240 fnt3 5494 12168(s)m 167 fnt3
+5582 12101(n)m 240 fnt4 5673 12160(})m 240 fnt1 5834 12166(is)m
+6044(de\207ned)s 6807(such)s 7303(that:)s 167 fnt4 3426 11720(+)m
+240 fnt4 3130 11594(\()m 240 fnt3 3214 11602(S)m 240 fnt4
+3347 11594(\))m 3601(=)s 3802({)s 3910(\()s 240 fnt3
+3994 11602(s)m 167 fnt4 4082 11508(1)m 4238 11714(+)m 240 fnt4
+4159 11594(\))m 4341(,)s 4431(\()s 240 fnt3 4515 11602(s)m
+167 fnt4 4603 11508(2)m 4773 11714(+)m 240 fnt4 4694 11594(\))m
+4888(,)s 4978(\274)s 5276(,)s 5378(\()s 240 fnt3
+5462 11602(s)m 167 fnt3 5550 11513(n)m 167 fnt4 5720 11714(+)m
+240 fnt4 5641 11594(\))m 5835(})s 240 fnt1 0 11006(Gi)m 6(v)k 3(en)k
+633(a)s 799(set)s 1124(of)s 1395(tags)s 240 fnt3
+1831 11008(S)m 240 fnt4 2024 11000(=)m 2225({)s 240 fnt3
+2333 11008(s)m 167 fnt4 2421 10936(1)m 240 fnt4 2486 11000(,)m
+240 fnt3 2576 11008(s)m 167 fnt4 2664 10936(2)m 240 fnt4
+2755 11000(,)m 2845(\274)s 3143(,)s 240 fnt3 3245 11008(s)m
+167 fnt3 3333 10941(n)m 240 fnt4 3424 11000(})m 240 fnt1
+3645 11006(and)m 4049(a)s 4215(tag)s 240 fnt4 4560 11000(t)m
+167 fnt3 4660 11107(d)m 4660 10941(x)m 167 fnt4 4734 10936(,)m
+167 fnt3 4776 10941(k)m 240 fnt1 4852 11006(,)m 240 fnt3
+4959 11008(adding)m 240 fnt1 5679 11006(a)m 5845(tag)s 6190(to)s
+240 fnt3 6429 11008(S)m 240 fnt1 6610 11006(is)m 6820(de\207ned)s
+7583(as:)s 240 fnt3 1554 10114(S)m 240 fnt4 1687 10106(\305)m
+1875(t)s 167 fnt3 1975 10213(d)m 1975 10047(x)m 240 fnt4
+2134 10106(=)m gsave
+0 10112 translate
+1.0000 1.2632 scale
+2335 182(\354)m 2335 -60(\355)m 2335 -302(\356)m 
 grestore
-
+2483 10345({)m
+240 fnt3 2591 10353(s)m 167 fnt4 2679 10281(1)m 240 fnt4
+2744 10345(,)m 240 fnt3 2834 10353(s)m 167 fnt4 2922 10281(2)m
+240 fnt4 3013 10345(,)m 3103(\274)s 3401(,)s 240 fnt3
+3503 10353(s)m 167 fnt3 3591 10286(n)m 240 fnt4 3670 10345(,)m
+3760(t)s 167 fnt3 3860 10452(d)m 3860 10286(x)m 240 fnt4
+3959 10345(})m 2483 9891({)m 240 fnt3 2591 9899(s)m 167 fnt4
+2679 9827(1)m 240 fnt4 2756 9891(,)m 2846(\274)s 3144(,)s
+240 fnt3 3246 9899(s)m 167 fnt3 3334 9832(j)m 167 fnt4
+3393 9827(-)m 3495(1)s 240 fnt4 3560 9891(,)m 3650(t)s
+167 fnt1 3750 9997(min)m 167 fnt4 4014 9993(\()m 167 fnt3
+4072 9998(k)m 167 fnt4 4148 9993(,)m 167 fnt3 4190 9998(d)m
+167 fnt4 4285 9993(\))m 167 fnt3 3750 9832(x)m 167 fnt4
+3824 9827(,)m 167 fnt3 3866 9832(k)m 240 fnt4 4331 9891(,)m
+240 fnt3 4421 9899(s)m 167 fnt3 4509 9832(j)m 167 fnt4
+4568 9827(+)m 4671(1)s 240 fnt4 4748 9891(,)m 4838(\274)s
+5136(,)s 240 fnt3 5238 9899(s)m 167 fnt3 5326 9832(n)m
+240 fnt4 5417 9891(})m 240 fnt1 5710 10351(if)m 240 fnt3
+5879 10353( )m 240 fnt4 5951 10345($)m 5977(/)s 240 fnt3
+6077 10353( )m 6149(j)s 240 fnt1 6227 10351( : )m 240 fnt3
+6425 10353(s)m 167 fnt3 6513 10286(j)m 240 fnt4 6631 10345(=)m
+6832(t)s 167 fnt3 6932 10452(k)m 6932 10286(x)m 167 fnt4
+7006 10281(,)m 167 fnt3 7048 10286(k)m 240 fnt4 7196 10345(\316)m
+240 fnt3 7390 10353(S)m 240 fnt1 5710 9867(if)m 240 fnt3
+5879 9869( )m 240 fnt4 5951 9861($)m 240 fnt3 6077 9869( )m
+6149(j)s 240 fnt1 6227 9867( : )m 240 fnt3 6425 9869(s)m
+167 fnt3 6513 9802(j)m 240 fnt4 6631 9861(=)m 6832(t)s
+167 fnt3 6932 9968(k)m 6932 9802(x)m 167 fnt4 7006 9797(,)m
+167 fnt3 7048 9802(k)m 240 fnt4 7196 9861(\316)m 240 fnt3
+7390 9869(S)m 240 fnt1 0 9257(The)m 240 fnt3 428 9259(addition)m
+240 fnt1 1280 9257(operation)m 2240(between)s 3094(tags)s 3530(is)s
+3740(de\207ned)s 4503(such)s 4999(that:)s 240 fnt4 3097 8401(t)m
+167 fnt3 3197 8508(k)m 3197 8342(y)m 240 fnt4 3285 8401(\305)m
+3473(t)s 167 fnt3 3573 8508(d)m 3573 8342(w)m 240 fnt4
+3753 8401(=)m gsave
+0 8407 translate
+1.0000 1.2632 scale
+3954 182(\354)m 3954 -60(\355)m 3954 -302(\356)m 
 grestore
-144 -246(T)m 19(ag)k
-1200 12 0 12 240 288 60 1920 -396 LoutGr2
-LoutBox 0.0 0.0 0.0 LoutSetRGBColor fill
-grestore
-
-grestore
-2150(Symbol)s 720 12 0 12 240 288 60 3120 -396 LoutGr2
-LoutBox 0.0 0.0 0.0 LoutSetRGBColor fill
-grestore
-
-grestore
-3264(V)s 26(ar)k 144 -630(Be)m 3(gin)k
-770(Capture)s 240 fnt4 2440 -694(\()m 167 fnt3 2512 -569(d)m
-2512 -775(n)m 240 fnt3 3264 -628(bc)m 167 fnt3 3486 -695(n)m
-240 fnt1 144 -1095(End)m 588(Capture)s 240 fnt4 2443 -1159(\))m
-167 fnt3 2509 -1034(d)m 2509 -1240(n)m 240 fnt3 3264 -1093(ec)m
-167 fnt3 3472 -1160(n)m 240 fnt1 144 -1560(Mark)m 167 fnt3
-2541 -1499(d)m 240 fnt3 2412 -1624(#)m 3264 -1558(mrk)m 240 fnt1
-144 -2010(Match)m 167 fnt3 2536 -1949(d)m 240 fnt3 2416 -2087($)m
-3264 -2008(end)m 
-grestore
-0 4530(The)m 428(interpretation)s 1770(of)s 2040(a)s
-2205(tagged)s 2900(transition)s 3859(labeled)s 4606(with)s 220 fnt5
-5087 4538(a)m 240 fnt3 5231 4532( / )m 240 fnt4 5429 4524(t)m
-167 fnt3 5529 4631(d)m 5529 4465(x)m 240 fnt1 5675 4530(is)m
-5884(that)s 6302(upon)s 6838(reading)s 7607(the)s 7954(character)s
-220 fnt5 8887 4538(a)m 240 fnt1 9019 4530(,)m 0 4242(the)m
-348(v)s 6(alue)k 916(of)s 1187(the)s 240 fnt3
-1535 4244(v)m 167 fnt3 1620 4177(x)m 240 fnt1 1754 4242(is)m
-1964(set)s 2289(to)s 2528(current)s 3264(position)s 4092(minus)s
-240 fnt3 4728 4244(d)m 240 fnt1 4914 4242(and)m 5318(the)s
-5666(F)s 17(A)k 6012(mo)s 3(v)k 3(es)k
-6682(from)s 7206(a)s 7372(state)s 7865(to)s 8104(the)s
-8452(other)s 13(.)k 0 3868(No)m 393(interpretation)s 1783(is)s
-2041(gi)s 6(v)k 3(en)k 2668(for)s 240 fnt4
-3054 3862(e)m 240 fnt1 3157 3868(-transitions)m 4329(as)s 4627(their)s
-5171(only)s 5698(purpose)s 6560(will)s 7033(be)s 7363(to)s
-7649(help)s 8162(propag)s 1(at)k 8998(-)s 0 3580(ing)m
-359(tags.)s 240 fnt2 0 2787(4.)m 291(Fr)s 4(om)k
-914(RE)s 1301(to)s 1555(TNF)s 21(A)k 
-[ /Dest /LOUT20_677_yrx_lout_4 /DEST pdfmark
-240 fnt1
-480 2355(The)m 908(diagrams)s 1835(in)s 2078(\207gure)s 2692(1)s
-2847(sho)s 6(ws)k 3491(ho)s 6(w)k 3952(to)s
-4191(con)s 9(v)k 3(ert)k 4956(a)s 5122(re)s 3(gular)k
-5855(e)s 3(xpression)k 6932(into)s 7357(a)s 7523(TNF)s 17(A.)k
-0 1981(As)m 340(the)s 712(last)s 1126(diagram)s 1993(sho)s 6(ws,)k
-2716(\207nal)s 3220(states)s 3824(are)s 4195(denoted)s 5034(using)s
-5630(transition)s 6612(to)s 6875(state)s 7391(0)s 7590(under)s
-8218(a)s 8408(special)s 0 1693(character)m 240 fnt4 933 1687(l)m
-240 fnt1 1122 1693(tagged)m 1816(with)s 2297('$'.)s 2677(This)s
-3151(implies)s 3904(that)s 4320(at)s 4550(the)s 4897(end)s
-5299(of)s 5568(the)s 5915(string)s 6510(to)s 6747(be)s
-7028(matched,)s 7943(the)s 8289(v)s 6(alue)k 8855(of)s
-240 fnt3 0 1407(pos)m 240 fnt1 388 1405(is)m 598(1)s
-753(past)s 1198(the)s 1546(position)s 2374(of)s 2645(the)s
-2993(last)s 3384(character)s 13(.)k 0 1031(Introducing)m 1162(tags)s
-1590(as)s 1832(described,)s 2848(will)s 3266(generate)s 240 fnt4
-4123 1025(e)m 240 fnt1 4226 1031(-automata)m 5233(with)s 5708(a)s
-5866(f)s 2(airly)k 6426(high)s 6902(number)s 7685(of)s
-7948(states.)s 8574(Most)s 0 743(of)m 277(those)s 845(states,)s
-1489(ho)s 6(we)k 6(v)k 3(er)k 9(,)k
-2402(will)s 2835(become)s 3642(unreachable)s 4860(once)s 5374(the)s
-5729(tags)s 6172(will)s 6605(be)s 6893(propag)s 1(ated)k
-8020(to)s 8266(arcs)s 8708(that)s 0 455(carry)m 544(actual)s
-1169(labels.)s 1830(Inf)s 2(act)k 2444(we)s 2779(ha)s 4(v)k 3(e:)k
+4102 8640({)m
+4210(t)s 167 fnt3 4310 8747(k)m 4310 8581(y)m 240 fnt4
+4386 8640(,)m 4476(t)s 167 fnt3 4576 8747(d)m 4576 8581(w)m
+240 fnt4 4696 8640(})m 4102 8156({)m 4210(t)s 167 fnt1
+4310 8262(min)m 167 fnt4 4574 8258(\()m 167 fnt3 4632 8263(k)m
+167 fnt4 4708 8258(,)m 167 fnt3 4750 8263(d)m 167 fnt4
+4845 8258(\))m 167 fnt3 4310 8097(y)m 240 fnt4 4903 8156(})m
+240 fnt1 5196 8646(if)m 240 fnt3 5365 8648( )m 5437(y)s
+240 fnt4 5611 8640(\271)m 240 fnt3 5812 8648(w)m 240 fnt1
+5196 8152(if)m 240 fnt3 5365 8154( )m 5437(y)s 240 fnt4
+5611 8146(=)m 240 fnt3 5812 8154(w)m 240 fnt1 0 7552(Informally)m 15(,)k
+1106(the)s 240 fnt3 1446 7554(addition)m 240 fnt1 2290 7552(of)m
+2553(tw)s 2(o)k 2955(tags)s 3383(is)s 3585(a)s
+3743(set)s 4060(which)s 4694(contains)s 5534(both)s 6009(tags)s
+6437(if)s 6646(the)s 3(y)k 7101(are)s 7440(of)s
+7703(dif)s 6(ferent)k 8570(types)s 0 7264(or)m 259(a)s
+425(tag)s 770(of)s 1041(the)s 1389(same)s 1936(type)s
+2404(with)s 2886(a)s 3052(displacement)s 4373(that)s 4791(is)s
+5001(the)s 5349(minimum)s 6339(of)s 6610(the)s 6958(tw)s 2(o)k
+7368(displacements.)s 0 6890(Gi)m 6(v)k 3(en)k 695(tw)s 2(o)k
+1168(sets)s 1639(of)s 1973(tags)s 240 fnt3 2472 6892(S)m
+240 fnt4 2665 6884(=)m 2866({)s 240 fnt3 2974 6892(s)m
+167 fnt4 3062 6820(1)m 240 fnt4 3127 6884(,)m 240 fnt3
+3217 6892(s)m 167 fnt4 3305 6820(2)m 240 fnt4 3396 6884(,)m
+3486(\274)s 3784(,)s 240 fnt3 3886 6892(s)m 167 fnt3
+3974 6825(n)m 240 fnt4 4065 6884(})m 240 fnt1 4166 6890(,)m
+4335(and)s 240 fnt3 4802 6892(R)m 240 fnt4 5015 6884(=)m
+5216({)s 240 fnt3 5324 6892(r)m 167 fnt4 5396 6820(1)m
+240 fnt4 5461 6884(,)m 240 fnt3 5551 6892(r)m 167 fnt4
+5623 6820(2)m 240 fnt4 5714 6884(,)m 5804(\274)s 6102(,)s
+240 fnt3 6204 6892(r)m 167 fnt3 6276 6825(m)m 240 fnt4
+6405 6884(})m 240 fnt1 6628 6890(the)m 7039(follo)s 6(wing)k
+8079(operations)s 0 6602(are)m 347(de\207ned:)s 240 fnt3 1978 6060(S)m
+240 fnt4 2156 6052(\310)m 167 fnt4 2341 5988(t)m 240 fnt3
+2423 6060( )m 2495(R)s 240 fnt4 2720 6052(=)m 404 fnt4
+3075 6011(\310)m 167 fnt4 2921 5810(1)m 3036(\243)s 167 fnt3
+3174 5815(i)m 167 fnt4 3268 5810(\243)m 167 fnt3 3406 5815(n)m
+167 fnt4 2921 5641(1)m 3036(\243)s 167 fnt3 3174 5646(j)m
+167 fnt4 3270 5641(\243)m 167 fnt3 3408 5646(m)m 240 fnt4
+3537 6052(\()m 240 fnt3 3621 6060(s)m 167 fnt3 3709 5971(i)m
+240 fnt4 3765 6052(\305)m 240 fnt3 3953 6060(r)m 167 fnt3
+4025 5993(j)m 240 fnt4 4083 6052(\))m 240 fnt3 5642 6060(   )m
+240 fnt1 6014 6058(tag-union)m 240 fnt3 2648 5439( )m 2078 5107(S)m
+2211( )s 240 fnt4 2283 5099(-)m 240 fnt3 2423 5107( )m
+2495(R)s 240 fnt4 2720 5099(=)m 2921({)s 3029(t)s
+167 fnt3 3129 5206(d)m 3129 5040(x)m 167 fnt4 3203 5035(,)m
+167 fnt3 3245 5040(k)m 240 fnt3 3333 5107( | )m 240 fnt4
+3531 5099(t)m 167 fnt3 3631 5206(d)m 3631 5040(x)m 167 fnt4
+3705 5035(,)m 167 fnt3 3747 5040(k)m 240 fnt4 3895 5099(\316)m
+240 fnt3 4089 5107(S)m 4222(  )s 240 fnt4 4354 5099(\331)m
+240 fnt3 4506 5107(  )m 240 fnt4 4638 5099(t)m 167 fnt3
+4738 5206(d)m 4738 5040(x)m 167 fnt4 4812 5035(,)m 167 fnt3
+4854 5040(k)m 240 fnt4 5002 5099(\317)m 240 fnt3 5196 5107(R)m
+240 fnt4 5349 5099(})m 240 fnt3 5642 5107(   )m 240 fnt1
+6014 5105(dif)m 6(ference)k 240 fnt3 2648 4837( )m 1940 4505(S)m
+2073( )s 240 fnt4 2190 4497(\307)m 240 fnt3 2423 4505( )m
+2495(R)s 240 fnt4 2720 4497(=)m 2921({)s 3029(t)s
+167 fnt3 3129 4604(d)m 3129 4438(x)m 167 fnt4 3203 4433(,)m
+167 fnt3 3245 4438(k)m 240 fnt3 3333 4505( | )m 240 fnt4
+3531 4497(t)m 167 fnt3 3631 4604(d)m 3631 4438(x)m 167 fnt4
+3705 4433(,)m 167 fnt3 3747 4438(k)m 240 fnt4 3895 4497(\316)m
+240 fnt3 4089 4505(S)m 4222(  )s 240 fnt4 4354 4497(\331)m
+240 fnt3 4506 4505(  )m 240 fnt4 4638 4497(t)m 167 fnt3
+4738 4604(d)m 4738 4438(x)m 167 fnt4 4812 4433(,)m 167 fnt3
+4854 4438(k)m 240 fnt4 5002 4497(\316)m 240 fnt3 5196 4505(R)m
+240 fnt4 5349 4497(})m 240 fnt3 5642 4505(   )m 240 fnt1
+6014 4503(intersection)m 240 fnt3 475 3487(S)m 240 fnt4 653 3479(\310)m
+167 fnt4 838 3415(t)m 240 fnt3 920 3487( )m 992(R)s
+240 fnt4 1217 3479(=)m 1418({)s 1526(t)s 167 fnt3
+1626 3586(d)m 1626 3420(x)m 167 fnt4 1700 3415(,)m 167 fnt3
+1742 3420(k)m 240 fnt3 1830 3487( )m 240 fnt4 1902 3479(|)m
+240 fnt3 1959 3487(   )m 240 fnt4 2151 3479(\()m 2235(t)s
+167 fnt3 2335 3604(d)m 2335 3398(x)m 167 fnt4 2409 3393(,)m
+167 fnt3 2451 3398(k)m 240 fnt4 2599 3479(\316)m 240 fnt3
+2793 3487(S)m 2926(  )s 240 fnt4 3058 3479(\331)m 240 fnt3
+3210 3487(  )m 240 fnt4 3342 3479($)m 3368(/)s 240 fnt3
+3468 3487( )m 3540(d)s 240 fnt4 3678 3479(\242)m 240 fnt1
+3745 3485(: )m 240 fnt4 3883 3479(t)m 167 fnt3 3983 3586(d)m
+167 fnt4 4078 3581(\242)m 167 fnt3 3983 3420(x)m 167 fnt4
+4057 3415(,)m 167 fnt3 4099 3420(k)m 240 fnt4 4247 3479(\316)m
+240 fnt3 4441 3487(R)m 240 fnt4 4594 3479(\))m 240 fnt3
+7108 3487(   )m 240 fnt1 7480 3485(tag-union)m 240 fnt4 1959 3009(\332)m
+240 fnt3 2109 3017( )m 240 fnt4 2181 3009(\()m 2265(t)s
+167 fnt3 2365 3134(d)m 2365 2928(x)m 167 fnt4 2439 2923(,)m
+167 fnt3 2481 2928(k)m 240 fnt4 2629 3009(\316)m 240 fnt3
+2823 3017(R)m 2976(  )s 240 fnt4 3108 3009(\331)m 240 fnt3
+3260 3017(  )m 240 fnt4 3392 3009($)m 3418(/)s 240 fnt3
+3518 3017( )m 3590(d)s 240 fnt4 3728 3009(\242)m 240 fnt1
+3795 3015(: )m 240 fnt4 3933 3009(t)m 167 fnt3 4033 3116(d)m
+167 fnt4 4128 3111(\242)m 167 fnt3 4033 2950(x)m 167 fnt4
+4107 2945(,)m 167 fnt3 4149 2950(k)m 240 fnt4 4297 3009(\316)m
+240 fnt3 4491 3017(S)m 240 fnt4 4624 3009(\))m 1959 2554(\332)m
+240 fnt3 2109 2562( )m 240 fnt4 2181 2554(\()m 2265($)s
+240 fnt3 2391 2562(d)m 240 fnt4 2529 2554(\242)m 2584(,)s
+240 fnt3 2674 2562(d)m 240 fnt4 2812 2554(\242)m 2879(\242)s
+240 fnt1 2946 2560(: )m 240 fnt4 3084 2554(t)m 167 fnt3
+3184 2661(d)m 167 fnt4 3279 2656(\242)m 167 fnt3 3184 2495(x)m
+167 fnt4 3258 2490(,)m 167 fnt3 3300 2495(k)m 240 fnt4
+3448 2554(\316)m 240 fnt3 3642 2562(S)m 3775(  )s 240 fnt4
+3907 2554(\331)m 240 fnt3 4059 2562(  )m 240 fnt4 4191 2554(t)m
+167 fnt3 4291 2661(d)m 167 fnt4 4386 2656(\242)m 4432(\242)s
+167 fnt3 4291 2495(x)m 167 fnt4 4365 2490(,)m 167 fnt3
+4407 2495(k)m 240 fnt4 4555 2554(\316)m 240 fnt3 4749 2562(R)m
+4902(  )s 240 fnt4 5034 2554(\331)m 240 fnt3 5186 2562(  )m
+5318(d)s 240 fnt4 5516 2554(=)m 240 fnt1 5717 2560(min)m
+240 fnt4 6098 2554(\()m 240 fnt3 6182 2562(d)m 240 fnt4
+6320 2554(\242)m 6375(,)s 240 fnt3 6465 2562(d)m 240 fnt4
+6603 2554(\242)m 6670(\242)s 6737(\))s 6815(})s 240 fnt3
+1947 2292( )m 1377 1960(S)m 1510( )s 240 fnt4 1582 1952(-)m
+240 fnt3 1722 1960( )m 1794(R)s 240 fnt4 2019 1952(=)m
+2220({)s 2328(t)s 167 fnt3 2428 2059(d)m 2428 1893(x)m
+167 fnt4 2502 1888(,)m 167 fnt3 2544 1893(k)m 240 fnt3
+2632 1960( | )m 240 fnt4 2830 1952(t)m 167 fnt3 2930 2059(d)m
+2930 1893(x)m 167 fnt4 3004 1888(,)m 167 fnt3 3046 1893(k)m
+240 fnt4 3194 1952(\316)m 240 fnt3 3388 1960(S)m 3521(  )s
+240 fnt4 3653 1952(\331)m 240 fnt3 3805 1960(  )m 240 fnt4
+3937 1952(t)m 167 fnt3 4037 2059(d)m 4037 1893(x)m 167 fnt4
+4111 1888(,)m 167 fnt3 4153 1893(k)m 240 fnt4 4301 1952(\317)m
+240 fnt3 4495 1960(R)m 240 fnt4 4648 1952(})m 240 fnt3
+7108 1960(   )m 240 fnt1 7480 1958(dif)m 6(ference)k 240 fnt3
+1947 1690( )m 1239 1358(S)m 1372( )s 240 fnt4 1489 1350(\307)m
+240 fnt3 1722 1358( )m 1794(R)s 240 fnt4 2019 1350(=)m
+2220({)s 2328(t)s 167 fnt3 2428 1457(d)m 2428 1291(x)m
+167 fnt4 2502 1286(,)m 167 fnt3 2544 1291(k)m 240 fnt3
+2632 1358( | )m 240 fnt4 2830 1350(t)m 167 fnt3 2930 1457(d)m
+2930 1291(x)m 167 fnt4 3004 1286(,)m 167 fnt3 3046 1291(k)m
+240 fnt4 3194 1350(\316)m 240 fnt3 3388 1358(S)m 3521(  )s
+240 fnt4 3653 1350(\331)m 240 fnt3 3805 1358(  )m 240 fnt4
+3937 1350(t)m 167 fnt3 4037 1457(d)m 4037 1291(x)m 167 fnt4
+4111 1286(,)m 167 fnt3 4153 1291(k)m 240 fnt4 4301 1350(\316)m
+240 fnt3 4495 1358(R)m 240 fnt4 4648 1350(})m 240 fnt3
+7108 1358(   )m 240 fnt1 7480 1356(intersection)m 0 487(In)m 256(the)s
+604(follo)s 6(wing)k 1581(we')s 2(ll)k 2124(refer)s
+2633(to)s 2872(four)s 3330(types)s 3886(of)s 4157(tags:)s
 
 grestore
 0 0 0 0 240 288 60 1417 -15423 LoutGr2
@@ -4258,6 +4324,194 @@ pgsave restore
 showpage
 
 %%Page: 4 4
+%%BeginPageSetup
+%%PageResources: font Times-Roman
+%%+ font Symbol
+%%+ font Times-Italic
+%%+ font Times-Bold
+%%+ font Courier
+/pgsave save def
+%%IncludeResource: font Times-Roman
+/Times-Romanfnt1 vec2 /Times-Roman LoutRecode
+/fnt1 { /Times-Romanfnt1 LoutFont } def
+%%IncludeResource: font Symbol
+/fnt4 { /Symbol LoutFont } def
+%%IncludeResource: font Times-Italic
+/Times-Italicfnt3 vec2 /Times-Italic LoutRecode
+/fnt3 { /Times-Italicfnt3 LoutFont } def
+%%IncludeResource: font Times-Bold
+/Times-Boldfnt2 vec2 /Times-Bold LoutRecode
+/fnt2 { /Times-Boldfnt2 LoutFont } def
+%%IncludeResource: font Courier
+/Courierfnt5 vec2 /Courier LoutRecode
+/fnt5 { /Courierfnt5 LoutFont } def
+0.0500 dup scale 10 setlinewidth
+%%EndPageSetup
+gsave
+0 0 translate
+240 fnt1 0.0 0.0 0.0 LoutSetRGBColor LoutTextureSolid 11900 16840 0 16840 240 288 60 LoutGraphic
+gsave
+LoutPageSet
+grestore
+gsave
+0 16840 translate
+0.0000 rotate
+5765 -1579(-)m 5893(4)s
+6067(-)s 9066 13419 0 13419 240 288 60 1417 -15423 LoutGr2
+0 LoutMargSet
+grestore
+gsave
+2808 13419 translate
+0.8984 0.8984 scale
+1920 12 0 12 240 288 60 0 -396 LoutGr2
+LoutBox 0.0 0.0 0.0 LoutSetRGBColor fill
+grestore
+
+grestore
+144 -246(T)m 19(ag)k 1200 12 0 12 240 288 60 1920 -396 LoutGr2
+LoutBox 0.0 0.0 0.0 LoutSetRGBColor fill
+grestore
+
+grestore
+2150(Symbol)s 720 12 0 12 240 288 60 3120 -396 LoutGr2
+LoutBox 0.0 0.0 0.0 LoutSetRGBColor fill
+grestore
+
+grestore
+3264(V)s 26(ar)k
+144 -630(Be)m 3(gin)k 770(Capture)s 240 fnt4 2440 -694(\()m
+167 fnt3 2512 -569(d)m 2512 -775(n)m 240 fnt3 3264 -628(bc)m
+167 fnt3 3486 -695(n)m 240 fnt1 144 -1095(End)m 588(Capture)s
+240 fnt4 2443 -1159(\))m 167 fnt3 2509 -1034(d)m 2509 -1240(n)m
+240 fnt3 3264 -1093(ec)m 167 fnt3 3472 -1160(n)m 240 fnt1
+144 -1560(Mark)m 167 fnt3 2541 -1499(d)m 240 fnt3 2412 -1624(#)m
+3264 -1558(mrk)m 240 fnt1 144 -2010(Match)m 167 fnt3 2536 -1949(d)m
+240 fnt3 2416 -2087($)m 3264 -2008(end)m 
+grestore
+240 fnt2 0 10390(4.)m
+291(Fr)s 4(om)k 914(RE)s 1301(to)s 1555(TNF)s 21(A)k
+
+[ /Dest /LOUT20_677_yrx_lout_4 /DEST pdfmark
+240 fnt1 480 9958(The)m 908(diagrams)s 1835(in)s 2078(\207gure)s
+2692(1)s 2847(sho)s 6(ws)k 3491(ho)s 6(w)k
+3952(to)s 4191(con)s 9(v)k 3(ert)k 4956(a)s
+5122(re)s 3(gular)k 5855(e)s 3(xpression)k 6932(into)s
+7357(a)s 7523(TNF)s 17(A.)k 0 9584(As)m 340(the)s
+712(last)s 1126(diagram)s 1993(sho)s 6(ws,)k 2716(\207nal)s
+3220(states)s 3824(are)s 4195(denoted)s 5034(using)s 5630(transition)s
+6612(to)s 6875(state)s 7391(0)s 7590(under)s 8218(a)s
+8408(special)s 0 9296(character)m 240 fnt4 933 9290(l)m 240 fnt1
+1122 9296(tagged)m 1816(with)s 2297('$'.)s 2677(This)s 3151(implies)s
+3904(that)s 4320(at)s 4550(the)s 4897(end)s 5299(of)s
+5568(the)s 5915(string)s 6510(to)s 6747(be)s 7028(matched,)s
+7943(the)s 8289(v)s 6(alue)k 8855(of)s 240 fnt3
+0 9010(pos)m 240 fnt1 388 9008(is)m 598(1)s 753(past)s
+1198(the)s 1546(position)s 2374(of)s 2645(the)s 2993(last)s
+3384(character)s 13(.)k 0 8634(Introducing)m 1162(tags)s 1590(as)s
+1832(described,)s 2848(will)s 3266(generate)s 240 fnt4 4123 8628(e)m
+240 fnt1 4226 8634(-automata)m 5233(with)s 5708(a)s 5866(f)s 2(airly)k
+6426(high)s 6902(number)s 7685(of)s 7948(states.)s 8574(Most)s
+0 8346(of)m 277(those)s 845(states,)s 1489(ho)s 6(we)k 6(v)k 3(er)k 9(,)k
+2402(will)s 2835(become)s 3642(unreachable)s 4860(once)s 5374(the)s
+5729(tags)s 6172(will)s 6605(be)s 6893(propag)s 1(ated)k
+8020(to)s 8266(arcs)s 8708(that)s 0 8058(carry)m 544(actual)s
+1169(labels.)s 1830(Inf)s 2(act)k 2444(we)s 2779(ha)s 4(v)k 3(e:)k
+
+[ /Dest /LOUT19_3015_yrx_lout_1 /DEST pdfmark
+240 fnt2 0 7553(Pr)m 4(oposition)k 1234(1)s 1341(:)s
+240 fnt1 1521 7554(Gi)m 6(v)k 3(en)k 2154(a)s
+2320(re)s 3(gular)k 3053(e)s 3(xpression)k 240 fnt3
+4130 7556(r)m 240 fnt1 4228 7554(,)m 4335(the)s 4683(corresponding)s
+240 fnt4 6105 7548(e)m 240 fnt1 6208 7554(-free)m 6713(NF)s 17(A)k
+7232(has)s 240 fnt3 7602 7556(O)m 240 fnt4 7782 7548(\()m
+7866(|)s 240 fnt3 7911 7556(r)m 240 fnt4 8021 7548(|)m
+8066(\))s 240 fnt1 8192 7554(states.)m 240 fnt2 0 7179(Pr)m 4(oof:)k
+240 fnt1 747 7180(Y)m 24(et)k 1128(to)s 1367(be)s
+1649(\207gured)s 2385(out.)s 144 144 72 72 240 288 60 8622 7162 LoutGr2
+LoutBox  stroke
+grestore
+
+grestore
+0 6677(Note)m 530(that)s 957(in)s
+1209(the)s 1566(construction)s 2814(of)s 3094(the)s 3451(terms)s
+240 fnt4 4042 6671(\()m 240 fnt3 4126 6679(X)m 240 fnt4
+4294 6671(\))m 4417(*)s 240 fnt1 4646 6677(and)m 240 fnt4
+5059 6671(\()m 240 fnt3 5143 6679(X)m 240 fnt4 5311 6671(\))m
+5434(+)s 240 fnt1 5620 6677(,)m 5736(due)s 6147(to)s
+6395(the)s 6752(w)s 2(ay)k 7212(the)s 7570(determinization)s
+0 6389(algorithm)m 995(w)s 2(orks,)k 1691(the)s 2045(arc)s
+2396(that)s 2820(e)s 3(xpresses)k 3790(the)s 240 fnt3
+4145 6391(looping)m 240 fnt1 4937 6389(goes)m 5433(from)s 5964(state)s
+6463(3)s 6633(to)s 6879(state)s 7378(2,)s 7611(not)s
+7984(reassigning)s 0 6101(the)m 344(start)s 810(v)s 6(alue)k
+1374(of)s 1641(the)s 1985(term)s 2478(capture.)s 3281(This)s
+3753(means)s 4411(that)s 4825(we)s 5156(forced)s 240 fnt4
+5820 6095(\()m 240 fnt3 5904 6103(a)m 240 fnt4 6031 6095(\))m
+6154(*)s 240 fnt3 6314 6103( )m 240 fnt4 6386 6095(=)m
+167 fnt4 6515 6031(t)m 240 fnt3 6597 6103( )m 240 fnt4
+6669 6095(\()m 240 fnt3 6753 6103(a)m 240 fnt4 6925 6095(*)m
+7085(\))s 240 fnt1 7207 6101(e)m 6(v)k 3(en)k
+7703(if)s 7916(the)s 8259(opposite)s 0 5813(should)m 697(ha)s 4(v)k 3(e)k
+1198(been)s 1707(done.)s 0 5439(F)m 3(or)k 386(e)s 3(xample,)k
+1297(in)s 1536(the)s 1881(e)s 3(xpression)k 240 fnt3
+2954 5441(a)m 240 fnt4 3081 5433(\()m 240 fnt3 3165 5441(b)m
+240 fnt4 3291 5433(\))m 3414(*)s 240 fnt3 3574 5441(c)m
+240 fnt1 3676 5439(,)m 3780(gi)s 6(v)k 3(en)k
+4356(the)s 4701(string)s 220 fnt5 5295 5447(abbbc)m 240 fnt1
+5955 5439(,)m 6058(the)s 6403(length)s 7054(of)s 7322(the)s
+7666(capture)s 8422(will)s 8844(be)s 0 5151(3,)m 227(e)s 3(xactly)k
+968(as)s 1218(if)s 1435(we)s 1770(had)s 2174(written)s
+240 fnt3 2967 5153(a)m 240 fnt4 3094 5145(\()m 240 fnt3
+3178 5153(b)m 240 fnt4 3349 5145(*)m 3509(\))s 240 fnt3
+3587 5153(c)m 240 fnt1 3689 5151(.)m 240 fnt2 0 4358(5.)m
+291(Fr)s 4(om)k 914(NF)s 21(A)k 1438(to)s
+1692(DF)s 21(A)k 
+[ /Dest /LOUT20_677_yrx_lout_5 /DEST pdfmark
+240 fnt1 480 3926(The)m 972(determinization)s
+2593(algorithm)s 3647(processes)s 4679(each)s 5239(state)s 5797(once)s
+6370(remo)s 3(ving)k 240 fnt4 7402 3920(e)m 240 fnt1
+7505 3926(-transitions)m 8695(\207rst)s 0 3638(\(possibly)m 931(introducing)s 2087(ne)s 6(w)k
+2534(ambiguous)s 3636(transitions\))s 4759(and)s 5163(then)s 5632(resolving)s
+6575(an)s 3(y)k 6972(ambiguities:)s 240 fnt3 480 3135(pushonce)m
+240 fnt1 1378 3133(\()m 240 fnt3 1511 3135(stac)m 4(k)k
+240 fnt1 2002 3133(,)m 2109(1)s 2264(\))s 240 fnt2
+480 2844(while)m 1080(not)s 240 fnt3 1472 2847(isempty)m 240 fnt1
+2198 2845(\()m 240 fnt3 2331 2847(stac)m 4(k)k 240 fnt1
+2882 2845(\))m 240 fnt2 3010 2844(do)m 240 fnt3 720 2559(state)m
+240 fnt4 1224 2551(=)m 240 fnt3 1413 2559(pop)m 240 fnt1
+1766 2557(\()m 240 fnt3 1899 2559(stac)m 4(k)k 240 fnt1
+2450 2557(\))m 240 fnt3 720 2271(r)m 8(emo)k 2(veeps)k
+240 fnt1 1728 2269(\()m 240 fnt3 1861 2271(state)m 240 fnt1
+2365 2269(\))m 240 fnt3 720 1983(mer)m 8(g)k 2(ear)k 8(cs)k
+240 fnt1 1707 1981(\()m 240 fnt3 1840 1983(state)m 240 fnt1
+2344 1981(\))m 240 fnt2 480 1692(end)m 240 fnt1 0 1238(The)m
+446(algorithm)s 1453(uses)s 1934(a)s 2118(stack)s 2688(with)s
+3188(a)s 3372(modi\207ed)s 4299(discipline)s 5302(to)s 5559(ensure)s
+6257(that)s 6693(only)s 7191(reachable)s 8180(states)s 8779(are)s
+0 950(visited.)m 764(The)s 1216(function)s 220 fnt5 2093 958(pushonce\(\))m
+240 fnt1 3497 950(only)m 4000(pushes)s 4727(a)s 4916(v)s 6(alue)k
+5508(in)s 5774(the)s 6146(the)s 6517(stack)s 7093(if)s
+7333(that)s 7775(v)s 6(alue)k 8366(has)s 8760(not)s
+0 662(already)m 757(been)s 1266(pushed)s 2003(pre)s 6(viously)k 15(.)k
+0 288(The)m 430(functions)s 220 fnt5 1374 296(removeeps\(\))m 240 fnt1
+2889 288(and)m 220 fnt5 3296 296(mergearcs\(\))m 240 fnt1 4810 288(will)m
+5239(push)s 5752(into)s 6180(the)s 6530(stack)s 7085(the)s
+7436(destination)s 8545(states)s 
+grestore
+0 0 0 0 240 288 60 1417 -15423 LoutGr2
+0 LoutMargSet
+grestore
+
+grestore
+
+grestore
+
+grestore
+
+pgsave restore
+showpage
+
+%%Page: 5 5
 %%BeginPageSetup
 %%PageResources: font Times-Roman
 %%+ font Times-Italic
@@ -4286,12 +4540,12 @@ grestore
 gsave
 0 16840 translate
 0.0000 rotate
-5765 -1579(-)m 5893(4)s
-6067(-)s 9066 13419 0 13419 240 288 60 1417 -15423 LoutGr2
-0 LoutMargSet
+5769 -1582(-)m 5897(5)s
+6063(-)s 9066 13413 0 13413 240 288 60 1417 -15423 LoutGr2
+1 LoutMargSet
 grestore
 gsave
-847 13419 translate
+847 13413 translate
 0.8984 0.8984 scale
 1942 1101 0 1101 240 288 60 0 -1475 LoutGr2
 
@@ -9888,43 +10142,25 @@ grestore
 grestore
 
 [ /Dest /LOUTre2nfa /DEST pdfmark
-200 fnt2 3266 2285(Figur)m 3(e)k
-3874(1.)s 200 fnt1 4116 2286(Construction)m 5192(of)s 5418(NF)s 14(A)k
-
-[ /Dest /LOUT19_3015_yrx_lout_1 /DEST pdfmark
-240 fnt2 0 1654(Pr)m 4(oposition)k 1293(1)s 1400(:)s
-240 fnt1 1639 1655(Gi)m 6(v)k 3(en)k 2331(a)s
-2556(re)s 3(gular)k 3348(e)s 3(xpression)k 240 fnt3
-4484 1657(r)m 240 fnt1 4582 1655(,)m 4748(the)s 5155(corresponding)s
-240 fnt4 6636 1649(e)m 240 fnt1 6739 1655(-free)m 7303(NF)s 17(A)k
-7881(has)s 8310(at)s 8601(most)s 240 fnt4 0 1361(|)m
-240 fnt3 45 1369(r)m 240 fnt4 155 1361(|)m 245(+)s
-431(1)s 240 fnt1 585 1367(states.)m 240 fnt2 0 992(Pr)m 4(oof:)k
-240 fnt1 740 993(Y)m 24(et)k 1113(to)s 1345(be)s
-1619(\207gured)s 2348(out.)s 2750(And)s 3214(also,)s 3698(the)s
-4038(theorem)s 4874(does)s 5356(not)s 5715(hold)s 6191(for)s
-240 fnt4 6522 987(\()m 240 fnt3 6606 995(X)m 240 fnt4
-6774 987(|)m 240 fnt3 6819 995(Y)m 240 fnt4 6982 987(\))m
-240 fnt1 7048 993(.)m 7144(If)s 7367(changing)s 240 fnt3
-8290 995(a)m 240 fnt4 8462 987(+)m 240 fnt1 8700 993(will)m
-0 705(be)m 282(enough,)s 1095(good)s 1633(otherwise)s 2618(I')s 2(ll)k
-2961(introduce)s 3920(a)s 4086(term)s 4583(to)s 4822(tak)s 2(e)k
-5274(it)s 5466(into)s 5891(account.)s 144 144 72 72 240 288 60 8922 687 LoutGr2
+200 fnt2 3266 2279(Figur)m 3(e)k
+3874(1.)s 200 fnt1 4116 2280(Construction)m 5192(of)s 5418(NF)s 14(A)k
+240 fnt1 0 1650(so)m 266(that)s 684(the)s 1032(computation)s
+2285(continues.)s 
+[ /Dest /LOUT19_3015_yrx_lout_2 /DEST pdfmark
+240 fnt2 0 1145(Pr)m 4(oposition)k 1234(2)s
+1349(:)s 240 fnt1 1529 1146(The)m 1957(algorithm)s 2946(x)s
+3121(is)s 3331(equi)s 6(v)k 6(alent)k 4375(to)s
+4614(the)s 4962(classical)s 5825(subset)s 6483(construction)s 7722(algorithm.)s
+240 fnt2 0 771(Pr)m 4(oof:)k 240 fnt1 747 772(T)m 19(o)k
+1047(be)s 1329(\207gured)s 2065(out.)s 144 144 72 72 240 288 60 8551 754 LoutGr2
 LoutBox  stroke
 grestore
 
 grestore
-0 202(Note)m 530(that)s
-957(in)s 1209(the)s 1566(construction)s 2814(of)s 3094(the)s
-3451(terms)s 240 fnt4 4042 196(\()m 240 fnt3 4126 204(X)m
-240 fnt4 4294 196(\))m 4417(*)s 240 fnt1 4646 202(and)m
-240 fnt4 5059 196(\()m 240 fnt3 5143 204(X)m 240 fnt4
-5311 196(\))m 5434(+)s 240 fnt1 5620 202(,)m 5736(due)s
-6147(to)s 6395(the)s 6752(w)s 2(ay)k 7212(the)s
-7570(determinization)s 
+
 grestore
 0 0 0 0 240 288 60 1417 -15423 LoutGr2
-0 LoutMargSet
+1 LoutMargSet
 grestore
 
 grestore
@@ -9936,28 +10172,27 @@ grestore
 pgsave restore
 showpage
 
-%%Page: 5 5
+%%Page: 6 6
 %%BeginPageSetup
 %%PageResources: font Times-Roman
-%%+ font Times-Italic
-%%+ font Symbol
-%%+ font Courier
 %%+ font Times-Bold
+%%+ font Symbol
+%%+ font Times-Italic
 /pgsave save def
 %%IncludeResource: font Times-Roman
 /Times-Romanfnt1 vec2 /Times-Roman LoutRecode
 /fnt1 { /Times-Romanfnt1 LoutFont } def
-%%IncludeResource: font Times-Italic
-/Times-Italicfnt3 vec2 /Times-Italic LoutRecode
-/fnt3 { /Times-Italicfnt3 LoutFont } def
-%%IncludeResource: font Symbol
-/fnt4 { /Symbol LoutFont } def
-%%IncludeResource: font Courier
-/Courierfnt5 vec2 /Courier LoutRecode
-/fnt5 { /Courierfnt5 LoutFont } def
 %%IncludeResource: font Times-Bold
 /Times-Boldfnt2 vec2 /Times-Bold LoutRecode
 /fnt2 { /Times-Boldfnt2 LoutFont } def
+%%IncludeResource: font Symbol
+/fnt4 { /Symbol LoutFont } def
+%%IncludeResource: font Times-Italic
+/Times-Italicfnt3 vec2 /Times-Italic LoutRecode
+/fnt3 { /Times-Italicfnt3 LoutFont } def
+%%IncludeResource: font Times-Italic
+/Times-Italicfnt6 vec2 /Times-Italic LoutRecode
+/fnt6 { /Times-Italicfnt6 LoutFont } def
 0.0500 dup scale 10 setlinewidth
 %%EndPageSetup
 gsave
@@ -9969,106 +10204,35 @@ grestore
 gsave
 0 16840 translate
 0.0000 rotate
-5769 -1582(-)m 5897(5)s
-6063(-)s 9066 13413 0 13302 240 288 60 1417 -15423 LoutGr2
-1 LoutMargSet
+5765 -1581(-)m 5893(6)s
+6066(-)s 9066 13414 0 13414 240 288 60 1417 -15423 LoutGr2
+0 LoutMargSet
 grestore
-0 13248(algorithm)m 995(w)s 2(orks,)k 1691(the)s
-2045(arc)s 2396(that)s 2820(e)s 3(xpresses)k 3790(the)s
-240 fnt3 4145 13250(looping)m 240 fnt1 4937 13248(goes)m 5433(from)s
-5964(state)s 6463(3)s 6633(to)s 6879(state)s 7378(2,)s
-7611(not)s 7984(reassigning)s 0 12960(the)m 344(start)s 810(v)s 6(alue)k
-1374(of)s 1641(the)s 1985(term)s 2478(capture.)s 3281(This)s
-3753(means)s 4411(that)s 4825(we)s 5156(forced)s 240 fnt4
-5820 12954(\()m 240 fnt3 5904 12962(a)m 240 fnt4 6031 12954(\))m
-6154(*)s 240 fnt3 6314 12962( )m 240 fnt4 6386 12954(=)m
-167 fnt4 6515 12890(t)m 240 fnt3 6597 12962( )m 240 fnt4
-6669 12954(\()m 240 fnt3 6753 12962(a)m 240 fnt4 6925 12954(*)m
-7085(\))s 240 fnt1 7207 12960(e)m 6(v)k 3(en)k
-7703(if)s 7916(the)s 8259(opposite)s 0 12672(should)m 697(ha)s 4(v)k 3(e)k
-1198(been)s 1707(done.)s 0 12298(F)m 3(or)k 386(e)s 3(xample,)k
-1297(in)s 1536(the)s 1881(e)s 3(xpression)k 240 fnt3
-2954 12300(a)m 240 fnt4 3081 12292(\()m 240 fnt3 3165 12300(b)m
-240 fnt4 3291 12292(\))m 3414(*)s 240 fnt3 3574 12300(c)m
-240 fnt1 3676 12298(,)m 3780(gi)s 6(v)k 3(en)k
-4356(the)s 4701(string)s 220 fnt5 5295 12306(abbbc)m 240 fnt1
-5955 12298(,)m 6058(the)s 6403(length)s 7054(of)s 7322(the)s
-7666(capture)s 8422(will)s 8844(be)s 0 12010(3,)m 227(e)s 3(xactly)k
-968(as)s 1218(if)s 1435(we)s 1770(had)s 2174(written)s
-240 fnt3 2967 12012(a)m 240 fnt4 3094 12004(\()m 240 fnt3
-3178 12012(b)m 240 fnt4 3349 12004(*)m 3509(\))s 240 fnt3
-3587 12012(c)m 240 fnt1 3689 12010(.)m 240 fnt2 0 11217(5.)m
-291(Fr)s 4(om)k 914(NF)s 21(A)k 1438(to)s
-1692(DF)s 21(A)k 
-[ /Dest /LOUT20_677_yrx_lout_5 /DEST pdfmark
-240 fnt1 480 10785(The)m 972(determinization)s
-2593(algorithm)s 3647(processes)s 4679(each)s 5239(state)s 5797(once)s
-6370(remo)s 3(ving)k 240 fnt4 7402 10779(e)m 240 fnt1
-7505 10785(-transitions)m 8695(\207rst)s 0 10497(\(possibly)m 931(introducing)s 2087(ne)s 6(w)k
-2534(ambiguous)s 3636(transitions\))s 4759(and)s 5163(then)s 5632(resolving)s
-6575(an)s 3(y)k 6972(ambiguities:)s 240 fnt3 480 9994(pushonce)m
-240 fnt1 1378 9992(\()m 240 fnt3 1511 9994(stac)m 4(k)k
-240 fnt1 2002 9992(,)m 2109(1)s 2264(\))s 240 fnt2
-480 9703(while)m 1080(not)s 240 fnt3 1472 9706(isempty)m 240 fnt1
-2198 9704(\()m 240 fnt3 2331 9706(stac)m 4(k)k 240 fnt1
-2882 9704(\))m 240 fnt2 3010 9703(do)m 240 fnt3 720 9418(state)m
-240 fnt4 1224 9410(=)m 240 fnt3 1413 9418(pop)m 240 fnt1
-1766 9416(\()m 240 fnt3 1899 9418(stac)m 4(k)k 240 fnt1
-2450 9416(\))m 240 fnt3 720 9130(r)m 8(emo)k 2(veeps)k
-240 fnt1 1728 9128(\()m 240 fnt3 1861 9130(state)m 240 fnt1
-2365 9128(\))m 240 fnt3 720 8842(mer)m 8(g)k 2(ear)k 8(cs)k
-240 fnt1 1707 8840(\()m 240 fnt3 1840 8842(state)m 240 fnt1
-2344 8840(\))m 240 fnt2 480 8551(end)m 240 fnt1 0 8097(The)m
-446(algorithm)s 1453(uses)s 1934(a)s 2118(stack)s 2688(with)s
-3188(a)s 3372(modi\207ed)s 4299(discipline)s 5302(to)s 5559(ensure)s
-6257(that)s 6693(only)s 7191(reachable)s 8180(states)s 8779(are)s
-0 7809(visited.)m 764(The)s 1216(function)s 220 fnt5 2093 7817(pushonce\(\))m
-240 fnt1 3497 7809(only)m 4000(pushes)s 4727(a)s 4916(v)s 6(alue)k
-5508(in)s 5774(the)s 6146(the)s 6517(stack)s 7093(if)s
-7333(that)s 7775(v)s 6(alue)k 8366(has)s 8760(not)s
-0 7521(already)m 757(been)s 1266(pushed)s 2003(pre)s 6(viously)k 15(.)k
-0 7147(The)m 430(functions)s 220 fnt5 1374 7155(removeeps\(\))m 240 fnt1
-2889 7147(and)m 220 fnt5 3296 7155(mergearcs\(\))m 240 fnt1 4810 7147(will)m
-5239(push)s 5752(into)s 6180(the)s 6530(stack)s 7085(the)s
-7436(destination)s 8545(states)s 0 6859(so)m 266(that)s 684(the)s
-1032(computation)s 2285(continues.)s 
-[ /Dest /LOUT19_3015_yrx_lout_2 /DEST pdfmark
-240 fnt2 0 6354(Pr)m 4(oposition)k
-1234(2)s 1349(:)s 240 fnt1 1529 6355(The)m 1957(algorithm)s
-2946(x)s 3121(is)s 3331(equi)s 6(v)k 6(alent)k
-4375(to)s 4614(the)s 4962(classical)s 5825(subset)s 6483(construction)s
-7722(algorithm.)s 240 fnt2 0 5980(Pr)m 4(oof:)k 240 fnt1
-747 5981(T)m 19(o)k 1047(be)s 1329(\207gured)s 2065(out.)s
-144 144 72 72 240 288 60 8551 5963 LoutGr2
-LoutBox  stroke
-grestore
-
-grestore
-240 fnt2 0 5044(5.1.)m 471(Elimination)s 1735(of)s 240 fnt4
-2007 5039(e)m 240 fnt2 2110 5044(-transitions)m 
+240 fnt2 0 13249(5.1.)m 471(Elimination)s 1735(of)s
+240 fnt4 2007 13244(e)m 240 fnt2 2110 13249(-transitions)m 
 [ /Dest /LOUT20_708_yrx_lout_1 /DEST pdfmark
-240 fnt1 480 4607(The)m
-903(k)s 2(e)k 3(y)k 1292(idea)s 1744(is)s
-1948(that)s 2360(an)s 240 fnt4 2637 4601(e)m 240 fnt1
-2740 4607(-transition)m 3772(from)s 4290(a)s 4450(state)s 240 fnt3
-4937 4609(x)m 240 fnt1 5097 4607(to)m 5330(a)s 5490(state)s
-240 fnt3 5977 4609(y)m 240 fnt1 6133 4607(implies)m 6881(that)s
-7293(all)s 7580(states)s 8155(reachable)s 0 4319(from)m 240 fnt3
-523 4321(y)m 240 fnt1 684 4319(are)m 1030(also)s 1466(reachable)s
-2436(from)s 240 fnt3 2959 4321(x.)m 240 fnt1 3157 4319(In)m
-3412(other)s 3962(w)s 2(ords)k 4594(the)s 240 fnt4
-4941 4313(e)m 240 fnt1 5044 4319(-transition)m 6081(from)s 240 fnt3
-6603 4321(x)m 240 fnt1 6768 4319(to)m 240 fnt3 7006 4321(y)m
-240 fnt1 7166 4319(can)m 7554(be)s 7835(remo)s 3(v)k 3(ed)k
-8722(and)s 0 4031(replaced)m 867(with)s 1349(the)s 1697(set)s
-2022(of)s 2293(arcs)s 240 fnt3 2728 4033(x)m 240 fnt1
-2894 4031(to)m 3133(the)s 3481(states)s 4062(to)s 4301(the)s
-4649(states)s 5230(reachable)s 6201(from)s 240 fnt3 6725 4033(y)m 13(.)k
-240 fnt1 0 3657(Figure)m 680(2)s 854(sho)s 6(ws)k
+240 fnt1
+480 12812(The)m 903(k)s 2(e)k 3(y)k 1292(idea)s
+1744(is)s 1948(that)s 2360(an)s 240 fnt4 2637 12806(e)m
+240 fnt1 2740 12812(-transition)m 3772(from)s 4290(a)s 4450(state)s
+240 fnt3 4937 12814(x)m 240 fnt1 5097 12812(to)m 5330(a)s
+5490(state)s 240 fnt3 5977 12814(y)m 240 fnt1 6133 12812(implies)m
+6881(that)s 7293(all)s 7580(states)s 8155(reachable)s 0 12524(from)m
+240 fnt3 523 12526(y)m 240 fnt1 684 12524(are)m 1030(also)s
+1466(reachable)s 2436(from)s 240 fnt3 2959 12526(x.)m 240 fnt1
+3157 12524(In)m 3412(other)s 3962(w)s 2(ords)k 4594(the)s
+240 fnt4 4941 12518(e)m 240 fnt1 5044 12524(-transition)m 6081(from)s
+240 fnt3 6603 12526(x)m 240 fnt1 6768 12524(to)m 240 fnt3
+7006 12526(y)m 240 fnt1 7166 12524(can)m 7554(be)s 7835(remo)s 3(v)k 3(ed)k
+8722(and)s 0 12236(replaced)m 867(with)s 1349(the)s 1697(set)s
+2022(of)s 2293(arcs)s 240 fnt3 2728 12238(x)m 240 fnt1
+2894 12236(to)m 3133(the)s 3481(states)s 4062(to)s 4301(the)s
+4649(states)s 5230(reachable)s 6201(from)s 240 fnt3 6725 12238(y)m 13(.)k
+240 fnt1 0 11862(Figure)m 680(2)s 854(sho)s 6(ws)k
 1498(ho)s 6(w)k 1959(labels)s 2567(and)s 2971(tags)s
 3407(are)s 3754(propag)s 1(ated)k 4874(during)s 240 fnt4
-5552 3651(e)m 240 fnt1 5655 3657(-transitions)m 6780(remo)s 3(v)k 6(al.)k
-3663 638 0 638 240 288 60 1039 2274 LoutGr2
+5552 11856(e)m 240 fnt1 5655 11862(-transitions)m 6780(remo)s 3(v)k 6(al.)k
+3663 638 0 638 240 288 60 1009 10479 LoutGr2
 
 200 ldiagbegin
 grestore
@@ -10362,7 +10526,7 @@ grestore
 ldiagend
 
 grestore
-3264 638 0 638 240 288 60 4762 2274 LoutGr2
+3264 638 0 638 240 288 60 4792 10479 LoutGr2
 
 200 ldiagbegin
 grestore
@@ -10661,108 +10825,57 @@ ldiagend
 grestore
 
 [ /Dest /LOUTremoveeps /DEST pdfmark
-200 fnt2 3186 1848(Figur)m 3(e)k
-3794(2.)s 200 fnt1 4036 1849(Remo)m 3(ving)k 200 fnt4
-4908 1844(e)m 200 fnt1 4993 1849(-transitions)m 
-grestore
-0 0 0 0 240 288 60 1417 -15423 LoutGr2
-1 LoutMargSet
-grestore
-
-grestore
-
-grestore
-
-grestore
-
-pgsave restore
-showpage
-
-%%Page: 6 6
-%%BeginPageSetup
-%%PageResources: font Times-Roman
-%%+ font Times-Bold
-%%+ font Times-Italic
-%%+ font Symbol
-/pgsave save def
-%%IncludeResource: font Times-Roman
-/Times-Romanfnt1 vec2 /Times-Roman LoutRecode
-/fnt1 { /Times-Romanfnt1 LoutFont } def
-%%IncludeResource: font Times-Bold
-/Times-Boldfnt2 vec2 /Times-Bold LoutRecode
-/fnt2 { /Times-Boldfnt2 LoutFont } def
-%%IncludeResource: font Times-Italic
-/Times-Italicfnt3 vec2 /Times-Italic LoutRecode
-/fnt3 { /Times-Italicfnt3 LoutFont } def
-%%IncludeResource: font Symbol
-/fnt4 { /Symbol LoutFont } def
-%%IncludeResource: font Times-Italic
-/Times-Italicfnt6 vec2 /Times-Italic LoutRecode
-/fnt6 { /Times-Italicfnt6 LoutFont } def
-0.0500 dup scale 10 setlinewidth
-%%EndPageSetup
-gsave
-0 0 translate
-240 fnt1 0.0 0.0 0.0 LoutSetRGBColor LoutTextureSolid 11900 16840 0 16840 240 288 60 LoutGraphic
-gsave
-LoutPageSet
-grestore
-gsave
-0 16840 translate
-0.0000 rotate
-5765 -1581(-)m 5893(6)s
-6066(-)s 9066 13414 0 13304 240 288 60 1417 -15423 LoutGr2
-0 LoutMargSet
-grestore
-240 fnt2 480 13249(f)m 6(or)k 240 fnt3
-837 13252(ar)m 8(c)k 240 fnt2 1204 13249(in)m 240 fnt3
-1459 13252(ar)m 8(csfr)k 10(om)k 240 fnt1 2301 13250(\()m
-240 fnt3 2374 13252(state)m 240 fnt1 2818 13250(\))m 240 fnt2
-2946 13249(do)m 720 12961(if)m 240 fnt3 938 12964(ar)m 8(c)k
-240 fnt1 1245 12962(.)m 240 fnt3 1289 12964(lbl)m 240 fnt4
-1601 12956(=)m 1790(e)s 240 fnt2 1953 12961(then)m 960 12673(if)m
-240 fnt3 1178 12676(ar)m 8(c)k 240 fnt1 1485 12674(.)m
-240 fnt6 1529 12676(to)m 240 fnt1 1708 12674(.)m 240 fnt3
-1752 12676(mark)m 240 fnt4 2308 12668(\271)m 240 fnt3 2497 12676(state)m
-240 fnt2 3001 12673(then)m 1200 12385(f)m 6(or)k 240 fnt3
-1557 12388(tmpar)m 8(c)k 240 fnt2 2283 12385(in)m 240 fnt3
-2538 12388(ar)m 8(csfr)k 10(om)k 240 fnt1 3380 12386(\()m
-240 fnt3 3453 12388(ar)m 8(c)k 240 fnt1 3760 12386(.)m
-240 fnt6 3804 12388(to)m 240 fnt1 3983 12386(\))m 240 fnt2
-4111 12385(do)m 240 fnt3 1440 12100(addar)m 8(c)k 240 fnt1
-2107 12098(\()m 240 fnt3 2180 12100(state)m 240 fnt1 2624 12098(,)m
-240 fnt3 2731 12100(tmpar)m 8(c)k 240 fnt1 3397 12098(.)m
-240 fnt6 3441 12100(to)m 240 fnt1 3680 12098(,)m 240 fnt3
-3787 12100(tmpar)m 8(c)k 240 fnt1 4453 12098(.)m 240 fnt3
-4497 12100(lbl)m 240 fnt1 4809 12098(,)m 240 fnt3 4916 12100(ar)m 8(c)k
-240 fnt1 5223 12098(.)m 240 fnt3 5267 12100(ta)m 2(gs)k
-240 fnt4 5719 12092(\310)m 167 fnt4 5895 12028(t)m 240 fnt3
-6025 12100(tmpar)m 8(c)k 240 fnt1 6691 12098(.)m 240 fnt3
-6735 12100(ta)m 2(gs)k 240 fnt1 7127 12098(\))m 240 fnt2
-1200 11809(end)m 240 fnt3 1200 11524(ar)m 8(c)k 240 fnt1
-1507 11522(.)m 240 fnt6 1551 11524(to)m 240 fnt1 1730 11522(.)m
-240 fnt3 1774 11524(mark)m 240 fnt4 2330 11516(=)m 240 fnt3
-2519 11524(state)m 240 fnt2 960 11233(end)m 240 fnt3 960 10948(deletar)m 8(c)k
-240 fnt1 1731 10946(\()m 240 fnt3 1804 10948(ar)m 8(c)k
-240 fnt1 2111 10946(\))m 240 fnt2 720 10657(end)m 480 10369(end)m
-240 fnt1 0 9913(A)m 241(surv)s 3(e)k 3(y)k
+200 fnt2 3186 10053(Figur)m 3(e)k
+3794(2.)s 200 fnt1 4036 10054(Remo)m 3(ving)k 200 fnt4
+4908 10049(e)m 200 fnt1 4993 10054(-transitions)m 240 fnt2 480 9133(f)m 6(or)k
+240 fnt3 837 9136(ar)m 8(c)k 240 fnt2 1204 9133(in)m
+240 fnt3 1459 9136(ar)m 8(csfr)k 10(om)k 240 fnt1
+2301 9134(\()m 240 fnt3 2374 9136(state)m 240 fnt1 2818 9134(\))m
+240 fnt2 2946 9133(do)m 720 8845(if)m 240 fnt3 938 8848(ar)m 8(c)k
+240 fnt1 1245 8846(.)m 240 fnt3 1289 8848(lbl)m 240 fnt4
+1601 8840(=)m 1790(e)s 240 fnt2 1953 8845(then)m 960 8557(if)m
+240 fnt3 1178 8560(ar)m 8(c)k 240 fnt1 1485 8558(.)m
+240 fnt6 1529 8560(to)m 240 fnt1 1708 8558(.)m 240 fnt3
+1752 8560(mark)m 240 fnt4 2308 8552(\271)m 240 fnt3 2497 8560(state)m
+240 fnt2 3001 8557(then)m 1200 8269(f)m 6(or)k 240 fnt3
+1557 8272(tmpar)m 8(c)k 240 fnt2 2283 8269(in)m 240 fnt3
+2538 8272(ar)m 8(csfr)k 10(om)k 240 fnt1 3380 8270(\()m
+240 fnt3 3453 8272(ar)m 8(c)k 240 fnt1 3760 8270(.)m
+240 fnt6 3804 8272(to)m 240 fnt1 3983 8270(\))m 240 fnt2
+4111 8269(do)m 240 fnt3 1440 7984(addar)m 8(c)k 240 fnt1
+2107 7982(\()m 240 fnt3 2180 7984(state)m 240 fnt1 2624 7982(,)m
+240 fnt3 2731 7984(tmpar)m 8(c)k 240 fnt1 3397 7982(.)m
+240 fnt6 3441 7984(to)m 240 fnt1 3680 7982(,)m 240 fnt3
+3787 7984(tmpar)m 8(c)k 240 fnt1 4453 7982(.)m 240 fnt3
+4497 7984(lbl)m 240 fnt1 4809 7982(,)m 240 fnt3 4916 7984(ar)m 8(c)k
+240 fnt1 5223 7982(.)m 240 fnt3 5267 7984(ta)m 2(gs)k
+240 fnt4 5719 7976(\310)m 167 fnt4 5895 7912(t)m 240 fnt3
+6025 7984(tmpar)m 8(c)k 240 fnt1 6691 7982(.)m 240 fnt3
+6735 7984(ta)m 2(gs)k 240 fnt1 7127 7982(\))m 240 fnt2
+1200 7693(end)m 240 fnt3 1200 7408(ar)m 8(c)k 240 fnt1
+1507 7406(.)m 240 fnt6 1551 7408(to)m 240 fnt1 1730 7406(.)m
+240 fnt3 1774 7408(mark)m 240 fnt4 2330 7400(=)m 240 fnt3
+2519 7408(state)m 240 fnt2 960 7117(end)m 240 fnt3 960 6832(deletar)m 8(c)k
+240 fnt1 1731 6830(\()m 240 fnt3 1804 6832(ar)m 8(c)k
+240 fnt1 2111 6830(\))m 240 fnt2 720 6541(end)m 480 6253(end)m
+240 fnt1 0 5797(A)m 241(surv)s 3(e)k 3(y)k
 938(on)s 1247(ho)s 6(w)k 1719(to)s 1970(handle)s
-240 fnt4 2675 9907(e)m 240 fnt1 2850 9913(transitions)m 3907(is)s
+240 fnt4 2675 5791(e)m 240 fnt1 2850 5797(transitions)m 3907(is)s
 4129(gi)s 6(v)k 3(en)k 4720(in)s 4975([)s
 
-[ /Rect [5046 9910 5152 10078] /Border [0 0 0] /View [ /XYZ null null null ] /Subtype /Link /Dest /LOUTvannoord00 /ANN pdfmark
+[ /Rect [5046 5794 5152 5962] /Border [0 0 0] /View [ /XYZ null null null ] /Subtype /Link /Dest /LOUTvannoord00 /ANN pdfmark
 5046(5)s 5152(].)s 5346(The)s 5786(idea)s 6255(of)s
-240 fnt3 6538 9915(copying)m 240 fnt1 7361 9913(arcs)m 7808(is)s
-8029(outlined)s 8883(in)s 0 9625([)m 
-[ /Rect [71 9622 175 9787] /Border [0 0 0] /View [ /XYZ null null null ] /Subtype /Link /Dest /LOUTilieyu02 /ANN pdfmark
+240 fnt3 6538 5799(copying)m 240 fnt1 7361 5797(arcs)m 7808(is)s
+8029(outlined)s 8883(in)s 0 5509([)m 
+[ /Rect [71 5506 175 5671] /Border [0 0 0] /View [ /XYZ null null null ] /Subtype /Link /Dest /LOUTilieyu02 /ANN pdfmark
 71(3)s 175(].)s
-240 fnt2 0 8991(5.2.)m 471(Resolving)s 1524(ambigous)s 2562(transitions)s
+240 fnt2 0 4875(5.2.)m 471(Resolving)s 1524(ambigous)s 2562(transitions)s
 
 [ /Dest /LOUT20_708_yrx_lout_2 /DEST pdfmark
-240 fnt1 480 8514(Propag)m 1(ating)k 1721(tags)s 2190(while)s
+240 fnt1 480 4398(Propag)m 1(ating)k 1721(tags)s 2190(while)s
 2810(remo)s 3(ving)k 3810(ambigous)s 4825(transitions)s 5904(is)s
 6147(the)s 6528(most)s 7086(comple)s 3(x)k 7995(task)s
-8474(of)s 8778(the)s 0 8226(entire)m 599(process.)s 3255 2690 0 2690 240 288 60 816 5059 LoutGr2
+8474(of)s 8778(the)s 0 4110(entire)m 599(process.)s 3255 2690 0 2690 240 288 60 816 943 LoutGr2
 
 200 ldiagbegin
 grestore
@@ -11056,7 +11169,7 @@ grestore
 ldiagend
 
 grestore
-4058 2690 0 2690 240 288 60 4191 5059 LoutGr2
+4058 2690 0 2690 240 288 60 4191 943 LoutGr2
 
 200 ldiagbegin
 grestore
@@ -11745,19 +11858,70 @@ ldiagend
 grestore
 
 [ /Dest /LOUTmergearcs /DEST pdfmark
-200 fnt2 3334 4633(Figur)m 3(e)k 3942(3.)s 200 fnt1
-4184 4634(Mer)m 3(ging)k 4911(transitions)s 240 fnt1 0 4003(F)m 3(ollo)k 6(wing)k
-1031(the)s 1383(NF)s 17(A)k 1906(construction)s 3149(rules)s
-3667(of)s 3942(\207gure)s 4560(1,)s 4791(arcs)s 5229(may)s
-5699(be)s 5985(labeled)s 6737(with)s 7222(set)s 7551(of)s
-7826(characters;)s 8909(if)s 0 3715(tw)m 2(o)k 413(arcs)s
-852(ha)s 4(v)k 3(e)k 1357(labels)s 1968(whose)s
-2640(intersection)s 3815(is)s 4029(not)s 4398(empty)s 15(,)k
-5092(we)s 5431(ha)s 4(v)k 3(e)k 5936(an)s
-6222(ambigous)s 7208(transition.)s 8278(Figure)s 8962(3)s 0 3427(sho)m 6(ws)k
-644(the)s 992(general)s 1750(case,)s 2268(table)s 2788(xx)s
-3083(sho)s 6(ws)k 3727(all)s 4020(the)s 4368(possible)s
-5208(cases.)s 3255 1908 0 1908 240 288 60 1213 1042 LoutGr2
+200 fnt2 3334 517(Figur)m 3(e)k 3942(3.)s 200 fnt1
+4184 518(Mer)m 3(ging)k 4911(transitions)s 
+grestore
+0 0 0 0 240 288 60 1417 -15423 LoutGr2
+0 LoutMargSet
+grestore
+
+grestore
+
+grestore
+
+grestore
+
+pgsave restore
+showpage
+
+%%Page: 7 7
+%%BeginPageSetup
+%%PageResources: font Times-Roman
+%%+ font Symbol
+%%+ font Times-Bold
+%%+ font Courier
+%%+ font Times-Italic
+/pgsave save def
+%%IncludeResource: font Times-Roman
+/Times-Romanfnt1 vec2 /Times-Roman LoutRecode
+/fnt1 { /Times-Romanfnt1 LoutFont } def
+%%IncludeResource: font Symbol
+/fnt4 { /Symbol LoutFont } def
+%%IncludeResource: font Times-Bold
+/Times-Boldfnt2 vec2 /Times-Bold LoutRecode
+/fnt2 { /Times-Boldfnt2 LoutFont } def
+%%IncludeResource: font Courier
+/Courierfnt5 vec2 /Courier LoutRecode
+/fnt5 { /Courierfnt5 LoutFont } def
+%%IncludeResource: font Times-Italic
+/Times-Italicfnt3 vec2 /Times-Italic LoutRecode
+/fnt3 { /Times-Italicfnt3 LoutFont } def
+0.0500 dup scale 10 setlinewidth
+%%EndPageSetup
+gsave
+0 0 translate
+240 fnt1 0.0 0.0 0.0 LoutSetRGBColor LoutTextureSolid 11900 16840 0 16840 240 288 60 LoutGraphic
+gsave
+LoutPageSet
+grestore
+gsave
+0 16840 translate
+0.0000 rotate
+5768 -1575(-)m 5896(7)s
+6064(-)s 9066 13422 0 13313 240 288 60 1417 -15423 LoutGr2
+1 LoutMargSet
+grestore
+0 13259(F)m 3(ollo)k 6(wing)k 1031(the)s
+1383(NF)s 17(A)k 1906(construction)s 3149(rules)s 3667(of)s
+3942(\207gure)s 4560(1,)s 4791(arcs)s 5229(may)s 5699(be)s
+5985(labeled)s 6737(with)s 7222(set)s 7551(of)s 7826(characters;)s
+8909(if)s 0 12971(tw)m 2(o)k 413(arcs)s 852(ha)s 4(v)k 3(e)k
+1357(labels)s 1968(whose)s 2640(intersection)s 3815(is)s 4029(not)s
+4398(empty)s 15(,)k 5092(we)s 5431(ha)s 4(v)k 3(e)k
+5936(an)s 6222(ambigous)s 7208(transition.)s 8278(Figure)s 8962(3)s
+0 12683(sho)m 6(ws)k 644(the)s 992(general)s 1750(case,)s
+2268(table)s 2788(xx)s 3083(sho)s 6(ws)k 3727(all)s
+4020(the)s 4368(possible)s 5208(cases.)s 3255 1908 0 1908 240 288 60 1213 10298 LoutGr2
 
 200 ldiagbegin
 grestore
@@ -11770,7 +11934,8 @@ ldiagnodebegin [ ldiagcircle ]
 0.04 ft {} ldiagnodeend
 (IN) ldiagpushtagdict
 grestore
-180 fnt1 161 144(2)m ldiagpopuptagdict
+180 fnt1 161 144(2)m
+ldiagpopuptagdict
 grestore
 ldiagpopuptagdict
 grestore
@@ -11783,8 +11948,7 @@ ldiagnodebegin [ ldiagcircle ]
 0.04 ft {} ldiagnodeend
 (IN) ldiagpushtagdict
 grestore
-180 fnt1 168 144(1)m
-ldiagpopuptagdict
+180 fnt1 168 144(1)m ldiagpopuptagdict
 grestore
 ldiagpopuptagdict
 grestore
@@ -11797,7 +11961,8 @@ ldiagnodebegin [ ldiagcircle ]
 0.04 ft {} ldiagnodeend
 (IN) ldiagpushtagdict
 grestore
-180 fnt1 165 147(3)m ldiagpopuptagdict
+180 fnt1 165 147(3)m
+ldiagpopuptagdict
 grestore
 ldiagpopuptagdict
 grestore
@@ -11823,8 +11988,8 @@ grestore
 567 375 48 172 240 288 60 0 0 LoutGr2
 () ldiagpushtagdict
 grestore
-48 118(a / )m 240 fnt4
-340 112(t)m 167 fnt4 440 214(0)m 440 48(1)m ldiagpoptagdict
+48 118(a / )m 240 fnt4 340 112(t)m 167 fnt4 440 214(0)m
+440 48(1)m ldiagpoptagdict
 grestore
 
 grestore
@@ -11850,9 +12015,8 @@ grestore
 567 375 48 172 240 288 60 0 0 LoutGr2
 () ldiagpushtagdict
 grestore
-48 118(a / )m
-240 fnt4 340 112(t)m 167 fnt4 440 214(0)m 440 48(1)m
-ldiagpoptagdict
+48 118(a / )m 240 fnt4 340 112(t)m 167 fnt4
+440 214(0)m 440 48(1)m ldiagpoptagdict
 grestore
 
 grestore
@@ -11947,8 +12111,8 @@ grestore
 567 375 48 172 240 288 60 0 0 LoutGr2
 () ldiagpushtagdict
 grestore
-48 118(a / )m 240 fnt4 340 112(t)m 167 fnt4 440 214(0)m
-440 48(2)m ldiagpoptagdict
+48 118(a / )m 240 fnt4 340 112(t)m
+167 fnt4 440 214(0)m 440 48(2)m ldiagpoptagdict
 grestore
 
 grestore
@@ -11974,8 +12138,8 @@ grestore
 567 375 48 172 240 288 60 0 0 LoutGr2
 () ldiagpushtagdict
 grestore
-48 118(a / )m 240 fnt4 340 112(t)m 167 fnt4
-440 214(0)m 440 48(2)m ldiagpoptagdict
+48 118(a / )m 240 fnt4
+340 112(t)m 167 fnt4 440 214(0)m 440 48(2)m ldiagpoptagdict
 grestore
 
 grestore
@@ -12051,7 +12215,7 @@ grestore
 ldiagend
 
 grestore
-3264 1908 0 1908 240 288 60 4588 1042 LoutGr2
+3264 1908 0 1908 240 288 60 4588 10298 LoutGr2
 
 200 ldiagbegin
 grestore
@@ -12064,7 +12228,8 @@ ldiagnodebegin [ ldiagcircle ]
 0.04 ft {} ldiagnodeend
 (IN) ldiagpushtagdict
 grestore
-180 fnt1 161 144(2)m ldiagpopuptagdict
+180 fnt1
+161 144(2)m ldiagpopuptagdict
 grestore
 ldiagpopuptagdict
 grestore
@@ -12077,8 +12242,7 @@ ldiagnodebegin [ ldiagcircle ]
 0.04 ft {} ldiagnodeend
 (IN) ldiagpushtagdict
 grestore
-180 fnt1
-168 144(1)m ldiagpopuptagdict
+180 fnt1 168 144(1)m ldiagpopuptagdict
 grestore
 ldiagpopuptagdict
 grestore
@@ -12091,7 +12255,8 @@ ldiagnodebegin [ ldiagcircle ]
 0.04 ft {} ldiagnodeend
 (IN) ldiagpushtagdict
 grestore
-180 fnt1 161 144(4)m ldiagpopuptagdict
+180 fnt1 161 144(4)m
+ldiagpopuptagdict
 grestore
 ldiagpopuptagdict
 grestore
@@ -12104,8 +12269,7 @@ ldiagnodebegin [ ldiagcircle ]
 0.04 ft {} ldiagnodeend
 (IN) ldiagpushtagdict
 grestore
-180 fnt1 165 147(3)m
-ldiagpopuptagdict
+180 fnt1 165 147(3)m ldiagpopuptagdict
 grestore
 ldiagpopuptagdict
 grestore
@@ -12131,8 +12295,9 @@ grestore
 492 373 48 172 240 288 60 0 0 LoutGr2
 () ldiagpushtagdict
 grestore
-240 fnt4 48 112(e)m 240 fnt1 211 118(/)m 240 fnt4
-279 112(t)m 167 fnt4 379 214(1)m 379 48(1)m ldiagpoptagdict
+240 fnt4 48 112(e)m 240 fnt1
+211 118(/)m 240 fnt4 279 112(t)m 167 fnt4 379 214(1)m
+379 48(1)m ldiagpoptagdict
 grestore
 
 grestore
@@ -12158,9 +12323,9 @@ grestore
 492 373 48 172 240 288 60 0 0 LoutGr2
 () ldiagpushtagdict
 grestore
-240 fnt4
-48 112(e)m 240 fnt1 211 118(/)m 240 fnt4 279 112(t)m
-167 fnt4 379 214(1)m 379 48(1)m ldiagpoptagdict
+240 fnt4 48 112(e)m 240 fnt1 211 118(/)m
+240 fnt4 279 112(t)m 167 fnt4 379 214(1)m 379 48(1)m
+ldiagpoptagdict
 grestore
 
 grestore
@@ -12255,9 +12420,8 @@ grestore
 506 373 48 172 240 288 60 0 0 LoutGr2
 () ldiagpushtagdict
 grestore
-240 fnt4 48 112(e)m
-240 fnt1 211 118(/)m 240 fnt4 279 112(t)m 167 fnt4
-379 214(1)m 379 48(2)m ldiagpoptagdict
+240 fnt4 48 112(e)m 240 fnt1 211 118(/)m 240 fnt4
+279 112(t)m 167 fnt4 379 214(1)m 379 48(2)m ldiagpoptagdict
 grestore
 
 grestore
@@ -12283,9 +12447,9 @@ grestore
 506 373 48 172 240 288 60 0 0 LoutGr2
 () ldiagpushtagdict
 grestore
-240 fnt4 48 112(e)m 240 fnt1
-211 118(/)m 240 fnt4 279 112(t)m 167 fnt4 379 214(1)m
-379 48(2)m ldiagpoptagdict
+240 fnt4
+48 112(e)m 240 fnt1 211 118(/)m 240 fnt4 279 112(t)m
+167 fnt4 379 214(1)m 379 48(2)m ldiagpoptagdict
 grestore
 
 grestore
@@ -12406,7 +12570,8 @@ grestore
 202 208 48 104 240 288 60 0 0 LoutGr2
 () ldiagpushtagdict
 grestore
-48 50(a)m ldiagpoptagdict
+48 50(a)m
+ldiagpoptagdict
 grestore
 
 grestore
@@ -12484,12 +12649,63 @@ ldiagend
 grestore
 
 [ /Dest /LOUTmergearcs_a /DEST pdfmark
-200 fnt2 3334 616(Figur)m 3(e)k
-3942(4.)s 200 fnt1 4184 617(Mer)m 3(ging)k 4911(transitions)s
-
+200 fnt2 3334 9872(Figur)m 3(e)k 3942(4.)s 200 fnt1
+4184 9873(Mer)m 3(ging)k 4911(transitions)s 240 fnt1 0 9242(The)m
+442(intuition)s 1323(behind)s 2047(\207gure)s 2675(4)s 2863(is)s
+3087(that)s 3520(in)s 3777(state)s 4284(1,)s 4525(if)s
+4756(we)s 5105(get)s 220 fnt5 5471 9250(a)m 240 fnt1
+5603 9242(,)m 5725(we)s 6074(are)s 6435(not)s 6815(able)s
+7283(to)s 7536(choose)s 8272(between)s 0 8954(going)m 611(to)s
+863(state)s 1369(2)s 1555(or)s 1827(state)s 2333(3)s
+2509(so)s 2788(we)s 3136(postpone)s 4070(the)s 4430(decision)s
+5297(in)s 5553(state)s 6058(4)s 6245(\(when)s 6913(we)s
+7260(will)s 7699(ha)s 4(v)k 3(e)k 8213(access)s
+8887(to)s 0 8666(another)m 777(character\).)s 0 8292(The)m 449(increment)s
+1485(on)s 1804(tag)s 2170(will)s 2617(tak)s 2(e)k
+3091(into)s 3537(account)s 4362(the)s 4732(f)s 2(act)k
+5168(that)s 5607(we)s 5964(should)s 6682(ha)s 4(v)k 3(e)k
+7204(applied)s 7988(the)s 8357(tag)s 8724(one)s 0 8004(position)m
+828(earlier)s 13(.)k 0 7630(Unfortunately)m 1412(an)s 1712(algorithm)s
+2718(based)s 3339(on)s 3653(this)s 4066(simple)s 4776(intuition)s
+5661(doesn')s 4(t)k 6438(al)s 2(w)k 2(ays)k
+7166(con)s 9(v)k 3(er)k 4(ge.)k 8148(There)s
+8779(are)s 0 7342(times)m 592(where)s 1257(ambiguities)s 2447(cannot)s
+3170(be)s 3476(resolv)s 3(ed)k 4366(simply)s 5096(looking)s
+5905(ahead)s 6546(and)s 6974(we)s 7334(w)s 2(ould)k
+8013(enter)s 8575(in)s 8843(an)s 0 7054(endless)m 758(loop,)s
+1294(mer)s 4(ging)k 2144(the)s 2495(same)s 3046(states)s
+3630(o)s 3(v)k 3(er)k 4113(and)s 4520(o)s 3(v)k 3(er)k 13(.)k
+5033(Figure)s 5717(5)s 5886(sho)s 6(ws)k 6534(the)s
+6885(case)s 7356(for)s 7697(the)s 8049(e)s 3(xpression)k
+220 fnt5 0 6774(\(a*\)a)m 240 fnt1 660 6766(.)m 828(W)s 19(e)k
+1201(mer)s 4(ged)k 1976(the)s 2329(states)s 2914(2)s
+3092(and)s 3501(3)s 3669(in)s 3916(step)s 4359(i\),)s
+4615(creating)s 5441(state)s 5938(4.)s 6167(In)s 6427(step)s
+6869(iii\),)s 7258(starting)s 8031(from)s 8559(4,)s 8791(we)s
+0 6478(should)m 706(mer)s 4(ge)k 1364(2)s 1548(and)s
+1961(3)s 2134(ag)s 1(ain,)k 2768(and)s 3181(we)s
+3525(w)s 2(ould)k 4190(ne)s 6(v)k 3(er)k
+4781(stop.)s 5293(T)s 19(o)k 5603(a)s 4(v)k 4(oid)k
+6194(the)s 6551(in\207nite)s 7294(loop,)s 7836(if)s 8062(a)s
+8238(state)s 240 fnt3 8740 6480(x)m 240 fnt1 8916 6478(is)m
+0 6190(the)m 349(result)s 941(of)s 1214(mer)s 4(ge,)k
+1916(we)s 2253(w)s 2(ould)k 2910(add)s 3316(a)s
+3484(loop)s 3965(to)s 4206(itself)s 4756(rather)s 5374(than)s
+5845(mer)s 4(ging)k 6693(the)s 7043(states)s 7626(ag)s 1(ain.)k
+8249(The)s 8679(ne)s 6(w)k 0 5902(arc)m 344(will)s
+770(be)s 1052(tagged)s 1748(with)s 2230(the)s 2578(tag-union)s
+3552(of)s 3823(the)s 4171(tag)s 4516(sets)s 4925(on)s
+5222(the)s 5570(arcs.)s 240 fnt2 0 4965(5.3.)m 471(Mer)s 2(ging)k
+1402(ar)s 4(cs)k 
+[ /Dest /LOUT20_708_yrx_lout_3 /DEST pdfmark
+240 fnt1 480 4488(W)m 19(e)k
+849(are)s 1196(no)s 6(w)k 1657(ready)s 2242(to)s
+2481(gi)s 6(v)k 3(e)k 2940(an)s 3223(algorithm)s
+4212(to)s 4451(implment)s 5427(the)s 220 fnt5 5775 4496(mergearcs\(\))m
+240 fnt1 7287 4488(function:)m 
 grestore
 0 0 0 0 240 288 60 1417 -15423 LoutGr2
-0 LoutMargSet
+1 LoutMargSet
 grestore
 
 grestore
@@ -12501,10 +12717,9 @@ grestore
 pgsave restore
 showpage
 
-%%Page: 7 7
+%%Page: 8 8
 %%BeginPageSetup
 %%PageResources: font Times-Roman
-%%+ font Courier
 %%+ font Symbol
 %%+ font Times-Italic
 %%+ font Times-Bold
@@ -12512,9 +12727,6 @@ showpage
 %%IncludeResource: font Times-Roman
 /Times-Romanfnt1 vec2 /Times-Roman LoutRecode
 /fnt1 { /Times-Romanfnt1 LoutFont } def
-%%IncludeResource: font Courier
-/Courierfnt5 vec2 /Courier LoutRecode
-/fnt5 { /Courierfnt5 LoutFont } def
 %%IncludeResource: font Symbol
 /fnt4 { /Symbol LoutFont } def
 %%IncludeResource: font Times-Italic
@@ -12534,42 +12746,11 @@ grestore
 gsave
 0 16840 translate
 0.0000 rotate
-5768 -1575(-)m 5896(7)s
-6064(-)s 9066 13422 0 13313 240 288 60 1417 -15423 LoutGr2
-1 LoutMargSet
+5768 -1579(-)m 5896(8)s
+6063(-)s 9066 13416 0 13416 240 288 60 1417 -15423 LoutGr2
+0 LoutMargSet
 grestore
-0 13259(The)m 442(intuition)s 1323(behind)s 2047(\207gure)s
-2675(4)s 2863(is)s 3087(that)s 3520(in)s 3777(state)s
-4284(1,)s 4525(if)s 4756(we)s 5105(get)s 220 fnt5
-5471 13267(a)m 240 fnt1 5603 13259(,)m 5725(we)s 6074(are)s
-6435(not)s 6815(able)s 7283(to)s 7536(choose)s 8272(between)s
-0 12971(going)m 611(to)s 863(state)s 1369(2)s 1555(or)s
-1827(state)s 2333(3)s 2509(so)s 2788(we)s 3136(postpone)s
-4070(the)s 4430(decision)s 5297(in)s 5553(state)s 6058(4)s
-6245(\(when)s 6913(we)s 7260(will)s 7699(ha)s 4(v)k 3(e)k
-8213(access)s 8887(to)s 0 12683(another)m 777(character\).)s 0 12309(The)m
-449(increment)s 1485(on)s 1804(tag)s 2170(will)s 2617(tak)s 2(e)k
-3091(into)s 3537(account)s 4362(the)s 4732(f)s 2(act)k
-5168(that)s 5607(we)s 5964(should)s 6682(ha)s 4(v)k 3(e)k
-7204(applied)s 7988(the)s 8357(tag)s 8724(one)s 0 12021(position)m
-828(earlier)s 13(.)k 0 11647(Unfortunately)m 1412(an)s 1712(algorithm)s
-2718(based)s 3339(on)s 3653(this)s 4066(simple)s 4776(intuition)s
-5661(doesn')s 4(t)k 6438(al)s 2(w)k 2(ays)k
-7166(con)s 9(v)k 3(er)k 4(ge.)k 8148(There)s
-8779(are)s 0 11359(times)m 592(where)s 1257(ambiguities)s 2447(cannot)s
-3170(be)s 3476(resolv)s 3(ed)k 4366(simply)s 5096(looking)s
-5905(ahead)s 6546(and)s 6974(we)s 7334(w)s 2(ould)k
-8013(enter)s 8575(in)s 8843(an)s 0 11071(endless)m 758(loop,)s
-1294(mer)s 4(ging)k 2144(the)s 2495(same)s 3046(states)s
-3630(o)s 3(v)k 3(er)k 4113(and)s 4520(o)s 3(v)k 3(er)k 13(.)k
-5033(Figure)s 5717(5)s 5886(sho)s 6(ws)k 6534(the)s
-6885(case)s 7356(for)s 7697(the)s 8049(e)s 3(xpression)k
-220 fnt5 0 10791(\(a*\)a)m 240 fnt1 660 10783(.)m 828(W)s 19(e)k
-1201(mer)s 4(ged)k 1976(the)s 2329(states)s 2914(2)s
-3092(and)s 3501(3)s 3669(in)s 3916(step)s 4359(i\),)s
-4615(creating)s 5441(state)s 5938(4.)s 6167(In)s 6427(step)s
-6869(iii\),)s 7258(starting)s 8031(from)s 8559(4,)s 8791(we)s
-6318 6931 0 6931 240 288 60 1374 3375 LoutGr2
+6318 6931 0 6931 240 288 60 1374 6485 LoutGr2
 
 200 ldiagbegin
 grestore
@@ -12595,8 +12776,8 @@ ldiagnodebegin [ ldiagcircle ]
 0.04 ft {} ldiagnodeend
 (IN) ldiagpushtagdict
 grestore
-180 fnt1 161 144(2)m
-ldiagpopuptagdict
+180 fnt1
+161 144(2)m ldiagpopuptagdict
 grestore
 ldiagpopuptagdict
 grestore
@@ -12622,12 +12803,12 @@ ldiagnodebegin [ ldiagcircle ]
 0.04 ft { 0.8 0.8 0.8 LoutSetRGBColor null LoutSetTexture fill } ldiagnodeend
 (IN) ldiagpushtagdict
 grestore
-180 fnt1 161 147(0)m ldiagpopuptagdict
+180 fnt1 161 147(0)m
+ldiagpopuptagdict
 grestore
 ldiagpopuptagdict
 grestore
-5740 6178( )m
-170 4414(ii\))m 408 409 204 205 240 288 60 776 4373 LoutGr2
+5740 6178( )m 170 4414(ii\))m 408 409 204 205 240 288 60 776 4373 LoutGr2
 (AA) ldiagpushtagdict
 grestore
 408 409 204 205 240 288 60 0 0 LoutGr2
@@ -12649,8 +12830,8 @@ ldiagnodebegin [ ldiagcircle ]
 0.04 ft {} ldiagnodeend
 (IN) ldiagpushtagdict
 grestore
-180 fnt1 161 144(4)m
-ldiagpopuptagdict
+180 fnt1
+161 144(4)m ldiagpopuptagdict
 grestore
 ldiagpopuptagdict
 grestore
@@ -12666,8 +12847,8 @@ ldiagnodebegin [ ldiagcircle ]
 0.04 ft {} ldiagnodeend
 (IN) ldiagpushtagdict
 grestore
-180 fnt1 161 144(2)m
-ldiagpopuptagdict
+180 fnt1
+161 144(2)m ldiagpopuptagdict
 grestore
 ldiagpopuptagdict
 grestore
@@ -12689,7 +12870,8 @@ ldiagpopuptagdict
 grestore
 gsave
 5740 4370 translate
-240 fnt1 408 412 204 206 240 288 60 LoutGraphic
+240 fnt1
+408 412 204 206 240 288 60 LoutGraphic
 gsave
 (AD) ldiagpushtagdict
 grestore
@@ -12699,8 +12881,7 @@ ldiagnodebegin [ ldiagcircle ]
 0.04 ft { 0.8 0.8 0.8 LoutSetRGBColor null LoutSetTexture fill } ldiagnodeend
 (IN) ldiagpushtagdict
 grestore
-180 fnt1
-161 147(0)m ldiagpopuptagdict
+180 fnt1 161 147(0)m ldiagpopuptagdict
 grestore
 ldiagpopuptagdict
 grestore
@@ -12713,8 +12894,8 @@ ldiagnodebegin [ ldiagcircle ]
 0.04 ft {} ldiagnodeend
 (IN) ldiagpushtagdict
 grestore
-180 fnt1 168 144(1)m
-ldiagpopuptagdict
+180 fnt1
+168 144(1)m ldiagpopuptagdict
 grestore
 ldiagpopuptagdict
 grestore
@@ -12731,10 +12912,10 @@ grestore
 grestore
 ldiagpopuptagdict
 grestore
-192 fnt1 2068 2400({2,3})m gsave
+192 fnt1 2068 2400({2,3})m
+gsave
 3156 2586 translate
-240 fnt1
-408 409 204 205 240 288 60 LoutGraphic
+240 fnt1 408 409 204 205 240 288 60 LoutGraphic
 gsave
 (BB) ldiagpushtagdict
 grestore
@@ -12760,8 +12941,8 @@ ldiagnodebegin [ ldiagcircle ]
 0.04 ft {} ldiagnodeend
 (IN) ldiagpushtagdict
 grestore
-180 fnt1 165 147(3)m
-ldiagpopuptagdict
+180 fnt1
+165 147(3)m ldiagpopuptagdict
 grestore
 ldiagpopuptagdict
 grestore
@@ -12781,8 +12962,8 @@ grestore
 grestore
 ldiagpopuptagdict
 grestore
-240 fnt1 170 840(i)m 6(v\))k
-408 409 204 205 240 288 60 776 799 LoutGr2
+240 fnt1
+170 840(i)m 6(v\))k 408 409 204 205 240 288 60 776 799 LoutGr2
 (CA) ldiagpushtagdict
 grestore
 408 409 204 205 240 288 60 0 0 LoutGr2
@@ -12804,12 +12985,12 @@ ldiagnodebegin [ ldiagcircle ]
 0.04 ft {} ldiagnodeend
 (IN) ldiagpushtagdict
 grestore
-180 fnt1 161 144(4)m ldiagpopuptagdict
+180 fnt1
+161 144(4)m ldiagpopuptagdict
 grestore
 ldiagpopuptagdict
 grestore
-192 fnt1
-2068 613({2,3})m gsave
+192 fnt1 2068 613({2,3})m gsave
 3904 796 translate
 240 fnt1 408 412 204 206 240 288 60 LoutGraphic
 gsave
@@ -12821,1407 +13002,18 @@ ldiagnodebegin [ ldiagcircle ]
 0.04 ft { 0.8 0.8 0.8 LoutSetRGBColor null LoutSetTexture fill } ldiagnodeend
 (IN) ldiagpushtagdict
 grestore
-180 fnt1 161 147(0)m ldiagpopuptagdict
+180 fnt1
+161 147(0)m ldiagpopuptagdict
 grestore
 ldiagpopuptagdict
 grestore
 gsave
 0 0 translate
-240 fnt1
-0 0 0 0 240 288 60 LoutGraphic
+240 fnt1 0 0 0 0 240 288 60 LoutGraphic
 gsave
 1 ldiaglinkbegin [ 0
 (0.5f) ldiagdecodelength
 { A } { B }
-0.8 ft 0.8 ft ldiaglinepath ] 0.2 ft
-[ /ldiagsolid ] 0.04 ft ldiaglinkend
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-0 dg rotate 1 1 scale newpath clip gsave
-grestore
-458 311 48 127 240 288 60 -48 -127 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-458 311 48 127 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-458 311 48 127 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-200 fnt1 48 82(a / )m 139 fnt4 345 169(0)m 180 fnt4
-291 82(\()m ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-/XP1 [ { LABEL } { (SE) } { (W) } { (S) } { (W) }
-{ (S) } { (SW) } { (SE) } { (SW) } { LMID } (ANGLE) ldiagdolabel ldiagquadcase ldiagdolabel ] cvx def
-/XP2 [ { LABEL } (CTR) ldiagdolabel ] cvx def
-/XANG [ { LMID } (ANGLE) ldiagdolabel ] cvx def
-/XTH [ XANG 90 dg sub XP1 XP2 ldiagangleto sub ] cvx def
-/XDIST [ XP1 XP2 ldiagdistance XTH sin mul ] cvx def
-XP1 LMID ldiagpsub 0 0 XDIST XANG ldiagatangle ldiagpadd 0 0 ldiagpadd translate 0 dg rotate 1 1 scale gsave
-grestore
-458 311 48 127 240 288 60 -48 -127 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-458 311 48 127 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-458 311 48 127 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-200 fnt1 48 82(a / )m 139 fnt4 345 169(0)m
-180 fnt4 291 82(\()m ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-ldiagpoptagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-{ TO } (ANGLE) ldiagdolabel rotate 1 1 scale newpath clip gsave
-grestore
-120 72 60 36 240 288 60 -60 -36 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-ldiagnodebegin [ ldiagsolidarrowhead ]
-0.2 ft [ /ldiagnoline ]
-0.04 ft {  null LoutSetTexture fill } ldiagnodeend
-(IN) ldiagpushtagdict
-grestore
-ldiagpopuptagdict
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-{ LABEL } (W) ldiagdolabel TO ldiagpsub 0 0 ldiagpadd translate { TO } (ANGLE) ldiagdolabel rotate 1 1 scale gsave
-grestore
-120 72 60 36 240 288 60 -60 -36 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-ldiagnodebegin [ ldiagsolidarrowhead ]
-0.2 ft [ /ldiagnoline ]
-0.04 ft {  null LoutSetTexture fill } ldiagnodeend
-(IN) ldiagpushtagdict
-grestore
-ldiagpopuptagdict
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-gsave
-0 0 translate
-240 fnt1 0 0 0 0 240 288 60 LoutGraphic
-gsave
-1 ldiaglinkbegin [ 0
-(0.5f) ldiagdecodelength
-{ B } { C }
-0.8 ft 0.8 ft ldiaglinepath ] 0.2 ft
-[ /ldiagsolid ] 0.04 ft ldiaglinkend
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-0 dg rotate 1 1 scale newpath clip gsave
-grestore
-453 311 48 127 240 288 60 -48 -127 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-453 311 48 127 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-453 311 48 127 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-200 fnt1 48 82(a / )m
-139 fnt4 340 169(0)m 180 fnt4 291 82(\))m ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-/XP1 [ { LABEL } { (SE) } { (W) } { (S) } { (W) }
-{ (S) } { (SW) } { (SE) } { (SW) } { LMID } (ANGLE) ldiagdolabel ldiagquadcase ldiagdolabel ] cvx def
-/XP2 [ { LABEL } (CTR) ldiagdolabel ] cvx def
-/XANG [ { LMID } (ANGLE) ldiagdolabel ] cvx def
-/XTH [ XANG 90 dg sub XP1 XP2 ldiagangleto sub ] cvx def
-/XDIST [ XP1 XP2 ldiagdistance XTH sin mul ] cvx def
-XP1 LMID ldiagpsub 0 0 XDIST XANG ldiagatangle ldiagpadd 0 0 ldiagpadd translate 0 dg rotate 1 1 scale gsave
-grestore
-453 311 48 127 240 288 60 -48 -127 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-453 311 48 127 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-453 311 48 127 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-200 fnt1
-48 82(a / )m 139 fnt4 340 169(0)m 180 fnt4 291 82(\))m
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-ldiagpoptagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-{ TO } (ANGLE) ldiagdolabel rotate 1 1 scale newpath clip gsave
-grestore
-120 72 60 36 240 288 60 -60 -36 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-ldiagnodebegin [ ldiagsolidarrowhead ]
-0.2 ft [ /ldiagnoline ]
-0.04 ft {  null LoutSetTexture fill } ldiagnodeend
-(IN) ldiagpushtagdict
-grestore
-ldiagpopuptagdict
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-{ LABEL } (W) ldiagdolabel TO ldiagpsub 0 0 ldiagpadd translate { TO } (ANGLE) ldiagdolabel rotate 1 1 scale gsave
-grestore
-120 72 60 36 240 288 60 -60 -36 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-ldiagnodebegin [ ldiagsolidarrowhead ]
-0.2 ft [ /ldiagnoline ]
-0.04 ft {  null LoutSetTexture fill } ldiagnodeend
-(IN) ldiagpushtagdict
-grestore
-ldiagpopuptagdict
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-gsave
-0 0 translate
-240 fnt1 0 0 0 0 240 288 60 LoutGraphic
-gsave
-1 ldiaglinkbegin [ 0
-(0.5f) ldiagdecodelength
-{ A } { C }
-0.8 ft 0.8 ft 0.7 cm ldiagacurvepath ] 0.2 ft
-[ /ldiagsolid ] 0.04 ft ldiaglinkend
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-0 dg rotate 1 1 scale newpath clip gsave
-grestore
-642 311 48 127 240 288 60 -48 -127 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-642 311 48 127 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-642 311 48 127 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-200 fnt1 48 82(a / )m 139 fnt4 345 169(0)m
-180 fnt4 291 82(\()m 200 fnt3 420 83( )m 139 fnt4
-529 169(0)m 180 fnt4 480 82(\))m ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-/XP1 [ { LABEL } { (NW) } { (W) } { (N) } { (W) }
-{ (N) } { (NE) } { (NW) } { (NE) } { LMID } (ANGLE) ldiagdolabel ldiagquadcase ldiagdolabel ] cvx def
-/XP2 [ { LABEL } (CTR) ldiagdolabel ] cvx def
-/XANG [ { LMID } (ANGLE) ldiagdolabel ] cvx def
-/XTH [ XANG 90 dg sub XP1 XP2 ldiagangleto sub ] cvx def
-/XDIST [ XP1 XP2 ldiagdistance XTH sin mul ] cvx def
-XP1 LMID ldiagpsub 0 0 XDIST XANG ldiagatangle ldiagpadd 0 0 ldiagpadd translate 0 dg rotate 1 1 scale gsave
-grestore
-642 311 48 127 240 288 60 -48 -127 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-642 311 48 127 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-642 311 48 127 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-200 fnt1 48 82(a / )m
-139 fnt4 345 169(0)m 180 fnt4 291 82(\()m 200 fnt3
-420 83( )m 139 fnt4 529 169(0)m 180 fnt4 480 82(\))m
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-ldiagpoptagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-{ TO } (ANGLE) ldiagdolabel rotate 1 1 scale newpath clip gsave
-grestore
-120 72 60 36 240 288 60 -60 -36 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-ldiagnodebegin [ ldiagsolidarrowhead ]
-0.2 ft [ /ldiagnoline ]
-0.04 ft {  null LoutSetTexture fill } ldiagnodeend
-(IN) ldiagpushtagdict
-grestore
-ldiagpopuptagdict
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-{ LABEL } (W) ldiagdolabel TO ldiagpsub 0 0 ldiagpadd translate { TO } (ANGLE) ldiagdolabel rotate 1 1 scale gsave
-grestore
-120 72 60 36 240 288 60 -60 -36 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-ldiagnodebegin [ ldiagsolidarrowhead ]
-0.2 ft [ /ldiagnoline ]
-0.04 ft {  null LoutSetTexture fill } ldiagnodeend
-(IN) ldiagpushtagdict
-grestore
-ldiagpopuptagdict
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-gsave
-0 0 translate
-240 fnt1 0 0 0 0 240 288 60 LoutGraphic
-gsave
-1 ldiaglinkbegin [ 0
-(0.5f) ldiagdecodelength
-{ C } { D }
-0.8 ft 0.8 ft ldiaglinepath ] 0.2 ft
-[ /ldiagsolid ] 0.04 ft ldiaglinkend
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-0 dg rotate 1 1 scale newpath clip gsave
-grestore
-452 258 48 110 240 288 60 -48 -110 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-452 258 48 110 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-452 258 48 110 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-200 fnt4 48 60(l)m 200 fnt1 207 65(/ $)m
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-/XP1 [ { LABEL } { (SE) } { (W) } { (S) } { (W) }
-{ (S) } { (SW) } { (SE) } { (SW) } { LMID } (ANGLE) ldiagdolabel ldiagquadcase ldiagdolabel ] cvx def
-/XP2 [ { LABEL } (CTR) ldiagdolabel ] cvx def
-/XANG [ { LMID } (ANGLE) ldiagdolabel ] cvx def
-/XTH [ XANG 90 dg sub XP1 XP2 ldiagangleto sub ] cvx def
-/XDIST [ XP1 XP2 ldiagdistance XTH sin mul ] cvx def
-XP1 LMID ldiagpsub 0 0 XDIST XANG ldiagatangle ldiagpadd 0 0 ldiagpadd translate 0 dg rotate 1 1 scale gsave
-grestore
-452 258 48 110 240 288 60 -48 -110 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-452 258 48 110 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-452 258 48 110 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-200 fnt4 48 60(l)m 200 fnt1 207 65(/ $)m ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-ldiagpoptagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-{ TO } (ANGLE) ldiagdolabel rotate 1 1 scale newpath clip gsave
-grestore
-120 72 60 36 240 288 60 -60 -36 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-ldiagnodebegin [ ldiagsolidarrowhead ]
-0.2 ft [ /ldiagnoline ]
-0.04 ft {  null LoutSetTexture fill } ldiagnodeend
-(IN) ldiagpushtagdict
-grestore
-ldiagpopuptagdict
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-{ LABEL } (W) ldiagdolabel TO ldiagpsub 0 0 ldiagpadd translate { TO } (ANGLE) ldiagdolabel rotate 1 1 scale gsave
-grestore
-120 72 60 36 240 288 60 -60 -36 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-ldiagnodebegin [ ldiagsolidarrowhead ]
-0.2 ft [ /ldiagnoline ]
-0.04 ft {  null LoutSetTexture fill } ldiagnodeend
-(IN) ldiagpushtagdict
-grestore
-ldiagpopuptagdict
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-gsave
-0 0 translate
-240 fnt1
-0 0 0 0 240 288 60 LoutGraphic
-gsave
-1 ldiaglinkbegin [ 0
-(0.5f) ldiagdecodelength
-{ B@NE } { B@NW }
-0.8 ft 0.8 ft 0.7 cm ldiagacurvepath ] 0.2 ft
-[ /ldiagsolid ] 0.04 ft ldiaglinkend
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-0 dg rotate 1 1 scale newpath clip gsave
-grestore
-184 190 48 95 240 288 60 -48 -95 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-184 190 48 95 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-184 190 48 95 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-200 fnt1 48 50(a)m ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-/XP1 [ { LABEL } { (SE) } { (W) } { (S) } { (W) }
-{ (S) } { (SW) } { (SE) } { (SW) } { LMID } (ANGLE) ldiagdolabel ldiagquadcase ldiagdolabel ] cvx def
-/XP2 [ { LABEL } (CTR) ldiagdolabel ] cvx def
-/XANG [ { LMID } (ANGLE) ldiagdolabel ] cvx def
-/XTH [ XANG 90 dg sub XP1 XP2 ldiagangleto sub ] cvx def
-/XDIST [ XP1 XP2 ldiagdistance XTH sin mul ] cvx def
-XP1 LMID ldiagpsub 0 0 XDIST XANG ldiagatangle ldiagpadd 0 0 ldiagpadd translate 0 dg rotate 1 1 scale gsave
-grestore
-184 190 48 95 240 288 60 -48 -95 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-184 190 48 95 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-184 190 48 95 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-200 fnt1 48 50(a)m ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-ldiagpoptagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-{ TO } (ANGLE) ldiagdolabel rotate 1 1 scale newpath clip gsave
-grestore
-120 72 60 36 240 288 60 -60 -36 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-ldiagnodebegin [ ldiagsolidarrowhead ]
-0.2 ft [ /ldiagnoline ]
-0.04 ft {  null LoutSetTexture fill } ldiagnodeend
-(IN) ldiagpushtagdict
-grestore
-ldiagpopuptagdict
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-{ LABEL } (W) ldiagdolabel TO ldiagpsub 0 0 ldiagpadd translate { TO } (ANGLE) ldiagdolabel rotate 1 1 scale gsave
-grestore
-120 72 60 36 240 288 60 -60 -36 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-ldiagnodebegin [ ldiagsolidarrowhead ]
-0.2 ft [ /ldiagnoline ]
-0.04 ft {  null LoutSetTexture fill } ldiagnodeend
-(IN) ldiagpushtagdict
-grestore
-ldiagpopuptagdict
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-gsave
-0 0 translate
-240 fnt1
-0 0 0 0 240 288 60 LoutGraphic
-gsave
-1 ldiaglinkbegin [ 0
-(0.5f) ldiagdecodelength
-{ AA } { AE }
-0.8 ft 0.8 ft ldiaglinepath ] 0.2 ft
-[ /ldiagsolid ] 0.04 ft ldiaglinkend
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-0 dg rotate 1 1 scale newpath clip gsave
-grestore
-458 311 48 127 240 288 60 -48 -127 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-458 311 48 127 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-458 311 48 127 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-200 fnt1 48 82(a / )m 139 fnt4 345 169(0)m 180 fnt4
-291 82(\()m ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-/XP1 [ { LABEL } { (SE) } { (W) } { (S) } { (W) }
-{ (S) } { (SW) } { (SE) } { (SW) } { LMID } (ANGLE) ldiagdolabel ldiagquadcase ldiagdolabel ] cvx def
-/XP2 [ { LABEL } (CTR) ldiagdolabel ] cvx def
-/XANG [ { LMID } (ANGLE) ldiagdolabel ] cvx def
-/XTH [ XANG 90 dg sub XP1 XP2 ldiagangleto sub ] cvx def
-/XDIST [ XP1 XP2 ldiagdistance XTH sin mul ] cvx def
-XP1 LMID ldiagpsub 0 0 XDIST XANG ldiagatangle ldiagpadd 0 0 ldiagpadd translate 0 dg rotate 1 1 scale gsave
-grestore
-458 311 48 127 240 288 60 -48 -127 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-458 311 48 127 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-458 311 48 127 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-200 fnt1 48 82(a / )m 139 fnt4 345 169(0)m
-180 fnt4 291 82(\()m ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-ldiagpoptagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-{ TO } (ANGLE) ldiagdolabel rotate 1 1 scale newpath clip gsave
-grestore
-120 72 60 36 240 288 60 -60 -36 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-ldiagnodebegin [ ldiagsolidarrowhead ]
-0.2 ft [ /ldiagnoline ]
-0.04 ft {  null LoutSetTexture fill } ldiagnodeend
-(IN) ldiagpushtagdict
-grestore
-ldiagpopuptagdict
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-{ LABEL } (W) ldiagdolabel TO ldiagpsub 0 0 ldiagpadd translate { TO } (ANGLE) ldiagdolabel rotate 1 1 scale gsave
-grestore
-120 72 60 36 240 288 60 -60 -36 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-ldiagnodebegin [ ldiagsolidarrowhead ]
-0.2 ft [ /ldiagnoline ]
-0.04 ft {  null LoutSetTexture fill } ldiagnodeend
-(IN) ldiagpushtagdict
-grestore
-ldiagpopuptagdict
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-gsave
-0 0 translate
-240 fnt1 0 0 0 0 240 288 60 LoutGraphic
-gsave
-1 ldiaglinkbegin [ 0
-(0.5f) ldiagdecodelength
-{ AE } { AB }
-0.8 ft 0.8 ft ldiaglinepath ] 0.2 ft
-[ /ldiagsolid ] 0.04 ft ldiaglinkend
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-0 dg rotate 1 1 scale newpath clip gsave
-grestore
-181 199 48 101 240 288 60 -48 -101 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-181 199 48 101 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-181 199 48 101 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-200 fnt4 48 51(e)m
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-/XP1 [ { LABEL } { (SE) } { (W) } { (S) } { (W) }
-{ (S) } { (SW) } { (SE) } { (SW) } { LMID } (ANGLE) ldiagdolabel ldiagquadcase ldiagdolabel ] cvx def
-/XP2 [ { LABEL } (CTR) ldiagdolabel ] cvx def
-/XANG [ { LMID } (ANGLE) ldiagdolabel ] cvx def
-/XTH [ XANG 90 dg sub XP1 XP2 ldiagangleto sub ] cvx def
-/XDIST [ XP1 XP2 ldiagdistance XTH sin mul ] cvx def
-XP1 LMID ldiagpsub 0 0 XDIST XANG ldiagatangle ldiagpadd 0 0 ldiagpadd translate 0 dg rotate 1 1 scale gsave
-grestore
-181 199 48 101 240 288 60 -48 -101 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-181 199 48 101 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-181 199 48 101 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-200 fnt4 48 51(e)m ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-ldiagpoptagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-{ TO } (ANGLE) ldiagdolabel rotate 1 1 scale newpath clip gsave
-grestore
-120 72 60 36 240 288 60 -60 -36 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-ldiagnodebegin [ ldiagsolidarrowhead ]
-0.2 ft [ /ldiagnoline ]
-0.04 ft {  null LoutSetTexture fill } ldiagnodeend
-(IN) ldiagpushtagdict
-grestore
-ldiagpopuptagdict
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-{ LABEL } (W) ldiagdolabel TO ldiagpsub 0 0 ldiagpadd translate { TO } (ANGLE) ldiagdolabel rotate 1 1 scale gsave
-grestore
-120 72 60 36 240 288 60 -60 -36 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-ldiagnodebegin [ ldiagsolidarrowhead ]
-0.2 ft [ /ldiagnoline ]
-0.04 ft {  null LoutSetTexture fill } ldiagnodeend
-(IN) ldiagpushtagdict
-grestore
-ldiagpopuptagdict
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-gsave
-0 0 translate
-240 fnt1 0 0 0 0 240 288 60 LoutGraphic
-gsave
-1 ldiaglinkbegin [ 0
-(0.5f) ldiagdecodelength
-{ AB } { AC }
-0.8 ft 0.8 ft ldiaglinepath ] 0.2 ft
-[ /ldiagsolid ] 0.04 ft ldiaglinkend
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-0 dg rotate 1 1 scale newpath clip gsave
-grestore
-453 311 48 127 240 288 60 -48 -127 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-453 311 48 127 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-453 311 48 127 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-200 fnt1 48 82(a / )m
-139 fnt4 340 169(0)m 180 fnt4 291 82(\))m ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-/XP1 [ { LABEL } { (SE) } { (W) } { (S) } { (W) }
-{ (S) } { (SW) } { (SE) } { (SW) } { LMID } (ANGLE) ldiagdolabel ldiagquadcase ldiagdolabel ] cvx def
-/XP2 [ { LABEL } (CTR) ldiagdolabel ] cvx def
-/XANG [ { LMID } (ANGLE) ldiagdolabel ] cvx def
-/XTH [ XANG 90 dg sub XP1 XP2 ldiagangleto sub ] cvx def
-/XDIST [ XP1 XP2 ldiagdistance XTH sin mul ] cvx def
-XP1 LMID ldiagpsub 0 0 XDIST XANG ldiagatangle ldiagpadd 0 0 ldiagpadd translate 0 dg rotate 1 1 scale gsave
-grestore
-453 311 48 127 240 288 60 -48 -127 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-453 311 48 127 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-453 311 48 127 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-200 fnt1
-48 82(a / )m 139 fnt4 340 169(0)m 180 fnt4 291 82(\))m
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-ldiagpoptagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-{ TO } (ANGLE) ldiagdolabel rotate 1 1 scale newpath clip gsave
-grestore
-120 72 60 36 240 288 60 -60 -36 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-ldiagnodebegin [ ldiagsolidarrowhead ]
-0.2 ft [ /ldiagnoline ]
-0.04 ft {  null LoutSetTexture fill } ldiagnodeend
-(IN) ldiagpushtagdict
-grestore
-ldiagpopuptagdict
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-{ LABEL } (W) ldiagdolabel TO ldiagpsub 0 0 ldiagpadd translate { TO } (ANGLE) ldiagdolabel rotate 1 1 scale gsave
-grestore
-120 72 60 36 240 288 60 -60 -36 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-ldiagnodebegin [ ldiagsolidarrowhead ]
-0.2 ft [ /ldiagnoline ]
-0.04 ft {  null LoutSetTexture fill } ldiagnodeend
-(IN) ldiagpushtagdict
-grestore
-ldiagpopuptagdict
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-gsave
-0 0 translate
-240 fnt1 0 0 0 0 240 288 60 LoutGraphic
-gsave
-1 ldiaglinkbegin [ 0
-(0.5f) ldiagdecodelength
-{ AE } { AC }
-0.8 ft 0.8 ft 0.7 cm ldiagacurvepath ] 0.2 ft
-[ /ldiagsolid ] 0.04 ft ldiaglinkend
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-0 dg rotate 1 1 scale newpath clip gsave
-grestore
-539 309 48 127 240 288 60 -48 -127 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-539 309 48 127 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-539 309 48 127 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-200 fnt4 48 77(e)m 200 fnt1 183 82( / )m
-139 fnt4 437 169(1)m 180 fnt4 388 82(\))m ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-/XP1 [ { LABEL } { (NW) } { (W) } { (N) } { (W) }
-{ (N) } { (NE) } { (NW) } { (NE) } { LMID } (ANGLE) ldiagdolabel ldiagquadcase ldiagdolabel ] cvx def
-/XP2 [ { LABEL } (CTR) ldiagdolabel ] cvx def
-/XANG [ { LMID } (ANGLE) ldiagdolabel ] cvx def
-/XTH [ XANG 90 dg sub XP1 XP2 ldiagangleto sub ] cvx def
-/XDIST [ XP1 XP2 ldiagdistance XTH sin mul ] cvx def
-XP1 LMID ldiagpsub 0 0 XDIST XANG ldiagatangle ldiagpadd 0 0 ldiagpadd translate 0 dg rotate 1 1 scale gsave
-grestore
-539 309 48 127 240 288 60 -48 -127 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-539 309 48 127 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-539 309 48 127 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-200 fnt4
-48 77(e)m 200 fnt1 183 82( / )m 139 fnt4 437 169(1)m
-180 fnt4 388 82(\))m ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-ldiagpoptagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-{ TO } (ANGLE) ldiagdolabel rotate 1 1 scale newpath clip gsave
-grestore
-120 72 60 36 240 288 60 -60 -36 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-ldiagnodebegin [ ldiagsolidarrowhead ]
-0.2 ft [ /ldiagnoline ]
-0.04 ft {  null LoutSetTexture fill } ldiagnodeend
-(IN) ldiagpushtagdict
-grestore
-ldiagpopuptagdict
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-{ LABEL } (W) ldiagdolabel TO ldiagpsub 0 0 ldiagpadd translate { TO } (ANGLE) ldiagdolabel rotate 1 1 scale gsave
-grestore
-120 72 60 36 240 288 60 -60 -36 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-ldiagnodebegin [ ldiagsolidarrowhead ]
-0.2 ft [ /ldiagnoline ]
-0.04 ft {  null LoutSetTexture fill } ldiagnodeend
-(IN) ldiagpushtagdict
-grestore
-ldiagpopuptagdict
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-gsave
-0 0 translate
-240 fnt1 0 0 0 0 240 288 60 LoutGraphic
-gsave
-1 ldiaglinkbegin [ 0
-(0.5f) ldiagdecodelength
-{ AC } { AD }
-0.8 ft 0.8 ft ldiaglinepath ] 0.2 ft
-[ /ldiagsolid ] 0.04 ft ldiaglinkend
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-0 dg rotate 1 1 scale newpath clip gsave
-grestore
-452 258 48 110 240 288 60 -48 -110 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-452 258 48 110 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-452 258 48 110 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-200 fnt4 48 60(l)m
-200 fnt1 207 65(/ $)m ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-/XP1 [ { LABEL } { (SE) } { (W) } { (S) } { (W) }
-{ (S) } { (SW) } { (SE) } { (SW) } { LMID } (ANGLE) ldiagdolabel ldiagquadcase ldiagdolabel ] cvx def
-/XP2 [ { LABEL } (CTR) ldiagdolabel ] cvx def
-/XANG [ { LMID } (ANGLE) ldiagdolabel ] cvx def
-/XTH [ XANG 90 dg sub XP1 XP2 ldiagangleto sub ] cvx def
-/XDIST [ XP1 XP2 ldiagdistance XTH sin mul ] cvx def
-XP1 LMID ldiagpsub 0 0 XDIST XANG ldiagatangle ldiagpadd 0 0 ldiagpadd translate 0 dg rotate 1 1 scale gsave
-grestore
-452 258 48 110 240 288 60 -48 -110 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-452 258 48 110 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-452 258 48 110 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-200 fnt4 48 60(l)m 200 fnt1
-207 65(/ $)m ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-ldiagpoptagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-{ TO } (ANGLE) ldiagdolabel rotate 1 1 scale newpath clip gsave
-grestore
-120 72 60 36 240 288 60 -60 -36 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-ldiagnodebegin [ ldiagsolidarrowhead ]
-0.2 ft [ /ldiagnoline ]
-0.04 ft {  null LoutSetTexture fill } ldiagnodeend
-(IN) ldiagpushtagdict
-grestore
-ldiagpopuptagdict
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-{ LABEL } (W) ldiagdolabel TO ldiagpsub 0 0 ldiagpadd translate { TO } (ANGLE) ldiagdolabel rotate 1 1 scale gsave
-grestore
-120 72 60 36 240 288 60 -60 -36 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-ldiagnodebegin [ ldiagsolidarrowhead ]
-0.2 ft [ /ldiagnoline ]
-0.04 ft {  null LoutSetTexture fill } ldiagnodeend
-(IN) ldiagpushtagdict
-grestore
-ldiagpopuptagdict
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-gsave
-0 0 translate
-240 fnt1 0 0 0 0 240 288 60 LoutGraphic
-gsave
-1 ldiaglinkbegin [ 0
-(0.5f) ldiagdecodelength
-{ AB@NE } { AB@NW }
-0.8 ft 0.8 ft 0.7 cm ldiagacurvepath ] 0.2 ft
-[ /ldiagsolid ] 0.04 ft ldiaglinkend
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-0 dg rotate 1 1 scale newpath clip gsave
-grestore
-184 190 48 95 240 288 60 -48 -95 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-184 190 48 95 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-184 190 48 95 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-200 fnt1 48 50(a)m ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-/XP1 [ { LABEL } { (SE) } { (W) } { (S) } { (W) }
-{ (S) } { (SW) } { (SE) } { (SW) } { LMID } (ANGLE) ldiagdolabel ldiagquadcase ldiagdolabel ] cvx def
-/XP2 [ { LABEL } (CTR) ldiagdolabel ] cvx def
-/XANG [ { LMID } (ANGLE) ldiagdolabel ] cvx def
-/XTH [ XANG 90 dg sub XP1 XP2 ldiagangleto sub ] cvx def
-/XDIST [ XP1 XP2 ldiagdistance XTH sin mul ] cvx def
-XP1 LMID ldiagpsub 0 0 XDIST XANG ldiagatangle ldiagpadd 0 0 ldiagpadd translate 0 dg rotate 1 1 scale gsave
-grestore
-184 190 48 95 240 288 60 -48 -95 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-184 190 48 95 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-184 190 48 95 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-200 fnt1
-48 50(a)m ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-ldiagpoptagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-{ TO } (ANGLE) ldiagdolabel rotate 1 1 scale newpath clip gsave
-grestore
-120 72 60 36 240 288 60 -60 -36 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-ldiagnodebegin [ ldiagsolidarrowhead ]
-0.2 ft [ /ldiagnoline ]
-0.04 ft {  null LoutSetTexture fill } ldiagnodeend
-(IN) ldiagpushtagdict
-grestore
-ldiagpopuptagdict
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-{ LABEL } (W) ldiagdolabel TO ldiagpsub 0 0 ldiagpadd translate { TO } (ANGLE) ldiagdolabel rotate 1 1 scale gsave
-grestore
-120 72 60 36 240 288 60 -60 -36 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-ldiagnodebegin [ ldiagsolidarrowhead ]
-0.2 ft [ /ldiagnoline ]
-0.04 ft {  null LoutSetTexture fill } ldiagnodeend
-(IN) ldiagpushtagdict
-grestore
-ldiagpopuptagdict
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-gsave
-0 0 translate
-240 fnt1 0 0 0 0 240 288 60 LoutGraphic
-gsave
-1 ldiaglinkbegin [ 0
-(0.5f) ldiagdecodelength
-{ BA } { BE }
 0.8 ft 0.8 ft ldiaglinepath ] 0.2 ft
 [ /ldiagsolid ] 0.04 ft ldiaglinkend
 grestore
@@ -14348,132 +13140,7 @@ gsave
 gsave
 1 ldiaglinkbegin [ 0
 (0.5f) ldiagdecodelength
-{ BE } { BB }
-0.8 ft 0.8 ft ldiaglinepath ] 0.2 ft
-[ /ldiagsolid ] 0.04 ft ldiaglinkend
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-0 dg rotate 1 1 scale newpath clip gsave
-grestore
-184 190 48 95 240 288 60 -48 -95 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-184 190 48 95 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-184 190 48 95 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-200 fnt1 48 50(a)m ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-/XP1 [ { LABEL } { (SE) } { (W) } { (S) } { (W) }
-{ (S) } { (SW) } { (SE) } { (SW) } { LMID } (ANGLE) ldiagdolabel ldiagquadcase ldiagdolabel ] cvx def
-/XP2 [ { LABEL } (CTR) ldiagdolabel ] cvx def
-/XANG [ { LMID } (ANGLE) ldiagdolabel ] cvx def
-/XTH [ XANG 90 dg sub XP1 XP2 ldiagangleto sub ] cvx def
-/XDIST [ XP1 XP2 ldiagdistance XTH sin mul ] cvx def
-XP1 LMID ldiagpsub 0 0 XDIST XANG ldiagatangle ldiagpadd 0 0 ldiagpadd translate 0 dg rotate 1 1 scale gsave
-grestore
-184 190 48 95 240 288 60 -48 -95 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-184 190 48 95 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-184 190 48 95 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-200 fnt1 48 50(a)m ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-ldiagpoptagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-{ TO } (ANGLE) ldiagdolabel rotate 1 1 scale newpath clip gsave
-grestore
-120 72 60 36 240 288 60 -60 -36 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-ldiagnodebegin [ ldiagsolidarrowhead ]
-0.2 ft [ /ldiagnoline ]
-0.04 ft {  null LoutSetTexture fill } ldiagnodeend
-(IN) ldiagpushtagdict
-grestore
-ldiagpopuptagdict
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-0 0 0 0 240 288 60 0 0 LoutGr2
-{ LABEL } (W) ldiagdolabel TO ldiagpsub 0 0 ldiagpadd translate { TO } (ANGLE) ldiagdolabel rotate 1 1 scale gsave
-grestore
-120 72 60 36 240 288 60 -60 -36 LoutGr2
-(LABEL) ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-[ ldiagbox ] pop
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-() ldiagpushtagdict
-grestore
-120 72 60 36 240 288 60 0 0 LoutGr2
-ldiagnodebegin [ ldiagsolidarrowhead ]
-0.2 ft [ /ldiagnoline ]
-0.04 ft {  null LoutSetTexture fill } ldiagnodeend
-(IN) ldiagpushtagdict
-grestore
-ldiagpopuptagdict
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-ldiagpopuptagdict
-grestore
-grestore
-grestore
-ldiagpoptagdict
-grestore
-
-grestore
-gsave
-0 0 translate
-240 fnt1
-0 0 0 0 240 288 60 LoutGraphic
-gsave
-1 ldiaglinkbegin [ 0
-(0.5f) ldiagdecodelength
-{ BB } { BC }
+{ B } { C }
 0.8 ft 0.8 ft ldiaglinepath ] 0.2 ft
 [ /ldiagsolid ] 0.04 ft ldiaglinkend
 grestore
@@ -14599,7 +13266,7 @@ gsave
 gsave
 1 ldiaglinkbegin [ 0
 (0.5f) ldiagdecodelength
-{ BE } { BC }
+{ A } { C }
 0.8 ft 0.8 ft 0.7 cm ldiagacurvepath ] 0.2 ft
 [ /ldiagsolid ] 0.04 ft ldiaglinkend
 grestore
@@ -14609,17 +13276,18 @@ grestore
 0 0 0 0 240 288 60 0 0 LoutGr2
 0 dg rotate 1 1 scale newpath clip gsave
 grestore
-553 311 48 127 240 288 60 -48 -127 LoutGr2
+642 311 48 127 240 288 60 -48 -127 LoutGr2
 (LABEL) ldiagpushtagdict
 grestore
-553 311 48 127 240 288 60 0 0 LoutGr2
+642 311 48 127 240 288 60 0 0 LoutGr2
 [ ldiagbox ] pop
 grestore
-553 311 48 127 240 288 60 0 0 LoutGr2
+642 311 48 127 240 288 60 0 0 LoutGr2
 () ldiagpushtagdict
 grestore
-200 fnt1 48 82(a)m
-186( / )s 139 fnt4 440 169(0)m 180 fnt4 391 82(\))m
+200 fnt1 48 82(a / )m
+139 fnt4 345 169(0)m 180 fnt4 291 82(\()m 200 fnt3
+420 83( )m 139 fnt4 529 169(0)m 180 fnt4 480 82(\))m
 ldiagpoptagdict
 grestore
 
@@ -14635,19 +13303,20 @@ grestore
 /XANG [ { LMID } (ANGLE) ldiagdolabel ] cvx def
 /XTH [ XANG 90 dg sub XP1 XP2 ldiagangleto sub ] cvx def
 /XDIST [ XP1 XP2 ldiagdistance XTH sin mul ] cvx def
-XP1 LMID ldiagpsub 0 0 XDIST XANG ldiagatangle ldiagpadd OOO OOO OOX ldiagpsub 0.0001 cm ldiagpmul ldiagpadd OOO OOY ldiagpsub 0.0001 cm ldiagpmul ldiagpadd ldiagpadd translate 0 dg rotate 1 1 scale gsave
+XP1 LMID ldiagpsub 0 0 XDIST XANG ldiagatangle ldiagpadd 0 0 ldiagpadd translate 0 dg rotate 1 1 scale gsave
 grestore
-553 311 48 127 240 288 60 -48 -127 LoutGr2
+642 311 48 127 240 288 60 -48 -127 LoutGr2
 (LABEL) ldiagpushtagdict
 grestore
-553 311 48 127 240 288 60 0 0 LoutGr2
+642 311 48 127 240 288 60 0 0 LoutGr2
 [ ldiagbox ] pop
 grestore
-553 311 48 127 240 288 60 0 0 LoutGr2
+642 311 48 127 240 288 60 0 0 LoutGr2
 () ldiagpushtagdict
 grestore
-200 fnt1 48 82(a)m 186( / )s 139 fnt4 440 169(0)m
-180 fnt4 391 82(\))m ldiagpoptagdict
+200 fnt1 48 82(a / )m 139 fnt4 345 169(0)m 180 fnt4
+291 82(\()m 200 fnt3 420 83( )m 139 fnt4 529 169(0)m
+180 fnt4 480 82(\))m ldiagpoptagdict
 grestore
 
 grestore
@@ -14726,8 +13395,8 @@ gsave
 gsave
 1 ldiaglinkbegin [ 0
 (0.5f) ldiagdecodelength
-{ BE } { BD }
-0.8 ft 0.8 ft 1.3 cm ldiagacurvepath ] 0.2 ft
+{ C } { D }
+0.8 ft 0.8 ft ldiaglinepath ] 0.2 ft
 [ /ldiagsolid ] 0.04 ft ldiaglinkend
 grestore
 0 0 0 0 240 288 60 0 0 LoutGr2
@@ -14736,18 +13405,17 @@ grestore
 0 0 0 0 240 288 60 0 0 LoutGr2
 0 dg rotate 1 1 scale newpath clip gsave
 grestore
-663 309 48 127 240 288 60 -48 -127 LoutGr2
+452 258 48 110 240 288 60 -48 -110 LoutGr2
 (LABEL) ldiagpushtagdict
 grestore
-663 309 48 127 240 288 60 0 0 LoutGr2
+452 258 48 110 240 288 60 0 0 LoutGr2
 [ ldiagbox ] pop
 grestore
-663 309 48 127 240 288 60 0 0 LoutGr2
+452 258 48 110 240 288 60 0 0 LoutGr2
 () ldiagpushtagdict
 grestore
-200 fnt4 48 77(l)m
-200 fnt1 207 82(/ $ )m 139 fnt4 561 169(1)m 180 fnt4
-512 82(\))m ldiagpoptagdict
+200 fnt4 48 60(l)m
+200 fnt1 207 65(/ $)m ldiagpoptagdict
 grestore
 
 grestore
@@ -14756,20 +13424,276 @@ grestore
 grestore
 grestore
 0 0 0 0 240 288 60 0 0 LoutGr2
-{ LABEL } { (NW) } { (SW) } { (NW) } { (NW) }
-{ (NE) } { (NE) } { (NW) } { (NE) } { LTO } (ANGLE) ldiagdolabel ldiagquadcase ldiagdolabel LTO ldiagpsub 0 0 ldiagpadd translate 0 dg rotate 1 1 scale gsave
+/XP1 [ { LABEL } { (SE) } { (W) } { (S) } { (W) }
+{ (S) } { (SW) } { (SE) } { (SW) } { LMID } (ANGLE) ldiagdolabel ldiagquadcase ldiagdolabel ] cvx def
+/XP2 [ { LABEL } (CTR) ldiagdolabel ] cvx def
+/XANG [ { LMID } (ANGLE) ldiagdolabel ] cvx def
+/XTH [ XANG 90 dg sub XP1 XP2 ldiagangleto sub ] cvx def
+/XDIST [ XP1 XP2 ldiagdistance XTH sin mul ] cvx def
+XP1 LMID ldiagpsub 0 0 XDIST XANG ldiagatangle ldiagpadd 0 0 ldiagpadd translate 0 dg rotate 1 1 scale gsave
 grestore
-663 309 48 127 240 288 60 -48 -127 LoutGr2
+452 258 48 110 240 288 60 -48 -110 LoutGr2
 (LABEL) ldiagpushtagdict
 grestore
-663 309 48 127 240 288 60 0 0 LoutGr2
+452 258 48 110 240 288 60 0 0 LoutGr2
 [ ldiagbox ] pop
 grestore
-663 309 48 127 240 288 60 0 0 LoutGr2
+452 258 48 110 240 288 60 0 0 LoutGr2
 () ldiagpushtagdict
 grestore
-200 fnt4 48 77(l)m 200 fnt1 207 82(/ $ )m
-139 fnt4 561 169(1)m 180 fnt4 512 82(\))m ldiagpoptagdict
+200 fnt4 48 60(l)m 200 fnt1
+207 65(/ $)m ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+ldiagpoptagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+{ TO } (ANGLE) ldiagdolabel rotate 1 1 scale newpath clip gsave
+grestore
+120 72 60 36 240 288 60 -60 -36 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+ldiagnodebegin [ ldiagsolidarrowhead ]
+0.2 ft [ /ldiagnoline ]
+0.04 ft {  null LoutSetTexture fill } ldiagnodeend
+(IN) ldiagpushtagdict
+grestore
+ldiagpopuptagdict
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+{ LABEL } (W) ldiagdolabel TO ldiagpsub 0 0 ldiagpadd translate { TO } (ANGLE) ldiagdolabel rotate 1 1 scale gsave
+grestore
+120 72 60 36 240 288 60 -60 -36 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+ldiagnodebegin [ ldiagsolidarrowhead ]
+0.2 ft [ /ldiagnoline ]
+0.04 ft {  null LoutSetTexture fill } ldiagnodeend
+(IN) ldiagpushtagdict
+grestore
+ldiagpopuptagdict
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+gsave
+0 0 translate
+240 fnt1 0 0 0 0 240 288 60 LoutGraphic
+gsave
+1 ldiaglinkbegin [ 0
+(0.5f) ldiagdecodelength
+{ B@NE } { B@NW }
+0.8 ft 0.8 ft 0.7 cm ldiagacurvepath ] 0.2 ft
+[ /ldiagsolid ] 0.04 ft ldiaglinkend
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+0 dg rotate 1 1 scale newpath clip gsave
+grestore
+184 190 48 95 240 288 60 -48 -95 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+184 190 48 95 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+184 190 48 95 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+200 fnt1 48 50(a)m ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+/XP1 [ { LABEL } { (SE) } { (W) } { (S) } { (W) }
+{ (S) } { (SW) } { (SE) } { (SW) } { LMID } (ANGLE) ldiagdolabel ldiagquadcase ldiagdolabel ] cvx def
+/XP2 [ { LABEL } (CTR) ldiagdolabel ] cvx def
+/XANG [ { LMID } (ANGLE) ldiagdolabel ] cvx def
+/XTH [ XANG 90 dg sub XP1 XP2 ldiagangleto sub ] cvx def
+/XDIST [ XP1 XP2 ldiagdistance XTH sin mul ] cvx def
+XP1 LMID ldiagpsub 0 0 XDIST XANG ldiagatangle ldiagpadd 0 0 ldiagpadd translate 0 dg rotate 1 1 scale gsave
+grestore
+184 190 48 95 240 288 60 -48 -95 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+184 190 48 95 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+184 190 48 95 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+200 fnt1
+48 50(a)m ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+ldiagpoptagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+{ TO } (ANGLE) ldiagdolabel rotate 1 1 scale newpath clip gsave
+grestore
+120 72 60 36 240 288 60 -60 -36 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+ldiagnodebegin [ ldiagsolidarrowhead ]
+0.2 ft [ /ldiagnoline ]
+0.04 ft {  null LoutSetTexture fill } ldiagnodeend
+(IN) ldiagpushtagdict
+grestore
+ldiagpopuptagdict
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+{ LABEL } (W) ldiagdolabel TO ldiagpsub 0 0 ldiagpadd translate { TO } (ANGLE) ldiagdolabel rotate 1 1 scale gsave
+grestore
+120 72 60 36 240 288 60 -60 -36 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+ldiagnodebegin [ ldiagsolidarrowhead ]
+0.2 ft [ /ldiagnoline ]
+0.04 ft {  null LoutSetTexture fill } ldiagnodeend
+(IN) ldiagpushtagdict
+grestore
+ldiagpopuptagdict
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+gsave
+0 0 translate
+240 fnt1 0 0 0 0 240 288 60 LoutGraphic
+gsave
+1 ldiaglinkbegin [ 0
+(0.5f) ldiagdecodelength
+{ AA } { AE }
+0.8 ft 0.8 ft ldiaglinepath ] 0.2 ft
+[ /ldiagsolid ] 0.04 ft ldiaglinkend
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+0 dg rotate 1 1 scale newpath clip gsave
+grestore
+458 311 48 127 240 288 60 -48 -127 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+458 311 48 127 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+458 311 48 127 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+200 fnt1 48 82(a / )m 139 fnt4
+345 169(0)m 180 fnt4 291 82(\()m ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+/XP1 [ { LABEL } { (SE) } { (W) } { (S) } { (W) }
+{ (S) } { (SW) } { (SE) } { (SW) } { LMID } (ANGLE) ldiagdolabel ldiagquadcase ldiagdolabel ] cvx def
+/XP2 [ { LABEL } (CTR) ldiagdolabel ] cvx def
+/XANG [ { LMID } (ANGLE) ldiagdolabel ] cvx def
+/XTH [ XANG 90 dg sub XP1 XP2 ldiagangleto sub ] cvx def
+/XDIST [ XP1 XP2 ldiagdistance XTH sin mul ] cvx def
+XP1 LMID ldiagpsub 0 0 XDIST XANG ldiagatangle ldiagpadd 0 0 ldiagpadd translate 0 dg rotate 1 1 scale gsave
+grestore
+458 311 48 127 240 288 60 -48 -127 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+458 311 48 127 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+458 311 48 127 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+200 fnt1 48 82(a / )m
+139 fnt4 345 169(0)m 180 fnt4 291 82(\()m ldiagpoptagdict
 grestore
 
 grestore
@@ -14849,7 +13773,386 @@ gsave
 gsave
 1 ldiaglinkbegin [ 0
 (0.5f) ldiagdecodelength
-{ BC } { BD }
+{ AE } { AB }
+0.8 ft 0.8 ft ldiaglinepath ] 0.2 ft
+[ /ldiagsolid ] 0.04 ft ldiaglinkend
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+0 dg rotate 1 1 scale newpath clip gsave
+grestore
+181 199 48 101 240 288 60 -48 -101 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+181 199 48 101 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+181 199 48 101 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+200 fnt4 48 51(e)m ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+/XP1 [ { LABEL } { (SE) } { (W) } { (S) } { (W) }
+{ (S) } { (SW) } { (SE) } { (SW) } { LMID } (ANGLE) ldiagdolabel ldiagquadcase ldiagdolabel ] cvx def
+/XP2 [ { LABEL } (CTR) ldiagdolabel ] cvx def
+/XANG [ { LMID } (ANGLE) ldiagdolabel ] cvx def
+/XTH [ XANG 90 dg sub XP1 XP2 ldiagangleto sub ] cvx def
+/XDIST [ XP1 XP2 ldiagdistance XTH sin mul ] cvx def
+XP1 LMID ldiagpsub 0 0 XDIST XANG ldiagatangle ldiagpadd 0 0 ldiagpadd translate 0 dg rotate 1 1 scale gsave
+grestore
+181 199 48 101 240 288 60 -48 -101 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+181 199 48 101 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+181 199 48 101 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+200 fnt4 48 51(e)m ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+ldiagpoptagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+{ TO } (ANGLE) ldiagdolabel rotate 1 1 scale newpath clip gsave
+grestore
+120 72 60 36 240 288 60 -60 -36 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+ldiagnodebegin [ ldiagsolidarrowhead ]
+0.2 ft [ /ldiagnoline ]
+0.04 ft {  null LoutSetTexture fill } ldiagnodeend
+(IN) ldiagpushtagdict
+grestore
+ldiagpopuptagdict
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+{ LABEL } (W) ldiagdolabel TO ldiagpsub 0 0 ldiagpadd translate { TO } (ANGLE) ldiagdolabel rotate 1 1 scale gsave
+grestore
+120 72 60 36 240 288 60 -60 -36 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+ldiagnodebegin [ ldiagsolidarrowhead ]
+0.2 ft [ /ldiagnoline ]
+0.04 ft {  null LoutSetTexture fill } ldiagnodeend
+(IN) ldiagpushtagdict
+grestore
+ldiagpopuptagdict
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+gsave
+0 0 translate
+240 fnt1
+0 0 0 0 240 288 60 LoutGraphic
+gsave
+1 ldiaglinkbegin [ 0
+(0.5f) ldiagdecodelength
+{ AB } { AC }
+0.8 ft 0.8 ft ldiaglinepath ] 0.2 ft
+[ /ldiagsolid ] 0.04 ft ldiaglinkend
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+0 dg rotate 1 1 scale newpath clip gsave
+grestore
+453 311 48 127 240 288 60 -48 -127 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+453 311 48 127 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+453 311 48 127 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+200 fnt1 48 82(a / )m 139 fnt4 340 169(0)m 180 fnt4
+291 82(\))m ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+/XP1 [ { LABEL } { (SE) } { (W) } { (S) } { (W) }
+{ (S) } { (SW) } { (SE) } { (SW) } { LMID } (ANGLE) ldiagdolabel ldiagquadcase ldiagdolabel ] cvx def
+/XP2 [ { LABEL } (CTR) ldiagdolabel ] cvx def
+/XANG [ { LMID } (ANGLE) ldiagdolabel ] cvx def
+/XTH [ XANG 90 dg sub XP1 XP2 ldiagangleto sub ] cvx def
+/XDIST [ XP1 XP2 ldiagdistance XTH sin mul ] cvx def
+XP1 LMID ldiagpsub 0 0 XDIST XANG ldiagatangle ldiagpadd 0 0 ldiagpadd translate 0 dg rotate 1 1 scale gsave
+grestore
+453 311 48 127 240 288 60 -48 -127 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+453 311 48 127 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+453 311 48 127 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+200 fnt1 48 82(a / )m 139 fnt4 340 169(0)m
+180 fnt4 291 82(\))m ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+ldiagpoptagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+{ TO } (ANGLE) ldiagdolabel rotate 1 1 scale newpath clip gsave
+grestore
+120 72 60 36 240 288 60 -60 -36 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+ldiagnodebegin [ ldiagsolidarrowhead ]
+0.2 ft [ /ldiagnoline ]
+0.04 ft {  null LoutSetTexture fill } ldiagnodeend
+(IN) ldiagpushtagdict
+grestore
+ldiagpopuptagdict
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+{ LABEL } (W) ldiagdolabel TO ldiagpsub 0 0 ldiagpadd translate { TO } (ANGLE) ldiagdolabel rotate 1 1 scale gsave
+grestore
+120 72 60 36 240 288 60 -60 -36 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+ldiagnodebegin [ ldiagsolidarrowhead ]
+0.2 ft [ /ldiagnoline ]
+0.04 ft {  null LoutSetTexture fill } ldiagnodeend
+(IN) ldiagpushtagdict
+grestore
+ldiagpopuptagdict
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+gsave
+0 0 translate
+240 fnt1 0 0 0 0 240 288 60 LoutGraphic
+gsave
+1 ldiaglinkbegin [ 0
+(0.5f) ldiagdecodelength
+{ AE } { AC }
+0.8 ft 0.8 ft 0.7 cm ldiagacurvepath ] 0.2 ft
+[ /ldiagsolid ] 0.04 ft ldiaglinkend
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+0 dg rotate 1 1 scale newpath clip gsave
+grestore
+539 309 48 127 240 288 60 -48 -127 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+539 309 48 127 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+539 309 48 127 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+200 fnt4 48 77(e)m
+200 fnt1 183 82( / )m 139 fnt4 437 169(1)m 180 fnt4
+388 82(\))m ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+/XP1 [ { LABEL } { (NW) } { (W) } { (N) } { (W) }
+{ (N) } { (NE) } { (NW) } { (NE) } { LMID } (ANGLE) ldiagdolabel ldiagquadcase ldiagdolabel ] cvx def
+/XP2 [ { LABEL } (CTR) ldiagdolabel ] cvx def
+/XANG [ { LMID } (ANGLE) ldiagdolabel ] cvx def
+/XTH [ XANG 90 dg sub XP1 XP2 ldiagangleto sub ] cvx def
+/XDIST [ XP1 XP2 ldiagdistance XTH sin mul ] cvx def
+XP1 LMID ldiagpsub 0 0 XDIST XANG ldiagatangle ldiagpadd 0 0 ldiagpadd translate 0 dg rotate 1 1 scale gsave
+grestore
+539 309 48 127 240 288 60 -48 -127 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+539 309 48 127 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+539 309 48 127 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+200 fnt4 48 77(e)m 200 fnt1 183 82( / )m
+139 fnt4 437 169(1)m 180 fnt4 388 82(\))m ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+ldiagpoptagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+{ TO } (ANGLE) ldiagdolabel rotate 1 1 scale newpath clip gsave
+grestore
+120 72 60 36 240 288 60 -60 -36 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+ldiagnodebegin [ ldiagsolidarrowhead ]
+0.2 ft [ /ldiagnoline ]
+0.04 ft {  null LoutSetTexture fill } ldiagnodeend
+(IN) ldiagpushtagdict
+grestore
+ldiagpopuptagdict
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+{ LABEL } (W) ldiagdolabel TO ldiagpsub 0 0 ldiagpadd translate { TO } (ANGLE) ldiagdolabel rotate 1 1 scale gsave
+grestore
+120 72 60 36 240 288 60 -60 -36 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+ldiagnodebegin [ ldiagsolidarrowhead ]
+0.2 ft [ /ldiagnoline ]
+0.04 ft {  null LoutSetTexture fill } ldiagnodeend
+(IN) ldiagpushtagdict
+grestore
+ldiagpopuptagdict
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+gsave
+0 0 translate
+240 fnt1
+0 0 0 0 240 288 60 LoutGraphic
+gsave
+1 ldiaglinkbegin [ 0
+(0.5f) ldiagdecodelength
+{ AC } { AD }
 0.8 ft 0.8 ft ldiaglinepath ] 0.2 ft
 [ /ldiagsolid ] 0.04 ft ldiaglinkend
 grestore
@@ -14974,7 +14277,7 @@ gsave
 gsave
 1 ldiaglinkbegin [ 0
 (0.5f) ldiagdecodelength
-{ BB@NE } { BB@NW }
+{ AB@NE } { AB@NW }
 0.8 ft 0.8 ft 0.7 cm ldiagacurvepath ] 0.2 ft
 [ /ldiagsolid ] 0.04 ft ldiaglinkend
 grestore
@@ -15099,7 +14402,7 @@ gsave
 gsave
 1 ldiaglinkbegin [ 0
 (0.5f) ldiagdecodelength
-{ CA } { CE }
+{ BA } { BE }
 0.8 ft 0.8 ft ldiaglinepath ] 0.2 ft
 [ /ldiagsolid ] 0.04 ft ldiaglinkend
 grestore
@@ -15226,6 +14529,884 @@ gsave
 gsave
 1 ldiaglinkbegin [ 0
 (0.5f) ldiagdecodelength
+{ BE } { BB }
+0.8 ft 0.8 ft ldiaglinepath ] 0.2 ft
+[ /ldiagsolid ] 0.04 ft ldiaglinkend
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+0 dg rotate 1 1 scale newpath clip gsave
+grestore
+184 190 48 95 240 288 60 -48 -95 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+184 190 48 95 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+184 190 48 95 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+200 fnt1 48 50(a)m ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+/XP1 [ { LABEL } { (SE) } { (W) } { (S) } { (W) }
+{ (S) } { (SW) } { (SE) } { (SW) } { LMID } (ANGLE) ldiagdolabel ldiagquadcase ldiagdolabel ] cvx def
+/XP2 [ { LABEL } (CTR) ldiagdolabel ] cvx def
+/XANG [ { LMID } (ANGLE) ldiagdolabel ] cvx def
+/XTH [ XANG 90 dg sub XP1 XP2 ldiagangleto sub ] cvx def
+/XDIST [ XP1 XP2 ldiagdistance XTH sin mul ] cvx def
+XP1 LMID ldiagpsub 0 0 XDIST XANG ldiagatangle ldiagpadd 0 0 ldiagpadd translate 0 dg rotate 1 1 scale gsave
+grestore
+184 190 48 95 240 288 60 -48 -95 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+184 190 48 95 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+184 190 48 95 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+200 fnt1
+48 50(a)m ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+ldiagpoptagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+{ TO } (ANGLE) ldiagdolabel rotate 1 1 scale newpath clip gsave
+grestore
+120 72 60 36 240 288 60 -60 -36 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+ldiagnodebegin [ ldiagsolidarrowhead ]
+0.2 ft [ /ldiagnoline ]
+0.04 ft {  null LoutSetTexture fill } ldiagnodeend
+(IN) ldiagpushtagdict
+grestore
+ldiagpopuptagdict
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+{ LABEL } (W) ldiagdolabel TO ldiagpsub 0 0 ldiagpadd translate { TO } (ANGLE) ldiagdolabel rotate 1 1 scale gsave
+grestore
+120 72 60 36 240 288 60 -60 -36 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+ldiagnodebegin [ ldiagsolidarrowhead ]
+0.2 ft [ /ldiagnoline ]
+0.04 ft {  null LoutSetTexture fill } ldiagnodeend
+(IN) ldiagpushtagdict
+grestore
+ldiagpopuptagdict
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+gsave
+0 0 translate
+240 fnt1 0 0 0 0 240 288 60 LoutGraphic
+gsave
+1 ldiaglinkbegin [ 0
+(0.5f) ldiagdecodelength
+{ BB } { BC }
+0.8 ft 0.8 ft ldiaglinepath ] 0.2 ft
+[ /ldiagsolid ] 0.04 ft ldiaglinkend
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+0 dg rotate 1 1 scale newpath clip gsave
+grestore
+453 311 48 127 240 288 60 -48 -127 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+453 311 48 127 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+453 311 48 127 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+200 fnt1 48 82(a / )m 139 fnt4
+340 169(0)m 180 fnt4 291 82(\))m ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+/XP1 [ { LABEL } { (SE) } { (W) } { (S) } { (W) }
+{ (S) } { (SW) } { (SE) } { (SW) } { LMID } (ANGLE) ldiagdolabel ldiagquadcase ldiagdolabel ] cvx def
+/XP2 [ { LABEL } (CTR) ldiagdolabel ] cvx def
+/XANG [ { LMID } (ANGLE) ldiagdolabel ] cvx def
+/XTH [ XANG 90 dg sub XP1 XP2 ldiagangleto sub ] cvx def
+/XDIST [ XP1 XP2 ldiagdistance XTH sin mul ] cvx def
+XP1 LMID ldiagpsub 0 0 XDIST XANG ldiagatangle ldiagpadd 0 0 ldiagpadd translate 0 dg rotate 1 1 scale gsave
+grestore
+453 311 48 127 240 288 60 -48 -127 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+453 311 48 127 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+453 311 48 127 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+200 fnt1 48 82(a / )m
+139 fnt4 340 169(0)m 180 fnt4 291 82(\))m ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+ldiagpoptagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+{ TO } (ANGLE) ldiagdolabel rotate 1 1 scale newpath clip gsave
+grestore
+120 72 60 36 240 288 60 -60 -36 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+ldiagnodebegin [ ldiagsolidarrowhead ]
+0.2 ft [ /ldiagnoline ]
+0.04 ft {  null LoutSetTexture fill } ldiagnodeend
+(IN) ldiagpushtagdict
+grestore
+ldiagpopuptagdict
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+{ LABEL } (W) ldiagdolabel TO ldiagpsub 0 0 ldiagpadd translate { TO } (ANGLE) ldiagdolabel rotate 1 1 scale gsave
+grestore
+120 72 60 36 240 288 60 -60 -36 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+ldiagnodebegin [ ldiagsolidarrowhead ]
+0.2 ft [ /ldiagnoline ]
+0.04 ft {  null LoutSetTexture fill } ldiagnodeend
+(IN) ldiagpushtagdict
+grestore
+ldiagpopuptagdict
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+gsave
+0 0 translate
+240 fnt1
+0 0 0 0 240 288 60 LoutGraphic
+gsave
+1 ldiaglinkbegin [ 0
+(0.5f) ldiagdecodelength
+{ BE } { BC }
+0.8 ft 0.8 ft 0.7 cm ldiagacurvepath ] 0.2 ft
+[ /ldiagsolid ] 0.04 ft ldiaglinkend
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+0 dg rotate 1 1 scale newpath clip gsave
+grestore
+553 311 48 127 240 288 60 -48 -127 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+553 311 48 127 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+553 311 48 127 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+200 fnt1 48 82(a)m 186( / )s 139 fnt4 440 169(0)m
+180 fnt4 391 82(\))m ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+/XP1 [ { LABEL } { (NW) } { (W) } { (N) } { (W) }
+{ (N) } { (NE) } { (NW) } { (NE) } { LMID } (ANGLE) ldiagdolabel ldiagquadcase ldiagdolabel ] cvx def
+/XP2 [ { LABEL } (CTR) ldiagdolabel ] cvx def
+/XANG [ { LMID } (ANGLE) ldiagdolabel ] cvx def
+/XTH [ XANG 90 dg sub XP1 XP2 ldiagangleto sub ] cvx def
+/XDIST [ XP1 XP2 ldiagdistance XTH sin mul ] cvx def
+XP1 LMID ldiagpsub 0 0 XDIST XANG ldiagatangle ldiagpadd OOO OOO OOX ldiagpsub 0.0001 cm ldiagpmul ldiagpadd OOO OOY ldiagpsub 0.0001 cm ldiagpmul ldiagpadd ldiagpadd translate 0 dg rotate 1 1 scale gsave
+grestore
+553 311 48 127 240 288 60 -48 -127 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+553 311 48 127 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+553 311 48 127 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+200 fnt1 48 82(a)m 186( / )s
+139 fnt4 440 169(0)m 180 fnt4 391 82(\))m ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+ldiagpoptagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+{ TO } (ANGLE) ldiagdolabel rotate 1 1 scale newpath clip gsave
+grestore
+120 72 60 36 240 288 60 -60 -36 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+ldiagnodebegin [ ldiagsolidarrowhead ]
+0.2 ft [ /ldiagnoline ]
+0.04 ft {  null LoutSetTexture fill } ldiagnodeend
+(IN) ldiagpushtagdict
+grestore
+ldiagpopuptagdict
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+{ LABEL } (W) ldiagdolabel TO ldiagpsub 0 0 ldiagpadd translate { TO } (ANGLE) ldiagdolabel rotate 1 1 scale gsave
+grestore
+120 72 60 36 240 288 60 -60 -36 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+ldiagnodebegin [ ldiagsolidarrowhead ]
+0.2 ft [ /ldiagnoline ]
+0.04 ft {  null LoutSetTexture fill } ldiagnodeend
+(IN) ldiagpushtagdict
+grestore
+ldiagpopuptagdict
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+gsave
+0 0 translate
+240 fnt1
+0 0 0 0 240 288 60 LoutGraphic
+gsave
+1 ldiaglinkbegin [ 0
+(0.5f) ldiagdecodelength
+{ BE } { BD }
+0.8 ft 0.8 ft 1.3 cm ldiagacurvepath ] 0.2 ft
+[ /ldiagsolid ] 0.04 ft ldiaglinkend
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+0 dg rotate 1 1 scale newpath clip gsave
+grestore
+663 309 48 127 240 288 60 -48 -127 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+663 309 48 127 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+663 309 48 127 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+200 fnt4 48 77(l)m 200 fnt1 207 82(/ $ )m 139 fnt4
+561 169(1)m 180 fnt4 512 82(\))m ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+{ LABEL } { (NW) } { (SW) } { (NW) } { (NW) }
+{ (NE) } { (NE) } { (NW) } { (NE) } { LTO } (ANGLE) ldiagdolabel ldiagquadcase ldiagdolabel LTO ldiagpsub 0 0 ldiagpadd translate 0 dg rotate 1 1 scale gsave
+grestore
+663 309 48 127 240 288 60 -48 -127 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+663 309 48 127 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+663 309 48 127 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+200 fnt4 48 77(l)m
+200 fnt1 207 82(/ $ )m 139 fnt4 561 169(1)m 180 fnt4
+512 82(\))m ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+ldiagpoptagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+{ TO } (ANGLE) ldiagdolabel rotate 1 1 scale newpath clip gsave
+grestore
+120 72 60 36 240 288 60 -60 -36 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+ldiagnodebegin [ ldiagsolidarrowhead ]
+0.2 ft [ /ldiagnoline ]
+0.04 ft {  null LoutSetTexture fill } ldiagnodeend
+(IN) ldiagpushtagdict
+grestore
+ldiagpopuptagdict
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+{ LABEL } (W) ldiagdolabel TO ldiagpsub 0 0 ldiagpadd translate { TO } (ANGLE) ldiagdolabel rotate 1 1 scale gsave
+grestore
+120 72 60 36 240 288 60 -60 -36 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+ldiagnodebegin [ ldiagsolidarrowhead ]
+0.2 ft [ /ldiagnoline ]
+0.04 ft {  null LoutSetTexture fill } ldiagnodeend
+(IN) ldiagpushtagdict
+grestore
+ldiagpopuptagdict
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+gsave
+0 0 translate
+240 fnt1 0 0 0 0 240 288 60 LoutGraphic
+gsave
+1 ldiaglinkbegin [ 0
+(0.5f) ldiagdecodelength
+{ BC } { BD }
+0.8 ft 0.8 ft ldiaglinepath ] 0.2 ft
+[ /ldiagsolid ] 0.04 ft ldiaglinkend
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+0 dg rotate 1 1 scale newpath clip gsave
+grestore
+452 258 48 110 240 288 60 -48 -110 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+452 258 48 110 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+452 258 48 110 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+200 fnt4 48 60(l)m 200 fnt1
+207 65(/ $)m ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+/XP1 [ { LABEL } { (SE) } { (W) } { (S) } { (W) }
+{ (S) } { (SW) } { (SE) } { (SW) } { LMID } (ANGLE) ldiagdolabel ldiagquadcase ldiagdolabel ] cvx def
+/XP2 [ { LABEL } (CTR) ldiagdolabel ] cvx def
+/XANG [ { LMID } (ANGLE) ldiagdolabel ] cvx def
+/XTH [ XANG 90 dg sub XP1 XP2 ldiagangleto sub ] cvx def
+/XDIST [ XP1 XP2 ldiagdistance XTH sin mul ] cvx def
+XP1 LMID ldiagpsub 0 0 XDIST XANG ldiagatangle ldiagpadd 0 0 ldiagpadd translate 0 dg rotate 1 1 scale gsave
+grestore
+452 258 48 110 240 288 60 -48 -110 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+452 258 48 110 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+452 258 48 110 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+200 fnt4 48 60(l)m 200 fnt1 207 65(/ $)m
+ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+ldiagpoptagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+{ TO } (ANGLE) ldiagdolabel rotate 1 1 scale newpath clip gsave
+grestore
+120 72 60 36 240 288 60 -60 -36 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+ldiagnodebegin [ ldiagsolidarrowhead ]
+0.2 ft [ /ldiagnoline ]
+0.04 ft {  null LoutSetTexture fill } ldiagnodeend
+(IN) ldiagpushtagdict
+grestore
+ldiagpopuptagdict
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+{ LABEL } (W) ldiagdolabel TO ldiagpsub 0 0 ldiagpadd translate { TO } (ANGLE) ldiagdolabel rotate 1 1 scale gsave
+grestore
+120 72 60 36 240 288 60 -60 -36 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+ldiagnodebegin [ ldiagsolidarrowhead ]
+0.2 ft [ /ldiagnoline ]
+0.04 ft {  null LoutSetTexture fill } ldiagnodeend
+(IN) ldiagpushtagdict
+grestore
+ldiagpopuptagdict
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+gsave
+0 0 translate
+240 fnt1 0 0 0 0 240 288 60 LoutGraphic
+gsave
+1 ldiaglinkbegin [ 0
+(0.5f) ldiagdecodelength
+{ BB@NE } { BB@NW }
+0.8 ft 0.8 ft 0.7 cm ldiagacurvepath ] 0.2 ft
+[ /ldiagsolid ] 0.04 ft ldiaglinkend
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+0 dg rotate 1 1 scale newpath clip gsave
+grestore
+184 190 48 95 240 288 60 -48 -95 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+184 190 48 95 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+184 190 48 95 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+200 fnt1 48 50(a)m ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+/XP1 [ { LABEL } { (SE) } { (W) } { (S) } { (W) }
+{ (S) } { (SW) } { (SE) } { (SW) } { LMID } (ANGLE) ldiagdolabel ldiagquadcase ldiagdolabel ] cvx def
+/XP2 [ { LABEL } (CTR) ldiagdolabel ] cvx def
+/XANG [ { LMID } (ANGLE) ldiagdolabel ] cvx def
+/XTH [ XANG 90 dg sub XP1 XP2 ldiagangleto sub ] cvx def
+/XDIST [ XP1 XP2 ldiagdistance XTH sin mul ] cvx def
+XP1 LMID ldiagpsub 0 0 XDIST XANG ldiagatangle ldiagpadd 0 0 ldiagpadd translate 0 dg rotate 1 1 scale gsave
+grestore
+184 190 48 95 240 288 60 -48 -95 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+184 190 48 95 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+184 190 48 95 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+200 fnt1 48 50(a)m
+ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+ldiagpoptagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+{ TO } (ANGLE) ldiagdolabel rotate 1 1 scale newpath clip gsave
+grestore
+120 72 60 36 240 288 60 -60 -36 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+ldiagnodebegin [ ldiagsolidarrowhead ]
+0.2 ft [ /ldiagnoline ]
+0.04 ft {  null LoutSetTexture fill } ldiagnodeend
+(IN) ldiagpushtagdict
+grestore
+ldiagpopuptagdict
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+{ LABEL } (W) ldiagdolabel TO ldiagpsub 0 0 ldiagpadd translate { TO } (ANGLE) ldiagdolabel rotate 1 1 scale gsave
+grestore
+120 72 60 36 240 288 60 -60 -36 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+ldiagnodebegin [ ldiagsolidarrowhead ]
+0.2 ft [ /ldiagnoline ]
+0.04 ft {  null LoutSetTexture fill } ldiagnodeend
+(IN) ldiagpushtagdict
+grestore
+ldiagpopuptagdict
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+gsave
+0 0 translate
+240 fnt1 0 0 0 0 240 288 60 LoutGraphic
+gsave
+1 ldiaglinkbegin [ 0
+(0.5f) ldiagdecodelength
+{ CA } { CE }
+0.8 ft 0.8 ft ldiaglinepath ] 0.2 ft
+[ /ldiagsolid ] 0.04 ft ldiaglinkend
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+0 dg rotate 1 1 scale newpath clip gsave
+grestore
+458 311 48 127 240 288 60 -48 -127 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+458 311 48 127 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+458 311 48 127 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+200 fnt1 48 82(a / )m 139 fnt4 345 169(0)m
+180 fnt4 291 82(\()m ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+/XP1 [ { LABEL } { (SE) } { (W) } { (S) } { (W) }
+{ (S) } { (SW) } { (SE) } { (SW) } { LMID } (ANGLE) ldiagdolabel ldiagquadcase ldiagdolabel ] cvx def
+/XP2 [ { LABEL } (CTR) ldiagdolabel ] cvx def
+/XANG [ { LMID } (ANGLE) ldiagdolabel ] cvx def
+/XTH [ XANG 90 dg sub XP1 XP2 ldiagangleto sub ] cvx def
+/XDIST [ XP1 XP2 ldiagdistance XTH sin mul ] cvx def
+XP1 LMID ldiagpsub 0 0 XDIST XANG ldiagatangle ldiagpadd 0 0 ldiagpadd translate 0 dg rotate 1 1 scale gsave
+grestore
+458 311 48 127 240 288 60 -48 -127 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+458 311 48 127 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+458 311 48 127 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+200 fnt1 48 82(a / )m 139 fnt4
+345 169(0)m 180 fnt4 291 82(\()m ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+ldiagpoptagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+{ TO } (ANGLE) ldiagdolabel rotate 1 1 scale newpath clip gsave
+grestore
+120 72 60 36 240 288 60 -60 -36 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+ldiagnodebegin [ ldiagsolidarrowhead ]
+0.2 ft [ /ldiagnoline ]
+0.04 ft {  null LoutSetTexture fill } ldiagnodeend
+(IN) ldiagpushtagdict
+grestore
+ldiagpopuptagdict
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+0 0 0 0 240 288 60 0 0 LoutGr2
+{ LABEL } (W) ldiagdolabel TO ldiagpsub 0 0 ldiagpadd translate { TO } (ANGLE) ldiagdolabel rotate 1 1 scale gsave
+grestore
+120 72 60 36 240 288 60 -60 -36 LoutGr2
+(LABEL) ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+[ ldiagbox ] pop
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+() ldiagpushtagdict
+grestore
+120 72 60 36 240 288 60 0 0 LoutGr2
+ldiagnodebegin [ ldiagsolidarrowhead ]
+0.2 ft [ /ldiagnoline ]
+0.04 ft {  null LoutSetTexture fill } ldiagnodeend
+(IN) ldiagpushtagdict
+grestore
+ldiagpopuptagdict
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+ldiagpopuptagdict
+grestore
+grestore
+grestore
+ldiagpoptagdict
+grestore
+
+grestore
+gsave
+0 0 translate
+240 fnt1 0 0 0 0 240 288 60 LoutGraphic
+gsave
+1 ldiaglinkbegin [ 0
+(0.5f) ldiagdecodelength
 { CE } { CD }
 0.8 ft 0.8 ft ldiaglinepath ] 0.2 ft
 [ /ldiagsolid ] 0.04 ft ldiaglinkend
@@ -15245,9 +15426,9 @@ grestore
 663 309 48 127 240 288 60 0 0 LoutGr2
 () ldiagpushtagdict
 grestore
-200 fnt4 48 77(l)m 200 fnt1
-207 82(/ $ )m 139 fnt4 561 169(1)m 180 fnt4 512 82(\))m
-ldiagpoptagdict
+200 fnt4
+48 77(l)m 200 fnt1 207 82(/ $ )m 139 fnt4 561 169(1)m
+180 fnt4 512 82(\))m ldiagpoptagdict
 grestore
 
 grestore
@@ -15273,8 +15454,9 @@ grestore
 663 309 48 127 240 288 60 0 0 LoutGr2
 () ldiagpushtagdict
 grestore
-200 fnt4 48 77(l)m 200 fnt1 207 82(/ $ )m 139 fnt4
-561 169(1)m 180 fnt4 512 82(\))m ldiagpoptagdict
+200 fnt4 48 77(l)m 200 fnt1
+207 82(/ $ )m 139 fnt4 561 169(1)m 180 fnt4 512 82(\))m
+ldiagpoptagdict
 grestore
 
 grestore
@@ -15372,9 +15554,8 @@ grestore
 553 311 48 127 240 288 60 0 0 LoutGr2
 () ldiagpushtagdict
 grestore
-200 fnt1
-48 82(a)m 186( / )s 139 fnt4 440 169(0)m 180 fnt4
-391 82(\))m ldiagpoptagdict
+200 fnt1 48 82(a)m 186( / )s 139 fnt4
+440 169(0)m 180 fnt4 391 82(\))m ldiagpoptagdict
 grestore
 
 grestore
@@ -15400,8 +15581,9 @@ grestore
 553 311 48 127 240 288 60 0 0 LoutGr2
 () ldiagpushtagdict
 grestore
-200 fnt1 48 82(a)m 186( / )s 139 fnt4
-440 169(0)m 180 fnt4 391 82(\))m ldiagpoptagdict
+200 fnt1 48 82(a)m
+186( / )s 139 fnt4 440 169(0)m 180 fnt4 391 82(\))m
+ldiagpoptagdict
 grestore
 
 grestore
@@ -15479,191 +15661,60 @@ ldiagend
 grestore
 
 [ /Dest /LOUTinfinite_a /DEST pdfmark
-200 fnt2 3334 2949(Figur)m 3(e)k
-3942(5.)s 200 fnt1 4184 2950(Mer)m 3(ging)k 4911(transitions)s
-240 fnt1 0 2319(should)m 706(mer)s 4(ge)k 1364(2)s
-1548(and)s 1961(3)s 2134(ag)s 1(ain,)k 2768(and)s
-3181(we)s 3525(w)s 2(ould)k 4190(ne)s 6(v)k 3(er)k
-4781(stop.)s 5293(T)s 19(o)k 5603(a)s 4(v)k 4(oid)k
-6194(the)s 6551(in\207nite)s 7294(loop,)s 7836(if)s 8062(a)s
-8238(state)s 240 fnt3 8740 2321(x)m 240 fnt1 8916 2319(is)m
-0 2031(the)m 349(result)s 941(of)s 1214(mer)s 4(ge,)k
-1916(we)s 2253(w)s 2(ould)k 2910(add)s 3316(a)s
-3484(loop)s 3965(to)s 4206(itself)s 4756(rather)s 5374(than)s
-5845(mer)s 4(ging)k 6693(the)s 7043(states)s 7626(ag)s 1(ain.)k
-8249(The)s 8679(ne)s 6(w)k 0 1743(arc)m 344(will)s
-770(be)s 1052(tagged)s 1748(with)s 2230(the)s 2578(tag-union)s
-3552(of)s 3823(the)s 4171(tag)s 4516(sets)s 4925(on)s
-5222(the)s 5570(arcs.)s 240 fnt2 0 806(5.3.)m 471(Mer)s 2(ging)k
-1402(ar)s 4(cs)k 
-[ /Dest /LOUT20_708_yrx_lout_3 /DEST pdfmark
-240 fnt1 480 329(W)m 19(e)k
-849(are)s 1196(no)s 6(w)k 1657(ready)s 2242(to)s
-2481(gi)s 6(v)k 3(e)k 2940(an)s 3223(algorithm)s
-4212(to)s 4451(implment)s 5427(the)s 220 fnt5 5775 337(mergearcs\(\))m
-240 fnt1 7287 329(function:)m 
-grestore
-0 0 0 0 240 288 60 1417 -15423 LoutGr2
-1 LoutMargSet
-grestore
-
-grestore
-
-grestore
-
-grestore
-
-pgsave restore
-showpage
-
-%%Page: 8 8
-%%BeginPageSetup
-%%PageResources: font Times-Roman
-%%+ font Times-Italic
-%%+ font Symbol
-%%+ font Times-Bold
-%%+ font Courier
-/pgsave save def
-%%IncludeResource: font Times-Roman
-/Times-Romanfnt1 vec2 /Times-Roman LoutRecode
-/fnt1 { /Times-Romanfnt1 LoutFont } def
-%%IncludeResource: font Times-Italic
-/Times-Italicfnt3 vec2 /Times-Italic LoutRecode
-/fnt3 { /Times-Italicfnt3 LoutFont } def
-%%IncludeResource: font Symbol
-/fnt4 { /Symbol LoutFont } def
-%%IncludeResource: font Times-Bold
-/Times-Boldfnt2 vec2 /Times-Bold LoutRecode
-/fnt2 { /Times-Boldfnt2 LoutFont } def
-%%IncludeResource: font Courier
-/Courierfnt5 vec2 /Courier LoutRecode
-/fnt5 { /Courierfnt5 LoutFont } def
-0.0500 dup scale 10 setlinewidth
-%%EndPageSetup
-gsave
-0 0 translate
-240 fnt1 0.0 0.0 0.0 LoutSetRGBColor LoutTextureSolid 11900 16840 0 16840 240 288 60 LoutGraphic
-gsave
-LoutPageSet
-grestore
-gsave
-0 16840 translate
-0.0000 rotate
-5768 -1579(-)m 5896(8)s
-6063(-)s 9066 13416 0 13416 240 288 60 1417 -15423 LoutGr2
-0 LoutMargSet
-grestore
-240 fnt3 480 12965(lbls)m 240 fnt4 880 12957(=)m
-240 fnt1 1069 12963({})m 240 fnt2 480 12674(f)m 6(or)k
-240 fnt3 837 12677(ar)m 8(c)k 240 fnt2 1204 12674(in)m
-240 fnt3 1459 12677(ar)m 8(csfr)k 10(om)k 240 fnt1
-2301 12675(\()m 240 fnt3 2374 12677(state)m 240 fnt1 2818 12675(\))m
-240 fnt2 2946 12674(do)m 240 fnt3 720 12389(lbl)m 240 fnt4
-1032 12381(=)m 240 fnt3 1221 12389(ar)m 8(c)k 240 fnt1
-1528 12387(.)m 240 fnt3 1572 12389(lbl)m 240 fnt2 720 12098(f)m 6(or)k
-240 fnt1 1077 12099(\()m 240 fnt3 1150 12101(tmp)m 240 fnt2
-1562 12098(in)m 240 fnt3 1817 12101(lbls)m 240 fnt1 2157 12099(\))m
-240 fnt2 2285 12098(and)m 240 fnt1 2726 12099(\()m 240 fnt3
-2799 12101(lbl)m 240 fnt4 3111 12093(\271)m 3252(\306)s 240 fnt1
-3499 12099(\))m 240 fnt2 3627 12098(do)m 960 11810(if)m 240 fnt3
-1178 11813(lbl)m 240 fnt4 1562 11805(\312)m 240 fnt3 1856 11813(ar)m 8(c)k
-240 fnt1 2163 11811(.)m 240 fnt3 2207 11813(lbl)m 240 fnt2
-2519 11810(then)m 240 fnt3 1200 11525(tmp)m 240 fnt1 1552 11523(.)m
-240 fnt3 1596 11525(ar)m 8(cs)k 240 fnt4 2055 11517(=)m
-240 fnt3 2244 11525(tmp)m 240 fnt1 2596 11523(.)m 240 fnt3
-2640 11525(ar)m 8(cs)k 240 fnt4 3099 11517(\310)m 240 fnt3
-3335 11525(ar)m 8(c)k 240 fnt2 960 11234(else)m 1387(if)s
-240 fnt3 1605 11237(tmp)m 240 fnt1 1957 11235(.)m 240 fnt3
-2001 11237(lbl)m 240 fnt4 2385 11229(\314)m 240 fnt3 2683 11237(ar)m 8(c)k
-240 fnt1 2990 11235(.)m 240 fnt3 3034 11237(lbl)m 240 fnt2
-3346 11234(then)m 240 fnt3 1200 10949(tmp)m 240 fnt1 1552 10947(.)m
-240 fnt3 1596 10949(ar)m 8(cs)k 240 fnt4 2055 10941(=)m
-240 fnt3 2244 10949(tmp)m 240 fnt1 2596 10947(.)m 240 fnt3
-2640 10949(ar)m 8(cs)k 240 fnt4 3099 10941(\310)m 240 fnt3
-3335 10949(ar)m 8(c)k 240 fnt2 960 10658(end)m 240 fnt3
-960 10373(lbl)m 240 fnt4 1272 10365(=)m 240 fnt3 1461 10373(lbl)m
-1773(\\)s 1908(tmp)s 240 fnt1 2260 10371(.)m 240 fnt3
-2304 10373(lbl)m 240 fnt2 720 10082(end)m 720 9794(if)m 240 fnt3
-938 9797(lbl)m 240 fnt4 1250 9789(\271)m 1391(\306)s 240 fnt2
-1638 9794(then)m 240 fnt3 960 9509(lbls)m 240 fnt4 1360 9501(=)m
-240 fnt3 1549 9509(lbls)m 240 fnt4 1949 9501(\310)m 240 fnt1
-2185 9507({)m 240 fnt3 2329 9509(lbl)m 240 fnt1 2641 9507(,)m
-240 fnt3 2748 9509(ar)m 8(c)k 240 fnt1 3115 9507(})m
-240 fnt2 720 9218(end)m 480 8930(end)m 0 7898(6.)m 291(Matching)s
-1330(multiple)s 2234(r)s 4(egular)k 3045(expr)s 4(essions)k
-
-[ /Dest /LOUT20_677_yrx_lout_6 /DEST pdfmark
-240 fnt1 480 7421(YRX)m 1070(tries)s 1560(to)s 1828(match)s
-2498(a)s 2693(string)s 3318(ag)s 1(ainst)k 4083(more)s
-4659(than)s 5157(one)s 5588(re)s 3(gular)k 6349(e)s 3(xpression)k
-7455(at)s 7716(the)s 8093(time.)s 8650(This)s 0 7133(will)m
-459(result)s 1082(in)s 1358(possbile)s 2232(ambiguities:)s 3486(gi)s 6(v)k 3(en)k
-4099(the)s 4481(e)s 3(xpressions)k 5678(")s 240 fnt4
-5757 7127([)m 240 fnt3 5840 7135(ab)m 240 fnt4 6086 7127(])m
-6157(0)s 240 fnt1 6271 7133(")m 6443(and)s 6881(")s
-240 fnt3 6960 7135(b)m 240 fnt4 7086 7127([)m 7169(0)s
-7295(1)s 7401(])s 240 fnt1 7460 7133(")m 7632(the)s
-8013(string)s 8644(")s 220 fnt5 8723 7141(b1)m 240 fnt1
-8987 7133(")m 0 6845(matches)m 834(both.)s 240 fnt2 0 6102(7.)m
-291(Code)s 879(Generation)s 
-[ /Dest /LOUT20_677_yrx_lout_7 /DEST pdfmark
-240 fnt1 480 5670(A)m 710(DF)s 17(A)k
-1229(can)s 1618(be)s 1900(directly)s 2683(translate)s 3547(into)s
-3972(code.)s 240 fnt2 0 4877(Refer)m 4(ences)k 
-[ /Dest /LOUT20_368_yrx_lout_1 /DEST pdfmark
-
-[ /Dest /LOUTAhoUllman77 /DEST pdfmark
-240 fnt1
-0 4421([1])m 480(Alfred)s 1181(V)s 30(.)k 1448(Aho)s
-1934(and)s 2358(Jef)s 6(fre)k 3(y)k 3085(D.)s
-3382(Ullman.)s 240 fnt3 4283 4423(Principles)m 5340(of)s 5641(Compiler)s
-6630(Design)s 240 fnt1 7302 4421(.)m 7486(Addison-W)s 19(esle)k 3(y)k
-480 4133(Longman)m 1455(Publishing)s 2532(Co.,)s 2979(Inc)s 3277(.)s
-3441(ed.)s 3771(I)s 3846(,)s 3953(1977)s 4421(.)s
-
-[ /Dest /LOUTdube00 /DEST pdfmark
-0 3630([2])m 480(Dann)s 3(y)k 1173(Dube)s 1751(and)s
-2159(Marc)s 2719(Feele)s 3(y)k 15(.)k 3506(Ef\207ciently)s
-4571(b)s 4(uilding)k 5422(a)s 5591(parse)s 6155(tree)s
-6571(from)s 7099(a)s 7268(re)s 3(gular)k 8005(e)s 3(xpression)k
-9022(.)s 240 fnt3 480 3344(Acta)m 973(Informatica)s 240 fnt2
-2157 3341(37)m 240 fnt1 2452 3342(\(2\))m 2779(\(2000\))s 3406(.)s
-3570(URL)s 240 fnt3 4106 3344(http://)m 4714(citeseer)s 26(.ist.psu.edu/)k
-6605(340667.html)s 240 fnt1 7810 3342(.)m 
-[ /Dest /LOUTilieyu02 /DEST pdfmark
-0 2843([3])m 480(Lucian)s
-1195(Ilie)s 1562(and)s 1960(Sheng)s 2606(Y)s 26(u.)k
-3031(Constructing)s 4314(NF)s 17(A)k 4827(s)s 4964(by)s
-5252(Optimal)s 6084(Use)s 6506(of)s 6771(Positions)s 7693(in)s
-7930(Re)s 3(gular)k 8737(Ex)s 8998(-)s 480 2555(pressions)m
-1361(.)s 1515(In)s 240 fnt3 1761 2557(CPM)m 2324('02:)s
-2755(Pr)s 10(oceedings)k 3985(of)s 4256(the)s 4591(13th)s
-5061(Annual)s 5803(Symposium)s 6939(on)s 7223(Combinatorial)s 8682(P)s 19(at)k
-8999(-)s 480 2269(tern)m 913(Matc)s 3(hing)k 240 fnt1
-1821 2267(,)m 1921(pages)s 2510(279-288)s 3296(.)s 3454(Springer)s 4(-)k
-4341(V)s 26(erlag)k 4958(,)s 5058(2002)s 5532(.)s
-5689(URL)s 240 fnt3 6218 2269(http://)m 6826(www)s 17(.spring)k 2(erlink.com/)k
-480 1981(content/)m 1275(emvg6jgyyfxm1apv/)s 240 fnt1 3200 1979(.)m 
-[ /Dest /LOUTLaurikari /DEST pdfmark
-0 1480([4])m
-480(V)s 14(ille)k 1036(Laurikari.)s 2125(Ef\207cient)s 3045(submatch)s
-4056(addressing)s 5169(for)s 5545(re)s 3(gular)k 6315(e)s 3(xpressions)k
-7419(.)s 7620(Master')s 13(s)k 8531(thesis)s 480 1192(\(2001\))m
-1107(,)s 1214(Helsinki)s 2078(Uni)s 6(v)k 3(ersity)k
-3132(of)s 3403(T)s 16(echnology)k 4525(.)s 4689(URL)s
-240 fnt3 5225 1194(http://)m 5833(citeseer)s 26(.ist.psu.edu/)k 7724(480392.html)s
-240 fnt1 8929 1192(.)m 
-[ /Dest /LOUTvannoord00 /DEST pdfmark
-0 687([5])m 480(Gertjan)s 1272(V)s 26(an)k
-1721(Noord.)s 2517(T)s 8(reatment)k 3569(of)s 240 fnt4
-3859 681(e)m 240 fnt1 4042 687(\211)m 4241(Mo)s 3(v)k 3(es)k
-4957(in)s 5220(Subset)s 5937(Construction)s 7170(.)s 7353(In)s
-240 fnt3 7629 689(Computational)m 480 401(Linguistics,)m 1663(MIT)s 2193(Pr)s 8(ess)k
-2812(for)s 3197(the)s 3583(Association)s 4794(for)s 5179(Computational)s
-6717(Linguistics)s 240 fnt1 7761 399(,)m 7909(2000)s 8384(.)s
-8590(URL)s 240 fnt3 480 113(http://)m 1088(citeseer)s 26(.ist.psu.edu/)k
-2979(vannoor)s 8(d98tr)k 8(eatment.html)k 240 fnt1 5523 111(.)m
-
+200 fnt2 3238 6059(Figur)m 3(e)k 3846(5.)s 200 fnt1
+4088 6060(A)m 14(v)k 4(oiding)k 4868(in\207nite)s 5478(loop)s
+240 fnt3 480 5429(lbls)m 240 fnt4 880 5421(=)m 240 fnt1
+1069 5427({})m 240 fnt2 480 5138(f)m 6(or)k 240 fnt3
+837 5141(ar)m 8(c)k 240 fnt2 1204 5138(in)m 240 fnt3
+1459 5141(ar)m 8(csfr)k 10(om)k 240 fnt1 2301 5139(\()m
+240 fnt3 2374 5141(state)m 240 fnt1 2818 5139(\))m 240 fnt2
+2946 5138(do)m 240 fnt3 720 4853(lbl)m 240 fnt4 1032 4845(=)m
+240 fnt3 1221 4853(ar)m 8(c)k 240 fnt1 1528 4851(.)m
+240 fnt3 1572 4853(lbl)m 240 fnt2 720 4562(f)m 6(or)k
+240 fnt1 1077 4563(\()m 240 fnt3 1150 4565(tmp)m 240 fnt2
+1562 4562(in)m 240 fnt3 1817 4565(lbls)m 240 fnt1 2157 4563(\))m
+240 fnt2 2285 4562(and)m 240 fnt1 2726 4563(\()m 240 fnt3
+2799 4565(lbl)m 240 fnt4 3111 4557(\271)m 3252(\306)s 240 fnt1
+3499 4563(\))m 240 fnt2 3627 4562(do)m 960 4274(if)m 240 fnt3
+1178 4277(lbl)m 240 fnt4 1562 4269(\312)m 240 fnt3 1856 4277(ar)m 8(c)k
+240 fnt1 2163 4275(.)m 240 fnt3 2207 4277(lbl)m 240 fnt2
+2519 4274(then)m 240 fnt3 1200 3989(tmp)m 240 fnt1 1552 3987(.)m
+240 fnt3 1596 3989(ar)m 8(cs)k 240 fnt4 2055 3981(=)m
+240 fnt3 2244 3989(tmp)m 240 fnt1 2596 3987(.)m 240 fnt3
+2640 3989(ar)m 8(cs)k 240 fnt4 3099 3981(\310)m 240 fnt3
+3335 3989(ar)m 8(c)k 240 fnt2 960 3698(else)m 1387(if)s
+240 fnt3 1605 3701(tmp)m 240 fnt1 1957 3699(.)m 240 fnt3
+2001 3701(lbl)m 240 fnt4 2385 3693(\314)m 240 fnt3 2683 3701(ar)m 8(c)k
+240 fnt1 2990 3699(.)m 240 fnt3 3034 3701(lbl)m 240 fnt2
+3346 3698(then)m 240 fnt3 1200 3413(tmp)m 240 fnt1 1552 3411(.)m
+240 fnt3 1596 3413(ar)m 8(cs)k 240 fnt4 2055 3405(=)m
+240 fnt3 2244 3413(tmp)m 240 fnt1 2596 3411(.)m 240 fnt3
+2640 3413(ar)m 8(cs)k 240 fnt4 3099 3405(\310)m 240 fnt3
+3335 3413(ar)m 8(c)k 240 fnt2 960 3122(else)m 1387(if)s
+240 fnt3 1605 3125(tmp)m 240 fnt1 1957 3123(.)m 240 fnt3
+2001 3125(lbl)m 240 fnt4 2313 3117(\307)m 240 fnt3 2549 3125(ar)m 8(c)k
+240 fnt1 2856 3123(.)m 240 fnt3 2900 3125(lbl)m 240 fnt4
+3212 3117(\271)m 3353(\306)s 240 fnt2 3600 3122(then)m 240 fnt3
+1200 2837(l)m 240 fnt4 1326 2829(=)m 240 fnt1 1515 2835({)m
+240 fnt3 1659 2837(lbl)m 240 fnt1 1971 2835(,)m 240 fnt3
+2078 2837(ar)m 8(c)k 240 fnt1 2445 2835(})m 240 fnt3
+1200 2549(lbls)m 240 fnt4 1600 2541(=)m 240 fnt3 1789 2549(lbls)m
+240 fnt4 2189 2541(\310)m 240 fnt1 2425 2547({)m 240 fnt3
+2569 2549(lbl)m 240 fnt1 2881 2547(,)m 240 fnt3 2988 2549(ar)m 8(c)k
+240 fnt1 3355 2547(})m 240 fnt3 1200 2261(tmp)m 240 fnt1
+1552 2259(.)m 240 fnt3 1596 2261(ar)m 8(cs)k 240 fnt4
+2055 2253(=)m 240 fnt3 2244 2261(tmp)m 240 fnt1 2596 2259(.)m
+240 fnt3 2640 2261(ar)m 8(cs)k 240 fnt4 3099 2253(\310)m
+240 fnt3 3335 2261(ar)m 8(c)k 240 fnt2 960 1970(end)m
+240 fnt3 960 1685(lbl)m 240 fnt4 1272 1677(=)m 240 fnt3
+1461 1685(lbl)m 1773(\\)s 1908(tmp)s 240 fnt1 2260 1683(.)m
+240 fnt3 2304 1685(lbl)m 240 fnt2 720 1394(end)m 720 1106(if)m
+240 fnt3 938 1109(lbl)m 240 fnt4 1250 1101(\271)m 1391(\306)s
+240 fnt2 1638 1106(then)m 240 fnt3 960 821(lbls)m 240 fnt4
+1360 813(=)m 240 fnt3 1549 821(lbls)m 240 fnt4 1949 813(\310)m
+240 fnt1 2185 819({)m 240 fnt3 2329 821(lbl)m 240 fnt1
+2641 819(,)m 240 fnt3 2748 821(ar)m 8(c)k 240 fnt1
+3115 819(})m 240 fnt2 720 530(end)m 480 242(end)m 
 grestore
 0 0 0 0 240 288 60 1417 -15423 LoutGr2
 0 LoutMargSet
@@ -15679,6 +15730,147 @@ pgsave restore
 showpage
 
 %%Page: 9 9
+%%BeginPageSetup
+%%PageResources: font Times-Roman
+%%+ font Times-Bold
+%%+ font Symbol
+%%+ font Times-Italic
+%%+ font Courier
+/pgsave save def
+%%IncludeResource: font Times-Roman
+/Times-Romanfnt1 vec2 /Times-Roman LoutRecode
+/fnt1 { /Times-Romanfnt1 LoutFont } def
+%%IncludeResource: font Times-Bold
+/Times-Boldfnt2 vec2 /Times-Bold LoutRecode
+/fnt2 { /Times-Boldfnt2 LoutFont } def
+%%IncludeResource: font Symbol
+/fnt4 { /Symbol LoutFont } def
+%%IncludeResource: font Times-Italic
+/Times-Italicfnt3 vec2 /Times-Italic LoutRecode
+/fnt3 { /Times-Italicfnt3 LoutFont } def
+%%IncludeResource: font Courier
+/Courierfnt5 vec2 /Courier LoutRecode
+/fnt5 { /Courierfnt5 LoutFont } def
+0.0500 dup scale 10 setlinewidth
+%%EndPageSetup
+gsave
+0 0 translate
+240 fnt1 0.0 0.0 0.0 LoutSetRGBColor LoutTextureSolid 11900 16840 0 16840 240 288 60 LoutGraphic
+gsave
+LoutPageSet
+grestore
+gsave
+0 16840 translate
+0.0000 rotate
+5766 -1579(-)m 5894(9)s
+6065(-)s 9066 13414 0 13414 240 288 60 1417 -15423 LoutGr2
+1 LoutMargSet
+grestore
+240 fnt2 0 12673(6.)m 291(Extended)s 1316(r)s 4(egular)k
+2127(expr)s 4(essions)k 
+[ /Dest /LOUT20_677_yrx_lout_6 /DEST pdfmark
+240 fnt1 480 12196(YRX)m 1042(introduces)s
+2089(se)s 6(v)k 3(eral)k 2811(e)s 3(xtensions)k
+3869(to)s 4108(the)s 4456(standard)s 5324(re)s 3(gular)k
+6057(e)s 3(xpressions.)k 240 fnt2 0 11548(6.1.)m 471(Escaped)s
+1377(characters)s 
+[ /Dest /LOUT20_708_yrx_lout_4 /DEST pdfmark
+240 fnt1 480 11071(xxxx)m 240 fnt2 0 10474(6.2.)m
+471(Complement)s 
+[ /Dest /LOUT20_708_yrx_lout_5 /DEST pdfmark
+240 fnt1 480 9997(xxxx)m 240 fnt2 0 9400(6.3.)m
+471(Intersection)s 
+[ /Dest /LOUT20_708_yrx_lout_6 /DEST pdfmark
+240 fnt1 480 8969(xxxx)m 240 fnt2 0 8228(7.)m
+291(Matching)s 1330(multiple)s 2234(r)s 4(egular)k 3045(expr)s 4(essions)k
+
+[ /Dest /LOUT20_677_yrx_lout_7 /DEST pdfmark
+240 fnt1 480 7751(YRX)m 1070(tries)s 1560(to)s 1828(match)s
+2498(a)s 2693(string)s 3318(ag)s 1(ainst)k 4083(more)s
+4659(than)s 5157(one)s 5588(re)s 3(gular)k 6349(e)s 3(xpression)k
+7455(at)s 7716(the)s 8093(time.)s 8650(This)s 0 7463(will)m
+459(result)s 1082(in)s 1358(possbile)s 2232(ambiguities:)s 3486(gi)s 6(v)k 3(en)k
+4099(the)s 4481(e)s 3(xpressions)k 5678(")s 240 fnt4
+5757 7457([)m 240 fnt3 5840 7465(ab)m 240 fnt4 6086 7457(])m
+6157(0)s 240 fnt1 6271 7463(")m 6443(and)s 6881(")s
+240 fnt3 6960 7465(b)m 240 fnt4 7086 7457([)m 7169(0)s
+7295(1)s 7401(])s 240 fnt1 7460 7463(")m 7632(the)s
+8013(string)s 8644(")s 220 fnt5 8723 7471(b1)m 240 fnt1
+8987 7463(")m 0 7175(matches)m 834(both.)s 240 fnt2 0 6432(8.)m
+291(Code)s 879(Generation)s 
+[ /Dest /LOUT20_677_yrx_lout_8 /DEST pdfmark
+240 fnt1 480 6000(A)m 710(DF)s 17(A)k
+1229(can)s 1618(be)s 1900(directly)s 2683(translate)s 3547(into)s
+3972(code.)s 240 fnt2 0 5207(Refer)m 4(ences)k 
+[ /Dest /LOUT20_368_yrx_lout_1 /DEST pdfmark
+
+[ /Dest /LOUTAhoUllman77 /DEST pdfmark
+240 fnt1
+0 4751([1])m 480(Alfred)s 1181(V)s 30(.)k 1448(Aho)s
+1934(and)s 2358(Jef)s 6(fre)k 3(y)k 3085(D.)s
+3382(Ullman.)s 240 fnt3 4283 4753(Principles)m 5340(of)s 5641(Compiler)s
+6630(Design)s 240 fnt1 7302 4751(.)m 7486(Addison-W)s 19(esle)k 3(y)k
+480 4463(Longman)m 1455(Publishing)s 2532(Co.,)s 2979(Inc)s 3277(.)s
+3441(ed.)s 3771(I)s 3846(,)s 3953(1977)s 4421(.)s
+
+[ /Dest /LOUTdube00 /DEST pdfmark
+0 3960([2])m 480(Dann)s 3(y)k 1173(Dube)s 1751(and)s
+2159(Marc)s 2719(Feele)s 3(y)k 15(.)k 3506(Ef\207ciently)s
+4571(b)s 4(uilding)k 5422(a)s 5591(parse)s 6155(tree)s
+6571(from)s 7099(a)s 7268(re)s 3(gular)k 8005(e)s 3(xpression)k
+9022(.)s 240 fnt3 480 3674(Acta)m 973(Informatica)s 240 fnt2
+2157 3671(37)m 240 fnt1 2452 3672(\(2\))m 2779(\(2000\))s 3406(.)s
+3570(URL)s 240 fnt3 4106 3674(http://)m 4714(citeseer)s 26(.ist.psu.edu/)k
+6605(340667.html)s 240 fnt1 7810 3672(.)m 
+[ /Dest /LOUTilieyu02 /DEST pdfmark
+0 3173([3])m 480(Lucian)s
+1195(Ilie)s 1562(and)s 1960(Sheng)s 2606(Y)s 26(u.)k
+3031(Constructing)s 4314(NF)s 17(A)k 4827(s)s 4964(by)s
+5252(Optimal)s 6084(Use)s 6506(of)s 6771(Positions)s 7693(in)s
+7930(Re)s 3(gular)k 8737(Ex)s 8998(-)s 480 2885(pressions)m
+1361(.)s 1515(In)s 240 fnt3 1761 2887(CPM)m 2324('02:)s
+2755(Pr)s 10(oceedings)k 3985(of)s 4256(the)s 4591(13th)s
+5061(Annual)s 5803(Symposium)s 6939(on)s 7223(Combinatorial)s 8682(P)s 19(at)k
+8999(-)s 480 2599(tern)m 913(Matc)s 3(hing)k 240 fnt1
+1821 2597(,)m 1921(pages)s 2510(279-288)s 3296(.)s 3454(Springer)s 4(-)k
+4341(V)s 26(erlag)k 4958(,)s 5058(2002)s 5532(.)s
+5689(URL)s 240 fnt3 6218 2599(http://)m 6826(www)s 17(.spring)k 2(erlink.com/)k
+480 2311(content/)m 1275(emvg6jgyyfxm1apv/)s 240 fnt1 3200 2309(.)m 
+[ /Dest /LOUTLaurikari /DEST pdfmark
+0 1810([4])m
+480(V)s 14(ille)k 1036(Laurikari.)s 2125(Ef\207cient)s 3045(submatch)s
+4056(addressing)s 5169(for)s 5545(re)s 3(gular)k 6315(e)s 3(xpressions)k
+7419(.)s 7620(Master')s 13(s)k 8531(thesis)s 480 1522(\(2001\))m
+1107(,)s 1214(Helsinki)s 2078(Uni)s 6(v)k 3(ersity)k
+3132(of)s 3403(T)s 16(echnology)k 4525(.)s 4689(URL)s
+240 fnt3 5225 1524(http://)m 5833(citeseer)s 26(.ist.psu.edu/)k 7724(480392.html)s
+240 fnt1 8929 1522(.)m 
+[ /Dest /LOUTvannoord00 /DEST pdfmark
+0 1017([5])m 480(Gertjan)s 1272(V)s 26(an)k
+1721(Noord.)s 2517(T)s 8(reatment)k 3569(of)s 240 fnt4
+3859 1011(e)m 240 fnt1 4042 1017(\211)m 4241(Mo)s 3(v)k 3(es)k
+4957(in)s 5220(Subset)s 5937(Construction)s 7170(.)s 7353(In)s
+240 fnt3 7629 1019(Computational)m 480 731(Linguistics,)m 1663(MIT)s 2193(Pr)s 8(ess)k
+2812(for)s 3197(the)s 3583(Association)s 4794(for)s 5179(Computational)s
+6717(Linguistics)s 240 fnt1 7761 729(,)m 7909(2000)s 8384(.)s
+8590(URL)s 240 fnt3 480 443(http://)m 1088(citeseer)s 26(.ist.psu.edu/)k
+2979(vannoor)s 8(d98tr)k 8(eatment.html)k 240 fnt1 5523 441(.)m
+
+grestore
+0 0 0 0 240 288 60 1417 -15423 LoutGr2
+1 LoutMargSet
+grestore
+
+grestore
+
+grestore
+
+grestore
+
+pgsave restore
+showpage
+
+%%Page: 10 10
 %%BeginPageSetup
 %%PageResources: font Times-Roman
 /pgsave save def
@@ -15715,5 +15907,5 @@ showpage
 %%+  procset LoutDiagPrependGraphic
 %%+  procset LoutBasicSetup
 %%+ encoding vec2
-%%Pages: 9
+%%Pages: 10
 %%EOF

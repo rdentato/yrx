@@ -15,7 +15,7 @@
 #include "hul.h"
 #include "vec.h"
 
-#define state_t uint16_t
+#define state_t   uint16_t
 typedef uint16_t *lbl_ptr;
 
 typedef struct {
@@ -27,9 +27,18 @@ typedef struct {
    uint32_t  yarcn;
 } Automata;
 
+
+typedef struct {
+  uint16_t delta;
+  uint8_t  type;
+  uint8_t  rx;
+} tag_t;
+
+typedef map_t *tagset;
+
 typedef struct {
   lbl_ptr   lbl;
-  ulv_t     tags;
+  tagset    tags;
   state_t   to;
 } Arc;
 
