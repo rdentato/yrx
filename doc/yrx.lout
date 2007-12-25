@@ -115,6 +115,17 @@ the regular character is matched.}
 @End @Section
 
 @Section
+@Title { Lexer }
+@Begin
+@PP
+YRX solves the following problem:
+Given a set of regular expressions @M{lbrace e sub 1, e sub 2, ... rbrace}
+and a text @M{T} determine which expression matches the beginning of @M{T}.
+@LP
+
+@End @Section
+
+@Section
 @Title { Tagged automata }
 @Begin
 
@@ -146,7 +157,7 @@ value of a variable @M{v sub {x,k}} is set to current position
 minus @M{d} and the FA moves to the next state.
 
 @LP 
-Each tag @M{ @tag supp d on {x,k} } assigns to an associated variable
+Each tag @M{ @tag supp d on {x,k}} assigns to an associated variable
 @M{v sub {x,k}} the value @M{pos - d} where @M{pos} is the current position
 within the input text.
 
@@ -172,65 +183,66 @@ is defined such that:
               = lbrace (s sub {1}) sup {+}, (s sub {2}) sup {+} ,..., (s sub {n}) sup {+} rbrace }
 
 @DP
-   Given a set of tags @M{S = {lbrace s sub 1, s sub 2 ,..., s sub n rbrace }}
- and a tag @M{@tag supp d on {x,k}}, @I adding a tag to @M {S} is defined as:
- 
- @DP @Center @Math {
-   S circleplus @tag supp d on {x} = 
-       matrix atleft { blbrace  }  {
-         row col {{lbrace s sub 1, s sub 2 ,..., s sub n, @tag supp d on {x} rbrace } /0.3c
-         {lbrace s sub 1 ,..., s sub {j-1} , @tag supp {min(k,d)} on {x,k} , s sub {j+1} ,..., s sub n rbrace }}
-             col {{@R if " " not exists " " j @R" : " s sub j = @tag supp k on {x,k} in S } /0.3c
-                 {@R if " "  exists " " j @R" : " s sub j = @tag supp k on {x,k} in S }}
-       }
- }
- @DP
- 
 
-The @I addition operation between tags is defined such that:
-@DP
-@Center @Math {
-  @tag supp k on {y} circleplus @tag supp d on {w} = 
-      matrix atleft { blbrace  }  {
-        row col {{lbrace  @tag supp k on {y} , @tag supp d on {w}  rbrace }
-                 /0.3c {lbrace @tag supp {min(k,d)} on {y} rbrace}
-                }
-            col {{@R if " " y != w}
-                 /0.5c {@R if " " y = w}
-                }
-      }
-}
-
-@DP
-Informally, the @I addition of two tags is a set which contains both tags
-if they are of different types or a tag of the same type with a
-displacement that is the minimum of the two displacements.
-
-@LP
+##    Given a set of tags @M{S = {lbrace s sub 1, s sub 2 ,..., s sub n rbrace }}
+##  and a tag @M{@tag supp d on {x,k}}, @I adding a tag to @M {S} is defined as:
+##  
+##  @DP @Center @Math {
+##    S circleplus @tag supp d on {x} = 
+##        matrix atleft { blbrace  }  {
+##          row col {{lbrace s sub 1, s sub 2 ,..., s sub n, @tag supp d on {x} rbrace } /0.3c
+##          {lbrace s sub 1 ,..., s sub {j-1} , @tag supp {min(k,d)} on {x,k} , s sub {j+1} ,..., s sub n rbrace }}
+##              col {{@R if " " not exists " " j @R" : " s sub j = @tag supp k on {x,k} in S } /0.3c
+##                  {@R if " "  exists " " j @R" : " s sub j = @tag supp k on {x,k} in S }}
+##        }
+##  }
+##  @DP
+##  
+## 
+## The @I addition operation between tags is defined such that:
+## @DP
+## @Center @Math {
+##   @tag supp k on {y} circleplus @tag supp d on {w} = 
+##       matrix atleft { blbrace  }  {
+##         row col {{lbrace  @tag supp k on {y} , @tag supp d on {w}  rbrace }
+##                  /0.3c {lbrace @tag supp {min(k,d)} on {y} rbrace}
+##                 }
+##             col {{@R if " " y != w}
+##                  /0.5c {@R if " " y = w}
+##                 }
+##       }
+## }
+## 
+## @DP
+## Informally, the @I addition of two tags is a set which contains both tags
+## if they are of different types or a tag of the same type with a
+## displacement that is the minimum of the two displacements.
+## 
+## @LP
 
 Given two sets of tags @M{S = {lbrace s sub 1, s sub 2 ,..., s sub n rbrace }},
 and @M{R = {lbrace r sub 1, r sub 2 ,..., r sub m rbrace }} 
 the following operations are defined:
 
-@DP @Center
-@Math {
-  matrix  {
-    row mcol {S cup tsub @tag " " R 
-              ^= big bcup atop {0.7f @Font {{1 <= i <= n} /0.1c {1 <= j <= m}} } (s sub i circleplus r sub j ) }
-        lcol {"   "} lcol {@R{"tag-union"}}
-    row lcol {" "}             
-              
-    row mcol { S " " minus " " R
-              ^=  {lbrace @tag supp d on {x,k} " | " @tag supp d on {x,k} in S "  " logicaland "  " @tag supp d on {x,k} notin R rbrace } }
-        lcol {"   "} lcol {@R{"difference"}}
-    row lcol {" "}             
-    row mcol { S " " cap " " R 
-              ^= {lbrace  @tag supp {d} on {x,k} " | " @tag supp d on {x,k} in S "  " logicaland "  " @tag supp d on {x,k} in R  rbrace }}
-        lcol {"   "} lcol {@R{"intersection"}}
-  }
-}
-
-@DP
+## @DP @Center
+## @Math {
+##   matrix  {
+##     row mcol {S cup tsub @tag " " R 
+##               ^= big bcup atop {0.7f @Font {{1 <= i <= n} /0.1c {1 <= j <= m}} } (s sub i circleplus r sub j ) }
+##         lcol {"   "} lcol {@R{"tag-union"}}
+##     row lcol {" "}             
+##               
+##     row mcol { S " " minus " " R
+##               ^=  {lbrace @tag supp d on {x,k} " | " @tag supp d on {x,k} in S "  " logicaland "  " @tag supp d on {x,k} notin R rbrace } }
+##         lcol {"   "} lcol {@R{"difference"}}
+##     row lcol {" "}             
+##     row mcol { S " " cap " " R 
+##               ^= {lbrace  @tag supp {d} on {x,k} " | " @tag supp d on {x,k} in S "  " logicaland "  " @tag supp d on {x,k} in R  rbrace }}
+##         lcol {"   "} lcol {@R{"intersection"}}
+##   }
+## }
+## 
+## @DP
 
 @DP @Center
 @Math {
@@ -244,20 +256,55 @@ the following operations are defined:
                                   not exists " " {d'} @R ": " @tag supp {d'} on {x,k} in S ) }
     row mcol {^ ^ logicalor " " (exists {d'}, {d''} @R ": " @tag supp {d'} on {x,k} in S "  " logicaland "  "
                                                          @tag supp {d''} on {x,k} in R "  " logicaland "  "
-                                 d = min({d'}, {d''}) rbrace}
+                                 d = sel sub x ({d'}, {d''})) rbrace}
+
     row lcol {" "}             
-              
-    row mcol { S " " minus " " R
-              ^=  {lbrace @tag supp d on {x,k} " | " @tag supp d on {x,k} in S "  " logicaland "  " @tag supp d on {x,k} notin R rbrace } }
-        lcol {"   "} lcol {@R{"difference"}}
+    row mcol { S " " cap tsub @tag " " R 
+              ^= {lbrace  @tag supp {d} on {x,k} " " bar ^ "   " 
+                                 (@tag supp d on {x,k} in S "  " logicaland "  "
+                                  not exists " " {w, d'} @R ": " @tag supp {d'} on {w,k} in R )}}
+        lcol {"   "} lcol {@R{"tag-intersection"}}
+    row mcol {^ ^ logicalor " " (@tag supp d on {x,k} in R "  " logicaland "  "
+                                  not exists " " {w, d'} @R ": " @tag supp {d'} on {w,k} in S ) }
+    row mcol {^ ^ logicalor " " (exists {d'}, {d''} @R ": " @tag supp {d'} on {x,k} in S "  " logicaland "  "
+                                                         @tag supp {d''} on {x,k} in R "  " logicaland "  "
+                                 d = sel sub x ({d'}, {d''}) ) rbrace}
+        
     row lcol {" "}             
-    row mcol { S " " cap " " R 
-              ^= {lbrace  @tag supp {d} on {x,k} " | " @tag supp d on {x,k} in S "  " logicaland "  " @tag supp d on {x,k} in R  rbrace }}
-        lcol {"   "} lcol {@R{"intersection"}}
+    row mcol { S " " setminus sub @tag " " R
+              ^=  {lbrace  @tag supp {d} on {x,k} " " bar ^ "   "
+                   @tag supp d on {x,k} in S "  " logicaland "  " not exists " " {d'} @R ": " @tag supp {d'} on {x,k} in R rbrace } }
+        lcol {"   "} lcol {@R{"tag-difference"}}
   }
 }
 
 @DP
+For a tag @M{@tag supp d on {x,k}} to be in the @I {tag-union} of
+@M{S} and @M{R} one of this must be true:
+
+@BL indent { @DisplayIndent } gap {0.5v}
+ @LI {@M{@tag supp d on {x,k} in S} and there's no tag of type 
+@M{x} referring to the expression @M{k} in @M{R}; }
+ @LI {@M{@tag supp d on {x,k} in R} and there's no tag of type 
+@M{x}  referring to the expression @M{k} in @M{S}; }
+ @LI {both @M{S} and @M{R} have a tag of type @M{x}  referring to the
+expression @M{k} and @M{d} is selected according the type @M{x}. }
+@EL
+
+For a tag @M{@tag supp d on {x,k}} to be in the @I {tag-intersection} of
+@M{S} and @M{R} one of this must be true:
+
+@BL indent { @DisplayIndent } gap {0.5v}
+ @LI {@M{@tag supp d on {x,k} in S} and there's no tag referring to
+the expression @M{k} in @M{R}, regardless the type; }
+ @LI {@M{@tag supp d on {x,k} in R} and there's no tag referring to
+the expression @M{k} in @M{S}, regardless the type; }
+ @LI {both @M{S} and @M{R} have a tag of type @M{x}  referring to the
+expression @M{k} and @M{d} is selected according the type @M{x}. }
+@EL
+
+@LP
+
 
 
 @LP

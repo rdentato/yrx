@@ -12,10 +12,41 @@
 ** express or implied warranty.
 */
 
+#ifndef YRX_H
+#define YRX_H
+
 #include "hul.h"
 #include "vec.h"
 
 #define state_t   uint16_t
+
+typedef uint32_t tag_t;
+
+#define TAG_NONE   0
+#define TAG_CE(n)  ('a'+n-1)
+#define TAG_CB(n)  ('A'+n-1)
+#define TAG_MRK    ('#')
+#define TAG_FIN    ('$')
+
+#define tag_code(t,n,d) (((t) << 16) | ((n) << 24) | (d))
+
+#define tag_delta(t) ((t) & 0xFFFF0000)
+#define tag_expr(t) (((t) >> 16) & 0x00FF)
+#define tag_type(t)  ((t) >> 24)
+
+
+void yrxParse(char **rxs, int rxn);
+void yrxErr(int errn, char *errmsg);
+
+void yrxNFAAddarc(state_t from, state_t to, char *l, uint32_t tag);
+void yrxNFAInit();
+void yrxNFAClose();
+
+
+/*****************************/
+
+
+
 typedef uint16_t *lbl_ptr;
 
 typedef struct {
@@ -27,12 +58,6 @@ typedef struct {
    uint32_t  yarcn;
 } Automata;
 
-
-typedef struct {
-  uint16_t delta;
-  uint8_t  type;
-  uint8_t  rx;
-} tag_t;
 
 typedef map_t *tagset;
 
@@ -50,7 +75,6 @@ state_t yrxNext(Automata *dfa, state_t st);
 
 Arc *yrxGetArc(Automata *dfa);
 Arc *yrxIsFinal(Automata *dfa, state_t st);
-Automata *yrxParse(char **rxs, int rxn);
 
 #define  yrxArcLabel(a)  lbl_str((a)->lbl)
 uint8_t *yrxArcTags  (Arc *a);
@@ -100,3 +124,5 @@ TagSet addtag(TagSet ts, Tag t);
 
 void yrxDump(Automata *dfa, uint8_t fmt);
 
+
+#endif /* YRX_H */
