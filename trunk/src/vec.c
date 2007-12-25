@@ -12,83 +12,11 @@
 ** express or implied warranty.
 */
 
+
 /*
-On Resizable arrays:
 
-@inproceedings{ brodnik99resizable,
-    author = "Andrej Brodnik and Svante Carlsson and Erik D. Demaine and J. Ian Munro and Robert Sedgewick",
-    title = "Resizable Arrays in Optimal Time and Space",
-    booktitle = "Workshop on Algorithms and Data Structures",
-    pages = "37-48",
-    year = "1999",
-    url = "citeseer.ist.psu.edu/brodnik99resizable.html"
-}
-
-@article{Demaine:2001:AAF,
-  author =       "Erik Demaine",
-  title =        "Algorithm Alley: Fast and Small Resizable Arrays",
-  journal =      "Doctor Dobb's Journal",
-  volume =       "26",
-  number =       "7",
-  pages =        "132--134",
-  month =        "jul",
-  year =         "2001",
-  CODEN =        "DDJOEB",
-  ISSN =         "1044-789X",
-  bibdate =      "Thu Jun 7 06:07:17 MDT 2001",
-  url =          "http://www.ddj.com/architect/184404698",
-}
-
-For a discussion on MSB calculation, see section 8 of:
-
-@misc{ bagwell-fast,
-  author = "Phil Bagwell",
-  title = "Fast Functional Lists, Hash-Lists, Deques and Variable Length Arrays",
-  url = "citeseer.ist.psu.edu/bagwell02fast.html" }
-
-On Randomized binary search tree:
-
-@misc{ martinez97randomized,
-  author = "C. Martinez and S. Roura",
-  title = "Randomized binary search trees",
-  text = "Conrado Martinez and Salvador Roura, Randomized binary search trees, in
-    Research report of Universitat Politcnica de Catalunya, LSI97 -8-R, 1997.",
-  year = "1997",
-  url = "citeseer.ist.psu.edu/martinez97randomized.html"
-}
-
-@article{ seidel96randomized,
-    author = "Raimund Seidel and Cecilia R. Aragon",
-    title = "Randomized Search Trees",
-    journal = "Algorithmica",
-    volume = "16",
-    number = "4/5",
-    pages = "464-497",
-    year = "1996",
-    url = "citeseer.ist.psu.edu/seidel96randomized.html"
-}
-
-On Random Number generator:
-
-@misc{ l'ecuyer99table,
-  author = "P. L'Ecuyer",
-  title = "A table of linear congruential generators of different sizes and good lattice
-    structure",
-  text = "P. L'Ecuyer. A table of linear congruential generators of different sizes
-    and good lattice structure. Mathematics of Computation, 68(225), 1999. To
-    appear.",
-  year = "1999",
-  url = "citeseer.ist.psu.edu/132363.html"
-}
-
-@misc{ entacher97collection,
-  author = "K. Entacher",
-  title = "A collection of selected pseudorandom number generators with linear structures",
-  text = "K. Entacher. A collection of selected pseudorandom number generators with
-    linear structures. Technical Report 97-1, ACPC -- Austrian Center for Parallel
-    Computation, University of Vienna, Austria, 1997. Available at: http://random.mat.sbg.ac.at/.",
-  year = "1997",
-  url = "citeseer.ist.psu.edu/entacher97collection.html" }
+= Content
+=========
 
 */
 
@@ -135,7 +63,7 @@ static uint16_t llog2(uint32_t x)
   #endif
 
   #ifndef LOG2_ASM  /* Make a binary search.*/
-  dbgmsg("Standard llog\n");
+  _dbgmsg("Standard llog\n");
   if (x & 0xFFFF0000) {l += 16; x >>= 16;}   /* 11111111111111110000000000000000 */
   if (x & 0xFF00)     {l += 8;  x >>= 8 ;}   /* 1111111100000000*/
   if (x & 0xF0)       {l += 4;  x >>= 4 ;}   /* 11110000*/
@@ -1164,3 +1092,91 @@ void blkUniq(uint8_t *b,uint8_t sz)
 }
 
 /**************************/
+/*
+= References
+============
+On Resizable arrays:
+
+@inproceedings{ brodnik99resizable,
+  author    = "Andrej Brodnik and Svante Carlsson and Erik D. Demaine
+               and J. Ian Munro and Robert Sedgewick",
+  title     = "Resizable Arrays in Optimal Time and Space",
+  booktitle = "Workshop on Algorithms and Data Structures",
+  pages     = "37-48",
+  year      = "1999",
+  url       = "citeseer.ist.psu.edu/brodnik99resizable.html"
+}
+
+@article{Demaine:2001:AAF,
+  author  =  "Erik Demaine",
+  title   =  "Algorithm Alley: Fast and Small Resizable Arrays",
+  journal =  "Doctor Dobb's Journal",
+  volume  =  "26",
+  number  =  "7",
+  pages   =  "132--134",
+  month   =  "jul",
+  year    =  "2001",
+  CODEN   =  "DDJOEB",
+  ISSN    =  "1044-789X",
+  bibdate =  "Thu Jun 7 06:07:17 MDT 2001",
+  url     =  "http://www.ddj.com/architect/184404698",
+}
+
+For a discussion on MSB calculation, see section 8 of:
+
+@misc{ bagwell-fast,
+  author = "Phil Bagwell",
+  title  = "Fast Functional Lists, Hash-Lists, Deques and
+            Variable Length Arrays",
+  url    = "citeseer.ist.psu.edu/bagwell02fast.html" }
+
+On Randomized binary search tree:
+
+@misc{ martinez97randomized,
+  author = "C. Martinez and S. Roura",
+  title  = "Randomized binary search trees",
+  text   = "Conrado Martinez and Salvador Roura, Randomized binary
+            search trees, in Research report of Universitat Politcnica
+            de Catalunya, LSI97 -8-R, 1997.",
+  year   = "1997",
+  url    = "citeseer.ist.psu.edu/martinez97randomized.html"
+}
+
+@article{ seidel96randomized,
+  author  = "Raimund Seidel and Cecilia R. Aragon",
+  title   = "Randomized Search Trees",
+  journal = "Algorithmica",
+  volume  = "16",
+  number  = "4/5",
+  pages   = "464-497",
+  year    = "1996",
+  url     = "citeseer.ist.psu.edu/seidel96randomized.html"
+}
+
+On Random Number generator:
+
+@misc{ l'ecuyer99table,
+  author = "P. L'Ecuyer",
+  title  = "A table of linear congruential generators of different 
+            sizes and good lattice structure",
+  text   = "P. L'Ecuyer. A table of linear congruential generators of
+            different sizes and good lattice structure. Mathematics of
+            Computation, 68(225), 1999. To appear.",
+  year   = "1999",
+  url    = "citeseer.ist.psu.edu/132363.html"
+}
+
+@misc{ entacher97collection,
+  author = "K. Entacher",
+  title  = "A collection of selected pseudorandom number generators
+            with linear structures",
+  text   = "K. Entacher. A collection of selected pseudorandom number
+            generators with linear structures. Technical Report 97-1,
+            ACPC -- Austrian Center for Parallel Computation,
+            University of Vienna, Austria, 1997.
+            Available at: http://random.mat.sbg.ac.at/.",
+  year   = "1997",
+  url    = "citeseer.ist.psu.edu/entacher97collection.html"
+}
+
+*/

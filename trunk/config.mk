@@ -18,10 +18,12 @@
 # Modify this file according your system before building yrx
 
 #### SYSTEM
-## Try to guess which system are we
+## Try to guess which system we running on
 
-SYS=$(shell uname | grep -i -c mingw)
-ifeq ($(SYS),1)
+# SYS=$(shell uname | grep -i -c mingw)
+# ifeq ($(SYS),1)
+
+ifeq ($(OSTYPE),msys)
 SYS=MINGW
 else
 SYS=LINUX
@@ -59,7 +61,7 @@ ifeq ($(SYS),MINGW)
 _EXE=.exe
 endif
 
-_LIB=.a
+_LIB=a
 _OBJ=o
 
 AR=ar rcu

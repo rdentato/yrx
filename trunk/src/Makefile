@@ -15,13 +15,19 @@
 
 include ../config.mk
 
-CFLAGS = $(DEBUG) -Wall $(LOG2_ASM) -O2 -g 
-LDFLAGS = -lprof
+CFLAGS = $(DEBUG) -I../utils/lua -Wall -O2 -g 
+LDFLAGS = -L ../utils/lua
 
-OFILES = yrxparse.$(_OBJ) yrxdump.$(_OBJ) vec.$(_OBJ) 
+LIBS   = -llua -lm
 
-yrx$(_EXE):	 $(OFILES) yrx.$(_OBJ) 
-	gcc -o yrx$(_EXE) yrx.$(_OBJ) $(OFILES) 
+OFILES = yrxparse.$(_OBJ)\
+         yrxdfa.$(_OBJ) 
+
+yrx$(_EXE):	$(OFILES) yrxmain.$(_OBJ) vec.$(_OBJ) 
+	gcc -o yrx$(_EXE) yrxmain.$(_OBJ) $(OFILES) vec.$(_OBJ) $(LDFLAGS) $(LIBS)
+
+vec.$(_OBJ): vec.c vec.h
+	gcc $(CFLAGS) $(LOG2_ASM) -c -o vec.$(_OBJ) vec.c
 
 vt$(_EXE):	vt.$(_OBJ) vec.$(_OBJ)
 	gcc $(CFLAGS) -o vt$(_EXE) vt.$(_OBJ) vec.$(_OBJ)
