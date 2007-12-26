@@ -315,22 +315,24 @@ typedef void **vpv_t ;
 
 /**********************/
 
-typedef ulv_t *bit_t;
-static uin32_t x__;
+typedef ulv_t bit_t;
 
 #define bitNew        ulvNew
 #define bitFree       ulvFree
 
-#define bitSet(b,n)   ulvSet(b, ((n)>>5), \
-                             ulvGet(b, (n)>> 5) | (1 << ((n) & 0x1F)))
-                             
-#define bitClr(b,n)   ulvSet(b, ((n)>>5), \
-                             ulvGet(b, (n)>> 5) & ~(1 << ((n) & 0x1F)))
+#define bitSet(b,n)  ((bit_t)ulvSet(b, ((n)>>5), \
+                             ulvGet(b, (n)>> 5) | (1 << ((n) & 0x1F))))
+
+#define bitClr(b,n)  ((bit_t)ulvSet(b, ((n)>>5), \
+                             ulvGet(b, (n)>> 5) & ~(1 << ((n) & 0x1F))))
 
 #define bitTest(b,n)  (ulvGet(b, (n)>>5) & (1 << ((n) & 0x1F)))
-#define bitFlip(b,n)  ulvSet(b, ((n)>>5), \
-                             ulvGet(b, (n)>> 5) ^ (1 << ((n) & 0x1F)))
 
+#define bitFlip(b,n) ((bit_t)ulvSet(b, ((n)>>5), \
+                             ulvGet(b, (n)>> 5) ^ (1 << ((n) & 0x1F))))
+
+bit_t bitNeg(bit_t b, uint32_t m);
+                              
 /**********************/
 
 

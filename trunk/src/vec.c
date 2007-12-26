@@ -1074,6 +1074,15 @@ void blkUniq(uint8_t *b,uint8_t sz)
   blkCnt(b) = (uint16_t)((p-b)/sz);
 }
 
+bit_t bitNeg(bit_t b,uint32_t m)
+{
+  m = 1 + (m >> 5);
+  while (m--) {
+    ulvSet(b, m, ulvGet(b, m) ^ 0xFFFFFFFF);
+  };
+  return b;
+}                     
+                     
 /**************************/
 /*
 = References

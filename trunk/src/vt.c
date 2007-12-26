@@ -32,7 +32,7 @@ int arccmp(Arc *a, Arc *b)
   return t;
 }
 
-#if 1
+#if 0
 
 uint32_t mapdepth(mapNode *p)
 {
@@ -143,7 +143,7 @@ int main(void)
 
   srand(time(0));
 
- #if 1
+ #if 0
   TSTSECTION("Basic vec");
 
   TSTGROUP("Creating vectors");
@@ -385,7 +385,7 @@ int main(void)
  #endif
 
   /**********************************************************************/
- #if 1
+ #if 0
   TSTSECTION("Stack discipline");
 
   TSTGROUP("Creating stacks");
@@ -456,7 +456,7 @@ int main(void)
   TSTWRITE("\n");
  #endif
 
- #if 1
+ #if 0
   {
   mapNode *pn,*qn;
   map_t v;
@@ -688,7 +688,7 @@ int main(void)
   }
  #endif
 
- #if 1
+ #if 0
   { int c;
     TSTSECTION("Memory buffer");
     TSTGROUP("Creating buffer");
@@ -709,7 +709,7 @@ int main(void)
   }
  #endif
 
- #if 1
+ #if 0
   TSTSECTION("Bitmaps");
   TSTGROUP("Creating bmps");
 
@@ -834,7 +834,7 @@ int main(void)
  }
  #endif
 
- #if 1
+ #if 0
  {
   uint32_t *b;
   uint16_t *c;
@@ -925,6 +925,26 @@ int main(void)
 
   b = vpvFree(b);
   TST("vpv freed",(b == NULL));
+ }
+ #endif
+ 
+ #if 1
+ {
+  TSTSECTION("Bitmaps");
+  TSTGROUP("Creating bmps");
+  bit_t v;
+  v = bitNew();
+
+  for (k=0; k < 1000; k+=2) {
+    v = bitSet(v,k);
+  }
+  TST("Bitmap set",(bitTest(v,4) && !bitTest(v,5)));
+  v = bitClr(v,4); v = bitFlip(v,5);
+  TST("Bitmap clr and flip",(!bitTest(v,4) && bitTest(v,5)));
+  v = bitNeg(v,999);
+  TST("Bitmap neg",(bitTest(v,4) && !bitTest(v,5)));
+  
+  v = bitFree(v);
  }
  #endif
   TSTDONE();
