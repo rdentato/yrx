@@ -14,9 +14,8 @@
 
 #include "yrx.h"
 
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
+
+
 
 void yrxNFAInit()
 {}

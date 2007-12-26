@@ -656,7 +656,14 @@ actual labels. Infact we have:
 {Given a regular expression @M{r}, the corresponding {@Sym epsilon}-free
 NFA has @M{O(bar r bar)} states.
 @LP
-@Proof Yet to be figured out.  @EndProof
+@Proof Yet to be figured out. @EndProof
+}
+
+@LD @Proposition
+{Given a regular expression @M{r}, each arc in the corresponding
+{@Sym epsilon}-NFA can have 1 tag at maximum with displacement 0.
+@LP
+@Proof By contstruction of the {@Sym epsilon}-NFA. @EndProof
 }
 
 Note that in the construction of the terms @M{(X)*}
@@ -672,7 +679,6 @@ the length of the capture will be 3, exactly as if we had
 written  @M{a(b*)c}.
 
 @End @Section
-
     
 @Section
 @Title { From NFA to DFA }
