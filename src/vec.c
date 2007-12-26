@@ -929,25 +929,6 @@ uint8_t *blkNew(uint8_t ty)
   return NULL;
 }
 
-#if 0
-uint16_t blkCnt(uint8_t *b)
-{
-   blk_t bl;
-
-   if (b == NULL) return 0;
-   bl = blkNodePtr(b);
-   return bl->cnt;
-}
-
-uint16_t blkSlt(uint8_t *b)
-{
-   blk_t bl;
-
-   bl = blkNodePtr(b);
-   return bl->slt;
-}
-#endif
-
 static blk_t blksetsize(blk_t bl, uint16_t ndx, uint8_t sz)
 {
   uint16_t t;
@@ -1027,11 +1008,13 @@ uint8_t *blkSetPtr(uint8_t *b, uint16_t ndx, void *val)
 
 static void *blkget(uint8_t *b, uint16_t ndx, uint8_t sz)
 {
-  blk_t bl = blkNodePtr(b);
-
-  if (ndx > 0xFFF0)  vecErr(545,"ulv index out of range");
-  if (ndx > bl->cnt) return NULL;
-  b = bl->elem + ndx * sz;
+  blk_t bl;
+  if (b != NULL) {
+    bl = blkNodePtr(b);
+    if (ndx > 0xFFF0)  vecErr(545,"ulv index out of range");
+    if (ndx > bl->cnt) return NULL;
+    b = bl->elem + ndx * sz;
+  }
   return b;
 }
 

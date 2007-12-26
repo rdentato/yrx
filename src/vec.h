@@ -64,17 +64,17 @@ void     *vecSet        (vec_t v, uint32_t ndx, void *elem);
 void     *vecFreeClean  (vec_t v, vecCleaner cln);
 uint32_t  vecSize       (vec_t v);
 
-#define vecFree(v)         vecFreeClean(v,NULL)
+#define   vecFree(v)    vecFreeClean(v,NULL)
 
 #define vecGetVal(v,n,t)   (*((t *)vecGet(v,n)))
 #define vecSetVal(v,n,e,t) do { t e__ = e; vecSet(v,n,&e__);} while(0)
 
-#define vecNxtNdx(v)       ((v)->cur_w == VEC_NULLNDX? 0 : (v)->cur_w + 1)
+#define vecNxtNdx(v)  ((v)->cur_w == VEC_NULLNDX? 0 : (v)->cur_w + 1)
 
-#define vecNext(v)         vecGet(v, vecNxtNdx(v))
-#define vecPrev(v)         (((v)->cur_w == 0 || (v)->cur_w == VEC_NULLNDX) \
-                               ? NULL \
-                               : vecGet(v,(v)->cur_w - 1))
+#define vecNext(v)     vecGet(v, vecNxtNdx(v))
+#define vecPrev(v)     (((v)->cur_w == 0 || (v)->cur_w == VEC_NULLNDX) \
+                           ? NULL \
+                           : vecGet(v,(v)->cur_w - 1))
 
 #define vecAdd(v,e)    vecSet(v, vecCnt(v), e)
 
@@ -243,9 +243,6 @@ void blkUniq(uint8_t *b,uint8_t sz);
 #define blkCnt(b)     (blkNodePtr(b)->cnt)
 #define blkSlt(b)     (blkNodePtr(b)->slt)
 
-/*uint16_t   blkCnt    (uint8_t *b);*/
-/*uint16_t   blkSlt    (uint8_t *b);*/
-
 /**********************/
 
 typedef uint32_t *ulv_t ;
@@ -317,6 +314,25 @@ typedef void **vpv_t ;
 #define vpvAdd(b,v)   vpvSet(b, vpvCnt(b), v)
 
 /**********************/
+
+typedef ulv_t *bit_t;
+static uin32_t x__;
+
+#define bitNew        ulvNew
+#define bitFree       ulvFree
+
+#define bitSet(b,n)   ulvSet(b, ((n)>>5), \
+                             ulvGet(b, (n)>> 5) | (1 << ((n) & 0x1F)))
+                             
+#define bitClr(b,n)   ulvSet(b, ((n)>>5), \
+                             ulvGet(b, (n)>> 5) & ~(1 << ((n) & 0x1F)))
+
+#define bitTest(b,n)  (ulvGet(b, (n)>>5) & (1 << ((n) & 0x1F)))
+#define bitFlip(b,n)  ulvSet(b, ((n)>>5), \
+                             ulvGet(b, (n)>> 5) ^ (1 << ((n) & 0x1F)))
+
+/**********************/
+
 
 #endif  /* VEC_H */
 

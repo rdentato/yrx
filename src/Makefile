@@ -16,9 +16,9 @@
 include ../config.mk
 
 CFLAGS = $(DEBUG) -I../utils/lua -Wall -O2 -g 
-LDFLAGS = -L ../utils/lua
 
-LIBS   = -llua -lm
+# LDFLAGS = -L ../utils/lua
+# LIBS   = -llua -lm
 
 OFILES = yrxparse.$(_OBJ)\
          yrxdfa.$(_OBJ) 

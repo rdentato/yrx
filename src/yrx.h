@@ -36,12 +36,10 @@ typedef uint32_t tag_t;
 
 
 void yrxParse(char **rxs, int rxn);
-void yrxErr(int errn, char *errmsg);
 
 void yrxNFAAddarc(state_t from, state_t to, char *l, uint32_t tag);
 void yrxNFAInit();
 void yrxNFAClose();
-
 
 /*****************************/
 

@@ -17,6 +17,7 @@
 
 #define UID 500
 
+
 /**************************************************/
 static const char *cur_rx  = NULL;
 static int         cur_pos = 0;
@@ -38,13 +39,23 @@ static ucv_t buf_chk(int n)
   return buf;
 }
 
+/**************************************************/
+
+static void parse_err(int errn, char *errmsg)
+{
+  err(UID + errn,"%s\n%5d: %s\n%*s\n", errmsg,
+                                cur_nrx, cur_rx, cur_pos+8,"*");
+}
+
+/**************************************************/
+
 static state_t nextstate(void);
 static uint16_t nstates = 1;
 
 static state_t nextstate(void)
 {
   if (nstates == 65500)
-    yrxErr(2,"More than 65500 states!!");
+    parse_err(2,"More than 65500 states!!");
   return ++nstates ;
 }
 
@@ -124,7 +135,7 @@ static char* escaped(void)
   if (c == '\\') {
     c = nextch();
     c = nextch();
-    if (c < 0) yrxErr (3,"Unexpected character (\\)");
+    if (c < 0) parse_err (3,"Unexpected character (\\)");
     if (c == 'x') {
       c = peekch(0);
       if (isxdigit(c)) {
@@ -162,7 +173,7 @@ static char *cclass(void)
     while (c != ']') {
       c = nextch();
       if (c == '\\') c = (nextch(), 0);
-      if (c < 0) yrxErr(4,"Unterminated class");
+      if (c < 0) parse_err(4,"Unterminated class");
     }
     l = str_set(j, cur_pos);
   }
@@ -187,7 +198,7 @@ static state_t term(state_t state)
   if ( c == '(') {
     c = nextch();
     ncapt = capt++;
-    if (ncapt >= MAXCAPTURES) yrxErr(5,"Too many captures");
+    if (ncapt >= MAXCAPTURES) parse_err(5,"Too many captures");
 
     start = nextstate();
 
@@ -202,7 +213,7 @@ static state_t term(state_t state)
       yrxNFAAddarc(t1,alt,"",TAG_NONE);
       t1 = expr(start);
     }
-    if (c != ')') yrxErr(6,"Unclosed capture");
+    if (c != ')') parse_err(6,"Unclosed capture");
     yrxNFAAddarc(t1,alt,"",TAG_NONE);
 
     /* state -> (1)
@@ -239,7 +250,7 @@ static state_t term(state_t state)
     switch (peekch(1)) {
       case 'E' :  c = nextch(); c = nextch();
                   l = escaped();
-                  if (l == NULL) yrxErr(7,"Invalid escape sequence");
+                  if (l == NULL) parse_err(7,"Invalid escape sequence");
                   esc = l[1];  /*** TODO: Need to properly handle \x and \0 ***/
                   if (esc == '\\') esc = l[2];
                   return state;
@@ -333,7 +344,7 @@ static state_t parse(const char *rx,uint16_t nrx)
 
   state =  expr(1);
 
-  if (peekch(0) != -1) yrxErr(8,"Unexpected character ");
+  if (peekch(0) != -1) parse_err(8,"Unexpected character ");
 
   yrxNFAAddarc(state, 0, "", tag_code(TAG_FIN, cur_nrx,0));
 
@@ -345,7 +356,7 @@ void yrxParse(char **rxs, int rxn)
   int i;
 
   if (rxn < 1 || 250 < rxn)
-    yrxErr(1,"Invalid number of argument");
+    parse_err(1,"Invalid number of argument");
     
   yrxNFAInit();
 
@@ -354,14 +365,8 @@ void yrxParse(char **rxs, int rxn)
   }
   
   yrxNFAClose();
+  
+  buf = ucvFree(buf);
 }
 
-void yrxErr(int errn, char *errmsg)
-{
-  if (cur_nrx > 0)
-    err(UID + errn, "ERROR: %s\n%5d: %s\n%*s\n", errmsg,
-                                cur_nrx, cur_rx, cur_pos+8,"*");
-  else 
-    err(UID + errn, "ERROR: %s\n", errmsg);
-}
 
