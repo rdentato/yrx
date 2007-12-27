@@ -14,8 +14,10 @@
 
 #include "yrx.h"
 
+/*****/
 
 
+/*****/
 
 void yrxNFAInit()
 {}

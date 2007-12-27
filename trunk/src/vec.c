@@ -863,6 +863,19 @@ uint32_t blkPopInt(uint8_t *b, uint8_t ty)
 /**************************/
 
 
+static bit_t bittrim(bit_t b)
+{
+  uint32_t k;
+  
+  if (b != NULL) {
+    k = bitCnt(b);
+    while (k > 0 && b[k-1] == 0) k--;
+    bitCnt(b) = k;
+  }
+  
+  return b;
+}
+
 bit_t bitNeg(bit_t b,uint32_t max) /* max = highest number in the set */
 {
   uint32_t k;
@@ -880,7 +893,27 @@ bit_t bitNeg(bit_t b,uint32_t max) /* max = highest number in the set */
   }
   
   return b;
-}                     
+}              
+
+
+bit_t bitDup(bit_t b)
+{
+   bit_t newbit = NULL;
+   uint32_t k;
+   
+   if (b == NULL) return NULL;
+   b = bittrim(b);
+    
+   newbit = bitNew();
+   if (newbit &&) {
+     k = bitCnt(b);
+     ulvSet((ulv_t)b, k, 0);
+     while ( k-- > 0) {
+       newbit[k] = b[k];
+     }
+   }
+   return newbit;
+}       
                      
 /**************************/
 /*
