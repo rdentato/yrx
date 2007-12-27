@@ -249,6 +249,9 @@ typedef uint16_t *usv_t ;
 #define usvAppend(a,b)  (usv_t)blkAppend((uint8_t *)a,(uint8_t *)b,blkU16sz)
 #define usvSort(b)      qsort(b, usvCnt(b), blkU16sz, blkU16cmp)
 #define usvUniq(b)      blkUniq((uint8_t *)b, blkU16sz)
+#define usvPush(b,v)    ((bit_t)blkPushInt((uint8_t *)b,v,blkU16))
+#define usvPop(b)       ((uint16_t)blkPopInt((uint8_t *)b,blkU16))
+#define usvTop(b)       ((uint16_t)blkTopInt((uint8_t *)b,blkU16))
 
 /**********************/
 
@@ -267,6 +270,9 @@ typedef uint8_t *ucv_t ;
 #define ucvAppend(a,b)  (ucv_t)blkAppend((uint8_t *)a,(uint8_t *)b,blkCHRsz)
 #define ucvSort(b)      qsort(b, ucvCnt(b), blkCHRsz, blkCHRcmp)
 #define ucvUniq(b)      blkUniq((uint8_t *)b, blkCHRsz)
+#define ucvPush(b,v)    ((bit_t)blkPushInt((uint8_t *)b,v,blkU16))
+#define ucvPop(b)       ((uint16_t)blkPopInt((uint8_t *)b,blkU16))
+#define ucvTop(b)       ((uint16_t)blkTopInt((uint8_t *)b,blkU16))
 
 
 /**********************/

@@ -34,16 +34,13 @@ typedef uint32_t tag_t;
 #define tag_expr(t) (((t) >> 16) & 0x00FF)
 #define tag_type(t)  ((t) >> 24)
 
-
 void yrxParse(char **rxs, int rxn);
 
-void yrxNFAAddarc(state_t from, state_t to, char *l, uint32_t tag);
 void yrxNFAInit();
+void yrxNFAAddarc(state_t from, state_t to, char *l, tag_t tag);
 void yrxNFAClose();
 
 /*****************************/
-
-
 
 typedef uint16_t *lbl_ptr;
 
