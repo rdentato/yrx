@@ -89,7 +89,7 @@ static char *str_set(int i,int j)
 
   buf = buf_chk(j-i+2);
   if (buf != NULL) {
-    buf[n++] = '@';
+    /*buf[n++] = '@';*/
     while(i < j) {
       buf[n++] = cur_rx[i++];
     }

@@ -160,6 +160,7 @@ map_t    mapNew         (uint16_t elemsz, int (*cmp)());
 map_t    mapFreeClean   (map_t m, vecCleaner cln);
 void    *mapAdd         (map_t m, void *e);
 void     mapDel         (map_t m, void *e);
+
 void    *mapGet         (map_t m, void *e);
 void    *mapFirst       (map_t m);
 void    *mapNext        (map_t m);
