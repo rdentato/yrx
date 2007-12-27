@@ -315,10 +315,8 @@ static state_t term(state_t state)
       default  :  yrxNFAAddarc(state, to, l, TAG_NONE);
                   break;
     }
-
     return  to;
   }
-
   return 0;
 }
 

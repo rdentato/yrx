@@ -599,94 +599,6 @@ int main(void)
   }
  #endif
 
- #if 0
-  {
-  setNode *p;
-  Arc     *b;
-  set     *tb;
-
-  TSTSECTION("Set (RBST)");
-
-  TSTGROUP("Creating set ");
-
-  tb = setNew(sizeof(Arc),arccmp);
-  TST("New set", (tb != NULL && setCnt(tb) == 0));
-
-  TSTNOTE(" Creating the following tree ");
-  TSTNOTE("  (12 (10 (9) (11)) (13 (15) (14)))");
-
-  a.from = 12; a.to = 19;
-  b = setAdd(tb,&a);
-  TST("Added an element", (b != &a && setCnt(tb) == 1 && a.from == b->from));
-  TSTONFAIL("Count = %d",setCnt(tb));
-
-  a.from = 10; a.to = 19;
-  b = setAdd(tb,&a);
-  TST("Added an element", (b != &a && setCnt(tb) == 2 && a.from == b->from));
-  TSTONFAIL("Count = %d",setCnt(tb));
-
-  a.from = 14; a.to = 19;
-  b = setAdd(tb,&a);
-  TST("Added an element", (b != &a && setCnt(tb) == 3 && a.from == b->from));
-
-  TSTWRITE("#\n# ");
-  setTree(tb->root);
-  TSTWRITE("\n#\n");
-
-  a.from =  9; b = setAdd(tb,&a);
-  a.from = 11; b = setAdd(tb,&a);
-  a.from = 13; b = setAdd(tb,&a);
-  a.from = 15; b = setAdd(tb,&a);
-
-  TSTWRITE("#\n# ");
-  setTree(tb->root);
-  TSTWRITE("\n#\n");
-
-  TSTGROUP("Rotations ");
-
-  tb->root = rotLeft(tb->root);
-
-  TSTNOTE("After a left rotation:");
-  TSTWRITE("#\n# "); setTree(tb->root); TSTWRITE("\n#\n");
-
-  tb->root = rotRight(tb->root);
-
-  TSTNOTE("After a right rotation:");
-  TSTWRITE("#\n# "); setTree(tb->root); TSTWRITE("\n#\n");
-
-  TSTGROUP("Deleting elements");
-
-  a.from = 10;
-  setDel(tb,&a);
-  TSTWRITE("#\n# "); setTree(tb->root); TSTWRITE("\n#\n");
-
-  a.from = 12;
-  setDel(tb,&a);
-  TSTWRITE("#\n# "); setTree(tb->root); TSTWRITE("\n#\n");
-
-  tb = setFree(tb);
-
-  }
- #endif
-
- #if 0
-  {
-    arr a;
-
-    TSTSECTION("Multitype array");
-    TSTGROUP("Creating array");
-    a = arrNew();
-
-    arrSet(a,1,INT,-432);
-
-    TST("Setting Integers",(arrGet(a,1,INT) == -432));
-
-    arrSet(a,4,STR,"pippo");
-
-    TST("Setting strings",(strcmp(arrGet(a,4,STR),"pippo") == 0));
-    a = arrFree(a);
-  }
- #endif
 
  #if 0
   { int c;
@@ -709,130 +621,6 @@ int main(void)
   }
  #endif
 
- #if 0
-  TSTSECTION("Bitmaps");
-  TSTGROUP("Creating bmps");
-
-  v = bmpNew();
-
-  for (k=0; k < 1000; k+=2) {
-    bmpSet(v,k);
-  }
-  TST("Bitmap set",(bmpTest(v,4) && !bmpTest(v,5)));
-  bmpClr(v,4); bmpFlip(v,5);
-  TST("Bitmap clr and flip",(!bmpTest(v,4) && bmpTest(v,5)));
-  bmpFree(v);
- #endif
-
- #if 0
- {
-   lst_t l;
-
-   TSTSECTION("Lists");
-   TSTGROUP("Creating a list");
-   l = lstNew(sizeof(Arc));
-
-   for (k = 0; k < 100; k++) {
-     a.from = k; a.to = 2 *k;
-     lstInsHead(l,&a);
-   }
-
-   TST("List with 100 elements in order",(lstLen(l) == 100));
-   TSTONFAIL("Count = %d",lstLen(l));
-
-   p = lstFirst(l);
-   TST("Access first",(p->from == 99));
-   TSTONFAIL("First from = %d",p->from);
-
-   p = lstLast(l);
-   TST("Access last",(p->from == 0));
-   TSTONFAIL("First from = %d",p->from);
-
-   p = lstFirst(l);
-   k = 0;
-   while (p!=NULL) {
-      k += p->from;
-      p = lstNext(l,p);
-   }
-   TST("lstNext()",(k == (99*100/2)));
-
-   l = lstFree(l);
-
-   l = lstNew(sizeof(Arc));
-
-   for (k = 0; k < 100; k++) {
-     a.from = k; a.to = 2 *k;
-     p = lstInsTail(l,&a);
-   }
-
-   TST("List with 100 elements in reverse order",(lstLen(l) == 100));
-   TSTONFAIL("Count = %d",lstLen(l));
-
-   p = lstFirst(l);
-   TST("Access first",(p->from == 0));
-   TSTONFAIL("First from = %d",p->from);
-
-   p = lstLast(l);
-   TST("Access last",(p->from == 99));
-   TSTONFAIL("First from = %d",p->from);
-
-   p = lstFirst(l);
-   k = 0;
-   while (p!=NULL) {
-      k += p->from;
-      p = lstNext(l,p);
-   }
-   TST("lstNext()",(k == (99*100/2)));
-
-   l = lstFree(l);
- }
- #endif
-
- #if 0
- {
-  stp_t pool;
-  char *p;
-  char *q;
-  char  st[10];
-
-   TSTSECTION("Strings pool");
-   TSTGROUP("Creating a pool");
-  pool = stpNew();
-
-  p = stpAdd(pool,"pippo");
-
-  TST("Added a string",(stpCnt(pool) == 1));
-
-  q = stpGet(pool,"pippo");
-  TST("Get a string",(p == q && strcmp(p,"pippo") == 0));
-
-  st[2] = 0;
-  for (j='0'; j<255; j++) {
-    st[1] = (char)j;
-    for (k=' '; k<256; k++) {
-      st[0] = (char)k;
-      p = stpAdd(pool,st);
-    }
-  }
-  TSTNOTE("Count: %u\n",stpCnt(pool));
-
-  p = stpGet(pool,"pippo");
-  if (p != NULL) TSTNOTE("pippo: %s\n",p);
-  p = stpGet(pool,"aa");
-  if (p != NULL) TSTNOTE("aa: %s\n",p);
-
-  p = stpDel(pool,"aa");
-  p = stpGet(pool,"aa");
-  TST("Deleted aa",(p== NULL));
-
-  p = stpDel(pool,"fU");
-  p = stpDel(pool,"w}");
-  TST("Deleted w}",(p == NULL));
-  p = stpGet(pool,"w}");
-  TST("Deleted w}",(p== NULL));
-  stpFree(pool);
- }
- #endif
 
  #if 0
  {
@@ -897,6 +685,39 @@ int main(void)
  }
  #endif
 
+ #if 1
+ {
+  ulv_t b;
+  uint32_t k;
+
+  TSTSECTION("uint blocks (2)");
+  TSTGROUP("Using a block as stack");
+
+  b = ulvNew();
+
+  TST("Created ulv",(b != NULL && ulvCnt(b)==0 && ulvSlt(b)==1));
+
+  b = ulvPush(b,103);
+  TST("Pushed a value (103)",(ulvCnt(b)==1 && ulvGet(b,0)==103));
+  
+  b = ulvPush(b,105);
+  TST("Pushed a value (105)",(ulvCnt(b)==2 && ulvGet(b,1)==105));
+  
+  k = ulvPop(b);
+  TST("Popped a value",(ulvCnt(b)==1 && ulvGet(b,0)==103 && (k==105)));
+
+  k = ulvPop(b);
+  TST("Popped again",(ulvCnt(b)==0 && (k==103)));
+  
+  k = ulvPop(b);
+  TST("Popped from an empty stack",(ulvCnt(b)==0 && (k==0)));
+    
+  b = ulvFree(b);
+  TST("ulv freed",(b == NULL));
+
+ }
+ #endif
+ 
  #if 0
  {
   vpv_t b;
@@ -932,21 +753,29 @@ int main(void)
  {
   TSTSECTION("Bitmaps");
   TSTGROUP("Creating bmps");
+  
   bit_t v;
+  
   v = bitNew();
+  TST("Created bitset",(v != NULL ));
 
   for (k=0; k < 1000; k+=2) {
     v = bitSet(v,k);
   }
+  
   TST("Bitmap set",(bitTest(v,4) && !bitTest(v,5)));
+  
   v = bitClr(v,4); v = bitFlip(v,5);
   TST("Bitmap clr and flip",(!bitTest(v,4) && bitTest(v,5)));
   v = bitNeg(v,999);
   TST("Bitmap neg",(bitTest(v,4) && !bitTest(v,5)));
+  TST("Never set bit",(!bitTest(v,4000) && !bitTest(v,1000)));
   
   v = bitFree(v);
  }
  #endif
+ 
+ 
   TSTDONE();
   exit(0);
 }

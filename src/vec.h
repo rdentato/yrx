@@ -168,42 +168,6 @@ uint32_t mapMaxDepth    (map_t m);
 
 #define mapFree(m) mapFreeClean(m,NULL)
 
-/**********************/
-
-#define stp_t map_t
-
-stp_t stpNew  (void);
-void *stpFree (stp_t pool);
-char *stpAdd  (stp_t pool, char *str);
-char *stpGet  (stp_t pool, char *str);
-char *stpDel  (stp_t pool, char *str);
-
-#define stpCnt  mapCnt
-
-/**********************/
-
-#define bmp_t    vec_t
-
-#define bmpBlkSize 4
-#define bmpBlkMask (bmpBlkSize-1)
-
-typedef uint32_t  bmpBlk[bmpBlkSize];
-
-uint32_t bmpSet   (bmp_t b,uint32_t ndx);
-uint32_t bmpClr   (bmp_t b,uint32_t ndx);
-uint32_t bmpTest  (bmp_t b,uint32_t ndx);
-uint32_t bmpFlip  (bmp_t b,uint32_t ndx);
-
-#define bmpNew()  vecNew(sizeof(bmpBlk))
-#define bmpFree   vecFree
-#define bmpCnt    vecCnt
-
-typedef enum {
-  bmp_AND = 1, bmp_OR, bmp_NEG, bmp_ZRO, bmp_SET, bmp_SUB
-} bmp_op;
-
-void bmpOp(bmp_t a, bmp_t b, bmp_op op);
-
 
 /**********************/
 
@@ -222,6 +186,9 @@ uint32_t   blkGetInt (uint8_t *b, uint16_t ndx, uint8_t ty);
 void*      blkGetPtr (uint8_t *b, uint16_t ndx);
 uint8_t   *blkFree   (uint8_t *b);
 uint8_t   *blkAppend (uint8_t *b, uint8_t *a, uint8_t sz);
+uint8_t   *blkPushInt(uint8_t *b, uint32_t val, uint8_t ty);
+uint32_t   blkTopInt (uint8_t *b, uint8_t  ty);
+uint32_t   blkPopInt (uint8_t *b, uint8_t  ty);
 
 #define blkCHR 1
 #define blkU16 2
@@ -243,6 +210,7 @@ void blkUniq(uint8_t *b,uint8_t sz);
 #define blkCnt(b)     (blkNodePtr(b)->cnt)
 #define blkSlt(b)     (blkNodePtr(b)->slt)
 
+
 /**********************/
 
 typedef uint32_t *ulv_t ;
@@ -260,6 +228,9 @@ typedef uint32_t *ulv_t ;
 #define ulvAppend(a,b)  (ulv_t)blkAppend(a,b,blkU32sz)
 #define ulvSort(b)      qsort(b, ulvCnt(b), blkU32sz, blkU32cmp)
 #define ulvUniq(b)      blkUniq((uint8_t *)b, blkU32sz)
+#define ulvPush(b,v)    ((bit_t)blkPushInt((uint8_t *)b,v,blkU32))
+#define ulvPop(b)       ((uint32_t)blkPopInt((uint8_t *)b,blkU32))
+#define ulvTop(b)       ((uint32_t)blkTopInt((uint8_t *)b,blkU32))
 
 /**********************/
 
@@ -331,7 +302,7 @@ typedef ulv_t bit_t;
 #define bitFlip(b,n) ((bit_t)ulvSet(b, ((n)>>5), \
                              ulvGet(b, (n)>> 5) ^ (1 << ((n) & 0x1F))))
 
-bit_t bitNeg(bit_t b, uint32_t m);
+bit_t bitNeg(bit_t b, uint32_t max);
                               
 /**********************/
 
