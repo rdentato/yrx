@@ -668,247 +668,6 @@ void *mapFirst(map_t m)
   return mapNext(m);
 }
 
-/******************************/
-
-static int stpCmp(char *a, char **b)
-{
-  return strcmp(a,*b);
-}
-
-stp_t stpNew()
-{
-  return mapNew(sizeof(char *),stpCmp);
-}
-
-static void stpfree(void *e)
-{
-  char **s = e;
-  _dbgmsg("-- %s\n",*s);
-  if (s != NULL) free(*s);
-}
-
-void *stpFree(stp_t pool)
-{
-  return mapFreeClean(pool,stpfree);
-}
-
-char *stpAdd(stp_t pool, char *str)
-{
-  char **s;
-
-  s = mapAdd(pool,&str);
-
-  if (*s == str) {
-    *s = strdup(str);
-  }
-
-  return *s;
-}
-
-char *stpGet(stp_t pool, char *str)
-{
-  char **s;
-  s = mapGet(pool, str);
-  return s == NULL? NULL : *s;
-}
-
-char *stpDel(stp_t pool, char *str)
-{
-  mapNode  *node;
-  mapNode **parent;
-
-  parent = &(mapRoot(pool));
-
-  node = mapsearch(pool, &parent, str);
-
-  if (node != NULL) {
-    free(node->elem);
-    mapdelnode(pool,parent);
-  }
-  return NULL;
-}
-
-
-/****************/
-
-
-static uint32_t *bmpword(bmp_t b, uint32_t ndx, uint32_t *bit)
-{
-  uint32_t k;
-  bmpBlk *p = NULL;
-
-  static uint32_t  last_ndx = VEC_NULLNDX;
-  static uint32_t *last_ptr = NULL;
-
- *bit = 1 << (ndx & 0x1F);  /* ndx % 32 */
-
-  if (ndx != last_ndx) {
-
-    if (ndx >= b->cnt)
-      b->cnt = ndx+1;
-
-    ndx = ndx >> 5;           /* ndx / 32 */
-    k   = ndx & 0x03;         /* ndx % 4  */
-    ndx = ndx >> 2;           /* ndx / 4 */
-
-    p = vecGet(b, ndx);
-    if (p != NULL) {
-      last_ndx = ndx;
-      last_ptr = &((*p)[k]);
-    }
-    else {
-      last_ndx = VEC_NULLNDX;
-      last_ptr = NULL;
-    }
-  }
-  return last_ptr;
-}
-
-uint32_t bmpSet(bmp_t b,uint32_t ndx)
-{
-  uint32_t *p,bit;
-
-  if ((p = bmpword(b,ndx,&bit)) != NULL)
-    *p |= bit;
-  return 1;
-}
-
-uint32_t bmpClr(bmp_t b,uint32_t ndx)
-{
-  uint32_t *p,bit;
-
-  if ((p = bmpword(b,ndx,&bit)) != NULL)
-    *p &= ~bit;
-  return 0;
-}
-
-uint32_t bmpTest(bmp_t b,uint32_t ndx)
-{
-  uint32_t *p, bit;
-
-  if ((p = bmpword(b, ndx,&bit)) != NULL)
-    bit &= *p;
-  return (bit != 0);
-}
-
-uint32_t bmpFlip(bmp_t b,uint32_t ndx)
-{
-  uint32_t *p,bit;
-
-  if ((p = bmpword(b, ndx, &bit)) != NULL) {
-   *p ^= bit;
-    bit &= *p;
-  }
-  return bit;
-}
-
-/***** Block operations */
-/* TODO: TO BE FIXED, the block operations are broken! */
-bmp_t bmpDup(bmp_t a)
-{
-
-  bmp_t b;
-  uint32_t *p;
-  uint32_t *q;
-  uint32_t  i;
-
-  b = bmpNew();
-  i = bmpCnt(a);
-  bmpCnt(b) = i;
-  if (i > 0) {
-    i = (i / 32) / 4;
-    do {
-      p = vecGet(a,i);
-      q = vecGet(b,i);
-      memcpy(q,p,sizeof(bmpBlk));
-    } while (i-- > 0);
-  }
-  return b;
-}
-
-
-void bmpAnd(bmp_t a, bmp_t b)
-{
-  uint32_t  *p;
-  uint32_t  *q;
-  uint32_t i;
-
-  i = bmpCnt(a);
-  if (bmpCnt(b) < i) i = bmpCnt(b);
-  if (i > 0) {
-    i = (i / 32) / 4;
-    do {
-      p = vecGet(a,i);
-      q = vecGet(b,i);
-      *p++ &= *q++;
-      *p++ &= *q++;
-      *p++ &= *q++;
-      *p   &= *q;
-    } while (i-- > 0);
-  }
-}
-
-void bmpOr(bmp_t a, bmp_t b)
-{
-  bmpBlk  *p;
-  bmpBlk  *q;
-  uint32_t i;
-
-  i = bmpCnt(a);
-  if (bmpCnt(b) > i) i = bmpCnt(b);
-  bmpCnt(a) = i;
-  if (i > 0) {
-    i = (i / 32) / 4;
-    do {
-      p = vecGet(a,i);
-      q = vecGet(b,i);
-      (*p)[0] |= (*q)[0];
-      (*p)[1] |= (*q)[1];
-      (*p)[2] |= (*q)[2];
-      (*p)[3] |= (*q)[3];
-    } while (i-- > 0);
-  }
-}
-
-void bmpXor(bmp_t a, bmp_t b)
-{
-  bmpBlk  *p;
-  bmpBlk  *q;
-  uint32_t i;
-
-  i = bmpCnt(a);
-  if (bmpCnt(b) > i) i = bmpCnt(b);
-  bmpCnt(a) = i;
-  if (i > 0) {
-    i = (i / 32) / 4;
-    do {
-      p = vecGet(a,i);
-      q = vecGet(b,i);
-      (*p)[0] ^= (*q)[0];
-      (*p)[1] ^= (*q)[1];
-      (*p)[2] ^= (*q)[2];
-      (*p)[3] ^= (*q)[3];
-    } while (i-- > 0);
-  }
-}
-
-void bmpNeg(bmp_t a)
-{
-  bmpBlk  *p;
-  uint32_t i;
-
-  i = bmpCnt(a);
-  if (i > 0) {
-    i = (i / 32) / 4;
-    do {
-      p = vecGet(a,i);
-      (*p)[0] ^= 0xFFFFFFFF;
-      (*p)[1] ^= 0xFFFFFFFF;
-      (*p)[2] ^= 0xFFFFFFFF;
-      (*p)[3] ^= 0xFFFFFFFF;
-    } while (i-- > 0);
-  }
-}
 
 /**************************/
 
@@ -920,7 +679,7 @@ uint8_t *blkNew(uint8_t ty)
   int newsz;
 
   newsz = offsetof(blk,elem) + sz[ty];
-  b = malloc(newsz);
+  b = calloc(1,newsz);
   if (b != NULL) {
     b->slt = 1;
     b->cnt = 0;
@@ -943,7 +702,7 @@ static blk_t blksetsize(blk_t bl, uint16_t ndx, uint8_t sz)
   bl = realloc(bl, offsetof(blk,elem) + (bl->slt * sz));
   if (bl == NULL) {t = 415; goto err;}
 
-  _dbgmsg("blk realloc: %d\n",bl->slt);
+  _dbgmsg("blk realloc: %d (%d)\n",bl->slt,ndx);
   if (t < bl->slt) {
     memset(bl->elem + t * sz, 0, (bl->slt - t) * sz);
   }
@@ -998,6 +757,7 @@ uint8_t *blkAppend(uint8_t *b, uint8_t *a, uint8_t sz)
 
 uint8_t *blkSetInt(uint8_t *b, uint16_t ndx, uint32_t val, uint8_t ty)
 {
+  _dbgmsg("Set int: x[%d]=%X (%d)\n",ndx,val,ty);
   return blkset(b,ndx,&val, sz[ty]);
 }
 
@@ -1012,7 +772,7 @@ static void *blkget(uint8_t *b, uint16_t ndx, uint8_t sz)
   if (b != NULL) {
     bl = blkNodePtr(b);
     if (ndx > 0xFFF0)  vecErr(545,"ulv index out of range");
-    if (ndx > bl->cnt) return NULL;
+    if (ndx >= bl->slt) return NULL;
     b = bl->elem + ndx * sz;
   }
   return b;
@@ -1020,15 +780,17 @@ static void *blkget(uint8_t *b, uint16_t ndx, uint8_t sz)
 
 uint32_t blkGetInt(uint8_t *b, uint16_t ndx, uint8_t ty)
 {
+  uint32_t k = 0;
   b = blkget(b, ndx, sz[ty]);
-  if (b == NULL) return 0;
-
-  switch (ty) {
-    case blkCHR : return (uint32_t)(*((uint8_t *)b));
-    case blkU16 : return (uint32_t)(*((uint16_t *)b));
-    case blkU32 : return (uint32_t)(*((uint32_t *)b));
+  if (b != NULL) {
+    switch (ty) {
+      case blkCHR : k = (uint32_t)(*((uint8_t *)b));
+      case blkU16 : k = (uint32_t)(*((uint16_t *)b));
+      case blkU32 : k = (uint32_t)(*((uint32_t *)b));
+    }
   }
-  return 0;
+  _dbgmsg("Get int: x[%d]=%X (%d)\n",ndx,k,ty);
+  return k;
 }
 
 void *blkGetPtr(uint8_t *b, uint16_t ndx)
@@ -1074,12 +836,49 @@ void blkUniq(uint8_t *b,uint8_t sz)
   blkCnt(b) = (uint16_t)((p-b)/sz);
 }
 
-bit_t bitNeg(bit_t b,uint32_t m)
+uint8_t *blkPushInt(uint8_t *b, uint32_t val, uint8_t ty)
 {
-  m = 1 + (m >> 5);
-  while (m--) {
-    ulvSet(b, m, ulvGet(b, m) ^ 0xFFFFFFFF);
-  };
+  if (b != NULL) {
+    b = blkSetInt(b, blkCnt(b), val, sz[ty]);
+  }
+  return b;
+}
+
+uint32_t blkTopInt(uint8_t *b, uint8_t ty)
+{
+  if (b != NULL && blkCnt(b) > 0) {
+    return blkGetInt(b,blkCnt(b)-1,ty);
+  }
+  return 0; 
+}
+
+uint32_t blkPopInt(uint8_t *b, uint8_t ty)
+{
+  if (b != NULL && blkCnt(b) > 0) {
+    return blkGetInt(b,--blkCnt(b),ty);
+  }
+  return 0;   
+}
+
+/**************************/
+
+
+bit_t bitNeg(bit_t b,uint32_t max) /* max = highest number in the set */
+{
+  uint32_t k;
+  
+  max++; /* max = number of elements in the set */
+  
+  k = (max >> 5);
+  while (k--) {
+    b = ulvSet(b, k, ulvGet(b, k) ^ 0xFFFFFFFF);
+  }
+  
+  k = (max & 0x1F);
+  if (k > 0) {
+    b = ulvSet(b, k, ulvGet(b, (max >> 5)) ^ ((1<<k)-1));
+  }
+  
   return b;
 }                     
                      
