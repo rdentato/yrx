@@ -20,13 +20,13 @@
 /*****/
 
 void yrxNFAInit()
-{}
+{printf ("START\n"); }
 
-void yrxNFAAddarc(state_t from, state_t to, char *l, tag_t tag)
+void yrxNFAAddarc(state_t from, state_t to, lbl_t l, tag_t tag)
 {
-  printf("nfa_addarc(%d, %d, \"%s\", %08X)\n",from,to,l,tag);
+  printf("nfa_addarc(%d, %d, \"%s\", %08X)\n",from,to,yrxLabelPairs(l),tag);
 }
 
 void yrxNFAClose()
-{}
+{printf ("END\n"); }
 

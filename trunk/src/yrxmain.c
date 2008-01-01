@@ -13,6 +13,7 @@
 */
 
 #define HUL_MAIN
+#define YRX_MAIN
 
 #include "yrx.h"
 
@@ -22,11 +23,29 @@ void usage(void)
   exit(1);
 }
 
+static void init()
+{
+  yrxCleanVec = vpvNew();
+  yrxCleanVec = yrxLabelInit(yrxCleanVec); 
+}
+
+static void cleanup()
+{
+  uint16_t k;
+  
+  for (k = 0; k < vpvCnt(yrxCleanVec); k++) {
+     ((void (*)())(yrxCleanVec[k])) () ;
+  }
+}
+
 int main(int argc, char **argv)
 {
   int argn = 1;
   char **rxs;
 
+  init();
+  atexit(cleanup);
+  
   while (argn < argc) {
     if (argv[argn][0] != '-') break;
     argn++; 
