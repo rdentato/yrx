@@ -18,6 +18,12 @@
 #include "hul.h"
 #include "vec.h"
 
+#ifndef YRX_MAIN
+#define EXTERN(t, v, i) extern t v
+#else
+#define EXTERN(t, v, i) t v = i
+#endif
+
 #define state_t   uint16_t
 
 typedef uint32_t tag_t;
@@ -34,16 +40,55 @@ typedef uint32_t tag_t;
 #define tag_expr(t) (((t) >> 16) & 0x00FF)
 #define tag_type(t)  ((t) >> 24)
 
+/*****************************/
+typedef uint16_t   lbl_bits[16];
+typedef uint16_t  *lbl_t;
+
+#define yrxLabelEps NULL
+
+lbl_t yrxLabel(char *l);
+int   yrxLblEqual(lbl_t a, lbl_t b);
+lbl_t yrxLblDifference(lbl_t a, lbl_t b);
+lbl_t yrxLblIntersection(lbl_t a, lbl_t b);
+lbl_t yrxLblUnion(lbl_t a, lbl_t b);
+vpv_t yrxLabelInit(vpv_t v);
+uint8_t *yrxLabelPairs(lbl_t lb);
+
+/*****************************/
+
 void yrxParse(char **rxs, int rxn);
+void yrxParseErr(int errn, char *errmsg);
+
+/*****************************/
 
 void yrxNFAInit();
-void yrxNFAAddarc(state_t from, state_t to, char *l, tag_t tag);
+void yrxNFAAddarc(state_t from, state_t to, lbl_t l, tag_t tag);
 void yrxNFAClose();
 
 /*****************************/
 
-typedef uint16_t *lbl_ptr;
+EXTERN(char *, yrxStrNoMem, "Out of memory");
 
+/**************************************************/
+EXTERN(ucv_t, yrxBuf, NULL);
+
+#define yrxBufChk(n) (yrxBuf = (yrxBuf == NULL \
+                                  ? ucvNew() \
+                                  : (ucvSlt(yrxBuf) < (n)) \
+                                       ? ucvSet(yrxBuf, n,'\0') \
+                                       : yrxBuf \
+                               ) \
+                     )
+
+#define yrxBufClean() (free(yrxBuf), yrxBuf = NULL)
+
+/*****************************/
+
+vpv_t yrxCleanVec;
+
+
+/*****************************/
+#if 0
 typedef struct {
    vec_t     states;
    map_t     lbls;
@@ -118,6 +163,6 @@ TagSet addtag(TagSet ts, Tag t);
 #endif 
 
 void yrxDump(Automata *dfa, uint8_t fmt);
-
+#endif
 
 #endif /* YRX_H */

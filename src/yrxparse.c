@@ -15,9 +15,6 @@
 #include "yrx.h"
 #define MAXCAPTURES  32
 
-#define UID 500
-
-
 /**************************************************/
 static const char *cur_rx  = NULL;
 static int         cur_pos = 0;
@@ -28,22 +25,9 @@ static uint16_t    capt;
 
 /**************************************************/
 
-static ucv_t buf = NULL;
-
-static ucv_t buf_chk(int n)
+void yrxParseErr(int errn, char *errmsg)
 {
-  if (buf == NULL)
-    buf = ucvNew();
-  if (ucvSlt(buf) < n)
-    buf = ucvSet(buf,n,'\0');
-  return buf;
-}
-
-/**************************************************/
-
-static void parse_err(int errn, char *errmsg)
-{
-  err(UID + errn,"%s\n%5d: %s\n%*s\n", errmsg,
+  err(500 + errn,"%s\n%5d: %s\n%*s\n", errmsg,
                                 cur_nrx, cur_rx, cur_pos+8,"*");
 }
 
@@ -55,7 +39,7 @@ static uint16_t nstates = 1;
 static state_t nextstate(void)
 {
   if (nstates == 65500)
-    parse_err(2,"More than 65500 states!!");
+    yrxParseErr(2,"More than 65500 states!!");
   return ++nstates ;
 }
 
@@ -87,15 +71,14 @@ static char *str_set(int i,int j)
 {
   int n = 0;
 
-  buf = buf_chk(j-i+2);
-  if (buf != NULL) {
-    /*buf[n++] = '@';*/
+  yrxBufChk(j-i+2);
+  if (yrxBuf != NULL) {
     while(i < j) {
-      buf[n++] = cur_rx[i++];
+      yrxBuf[n++] = cur_rx[i++];
     }
-    buf[n] = '\0';
+    yrxBuf[n] = '\0';
   }
-  return (char *)buf;
+  return (char *)yrxBuf;
 }
 
 static int peekch(int n) {
@@ -135,7 +118,7 @@ static char* escaped(void)
   if (c == '\\') {
     c = nextch();
     c = nextch();
-    if (c < 0) parse_err (3,"Unexpected character (\\)");
+    if (c < 0) yrxParseErr (3,"Unexpected character (\\)");
     if (c == 'x') {
       c = peekch(0);
       if (isxdigit(c)) {
@@ -173,7 +156,7 @@ static char *cclass(void)
     while (c != ']') {
       c = nextch();
       if (c == '\\') c = (nextch(), 0);
-      if (c < 0) parse_err(4,"Unterminated class");
+      if (c < 0) yrxParseErr(4,"Unterminated class");
     }
     l = str_set(j, cur_pos);
   }
@@ -190,6 +173,7 @@ static state_t term(state_t state)
   int c;
   uint16_t ncapt;
   char *l;
+  lbl_t l1,l2;
 
   c = peekch(0);
 
@@ -198,23 +182,23 @@ static state_t term(state_t state)
   if ( c == '(') {
     c = nextch();
     ncapt = capt++;
-    if (ncapt >= MAXCAPTURES) parse_err(5,"Too many captures");
+    if (ncapt >= MAXCAPTURES) yrxParseErr(5,"Too many captures");
 
     start = nextstate();
 
     alt = nextstate();
     to  = nextstate();
-    yrxNFAAddarc(alt,to,"",tag_code(TAG_CE(ncapt),cur_nrx,0));
+    yrxNFAAddarc(alt,to,yrxLabelEps,tag_code(TAG_CE(ncapt),cur_nrx,0));
 
     t1 = expr(start);
     while (t1 > 0) {
       c = nextch();
       if (c != '|') break;
-      yrxNFAAddarc(t1,alt,"",TAG_NONE);
+      yrxNFAAddarc(t1,alt,yrxLabelEps,TAG_NONE);
       t1 = expr(start);
     }
-    if (c != ')') parse_err(6,"Unclosed capture");
-    yrxNFAAddarc(t1,alt,"",TAG_NONE);
+    if (c != ')') yrxParseErr(6,"Unclosed capture");
+    yrxNFAAddarc(t1,alt,yrxLabelEps,TAG_NONE);
 
     /* state -> (1)
     ** start -> (2)
@@ -224,22 +208,22 @@ static state_t term(state_t state)
     */
     
     switch (peekch(0)) {
-       case '?':  yrxNFAAddarc(start, alt, "", TAG_NONE);
-                  yrxNFAAddarc(state, start, "", tag_code(TAG_CB(ncapt), cur_nrx,0));
+       case '?':  yrxNFAAddarc(start, alt, yrxLabelEps, TAG_NONE);
+                  yrxNFAAddarc(state, start, yrxLabelEps, tag_code(TAG_CB(ncapt), cur_nrx,0));
                   c = nextch();
                   break;
 
-       case '+':  yrxNFAAddarc(alt, start, "", TAG_NONE);
-                  yrxNFAAddarc(state, start, "", tag_code(TAG_CB(ncapt),cur_nrx,0));
+       case '+':  yrxNFAAddarc(alt, start, yrxLabelEps, TAG_NONE);
+                  yrxNFAAddarc(state, start, yrxLabelEps, tag_code(TAG_CB(ncapt),cur_nrx,0));
                   c = nextch();
                   break;
 
-       case '*':  yrxNFAAddarc(alt, start, "", TAG_NONE);
-                  yrxNFAAddarc(state, alt, "", tag_code(TAG_CB(ncapt), cur_nrx,0));
+       case '*':  yrxNFAAddarc(alt, start, yrxLabelEps, TAG_NONE);
+                  yrxNFAAddarc(state, alt, yrxLabelEps, tag_code(TAG_CB(ncapt), cur_nrx,0));
                   c = nextch();
                   break;
 
-       default :  yrxNFAAddarc(state, start, "", tag_code(TAG_CB(ncapt),cur_nrx,0));
+       default :  yrxNFAAddarc(state, start, yrxLabelEps, tag_code(TAG_CB(ncapt),cur_nrx,0));
                   break;
     }
 
@@ -250,38 +234,38 @@ static state_t term(state_t state)
     switch (peekch(1)) {
       case 'E' :  c = nextch(); c = nextch();
                   l = escaped();
-                  if (l == NULL) parse_err(7,"Invalid escape sequence");
+                  if (l == NULL) yrxParseErr(7,"Invalid escape sequence");
                   esc = l[1];  /*** TODO: Need to properly handle \x and \0 ***/
                   if (esc == '\\') esc = l[2];
                   return state;
 
       case ':' :  to = nextstate();
-                  yrxNFAAddarc(state, to, "", tag_code(TAG_MRK,cur_nrx,0));
+                  yrxNFAAddarc(state, to, yrxLabelEps, tag_code(TAG_MRK,cur_nrx,0));
                   c = nextch(); c = nextch();
                   return to;
 
       case 'e' :  c = nextch(); c = nextch();
                   c = peekch(0);
 
-                  l = (char *)buf_chk(16);
-                  sprintf(l,"@[^\\x%02X] @\\x%02X",esc,esc);
-                  l[8]='\0';
-                  if (c == '-') l[0] = '-';
-
+                  l = (char *)yrxBufChk(16);
+                  
+                  sprintf(l,"@[^\\x%02X]%c@\\x%02X",esc,0,esc);
+                  l1 = yrxLabel(l);
+                  l2 = yrxLabel(l+9);
+                  
                   t1 = nextstate();
                   to = nextstate();
-                  yrxNFAAddarc(state, to, l, TAG_NONE);
-                  yrxNFAAddarc(state, t1, l+9, TAG_NONE);
-                  yrxNFAAddarc(t1, to, "@.", TAG_NONE);
+                  yrxNFAAddarc(state, to, l1, TAG_NONE);
+                  yrxNFAAddarc(state, t1, l2, TAG_NONE);
+                  yrxNFAAddarc(t1, to, yrxLabel("."), TAG_NONE);
                   switch (c) {
-                    case '-' :
-                    case '*' :  yrxNFAAddarc(state, to, "", TAG_NONE);
-                    case '+' :  yrxNFAAddarc(to, to, l, TAG_NONE);
-                                yrxNFAAddarc(to, t1, l+9, TAG_NONE);
+                    case '*' :  yrxNFAAddarc(state, to, yrxLabelEps, TAG_NONE);
+                    case '+' :  yrxNFAAddarc(to, to, l1, TAG_NONE);
+                                yrxNFAAddarc(to, t1, l2, TAG_NONE);
                                 c = nextch();
                                 break;
 
-                    case '?' :  yrxNFAAddarc(state, to, "", TAG_NONE);
+                    case '?' :  yrxNFAAddarc(state, to, yrxLabelEps, TAG_NONE);
                                 c = nextch();
                                 break;
                     default  :  break;
@@ -294,25 +278,26 @@ static state_t term(state_t state)
 
   l = cclass();
   if (l != NULL) {
+    
     to = nextstate();
     c = peekch(0);
-    if ( c == '-') l[0] = '-';
-
+    
+    l1 = yrxLabel(l);
+   
     switch (c) {
-      case '-' :
-      case '*' :  yrxNFAAddarc(state, to, "", TAG_NONE);
-                  yrxNFAAddarc(state, state, l, TAG_NONE);
+      case '*' :  yrxNFAAddarc(state, to, yrxLabelEps, TAG_NONE);
+                  yrxNFAAddarc(state, state, l1, TAG_NONE);
                   c = nextch();
                   break;
 
-      case '+' :  yrxNFAAddarc(state, to, l, TAG_NONE);
-                  yrxNFAAddarc(to, to, l, TAG_NONE);
+      case '+' :  yrxNFAAddarc(state, to, l1, TAG_NONE);
+                  yrxNFAAddarc(to, to, l1, TAG_NONE);
                   c = nextch();
                   break;
 
-      case '?' :  yrxNFAAddarc(state, to, "", TAG_NONE);
+      case '?' :  yrxNFAAddarc(state, to, yrxLabelEps, TAG_NONE);
                   c = nextch();
-      default  :  yrxNFAAddarc(state, to, l, TAG_NONE);
+      default  :  yrxNFAAddarc(state, to, l1, TAG_NONE);
                   break;
     }
     return  to;
@@ -342,9 +327,9 @@ static state_t parse(const char *rx,uint16_t nrx)
 
   state =  expr(1);
 
-  if (peekch(0) != -1) parse_err(8,"Unexpected character ");
+  if (peekch(0) != -1) yrxParseErr(8,"Unexpected character ");
 
-  yrxNFAAddarc(state, 0, "", tag_code(TAG_FIN, cur_nrx,0));
+  yrxNFAAddarc(state, 0, yrxLabelEps, tag_code(TAG_FIN, cur_nrx,0));
 
   return state;
 }
@@ -354,7 +339,7 @@ void yrxParse(char **rxs, int rxn)
   int i;
 
   if (rxn < 1 || 250 < rxn)
-    parse_err(1,"Invalid number of argument");
+    yrxParseErr(1,"Invalid number of argument");
     
   yrxNFAInit();
 
@@ -364,7 +349,7 @@ void yrxParse(char **rxs, int rxn)
   
   yrxNFAClose();
   
-  buf = ucvFree(buf);
+  yrxBufClean();
 }
 
 

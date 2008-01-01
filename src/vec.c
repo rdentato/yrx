@@ -33,6 +33,11 @@
 static const char *errNOMEM = "Out of Memory (vec)";
 /*static const char *errUNEXP = "Unexpected error";*/
 
+
+/****************/
+
+
+
 /*
 ** Integer log base 2 of uint32 integer values.
 **   llog2(0) == llog2(1) == 0
@@ -77,6 +82,177 @@ static uint16_t llog2(uint32_t x)
 
 #define two_raised(n) (1<<(n))
 #define div2(n)       ((n)>>1)
+
+
+/**************************/
+
+static const uint8_t sz[] = {0, blkCHRsz, blkU16sz, blkU32sz, blsPTRsz };
+
+uint8_t *blkNew(uint8_t ty)
+{
+  blk_t b;
+  int newsz;
+
+  newsz = offsetof(blk,elem) + sz[ty];
+  b = calloc(1,newsz);
+  if (b != NULL) {
+    b->slt = 1;
+    b->cnt = 0;
+    return b->elem;
+  }
+  return NULL;
+}
+
+static blk_t blksetsize(blk_t bl, uint16_t ndx, uint8_t sz)
+{
+  uint16_t t;
+
+  if (bl == NULL)   {t = 411; goto err;}
+  if (ndx > 0xFFF0) {t = 413; goto err;}
+
+  t = bl->slt;
+  bl->slt = ndx + two_raised((llog2(ndx+1) >> 1) +1 );
+                  /* approx 2*sqrt(ndx) */
+
+  dbgmsg("blk realloc: %d (%d) [%d]\n",bl->slt,ndx,sz);
+  bl = realloc(bl, offsetof(blk,elem) + (bl->slt * sz));
+  if (bl == NULL) {t = 415; goto err;}
+
+  _dbgmsg("blk realloc: %d (%d)\n",bl->slt,ndx);
+  if (t < bl->slt) {
+    memset(bl->elem + t * sz, 0, (bl->slt - t) * sz);
+  }
+  if (bl->cnt > ndx)  bl->cnt = ndx + 1;
+  return bl;
+
+err :
+  vecErr(t,errNOMEM);
+  return NULL;
+}
+
+uint8_t *blkSetSize(uint8_t *b, uint16_t ndx, uint8_t ty)
+{
+  blk_t bl;
+
+  if (b != NULL) {
+    bl = blkNodePtr(b);
+    bl = blksetsize(bl, ndx, sz[ty]);
+    return bl->elem;
+  }
+  return b;
+}
+
+static uint8_t *blkset(uint8_t *b, uint16_t ndx, void *val, uint8_t sz)
+{
+  blk_t bl = blkNodePtr(b);
+
+  if (ndx >= bl->slt)
+    bl = blksetsize(bl,ndx,sz);
+
+  b = bl->elem + ndx * sz;
+  memcpy(b,val,sz);
+  if (ndx >= bl->cnt) bl->cnt = ndx+1;
+  return bl->elem;
+}
+
+uint8_t *blkAppend(uint8_t *b, uint8_t *a, uint8_t sz)
+{
+  uint32_t k;
+  blk_t bl = blkNodePtr(b);
+
+  k = blkCnt(b) + blkCnt(a);
+
+  if (k > bl->slt)
+    bl = blksetsize(bl, (uint16_t) (k+1) ,sz);
+
+  memcpy(b+(bl->cnt * sz), a, blkCnt(a) * sz);
+  bl->cnt = (uint16_t)k;
+
+  return bl->elem;
+}
+
+uint8_t *blkSetInt(uint8_t *b, uint16_t ndx, uint32_t val, uint8_t ty)
+{
+  _dbgmsg("Set int: x[%d]=%X (%d)\n",ndx,val,ty);
+  return blkset(b,ndx,&val, sz[ty]);
+}
+
+uint8_t *blkSetPtr(uint8_t *b, uint16_t ndx, void *val)
+{
+  return blkset(b,ndx,&val, sz[blkPTR]);
+}
+
+static void *blkget(uint8_t *b, uint16_t ndx, uint8_t sz)
+{
+  blk_t bl;
+  if (b != NULL) {
+    bl = blkNodePtr(b);
+    if (ndx > 0xFFF0)  vecErr(545,"ulv index out of range");
+    if (ndx >= bl->slt) return NULL;
+    b = bl->elem + ndx * sz;
+  }
+  return b;
+}
+
+uint32_t blkGetInt(uint8_t *b, uint16_t ndx, uint8_t ty)
+{
+  uint32_t k = 0;
+  b = blkget(b, ndx, sz[ty]);
+  if (b != NULL) {
+    switch (ty) {
+      case blkCHR : k = (uint32_t)(*((uint8_t *)b));
+      case blkU16 : k = (uint32_t)(*((uint16_t *)b));
+      case blkU32 : k = (uint32_t)(*((uint32_t *)b));
+    }
+  }
+  _dbgmsg("Get int: x[%d]=%X (%d)\n",ndx,k,ty);
+  return k;
+}
+
+void *blkGetPtr(uint8_t *b, uint16_t ndx)
+{
+  b = blkget(b, ndx, sz[blkPTR]);
+  if (b == NULL) return NULL;
+  return (*((void **)b));
+}
+
+uint8_t *blkFree(uint8_t *b)
+{
+  blk_t bl;
+  if (b == NULL) return NULL;
+  bl = blkNodePtr(b);
+  free(bl);
+  return NULL;
+}
+
+int blkU32cmp (const void *a, const void *b) { return *((uint32_t *)a) - *((uint32_t *)b) ; }
+int blkU16cmp (const void *a, const void *b) { return *((uint16_t *)a) - *((uint16_t *)b) ; }
+int blkCHRcmp (const void *a, const void *b) { return *((uint8_t *)a)  - *((uint8_t *)b) ; }
+
+void blkUniq(uint8_t *b,uint8_t sz)
+{
+  uint32_t j;
+  uint8_t *a, *p;
+
+  if (b == NULL) return;
+
+  j = blkCnt(b);
+  if (j < 2) return;
+
+  a = b+sz;
+  p = b+sz;
+  while (--j > 0) {
+     if (memcmp(a, a-sz, sz) != 0) {
+       if (p != a)
+         memcpy(p,a,sz);
+       p += sz;
+     }
+     a += sz;
+  }
+  blkCnt(b) = (uint16_t)((p-b)/sz);
+}
+
+/*****************/
 
 static uint16_t pgsize(uint16_t p)
 {
@@ -669,252 +845,7 @@ void *mapFirst(map_t m)
 }
 
 
-/**************************/
-
-static const uint8_t sz[] = {0, blkCHRsz, blkU16sz, blkU32sz, blsPTRsz };
-
-uint8_t *blkNew(uint8_t ty)
-{
-  blk_t b;
-  int newsz;
-
-  newsz = offsetof(blk,elem) + sz[ty];
-  b = calloc(1,newsz);
-  if (b != NULL) {
-    b->slt = 1;
-    b->cnt = 0;
-    return b->elem;
-  }
-  return NULL;
-}
-
-static blk_t blksetsize(blk_t bl, uint16_t ndx, uint8_t sz)
-{
-  uint16_t t;
-
-  if (bl == NULL)   {t = 411; goto err;}
-  if (ndx > 0xFFF0) {t = 413; goto err;}
-
-  t = bl->slt;
-  bl->slt = ndx + two_raised((llog2(ndx+1) >> 1) +1 );
-                  /* approx 2*sqrt(ndx) */
-
-  bl = realloc(bl, offsetof(blk,elem) + (bl->slt * sz));
-  if (bl == NULL) {t = 415; goto err;}
-
-  _dbgmsg("blk realloc: %d (%d)\n",bl->slt,ndx);
-  if (t < bl->slt) {
-    memset(bl->elem + t * sz, 0, (bl->slt - t) * sz);
-  }
-  if (bl->cnt > ndx)  bl->cnt = ndx + 1;
-  return bl;
-
-err :
-  vecErr(t,errNOMEM);
-  return NULL;
-}
-
-uint8_t *blkSetSize(uint8_t *b, uint16_t ndx, uint8_t ty)
-{
-  blk_t bl;
-
-  if (b != NULL) {
-    bl = blkNodePtr(b);
-    bl = blksetsize(bl, ndx, sz[ty]);
-    return bl->elem;
-  }
-  return b;
-}
-
-static uint8_t *blkset(uint8_t *b, uint16_t ndx, void *val, uint8_t sz)
-{
-  blk_t bl = blkNodePtr(b);
-
-  if (ndx >= bl->slt)
-    bl = blksetsize(bl,ndx,sz);
-
-  b = bl->elem + ndx * sz;
-  memcpy(b,val,sz);
-  if (ndx >= bl->cnt) bl->cnt = ndx+1;
-  return bl->elem;
-}
-
-uint8_t *blkAppend(uint8_t *b, uint8_t *a, uint8_t sz)
-{
-  uint32_t k;
-  blk_t bl = blkNodePtr(b);
-
-  k = blkCnt(b) + blkCnt(a);
-
-  if (k > bl->slt)
-    bl = blksetsize(bl, (uint16_t) (k+1) ,sz);
-
-  memcpy(b+(bl->cnt * sz), a, blkCnt(a) * sz);
-  bl->cnt = (uint16_t)k;
-
-  return bl->elem;
-}
-
-uint8_t *blkSetInt(uint8_t *b, uint16_t ndx, uint32_t val, uint8_t ty)
-{
-  _dbgmsg("Set int: x[%d]=%X (%d)\n",ndx,val,ty);
-  return blkset(b,ndx,&val, sz[ty]);
-}
-
-uint8_t *blkSetPtr(uint8_t *b, uint16_t ndx, void *val)
-{
-  return blkset(b,ndx,&val, sz[blkPTR]);
-}
-
-static void *blkget(uint8_t *b, uint16_t ndx, uint8_t sz)
-{
-  blk_t bl;
-  if (b != NULL) {
-    bl = blkNodePtr(b);
-    if (ndx > 0xFFF0)  vecErr(545,"ulv index out of range");
-    if (ndx >= bl->slt) return NULL;
-    b = bl->elem + ndx * sz;
-  }
-  return b;
-}
-
-uint32_t blkGetInt(uint8_t *b, uint16_t ndx, uint8_t ty)
-{
-  uint32_t k = 0;
-  b = blkget(b, ndx, sz[ty]);
-  if (b != NULL) {
-    switch (ty) {
-      case blkCHR : k = (uint32_t)(*((uint8_t *)b));
-      case blkU16 : k = (uint32_t)(*((uint16_t *)b));
-      case blkU32 : k = (uint32_t)(*((uint32_t *)b));
-    }
-  }
-  _dbgmsg("Get int: x[%d]=%X (%d)\n",ndx,k,ty);
-  return k;
-}
-
-void *blkGetPtr(uint8_t *b, uint16_t ndx)
-{
-  b = blkget(b, ndx, sz[blkPTR]);
-  if (b == NULL) return NULL;
-  return (*((void **)b));
-}
-
-uint8_t *blkFree(uint8_t *b)
-{
-  blk_t bl;
-  if (b == NULL) return NULL;
-  bl = blkNodePtr(b);
-  free(bl);
-  return NULL;
-}
-
-int blkU32cmp (const void *a, const void *b) { return *((uint32_t *)a) - *((uint32_t *)b) ; }
-int blkU16cmp (const void *a, const void *b) { return *((uint16_t *)a) - *((uint16_t *)b) ; }
-int blkCHRcmp (const void *a, const void *b) { return *((uint8_t *)a)  - *((uint8_t *)b) ; }
-
-void blkUniq(uint8_t *b,uint8_t sz)
-{
-  uint32_t j;
-  uint8_t *a, *p;
-
-  if (b == NULL) return;
-
-  j = blkCnt(b);
-  if (j < 2) return;
-
-  a = b+sz;
-  p = b+sz;
-  while (--j > 0) {
-     if (memcmp(a, a-sz, sz) != 0) {
-       if (p != a)
-         memcpy(p,a,sz);
-       p += sz;
-     }
-     a += sz;
-  }
-  blkCnt(b) = (uint16_t)((p-b)/sz);
-}
-
-uint8_t *blkPushInt(uint8_t *b, uint32_t val, uint8_t ty)
-{
-  if (b != NULL) {
-    b = blkSetInt(b, blkCnt(b), val, sz[ty]);
-  }
-  return b;
-}
-
-uint32_t blkTopInt(uint8_t *b, uint8_t ty)
-{
-  if (b != NULL && blkCnt(b) > 0) {
-    return blkGetInt(b,blkCnt(b)-1,ty);
-  }
-  return 0; 
-}
-
-uint32_t blkPopInt(uint8_t *b, uint8_t ty)
-{
-  if (b != NULL && blkCnt(b) > 0) {
-    return blkGetInt(b,--blkCnt(b),ty);
-  }
-  return 0;   
-}
-
-/**************************/
-
-
-static bit_t bittrim(bit_t b)
-{
-  uint32_t k;
-  
-  if (b != NULL) {
-    k = bitCnt(b);
-    while (k > 0 && b[k-1] == 0) k--;
-    bitCnt(b) = k;
-  }
-  
-  return b;
-}
-
-bit_t bitNeg(bit_t b,uint32_t max) /* max = highest number in the set */
-{
-  uint32_t k;
-  
-  max++; /* max = number of elements in the set */
-  
-  k = (max >> 5);
-  while (k--) {
-    b = ulvSet(b, k, ulvGet(b, k) ^ 0xFFFFFFFF);
-  }
-  
-  k = (max & 0x1F);
-  if (k > 0) {
-    b = ulvSet(b, k, ulvGet(b, (max >> 5)) ^ ((1<<k)-1));
-  }
-  
-  return b;
-}              
-
-
-bit_t bitDup(bit_t b)
-{
-   bit_t newbit = NULL;
-   uint32_t k;
-   
-   if (b == NULL) return NULL;
-   b = bittrim(b);
-    
-   newbit = bitNew();
-   if (newbit &&) {
-     k = bitCnt(b);
-     ulvSet((ulv_t)b, k, 0);
-     while ( k-- > 0) {
-       newbit[k] = b[k];
-     }
-   }
-   return newbit;
-}       
-                     
+      
 /**************************/
 /*
 = References
