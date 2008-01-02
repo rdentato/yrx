@@ -87,7 +87,7 @@ static lbl_t lbl_bmp(char *s)
       else {
         if (c == '\\') {
           s++;
-          if (*s == '\0') yrxParseErr(11,"Unexpected \\");
+          if (*s == '\0') yrxParseErr(511,"Unexpected \\");
 
           c = -1;
 
@@ -216,19 +216,47 @@ uint8_t *yrxLabelPairs(lbl_t lb)
   return s;
 }
 
-char *yrxLabelStr(uint8_t c)
+
+
+static char *lbl_chr(char *s, uint16_t c)
 {
-  static char s[16];
   if (c <= 32   || c > 126  || c == '\\' || c == '"' ||
       c == '\'' || c == '[' || c == ']'  || c == '-' ) {
     sprintf(s,"\\x%02X",c);
+    s += 3;
   }
   else {
-    s[0] = c; s[1] = '\0';
+    *s = c;
   }
+  s++;
   return s;
 }
 
+
+char *yrxLabelStr(lbl_t lb)
+{
+  ucv_t s;
+  uint16_t a,b;
+
+  int i=0;
+
+  s = yrxBufChk(512);
+
+  if (lb != NULL) {
+    a = 0;
+    while (lbl_rng(lb, a, &a, &b) != 0) {
+      s = lbl_chr(s, a);
+      if (a != b) {
+        *s++ = '-';
+        s = lbl_chr(s, b);
+      }
+      a = b +1 ;
+    }
+  }
+
+  s[i] = '\0';
+  return yrxBuf;
+}
 
 /***************/
 

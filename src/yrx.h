@@ -21,7 +21,7 @@
 #ifndef YRX_MAIN
 #define EXTERN(t, v, i) extern t v
 #else
-#define EXTERN(t, v, i) t v = i
+#define EXTERN(t, v, i) t v i
 #endif
 
 #define state_t   uint16_t
@@ -53,6 +53,7 @@ lbl_t yrxLblIntersection(lbl_t a, lbl_t b);
 lbl_t yrxLblUnion(lbl_t a, lbl_t b);
 vpv_t yrxLabelInit(vpv_t v);
 uint8_t *yrxLabelPairs(lbl_t lb);
+char *yrxLabelStr(lbl_t lb);
 
 /*****************************/
 
@@ -67,25 +68,19 @@ void yrxNFAClose();
 
 /*****************************/
 
-EXTERN(char *, yrxStrNoMem, "Out of memory");
+EXTERN(char *, yrxStrNoMem, = "Out of memory");
 
 /**************************************************/
-EXTERN(ucv_t, yrxBuf, NULL);
+#define YRX_BUF_MAX 512
 
-#define yrxBufChk(n) (yrxBuf = (yrxBuf == NULL \
-                                  ? ucvNew() \
-                                  : (ucvSlt(yrxBuf) < (n)) \
-                                       ? ucvSet(yrxBuf, n,'\0') \
-                                       : yrxBuf \
-                               ) \
-                     )
+EXTERN(char, yrxBuf[YRX_BUF_MAX], );
 
-#define yrxBufClean() (free(yrxBuf), yrxBuf = NULL)
+#define yrxBufChk(n) ((n)<=YRX_BUF_MAX ? yrxBuf \
+                                       : (err(617,yrxStrNoMem), NULL))
 
 /*****************************/
 
 vpv_t yrxCleanVec;
-
 
 /*****************************/
 #if 0

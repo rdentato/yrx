@@ -36,8 +36,6 @@ static const char *errNOMEM = "Out of Memory (vec)";
 
 /****************/
 
-
-
 /*
 ** Integer log base 2 of uint32 integer values.
 **   llog2(0) == llog2(1) == 0
@@ -86,14 +84,14 @@ static uint16_t llog2(uint32_t x)
 
 /**************************/
 
-static const uint8_t sz[] = {0, blkCHRsz, blkU16sz, blkU32sz, blsPTRsz };
+static const uint8_t sz[] = {0, blkCHRsz, blkU16sz, blkU32sz, blkPTRsz };
 
-uint8_t *blkNew(uint8_t ty)
+uint8_t *blkNew(uint8_t sz)
 {
   blk_t b;
   int newsz;
 
-  newsz = offsetof(blk,elem) + sz[ty];
+  newsz = offsetof(blk,elem) + sz;
   b = calloc(1,newsz);
   if (b != NULL) {
     b->slt = 1;
@@ -103,6 +101,18 @@ uint8_t *blkNew(uint8_t ty)
   return NULL;
 }
 
+static blk_t blkfixsize(blk_t bl, uint16_t slt, uint8_t sz)
+{
+  bl = realloc(bl, offsetof(blk,elem) + (slt * sz));
+  if (bl) {
+    if (bl->slt < slt) {
+      memset(bl->elem + bl->slt * sz, 0, (slt - bl->slt) * sz);
+    }
+    bl->slt = slt;
+  }
+  return bl;
+}
+
 static blk_t blksetsize(blk_t bl, uint16_t ndx, uint8_t sz)
 {
   uint16_t t;
@@ -110,18 +120,9 @@ static blk_t blksetsize(blk_t bl, uint16_t ndx, uint8_t sz)
   if (bl == NULL)   {t = 411; goto err;}
   if (ndx > 0xFFF0) {t = 413; goto err;}
 
-  t = bl->slt;
-  bl->slt = ndx + two_raised((llog2(ndx+1) >> 1) +1 );
-                  /* approx 2*sqrt(ndx) */
-
-  dbgmsg("blk realloc: %d (%d) [%d]\n",bl->slt,ndx,sz);
-  bl = realloc(bl, offsetof(blk,elem) + (bl->slt * sz));
-  if (bl == NULL) {t = 415; goto err;}
-
-  _dbgmsg("blk realloc: %d (%d)\n",bl->slt,ndx);
-  if (t < bl->slt) {
-    memset(bl->elem + t * sz, 0, (bl->slt - t) * sz);
-  }
+  bl = blkfixsize(bl, ndx + two_raised((llog2(ndx+1) >> 1) +1 ), sz);
+  if (bl == NULL)   {t = 415; goto err;}
+  
   if (bl->cnt > ndx)  bl->cnt = ndx + 1;
   return bl;
 
@@ -130,6 +131,7 @@ err :
   return NULL;
 }
 
+#if 0
 uint8_t *blkSetSize(uint8_t *b, uint16_t ndx, uint8_t ty)
 {
   blk_t bl;
@@ -141,11 +143,17 @@ uint8_t *blkSetSize(uint8_t *b, uint16_t ndx, uint8_t ty)
   }
   return b;
 }
+#endif
 
 static uint8_t *blkset(uint8_t *b, uint16_t ndx, void *val, uint8_t sz)
 {
-  blk_t bl = blkNodePtr(b);
+  blk_t bl;
 
+  if (b == NULL) b = blkNew(sz);
+  if (b == NULL) return NULL;
+  
+  bl = blkNodePtr(b);
+  
   if (ndx >= bl->slt)
     bl = blksetsize(bl,ndx,sz);
 
@@ -179,7 +187,7 @@ uint8_t *blkSetInt(uint8_t *b, uint16_t ndx, uint32_t val, uint8_t ty)
 
 uint8_t *blkSetPtr(uint8_t *b, uint16_t ndx, void *val)
 {
-  return blkset(b,ndx,&val, sz[blkPTR]);
+  return blkset(b,ndx,&val, blkPTRsz);
 }
 
 static void *blkget(uint8_t *b, uint16_t ndx, uint8_t sz)
@@ -211,7 +219,7 @@ uint32_t blkGetInt(uint8_t *b, uint16_t ndx, uint8_t ty)
 
 void *blkGetPtr(uint8_t *b, uint16_t ndx)
 {
-  b = blkget(b, ndx, sz[blkPTR]);
+  b = blkget(b, ndx, blkPTRsz);
   if (b == NULL) return NULL;
   return (*((void **)b));
 }
@@ -252,6 +260,73 @@ void blkUniq(uint8_t *b,uint8_t sz)
   blkCnt(b) = (uint16_t)((p-b)/sz);
 }
 
+
+/**************************/
+
+bit_t bitNeg(bit_t b,uint32_t max) /* max = highest number in the set */
+{
+  uint32_t k;
+  
+  max++; /* max = number of elements in the set */
+  
+  k = bitI(max);
+  while (k--) {
+    b = usvSet(b, k, usvGet(b, k) ^ 0xFFFFFFFF);
+  }
+  
+  k = bitR(max);
+  if (k > 1) {
+    b = usvSet(b, k, usvGet(b, bitI(max)) ^ (k-1));
+  }
+  
+  return b;
+}              
+
+bit_t bitZero(bit_t b)
+{
+  if (b && bitSlt(b) > 64) b = bitFree(b); /* 64 is arbitrary! */
+  if (b == NULL) return bitNew();
+  
+  memset(b,0, bitSlt(b) * blkBITsz);
+  bitCnt(b) = 0;
+  return b;  
+}
+
+
+bit_t bitCpy(bit_t a, bit_t b)
+{
+  int k;
+
+  if (a == b) return a;
+  
+  k = blkCnt(b);
+  a = bitZero(a);
+  while (k-- > 0) {
+    a = usvSet((usv_t)a, k, b[k]);
+  }
+  bitCnt(a) = bitCnt(b);
+  return a;
+}       
+
+bit_t bitAnd(bit_t a, bit_t b)
+{
+  uint32_t k;
+  
+  if (a) {
+    if (b == NULL || bitCnt(b) == 0)
+      return bitZero(a);
+    
+    if (bitCnt(b) > bitCnt(a)) 
+      a = usvSet((usv_t)a, bitCnt(b) - 1, 0);
+      
+    for (k = 0; k > bitCnt(b); k++) {
+      a[k] &= b[k];
+    }    
+  }
+  
+  return a;
+}
+
 /*****************/
 
 static uint16_t pgsize(uint16_t p)
@@ -287,7 +362,7 @@ static void ndx2pg(uint32_t ndx, uint16_t *p, uint16_t *n)
 /* Ensure an element can store a (void *). Will be used for the freelist */
 #define MINSZ sizeof(void *)
 
-static void vecinit(vec *v,uint16_t elemsize)
+static void vecinit(vec_t v,uint16_t elemsize)
 {
   if (v != NULL) {
     if (elemsize < MINSZ) elemsize = MINSZ;
@@ -303,18 +378,18 @@ static void vecinit(vec *v,uint16_t elemsize)
   }
 }
 
-vec *vecNew(uint16_t elemsize)
+vec_t vecNew(uint16_t elemsize)
 {
-  vec *v = NULL;
+  vec_t v = NULL;
 
   if (elemsize > 0 && elemsize < UINT16_MAX) {
-    v = malloc(sizeof(vec));
+    v = malloc(sizeof(struct vec));
     vecinit(v,elemsize);
   }
   return v;
 }
 
-static void veccleanup (vec *v,vecCleaner cln)
+static void veccleanup (vec_t v,vecCleaner cln)
 {
   uint16_t i,k;
   uint8_t *p;
@@ -338,7 +413,7 @@ static void veccleanup (vec *v,vecCleaner cln)
   }
 }
 
-void *vecFreeClean(vec *v,vecCleaner cln)
+void *vecFreeClean(vec_t v,vecCleaner cln)
 {
   if (v != NULL) {
     veccleanup(v, cln);
@@ -347,7 +422,7 @@ void *vecFreeClean(vec *v,vecCleaner cln)
   return NULL;
 }
 
-static void *vecslot(vec *v, uint16_t page, uint16_t n)
+static void *vecslot(vec_t v, uint16_t page, uint16_t n)
 {
   void *p=NULL;
   uint16_t t;
@@ -400,7 +475,7 @@ static void *vecslot(vec *v, uint16_t page, uint16_t n)
   return p;
 }
 
-void *vecGet(vec *v,uint32_t ndx)
+void *vecGet(vec_t v,uint32_t ndx)
 {
   uint16_t page, n;
 
@@ -441,7 +516,7 @@ void *vecGet(vec *v,uint32_t ndx)
 }
 
 
-void *vecSet(vec *v, uint32_t ndx, void *elem)
+void *vecSet(vec_t v, uint32_t ndx, void *elem)
 {
   uint32_t *p = NULL;
 
@@ -453,7 +528,7 @@ void *vecSet(vec *v, uint32_t ndx, void *elem)
   return p;
 }
 
-vec *vecShrink(vec *v,uint32_t ndx)
+vec_t vecShrink(vec_t v,uint32_t ndx)
 {
   uint16_t page, n;
 
@@ -468,7 +543,7 @@ vec *vecShrink(vec *v,uint32_t ndx)
   return v;
 }
 
-uint32_t vecSize(vec *v)
+uint32_t vecSize(vec_t v)
 {
   uint16_t k;
   uint32_t size = 0;
@@ -480,7 +555,7 @@ uint32_t vecSize(vec *v)
       }
     }
     size += v->npg * sizeof(uint8_t *);
-    size += sizeof(vec);
+    size += sizeof(struct vec);
   }
   return size;
 }
@@ -493,14 +568,14 @@ static char *emptystr = "";
 
 buf_t bufNew()
 {
-  vec *b;
+  vec_t b;
 
   if ((b = vecNew(bufBlkSize)) != NULL)
     b->aux = bufBlkSize;
   return b;
 }
 
-uint32_t bufPutc(vec *b,char c)
+uint32_t bufPutc(vec_t b,char c)
 {
   uint8_t *s;
   uint32_t n;
@@ -521,7 +596,7 @@ uint32_t bufPutc(vec *b,char c)
   return n;
 }
 
-uint32_t bufPuts(vec *b, char *s)
+uint32_t bufPuts(vec_t b, char *s)
 {
   uint32_t n;
   while (*s != '\0') bufPutc(b,*s++);
@@ -529,13 +604,13 @@ uint32_t bufPuts(vec *b, char *s)
   return n;
 }
 
-uint32_t bufPos(vec *b)
+uint32_t bufPos(vec_t b)
 {
   if (b->cur_w == VEC_NULLNDX) return VEC_NULLNDX;
   return b->cur_w * bufBlkSize + b->aux;
 }
 
-uint32_t bufSeek(vec *b,uint32_t pos)
+uint32_t bufSeek(vec_t b,uint32_t pos)
 {
   if (pos != VEC_NULLNDX) {
     if (pos >= b->cnt) b->cnt = pos+1;
@@ -545,7 +620,7 @@ uint32_t bufSeek(vec *b,uint32_t pos)
   return pos;
 }
 
-int bufGetc(vec *b)
+int bufGetc(vec_t b)
 {
   char *s = emptystr;
   uint32_t w = b->cur_w;
@@ -563,7 +638,7 @@ int bufGetc(vec *b)
   return (int)(*s);
 }
 
-int bufGets(vec *b,char *s)
+int bufGets(vec_t b,char *s)
 {
   int c,n=0;
   while ((c = bufGetc(b)) != EOF && c) {
@@ -599,7 +674,7 @@ map_t mapNew(uint16_t elemsz, mapCmp_t cmp)
   m = malloc(sizeof(mapVec));
   if (m != NULL) {
     vecinit(m->nodes,elemsz + offsetof(mapNode, elem));
-    vecinit(m->stack,sizeof(mapNode *));
+    m->stack = NULL;
     m->root = NULL;
     m->freelst = NULL;
     m->cnt = 0;
@@ -622,7 +697,7 @@ map_t mapFreeClean(map_t m, vecCleaner cln)
       }
     }
     veccleanup(m->nodes, NULL);
-    veccleanup(m->stack, NULL);
+    m->stack = vpvFree(m->stack);
     free(m);
   }
   return NULL;
@@ -676,10 +751,11 @@ static mapNode *mapsearch(map_t m, mapNode ***par,  void *elem)
 
   _dbgmsg("mapsearch() ROOT: %p\n",*parent);
 
-  stkReset(m->stack);
+  m->stack = vpvReset(m->stack);
 
   for(EVER) {
-    stkPush(m->stack, &parent);  _dbgmsg("Pushed: %p (%p)\n",parent, *parent);
+    m->stack = vpvPush(m->stack, parent);
+    _dbgmsg("Pushed: %p (%p)\n",parent, *parent);
 
     node = *parent;
     if (node == NULL) break;   _dbgmsg("Not found\n");
@@ -713,12 +789,12 @@ static void mapbalance(map_t m)
   uint32_t nodepri;
 
   _dbgmsg("Count: %d Depth: %d Limit: %d\n",m->cnt, m->stack->cnt,1+llog2(m->cnt));
-  p = stkTopVal(m->stack,mapNode **);
+  p = vpvTop(m->stack);
   node = *p;
   nodepri = mappriority(node);
   for(EVER) {
-    stkPop(m->stack);
-    q = stkTopVal(m->stack,mapNode **);
+    vpvPop(m->stack);
+    q = vpvTop(m->stack);
     if (q == NULL) break;
 
     direction = 0;
@@ -820,7 +896,7 @@ void mapDel(map_t m, void *e)
 static void mapgoleft(map_t m, mapNode *p)
 {
   while (p != NULL) {
-    stkPush(m->stack, &p);
+    m->stack = vpvPush(m->stack, p);
     p = mapLnkLeft(p);
   }
 }
@@ -829,17 +905,16 @@ void *mapNext(map_t m)
 {
   mapNode *p;
 
-  if (stkIsEmpty(m->stack)) return NULL;
+  if (vpvDepth(m->stack) == 0) return NULL;
 
-  p = stkTopVal(m->stack, mapNode *);
-  stkPop(m->stack);
+  p = vpvPop(m->stack);
   mapgoleft(m, mapLnkRight(p));
   return p->elem;
 }
 
 void *mapFirst(map_t m)
 {
-  stkReset(m->stack);
+  m->stack = vpvReset(m->stack);
   mapgoleft(m, m->root);
   return mapNext(m);
 }
