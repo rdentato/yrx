@@ -41,7 +41,179 @@
 #endif
 
 /**********************/
-typedef struct {
+
+typedef struct blk_ {
+  uint16_t slt;
+  uint16_t cnt;
+  uint8_t  elem[1];
+} blk;
+
+typedef blk *blk_t;
+
+uint8_t   *blkNew    (uint8_t ty);
+uint8_t   *blkSetInt (uint8_t *b, uint16_t ndx, uint32_t val, uint8_t ty);
+uint8_t   *blkSetPtr (uint8_t *b, uint16_t ndx, void *val);
+uint32_t   blkGetInt (uint8_t *b, uint16_t ndx, uint8_t ty);
+void*      blkGetPtr (uint8_t *b, uint16_t ndx);
+uint8_t   *blkFree   (uint8_t *b);
+uint8_t   *blkAppend (uint8_t *b, uint8_t *a, uint8_t sz);
+uint8_t   *blkPushInt(uint8_t *b, uint32_t val, uint8_t ty);
+uint32_t   blkTopInt (uint8_t *b, uint8_t  ty);
+uint32_t   blkPopInt (uint8_t *b, uint8_t  ty);
+
+#define blkCHR 1
+#define blkU16 2
+#define blkU32 3
+#define blkPTR 4
+
+#define blkCHRsz sizeof(char)
+#define blkU16sz sizeof(uint16_t)
+#define blkU32sz sizeof(uint32_t)
+#define blkPTRsz sizeof(void *)
+
+int blkU32cmp (const void *a, const void *b);
+int blkU16cmp (const void *a, const void *b);
+int blkCHRcmp (const void *a, const void *b);
+
+void blkUniq(uint8_t *b,uint8_t sz);
+
+#define blkNodePtr(b) ((blk_t)(((uint8_t *)b) - offsetof(blk,elem)))
+#define blkCnt(b)     (blkNodePtr(b)->cnt)
+#define blkSlt(b)     (blkNodePtr(b)->slt)
+#define blkDepth(b)   (b?blkCnt(b):0)
+
+#define blkReset(b,s) (b? (blkCnt(b)=0, (void *)b) : (void *)blkNew(s))
+
+/**********************/
+
+typedef uint32_t *ulv_t ;
+
+#define ulvNew()      (ulv_t)blkNew(blkU32sz)
+#define ulvFree(b)    (ulv_t)blkFree((uint8_t *)b)
+
+#define ulvCnt        blkCnt
+#define ulvSlt        blkSlt
+#define ulvDepth      blkDepth
+#define ulvReset(b)   ((ulv_t)blkReset(b,blkU32sz))
+
+#define ulvGet(b,n)   ((uint32_t)blkGetInt((uint8_t *)b, n, blkU32))
+#define ulvSet(b,n,v) ((ulv_t)blkSetInt((uint8_t *)b, n, (uint32_t)v, blkU32))
+
+#define ulvAppend(a,b)  (ulv_t)blkAppend(a,b,blkU32sz)
+#define ulvSort(b)      qsort(b, ulvCnt(b), blkU32sz, blkU32cmp)
+#define ulvUniq(b)      blkUniq((uint8_t *)b, blkU32sz)
+
+#define ulvAdd(b,v)     ulvSet(b, ulvCnt(b), v)
+#define ulvPush(b,v)    ulvSet(b, ulvCnt(b), v)  
+#define ulvTop(b)       ((!b || !ulvCnt(b))? 0 : ulvGet(b,ulvCnt(b)-1))
+#define ulvPop(b)       ((!b || !ulvCnt(b))? 0 : ulvGet(b,--ulvCnt(b)))
+
+/**********************/
+
+typedef uint16_t *usv_t ;
+
+#define usvNew()        (usv_t)blkNew(blkU16sz)
+#define usvFree(b)      (usv_t)blkFree((uint8_t *)b)
+
+#define usvCnt          blkCnt
+#define usvSlt          blkSlt
+#define usvDepth        blkDepth
+#define usvReset(b)     ((usv_t)blkReset(b,blkU16sz))
+
+#define usvGet(b,n)     ((uint16_t)blkGetInt((uint8_t *)b, n, blkU16))
+#define usvSet(b,n,v)   ((usv_t)blkSetInt((uint8_t *)b, n, (uint16_t)v, blkU16))
+
+#define usvAppend(a,b)  (usv_t)blkAppend((uint8_t *)a,(uint8_t *)b,blkU16sz)
+#define usvSort(b)      qsort(b, usvCnt(b), blkU16sz, blkU16cmp)
+#define usvUniq(b)      blkUniq((uint8_t *)b, blkU16sz)
+
+#define usvAdd(b,v)     usvSet(b, usvCnt(b), v)
+#define usvPush(b,v)    usvSet(b, usvCnt(b), v)  
+#define usvTop(b)       ((!b || !usvCnt(b))? 0 : usvGet(b,usvCnt(b)-1))
+#define usvPop(b)       ((!b || !usvCnt(b))? 0 : usvGet(b,--usvCnt(b)))
+
+/**********************/
+
+typedef uint8_t *ucv_t ;
+
+#define ucvNew()        (ucv_t)blkNew(blkCHRsz)
+#define ucvFree(b)      (ucv_t)blkFree(b)
+
+#define ucvCnt          blkCnt
+#define ucvSlt          blkSlt
+#define ucvDepth        blkDepth
+#define ucvReset(b)   ((ucv_t)blkReset(b,blkCHRsz))
+
+#define ucvGet(b,n)     ((uint8_t)blkGetInt(b, n, blkCHR))
+#define ucvSet(b,n,v)   ((ucv_t)blkSetInt(b, n, (uint8_t)v, blkCHR))
+
+#define ucvAppend(a,b)  (ucv_t)blkAppend((uint8_t *)a,(uint8_t *)b,blkCHRsz)
+#define ucvSort(b)      qsort(b, ucvCnt(b), blkCHRsz, blkCHRcmp)
+#define ucvUniq(b)      blkUniq((uint8_t *)b, blkCHRsz)
+
+#define ucvAdd(b,v)     ucvSet(b, ucvCnt(b), v)
+#define ucvPush(b,v)    ucvSet(b, ucvCnt(b), v)  
+#define ucvTop(b)       ((!b || !ucvCnt(b))? 0 : ucvGet(b,ucvCnt(b)-1))
+#define ucvPop(b)       ((!b || !ucvCnt(b))? 0 : ucvGet(b,--ucvCnt(b)))
+
+
+/**********************/
+
+typedef void **vpv_t ;
+
+#define vpvNew()      (vpv_t)blkNew(blkPTRsz)
+#define vpvFree(b)    (vpv_t)blkFree((uint8_t *)b)
+
+#define vpvCnt        blkCnt
+#define vpvSlt        blkSlt
+#define vpvDepth      blkDepth
+#define vpvReset(b)   ((vpv_t)blkReset((blk_t)(b),blkPTRsz))
+
+#define vpvGet(b,n)   ((void *)blkGetPtr((uint8_t *)b, n))
+#define vpvSet(b,n,v) ((vpv_t)blkSetPtr((uint8_t *)b, n, (void *)v))
+
+#define vpvAdd(b,v)     vpvSet(b, vpvCnt(b), v)
+#define vpvPush(b,v)    vpvSet(b, vpvCnt(b), v)                        
+#define vpvTop(b)       ((!b || !vpvCnt(b))? 0 : vpvGet(b,vpvCnt(b)-1))
+#define vpvPop(b)       ((!b || !vpvCnt(b))? 0 : vpvGet(b,--vpvCnt(b)))
+
+/**********************/
+                        
+#define bitI(x)  ((x)>> 4)
+#define bitR(x)  (1 << ((x) & 0x0F))
+                                               
+typedef usv_t bit_t;
+#define blkBITsz blkU16sz
+
+#define bitNew        usvNew
+#define bitFree       usvFree
+
+#define bitSet(b,n)  ((bit_t)usvSet(b, bitI(n), \
+                                  usvGet(b, bitI(n)) | bitR(n)))
+
+#define bitClr(b,n)  ((bit_t)usvSet(b, bitI(n), \
+                                  usvGet(b, bitI(n)) & ~bitR(n)))
+
+#define bitTest(b,n)  (usvGet(b, bitI(n)) & bitR(n))
+
+#define bitFlip(b,n) ((bit_t)usvSet(b, bitI(n), \
+                                  usvGet(b, bitI(n)) ^ bitR(n)))
+
+bit_t bitNeg(bit_t b, uint32_t max);
+bit_t bitZero(bit_t b);
+bit_t bitCpy(bit_t newbit, bit_t b);
+
+#define bitDup(b)     bitCpy(NULL,b)
+
+bit_t bitAnd(bit_t a, bit_t b);
+
+#define bitCnt        usvCnt
+#define bitSlt        usvSlt
+
+
+
+/**********************/
+struct vec {
   uint16_t      esz;
   uint16_t      npg;
   uint32_t      cnt;
@@ -52,13 +224,13 @@ typedef struct {
   uint16_t      cur_n;  /* cur slot number  */
   uint32_t      cur_w;  /* cur water mark   */
   uint8_t      *cur_q;  /* cur slot pointer */
-} vec;
+};
 
-typedef vec *vec_t;
+typedef struct vec *vec_t;
 
 typedef void (*vecCleaner)(void *);
 
-vec      *vecNew        (uint16_t elemsize);
+vec_t     vecNew        (uint16_t elemsize);
 void     *vecGet        (vec_t v, uint32_t ndx);
 void     *vecSet        (vec_t v, uint32_t ndx, void *elem);
 void     *vecFreeClean  (vec_t v, vecCleaner cln);
@@ -84,7 +256,7 @@ uint32_t  vecSize       (vec_t v);
 #define vecLast(v)     (vecCnt(v)>0? vecGet(v,vecCnt(v)-1) : NULL);
 
 #define VEC_NULLNDX   UINT32_MAX
-#define VEC_DELETED   ((void*)vecNew)
+#define VEC_DELETED   ((void *)vecNew)
 
 /**********************/
 
@@ -145,9 +317,9 @@ typedef struct mapNode {
   int8_t          elem[sizeof(void *)];
 } mapNode;
 
-typedef struct mapVec {
-  vec             nodes[1];
-  vec             stack[1];
+typedef struct {
+  struct vec      nodes[1];
+  vpv_t           stack;
   struct mapNode *root;
   struct mapNode *freelst;
   uint32_t        cnt;
@@ -169,156 +341,21 @@ uint32_t mapMaxDepth    (map_t m);
 
 #define mapFree(m) mapFreeClean(m,NULL)
 
-
 /**********************/
 
-typedef struct blk_ {
-  uint16_t slt;
-  uint16_t cnt;
-  uint8_t  elem[1];
-} blk;
+typedef map_t set_t;
 
-typedef blk *blk_t;
-
-uint8_t   *blkNew    (uint8_t ty);
-uint8_t   *blkSetInt (uint8_t *b, uint16_t ndx, uint32_t val, uint8_t ty);
-uint8_t   *blkSetPtr (uint8_t *b, uint16_t ndx, void *val);
-uint32_t   blkGetInt (uint8_t *b, uint16_t ndx, uint8_t ty);
-void*      blkGetPtr (uint8_t *b, uint16_t ndx);
-uint8_t   *blkFree   (uint8_t *b);
-uint8_t   *blkAppend (uint8_t *b, uint8_t *a, uint8_t sz);
-uint8_t   *blkPushInt(uint8_t *b, uint32_t val, uint8_t ty);
-uint32_t   blkTopInt (uint8_t *b, uint8_t  ty);
-uint32_t   blkPopInt (uint8_t *b, uint8_t  ty);
-
-#define blkCHR 1
-#define blkU16 2
-#define blkU32 3
-#define blkPTR 4
-
-#define blkCHRsz sizeof(char)
-#define blkU16sz sizeof(uint16_t)
-#define blkU32sz sizeof(uint32_t)
-#define blsPTRsz sizeof(void *)
-
-int blkU32cmp (const void *a, const void *b);
-int blkU16cmp (const void *a, const void *b);
-int blkCHRcmp (const void *a, const void *b);
-
-void blkUniq(uint8_t *b,uint8_t sz);
-
-#define blkNodePtr(b) ((blk_t)(((uint8_t *)b) - offsetof(blk,elem)))
-#define blkCnt(b)     (blkNodePtr(b)->cnt)
-#define blkSlt(b)     (blkNodePtr(b)->slt)
-
-/**********************/
-
-typedef uint32_t *ulv_t ;
-
-#define ulvNew()      (ulv_t)blkNew(blkU32)
-#define ulvFree(b)    (ulv_t)blkFree((uint8_t *)b)
-
-#define ulvCnt        blkCnt
-#define ulvSlt        blkSlt
-
-#define ulvGet(b,n)   ((uint32_t)blkGetInt((uint8_t *)b, n, blkU32))
-#define ulvSet(b,n,v) ((ulv_t)blkSetInt((uint8_t *)b, n, (uint32_t)v, blkU32))
-
-#define ulvAppend(a,b)  (ulv_t)blkAppend(a,b,blkU32sz)
-#define ulvSort(b)      qsort(b, ulvCnt(b), blkU32sz, blkU32cmp)
-#define ulvUniq(b)      blkUniq((uint8_t *)b, blkU32sz)
-
-#define ulvAdd(b,v)     ulvSet(b, ulvCnt(b), v)
-#define ulvPush(b,v)    ulvSet(b, ulvCnt(b), v)  
-#define ulvTop(b)       ((!b || !ulvCnt(b))? 0 : ulvGet(b,ulvCnt(b)-1))
-#define ulvPop(b)       ((!b || !ulvCnt(b))? 0 : ulvGet(b,--ulvCnt(b)))
-
-/**********************/
-
-typedef uint16_t *usv_t ;
-
-#define usvNew()        (usv_t)blkNew(blkU16)
-#define usvFree(b)      (usv_t)blkFree((uint8_t *)b)
-
-#define usvCnt          blkCnt
-#define usvSlt          blkSlt
-
-#define usvGet(b,n)     ((uint16_t)blkGetInt((uint8_t *)b, n, blkU16))
-#define usvSet(b,n,v)   ((usv_t)blkSetInt((uint8_t *)b, n, (uint16_t)v, blkU16))
-
-#define usvAppend(a,b)  (usv_t)blkAppend((uint8_t *)a,(uint8_t *)b,blkU16sz)
-#define usvSort(b)      qsort(b, usvCnt(b), blkU16sz, blkU16cmp)
-#define usvUniq(b)      blkUniq((uint8_t *)b, blkU16sz)
-
-#define usvAdd(b,v)     usvSet(b, usvCnt(b), v)
-#define usvPush(b,v)    usvSet(b, usvCnt(b), v)  
-#define usvTop(b)       ((!b || !usvCnt(b))? 0 : usvGet(b,usvCnt(b)-1))
-#define usvPop(b)       ((!b || !usvCnt(b))? 0 : usvGet(b,--usvCnt(b)))
-
-/**********************/
-
-typedef uint8_t *ucv_t ;
-
-#define ucvNew()        (ucv_t)blkNew(blkCHR)
-#define ucvFree(b)      (ucv_t)blkFree(b)
-
-#define ucvCnt          blkCnt
-#define ucvSlt          blkSlt
-
-#define ucvGet(b,n)     ((uint8_t)blkGetInt(b, n, blkCHR))
-#define ucvSet(b,n,v)   ((ucv_t)blkSetInt(b, n, (uint8_t)v, blkCHR))
-
-#define ucvAppend(a,b)  (ucv_t)blkAppend((uint8_t *)a,(uint8_t *)b,blkCHRsz)
-#define ucvSort(b)      qsort(b, ucvCnt(b), blkCHRsz, blkCHRcmp)
-#define ucvUniq(b)      blkUniq((uint8_t *)b, blkCHRsz)
-
-#define ucvAdd(b,v)     ucvSet(b, ucvCnt(b), v)
-#define ucvPush(b,v)    ucvSet(b, ucvCnt(b), v)  
-#define ucvTop(b)       ((!b || !ucvCnt(b))? 0 : ucvGet(b,ucvCnt(b)-1))
-#define ucvPop(b)       ((!b || !ucvCnt(b))? 0 : ucvGet(b,--ucvCnt(b)))
+#define setNew(sz)         mapNew(sz,NULL)
+#define setAdd             mapAdd
+#define setDel             mapDel
+#define setExist(s,e)     (mapGet(s,e) != NULL)
+#define setFirst           mapFirst
+#define setNext            mapNext
+#define setCnt             mapCnt
 
 
 /**********************/
 
-typedef void **vpv_t ;
-
-#define vpvNew()      (vpv_t)blkNew(blkPTR)
-#define vpvFree(b)    (vpv_t)blkFree((uint8_t *)b)
-
-#define vpvCnt        blkCnt
-#define vpvSlt        blkSlt
-
-#define vpvGet(b,n)   ((void *)blkGetPtr((uint8_t *)b, n))
-#define vpvSet(b,n,v) ((vpv_t)blkSetPtr((uint8_t *)b, n, (void *)v))
-
-#define vpvAdd(b,v)     vpvSet(b, vpvCnt(b), v)
-#define vpvPush(b,v)    vpvSet(b, vpvCnt(b), v)                        
-#define vpvTop(b)       ((!b || !vpvCnt(b))? 0 : vpvGet(b,vpvCnt(b)-1))
-#define vpvPop(b)       ((!b || !vpvCnt(b))? 0 : vpvGet(b,--vpvCnt(b)))
-
-/**********************/
-                                                                       
-typedef ulv_t bit_t;
-
-#define bitNew        ulvNew
-#define bitFree       ulvFree
-
-#define bitSet(b,n)  ((bit_t)ulvSet(b, ((n)>>5), \
-                             ulvGet(b, (n)>> 5) | (1 << ((n) & 0x1F))))
-
-#define bitClr(b,n)  ((bit_t)ulvSet(b, ((n)>>5), \
-                             ulvGet(b, (n)>> 5) & ~(1 << ((n) & 0x1F))))
-
-#define bitTest(b,n)  (ulvGet(b, (n)>>5) & (1 << ((n) & 0x1F)))
-
-#define bitFlip(b,n) ((bit_t)ulvSet(b, ((n)>>5), \
-                             ulvGet(b, (n)>> 5) ^ (1 << ((n) & 0x1F))))
-
-bit_t bitNeg(bit_t b, uint32_t max);
-
-#define bitCnt        ulvCnt
-                              
-/**********************/
 
 
 #endif  /* VEC_H */

@@ -24,7 +24,7 @@ void yrxNFAInit()
 
 void yrxNFAAddarc(state_t from, state_t to, lbl_t l, tag_t tag)
 {
-  printf("nfa_addarc(%d, %d, \"%s\", %08X)\n",from,to,yrxLabelPairs(l),tag);
+  printf("nfa_addarc(%d, %d, \"%s\", %08X)\n",from,to,yrxLabelStr(l),tag);
 }
 
 void yrxNFAClose()

@@ -32,7 +32,7 @@ int arccmp(Arc *a, Arc *b)
   return t;
 }
 
-#if 0
+#if 1
 
 uint32_t mapdepth(mapNode *p)
 {
@@ -456,7 +456,7 @@ int main(void)
   TSTWRITE("\n");
  #endif
 
- #if 0
+ #if 1
   {
   mapNode *pn,*qn;
   map_t v;
@@ -749,7 +749,7 @@ int main(void)
  }
  #endif
  
- #if 1
+ #if 0
  {
   TSTSECTION("Bitmaps");
   TSTGROUP("Creating bmps");
