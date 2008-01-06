@@ -26,7 +26,8 @@ void usage(void)
 static void init()
 {
   yrxCleanVec = vpvNew();
-  yrxCleanVec = yrxLabelInit(yrxCleanVec); 
+  yrxCleanVec = yrxLblInit(yrxCleanVec); 
+  yrxCleanVec = yrxDFAInit(yrxCleanVec);
 }
 
 static void cleanup()
