@@ -42,15 +42,18 @@
 
 /**********************/
 
-typedef struct blk_ {
+struct blk {
   uint16_t slt;
   uint16_t cnt;
   uint8_t  elem[1];
-} blk;
+} ;
 
-typedef blk *blk_t;
+typedef struct blk *blk_t;
+
+#define blkOffset offsetof(struct blk,elem)
 
 uint8_t   *blkNew    (uint8_t ty);
+uint8_t   *blkCpy    (uint8_t *a, uint8_t *b, uint8_t sz);
 uint8_t   *blkSetInt (uint8_t *b, uint16_t ndx, uint32_t val, uint8_t ty);
 uint8_t   *blkSetPtr (uint8_t *b, uint16_t ndx, void *val);
 uint32_t   blkGetInt (uint8_t *b, uint16_t ndx, uint8_t ty);
@@ -77,18 +80,23 @@ int blkCHRcmp (const void *a, const void *b);
 
 void blkUniq(uint8_t *b,uint8_t sz);
 
-#define blkNodePtr(b) ((blk_t)(((uint8_t *)b) - offsetof(blk,elem)))
+#define blkNodePtr(b) ((blk_t)(((uint8_t *)b) - blkOffset))
 #define blkCnt(b)     (blkNodePtr(b)->cnt)
 #define blkSlt(b)     (blkNodePtr(b)->slt)
 #define blkDepth(b)   (b?blkCnt(b):0)
 
 #define blkReset(b,s) (b? (blkCnt(b)=0, (void *)b) : (void *)blkNew(s))
 
+#define blkDup(b,s) blkCpy(NULL,b,s)
+
 /**********************/
 
 typedef uint32_t *ulv_t ;
 
 #define ulvNew()      (ulv_t)blkNew(blkU32sz)
+#define ulvCpy(a,b)   (ulv_t)blkCpy((uint8_t *)(a),(uint8_t *)(b),blkU32sz)
+#define ulvDup(b)     (ulv_t)blkCpy(NULL,(uint8_t *)(b),blkU32sz)
+
 #define ulvFree(b)    (ulv_t)blkFree((uint8_t *)b)
 
 #define ulvCnt        blkCnt
@@ -114,6 +122,8 @@ typedef uint16_t *usv_t ;
 
 #define usvNew()        (usv_t)blkNew(blkU16sz)
 #define usvFree(b)      (usv_t)blkFree((uint8_t *)b)
+#define usvCpy(a,b)     (usv_t)blkCpy((uint8_t *)(a),(uint8_t *)(b),blkU16sz)
+#define usvDup(b)       (usv_t)blkCpy(NULL,(uint8_t *)(b),blkU16sz)
 
 #define usvCnt          blkCnt
 #define usvSlt          blkSlt

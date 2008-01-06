@@ -26,45 +26,65 @@
 
 #define state_t   uint16_t
 
-typedef uint32_t tag_t;
+/*****************************/
 
-#define TAG_NONE   0
-#define TAG_CE(n)  ('a'+n-1)
-#define TAG_CB(n)  ('A'+n-1)
+typedef uint32_t tag_t;
+typedef ulv_t    tagset_t;
+
+#define yrxTagNone   0
+#define TAG_CE(n)  ('A'+n-1)
+#define TAG_CB(n)  ('a'+n-1)
 #define TAG_MRK    ('#')
 #define TAG_FIN    ('$')
 
-#define tag_code(t,n,d) (((t) << 16) | ((n) << 24) | (d))
+#define yrxTag(t,n,d) (((n) << 24) | ((t) << 16) | (d))
 
-#define tag_delta(t) ((t) & 0xFFFF0000)
-#define tag_expr(t) (((t) >> 16) & 0x00FF)
-#define tag_type(t)  ((t) >> 24)
+#define yrxTagDelta(t) ((t) & 0xFFFF0000)
+#define yrxTagExpr(t) (((t) >> 16) & 0x00FF)
+#define yrxTagType(t)  ((t) >> 24)
+
+tagset_t yrxTagset           ();
+tagset_t yrxTagsFree         (tagset_t a);
+tagset_t yrxTagsUnion        (tagset_t a, tagset_t b);
+tagset_t yrxTagsIntersection (tagset_t a, tagset_t b);
+tagset_t yrxTagsDifference   (tagset_t a, tagset_t b);
+int      yrxTagsEmpty        (tagset_t a);
+
 
 /*****************************/
 typedef uint16_t   lbl_bits[16];
 typedef uint16_t  *lbl_t;
 
-#define yrxLabelEps NULL
+#define yrxLblEps NULL
 
-lbl_t yrxLabel(char *l);
-int   yrxLblEqual(lbl_t a, lbl_t b);
-lbl_t yrxLblDifference(lbl_t a, lbl_t b);
-lbl_t yrxLblIntersection(lbl_t a, lbl_t b);
-lbl_t yrxLblUnion(lbl_t a, lbl_t b);
-vpv_t yrxLabelInit(vpv_t v);
+lbl_t    yrxLabel(char *l);
+int      yrxLblEqual(lbl_t a, lbl_t b);
+lbl_t    yrxLblDifference(lbl_t a, lbl_t b);
+lbl_t    yrxLblIntersection(lbl_t a, lbl_t b);
+lbl_t    yrxLblUnion(lbl_t a, lbl_t b);
+vpv_t    yrxLblInit(vpv_t v);
 uint8_t *yrxLabelPairs(lbl_t lb);
-char *yrxLabelStr(lbl_t lb);
+char    *yrxLblStr(lbl_t lb);
 
 /*****************************/
 
+typedef struct {
+  lbl_t    lbl;
+  tagset_t tags;
+  state_t  to;
+} arc_t;
+
+vpv_t    yrxDFAInit(vpv_t v);
+
+void     yrxNFAAddarc(state_t from, state_t to, lbl_t l, tag_t tag);
+void     yrxDFA();
+
+arc_t   *yrxDFANextArc();
+state_t  yrxDFANextState(state_t st);
+
+/*****************************/
 void yrxParse(char **rxs, int rxn);
 void yrxParseErr(int errn, char *errmsg);
-
-/*****************************/
-
-void yrxNFAInit();
-void yrxNFAAddarc(state_t from, state_t to, lbl_t l, tag_t tag);
-void yrxNFAClose();
 
 /*****************************/
 

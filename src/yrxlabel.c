@@ -216,8 +216,6 @@ uint8_t *yrxLabelPairs(lbl_t lb)
   return s;
 }
 
-
-
 static char *lbl_chr(char *s, uint16_t c)
 {
   if (c <= 32   || c > 126  || c == '\\' || c == '"' ||
@@ -233,7 +231,7 @@ static char *lbl_chr(char *s, uint16_t c)
 }
 
 
-char *yrxLabelStr(lbl_t lb)
+char *yrxLblStr(lbl_t lb)
 {
   ucv_t s;
   uint16_t a,b;
@@ -260,19 +258,19 @@ char *yrxLabelStr(lbl_t lb)
 
 /***************/
 
-static void yrxLabelClean()
+static void yrxLblClean()
 {
   lblpool = mapFree(lblpool); 
 }
 
-vpv_t yrxLabelInit(vpv_t v)
+vpv_t yrxLblInit(vpv_t v)
 {
   lblpool = mapNew(sizeof(lbl_bits), NULL);
   
   if ( lblpool == NULL ) 
     err(601,yrxStrNoMem);
     
-  v = vpvAdd(v, yrxLabelClean);
+  v = vpvAdd(v, yrxLblClean);
   return v;
 }
 
@@ -317,5 +315,10 @@ lbl_t yrxLblDifference(lbl_t a, lbl_t b)
 int yrxLblEqual(lbl_t a, lbl_t b)
 {
   return lbl_eq(a,b);
+}
+
+int yrxLblEmpty(lbl_t b)
+{
+  return lbl_isempty(b);
 }
 

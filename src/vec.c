@@ -12,6 +12,16 @@
 ** express or implied warranty.
 */
 
+/** DISCLAIMER
+**
+**   These vector functions are used within the YRX project
+** <http://yrx.sourceforge.net>. No claim of their applicatbility
+** outside that project is made!
+**
+**   One day, maybe, they will become a more general and useful
+** library.
+**
+*/
 
 /*
 
@@ -91,7 +101,7 @@ uint8_t *blkNew(uint8_t sz)
   blk_t b;
   int newsz;
 
-  newsz = offsetof(blk,elem) + sz;
+  newsz = blkOffset + sz;
   b = calloc(1,newsz);
   if (b != NULL) {
     b->slt = 1;
@@ -103,7 +113,7 @@ uint8_t *blkNew(uint8_t sz)
 
 static blk_t blkfixsize(blk_t bl, uint16_t slt, uint8_t sz)
 {
-  bl = realloc(bl, offsetof(blk,elem) + (slt * sz));
+  bl = realloc(bl, blkOffset + (slt * sz));
   if (bl) {
     if (bl->slt < slt) {
       memset(bl->elem + bl->slt * sz, 0, (slt - bl->slt) * sz);
@@ -260,6 +270,23 @@ void blkUniq(uint8_t *b,uint8_t sz)
   blkCnt(b) = (uint16_t)((p-b)/sz);
 }
 
+uint8_t *blkCpy(uint8_t *a,uint8_t *b, uint8_t sz)
+{
+  blk_t bl;
+  uint32_t blksize;
+  
+  if (a == b) return a;
+  
+  a = blkFree(a);
+  if ( b != NULL) {
+    blksize = blkOffset + (sz * blkSlt(b));
+    bl = malloc( blksize );
+    if (bl == NULL) vecErr(418,errNOMEM);
+    memcpy(bl,blkNodePtr(b),blksize);
+    a = bl->elem;
+  }
+  return a;
+}
 
 /**************************/
 
@@ -295,16 +322,19 @@ bit_t bitZero(bit_t b)
 
 bit_t bitCpy(bit_t a, bit_t b)
 {
-  int k;
+  uint32_t sz;
 
   if (a == b) return a;
   
-  k = blkCnt(b);
-  a = bitZero(a);
-  while (k-- > 0) {
-    a = usvSet((usv_t)a, k, b[k]);
+  a = bitFree(a);
+  if (b != NULL) {
+    sz = blkOffset + bitSlt(b) * blkBITsz;
+    a = malloc(sz);
+    if (a) {
+      memcpy(a, blkNodePtr(b), sz);
+      a = (bit_t)(((blk_t)a)->elem);
+    }
   }
-  bitCnt(a) = bitCnt(b);
   return a;
 }       
 
