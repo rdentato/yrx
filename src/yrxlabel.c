@@ -193,9 +193,9 @@ static int lbl_rng(lbl_t bmp, uint16_t a, uint16_t *min, uint16_t *max)
   return 1;
 }
 
-uint8_t *yrxLabelPairs(lbl_t lb)
+uint8_t *yrxLblPairs(lbl_t lb)
 {
-  ucv_t s;
+  uint8_t *s;
   uint16_t a,b;
 
   int i=0;
@@ -209,12 +209,12 @@ uint8_t *yrxLabelPairs(lbl_t lb)
       s[i++] = (uint8_t)b;
       a = b +1 ;
     }
-    s[i++] = 1;
   }
-
+  s[i++] = 1;
   s[i] = '\0';
   return s;
 }
+
 
 static char *lbl_chr(char *s, uint16_t c)
 {

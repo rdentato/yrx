@@ -57,7 +57,8 @@ int main(int argc, char **argv)
   if (argn < 1 || 250 < argn) usage();
 
   yrxParse(rxs, argn);
-
+  yrxDump(0);
+  
   exit(0);
 }
 

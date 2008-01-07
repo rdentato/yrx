@@ -101,7 +101,7 @@ static arc_t *nextArc(state_t st)
     return NULL;
   }
     
-  if ( FA == NULL ||
+  if ( curst == 0 || FA == NULL ||
        vpvCnt(FA) < curst ||
        FA[curst] == NULL ||
        curarcn >= vecCnt((vec_t)(FA[curst])) )
@@ -111,6 +111,7 @@ static arc_t *nextArc(state_t st)
   if (a->to != 0) pushonce(a->to);
   return a;
 }
+
 
 arc_t *yrxDFANextArc()
 {
@@ -138,7 +139,7 @@ void yrxDFAAddarc(state_t from, state_t to, lbl_t l, tagset_t tags)
 
 void yrxDFA()
 {
- printf ("DFA\n");    
+ dbgmsg ("DFA\n");    
 }
 
 /*****/
@@ -162,14 +163,14 @@ void yrxNFAAddarc(state_t from, state_t to, lbl_t l, tag_t tag)
 
   vecAdd(arclist,&arc);
   
-  printf("nfa_addarc(%d, %d, \"%s\", %08X)\n",from,to,yrxLblStr(l),tag);
+  dbgmsg("nfa_addarc(%d, %d, \"%s\", %08X)\n",from,to,yrxLblStr(l),tag);
 }
 
 static void yrxDFAClean()
 {
   uint32_t k;
   
-  printf ("Clean FA\n");
+  dbgmsg ("Clean FA\n");
   if (FA != NULL) {
     for (k=0; k < ulvCnt(FA); k++) {
       if (FA[k] != NULL) FA[k] = vecFree(FA[k]);
@@ -181,7 +182,7 @@ static void yrxDFAClean()
 
 vpv_t yrxDFAInit(vpv_t v)
 {
-  printf ("Init FA\n");
+  dbgmsg ("Init FA\n");
   v = vpvAdd(v,yrxDFAClean);
   
   if (FA == NULL) FA = vpvNew();
