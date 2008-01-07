@@ -14,12 +14,35 @@
 
 #include "yrx.h"
 
+uint8_t *yrxTagsStr(tagset_t a)
+{
+  uint8_t *s;
+  uint8_t *p;
+  uint16_t k=0;
+  
+  s = yrxBufChk(512);
+ 
+  p = s;
+  if (a != NULL) {
+    for (k=0; k < ulvCnt(a); k++) {
+      sprintf(p,"%c%02X_%04X ", yrxTagType(a[k]),
+                                  yrxTagExpr(a[k]), yrxTagDelta(a[k]));
+      p += 9;
+    }
+  }
+  
+  *p = '\0';
+  return s;
+}
+
 tagset_t yrxTagset(tag_t tag)
 {
   tagset_t ts;
   
+  if (tag == yrxTagNone) return NULL;
+  
   ts = ulvNew();
-  if (ts != NULL && tag != yrxTagNone) {
+  if (ts != NULL) {
     ulvSet(ts,0,tag);
   }
   return ts;

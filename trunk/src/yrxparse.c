@@ -251,7 +251,7 @@ static state_t term(state_t state)
                   
                   sprintf(l,"[^\\x%02X]%c\\x%02X",esc,0,esc);
                   l1 = yrxLabel(l);
-                  l2 = yrxLabel(l+7);
+                  l2 = yrxLabel(l+8);
                   
                   t1 = nextstate();
                   to = nextstate();

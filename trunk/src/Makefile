@@ -23,7 +23,8 @@ CFLAGS = $(DEBUG) -I../utils/lua -Wall -O2 -g
 OFILES = yrxparse.$(_OBJ)\
          yrxlabel.$(_OBJ)\
          yrxtags.$(_OBJ)\
-         yrxdfa.$(_OBJ)  
+         yrxdfa.$(_OBJ) \
+         yrxdump.$(_OBJ)
 
 yrx$(_EXE):	$(OFILES) yrxmain.$(_OBJ) vec.$(_OBJ) 
 	gcc -o yrx$(_EXE) yrxmain.$(_OBJ) $(OFILES) vec.$(_OBJ) $(LDFLAGS) $(LIBS)
