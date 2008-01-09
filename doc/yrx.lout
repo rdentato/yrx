@@ -266,14 +266,13 @@ the following operations are defined:
         lcol {"   "} lcol {@R{"tag-intersection"}}
     row mcol {^ ^ logicalor " " (@tag supp d on {x,k} in R "  " logicaland "  "
                                   not exists " " {w, d'} @R ": " @tag supp {d'} on {w,k} in S ) }
-    row mcol {^ ^ logicalor " " (exists {d'}, {d''} @R ": " @tag supp {d'} on {x,k} in S "  " logicaland "  "
-                                                         @tag supp {d''} on {x,k} in R "  " logicaland "  "
-                                 d = sel sub x ({d'}, {d''}) ) rbrace}
+    row mcol {^ ^ logicalor " " (@tag supp {d} on {x,k} in S "  " logicaland "  "
+                                                         @tag supp {d} on {x,k} in R ) rbrace}
         
     row lcol {" "}             
     row mcol { S " " setminus sub @tag " " R
               ^=  {lbrace  @tag supp {d} on {x,k} " " bar ^ "   "
-                   @tag supp d on {x,k} in S "  " logicaland "  " not exists " " {d'} @R ": " @tag supp {d'} on {x,k} in R rbrace } }
+                   @tag supp d on {x,k} in S "  " logicaland "  " @tag supp {d} on {x,k} notin R rbrace } }
         lcol {"   "} lcol {@R{"tag-difference"}}
   }
 }

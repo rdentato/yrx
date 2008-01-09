@@ -32,9 +32,9 @@ typedef uint32_t tag_t;
 typedef ulv_t    tagset_t;
 
 #define yrxTagNone   0
-#define TAG_CE(n)  ('A'+n)
 #define TAG_CB(n)  ('a'+n)
-#define TAG_MRK    ('#')
+#define TAG_CE(n)  ('A'+n)
+#define TAG_MRK    (':')
 #define TAG_FIN    ('$')
 
 #define yrxTag(t,n,d) (((n) << 24) | ((t) << 16) | (d))
@@ -50,6 +50,7 @@ tagset_t yrxTagsIntersection (tagset_t a, tagset_t b);
 tagset_t yrxTagsDifference   (tagset_t a, tagset_t b);
 int      yrxTagsEmpty        (tagset_t a);
 uint8_t *yrxTagsStr          (tagset_t a);
+tagset_t yrxTagsIncrement    (tagset_t a);
 
 /*****************************/
 typedef uint16_t   lbl_bits[16];
@@ -65,6 +66,7 @@ lbl_t    yrxLblUnion(lbl_t a, lbl_t b);
 vpv_t    yrxLblInit(vpv_t v);
 char    *yrxLblStr(lbl_t lb);
 uint8_t *yrxLblPairs(lbl_t lb);
+int      yrxLblEmpty(lbl_t b);
 
 /*****************************/
 
