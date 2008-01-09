@@ -17,12 +17,12 @@
 uint8_t *yrxTagsStr(tagset_t a)
 {
   uint8_t *s;
-  uint8_t *p;
+  char *p;
   uint16_t k=0;
   
   s = yrxBufChk(512);
  
-  p = s;
+  p = (char *)s;
   if (a != NULL) {
     for (k=0; k < ulvCnt(a); k++) {
       sprintf(p,"%c%02X_%04X ", yrxTagType(a[k]),
@@ -74,7 +74,10 @@ tagset_t yrxTagsUnion(tagset_t a, tagset_t b)
   
   if (a == b || b == NULL)
     return ulvDup(a);
-  
+
+  if (a == NULL)
+    return ulvDup(b);
+
   while (j < ulvCnt(a)  && k < ulvCnt(b)) {
     cmp = tag_cmpExprType(a[j],b[k]);
     if (cmp < 0)
@@ -127,11 +130,12 @@ tagset_t yrxTagsIntersection(tagset_t a, tagset_t b)
   int cmp;
   int expr;
   
-  if (a == b)
+  if (a == b || b == NULL)
     return ulvDup(a);
   
-  if (a == NULL || b == NULL)
-  
+  if (a == NULL)
+    return ulvDup(b);
+    
   while (j < ulvCnt(a)  && k < ulvCnt(b)) {
     cmp = tag_cmpExpr(a[j],b[k]);  
     if (cmp < 0)
@@ -146,8 +150,11 @@ tagset_t yrxTagsIntersection(tagset_t a, tagset_t b)
           j++;
         else if (cmp > 0)
           k++;
-        else
-          c = ulvAdd(c, tag_sel(a[j++], b[k++]));      
+        else { /* Same expression and same type. */
+          if (a[j] == b[k]) /*  also same delta! */
+            c = ulvAdd(c, a[j]);
+          k++; j++;      
+        }
       } while ( j < ulvCnt(a) && k < ulvCnt(b) && 
                                         tag_cmpExpr(a[j],b[k] == 0));
       /* discard other tags of the same expression */
@@ -171,3 +178,17 @@ int yrxTagsEmpty(tagset_t a)
 {
   return (a == NULL || ulvCnt(a) == 0);
 }
+
+tagset_t yrxTagsIncrement(tagset_t a)
+{
+  uint32_t k;
+
+  if (a != NULL) {
+    for (k = 0; k < ulvCnt(a); k++) {
+      if (yrxTagDelta(a[k]) < 65530) a[k]++;
+      else err(801,"Tag displacement out or range");
+    }
+  }
+  return a;
+}
+

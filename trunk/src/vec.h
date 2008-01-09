@@ -28,6 +28,7 @@
 #ifdef _MSC_VER
 #include "pstdint.h"
 #define strdup _strdup
+#define _CRT_SECURE_NO_WARNINGS
 #else
 #include <stdint.h>
 #endif
@@ -83,7 +84,7 @@ void blkUniq(uint8_t *b,uint8_t sz);
 #define blkNodePtr(b) ((blk_t)(((uint8_t *)b) - blkOffset))
 #define blkCnt(b)     (blkNodePtr(b)->cnt)
 #define blkSlt(b)     (blkNodePtr(b)->slt)
-#define blkDepth(b)   (b?blkCnt(b):0)
+#define blkDepth(b)   ((b)?blkCnt(b):0)
 
 #define blkReset(b,s) (b? (blkCnt(b)=0, (void *)b) : (void *)blkNew(s))
 
@@ -111,8 +112,8 @@ typedef uint32_t *ulv_t ;
 #define ulvSort(b)      qsort(b, ulvCnt(b), blkU32sz, blkU32cmp)
 #define ulvUniq(b)      blkUniq((uint8_t *)b, blkU32sz)
 
-#define ulvAdd(b,v)     ulvSet(b, ulvCnt(b), v)
-#define ulvPush(b,v)    ulvSet(b, ulvCnt(b), v)  
+#define ulvAdd(b,v)     ulvSet(b, blkDepth(b), v)
+#define ulvPush         ulvAdd
 #define ulvTop(b)       ((!b || !ulvCnt(b))? 0 : ulvGet(b,ulvCnt(b)-1))
 #define ulvPop(b)       ((!b || !ulvCnt(b))? 0 : ulvGet(b,--ulvCnt(b)))
 

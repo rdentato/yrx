@@ -298,7 +298,7 @@ bit_t bitNeg(bit_t b,uint32_t max) /* max = highest number in the set */
   
   k = bitI(max);
   while (k--) {
-    b = usvSet(b, k, usvGet(b, k) ^ 0xFFFFFFFF);
+    b = usvSet(b, k, usvGet(b, k) ^ 0xFFFF);
   }
   
   k = bitR(max);

@@ -66,7 +66,7 @@ static void dmp_plain(Automata *dfa)
 #endif
 static uint8_t *dmp_dotchr(uint8_t c)
 {
-  static uint8_t buf[8];
+  static char buf[8];
   
   if (c <= 32   || c > 126  || c == '\\' || c == '"' ||
       c == '\'' || c == '[' || c == ']'  || c == '-' ) {
@@ -90,7 +90,7 @@ static void dmp_dot()
   printf("\trankdir=LR;\n");
 
   printf("\tnode [shape = circle];\n");
-  printf("\t0 [  style= filled, label = \"0\"]") ;
+  printf("\t0 [  style= filled, label = \"0\"];\n") ;
 
   from = yrxDFAStartState();
 

@@ -224,7 +224,7 @@ static char *lbl_chr(char *s, uint16_t c)
     s += 3;
   }
   else {
-    *s = c;
+    *s = (char)c;
   }
   s++;
   return s;

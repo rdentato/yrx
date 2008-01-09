@@ -90,8 +90,8 @@ static state_t stkonce(state_t val,char op)
 
 static arc_t *nextArc(state_t st)
 {
-  static int     curarcn;
-  static state_t curst;
+  static uint32_t curarcn;
+  static state_t  curst;
 
   arc_t *a = NULL;
 
@@ -131,15 +131,101 @@ state_t yrxDFANextState(state_t st)
 
 
 /****/
-void yrxDFAAddarc(state_t from, state_t to, lbl_t l, tagset_t tags)
+
+static void copyarcs(vec_t arcs, state_t st, tagset_t tags)
 {
-  
+  vec_t arcsf ;
+  uint32_t k;
+  arc_t *a;
+  arc_t *b;
+
+  arcsf = vpvGet(FA, st);
+  k = 0;
+  while (k < vecCnt(arcsf)) {
+    b = vecGet(arcsf,k++);
+    a = vecAdd(arcs,b);
+    a->tags = yrxTagsUnion(b->tags, tags);
+  }
 }
 
+static void delarc(vec_t  arcs, arc_t *a)
+{
+  arc_t *b;
+
+  b = vecGet(arcs, vecCnt(arcs)-1);
+
+  yrxTagsFree(a->tags);
+  if (a != b) {
+   *a = *b;
+  }
+  b->tags = NULL;
+  vecCnt(arcs)--;
+}
+
+static vec_t marked;
+static void determinize(state_t st)
+{
+  uint32_t k;
+  arc_t *arc, *a;
+  vec_t  arclist;
+  vec_t  newarcs;
+
+  newarcs = vecNew(sizeof(arc_t));
+
+  arclist = vpvGet(FA, st);
+
+  k = 0;
+  while (k < vecCnt(arclist)) {
+    arc = vecGet(arclist, k++);
+    if (arc->to == 0) {
+      /* It's a final state! */
+      /* ensure lambda arc is the first in the arclist */
+      if (k > 1) {
+        a = vecGet(arclist, 0);
+        if (a->to == 0) {
+          tagset_t tmps = yrxTagsUnion(a->tags, arc->tags);
+          yrxTagsFree(a->tags);
+          a->tags = tmps;
+          delarc(arclist, arc);
+          k--;
+        }
+        else {
+          arc_t tmpa = *a;
+         *a = *arc;
+         *arc = tmpa;
+        }
+      }
+    }
+    else {
+      if (yrxLblEmpty(arc->lbl)) {
+        _dbgmsg("Copy from %d to %d\n",a->to, st);
+        if (vecGetVal(marked, arc->to, state_t) != st) {
+          vecSetVal(marked, arc->to, st, state_t);
+          copyarcs(arclist, arc->to, arc->tags);
+        }
+        delarc(arclist, arc);
+        k--; /* undo the index increment */
+      }
+      else {
+        pushonce(arc->to);
+      }
+    }
+  }
+}
 
 void yrxDFA()
 {
+ state_t st;
  dbgmsg ("DFA\n");    
+ if (marked == NULL) 
+   marked = vecNew(sizeof(state_t));
+   
+ resetstack();
+ pushonce(1);
+ 
+ while ((st = pop()) != 0) {
+   determinize(st);
+ } 
 }
 
 /*****/
