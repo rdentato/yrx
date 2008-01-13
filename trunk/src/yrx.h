@@ -56,7 +56,8 @@ tagset_t yrxTagsIncrement    (tagset_t a);
 typedef uint16_t   lbl_bits[16];
 typedef uint16_t  *lbl_t;
 
-#define yrxLblEps NULL
+lbl_t    yrxLblEpsilon;
+lbl_t    yrxLblLambda;
 
 lbl_t    yrxLabel(char *l);
 int      yrxLblEqual(lbl_t a, lbl_t b);

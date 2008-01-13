@@ -29,16 +29,16 @@ static map_t lblpool;
 
 #define lbl_tst(b,c) (b[(c)>>4]  &  (1<<((c) & 0xF)))
 
-#define lbl_zro(b)   memset(b,0,16 * sizeof(uint16_t))
+#define lbl_zro(b)   memset(b,0,sizeof(lbl_bits))
 
-#define lbl_cpy(a,b) memcpy(a,b,sizeof(lbl_t))
+#define lbl_cpy(a,b) memcpy(a,b,sizeof(lbl_bits))
 
 #define lbl_neg(b)     do {uint8_t i; for(i=0; i<16; i++) (b)[i] ^=  0xFFFF; } while (0)
 #define lbl_minus(a,b) do {uint8_t i; for(i=0; i<16; i++) (a)[i] &= ~(b)[i]; } while (0)
 #define lbl_or(a,b)    do {uint8_t i; for(i=0; i<16; i++) (a)[i] |=  (b)[i]; } while (0)
 #define lbl_and(a,b)   do {uint8_t i; for(i=0; i<16; i++) (a)[i] &=  (b)[i]; } while (0)
 
-#define lbl_isempty(b) (((b) == NULL) || \
+#define lbl_isempty(b) (((b) == yrxLblEpsilon) || ((b) == yrxLblLambda) ||\
                         (!((b)[0] || (b)[1] || (b)[2] || (b)[3] || \
                            (b)[4] || (b)[5] || (b)[6] || (b)[7] || \
                            (b)[8] || (b)[9] || (b)[10]|| (b)[11]|| \
@@ -202,7 +202,7 @@ uint8_t *yrxLblPairs(lbl_t lb)
 
   s = yrxBufChk(512);
 
-  if (lb != NULL) {
+  if (!yrxLblEmpty(lb)) {
     a = 0;
     while (lbl_rng(lb, a, &a, &b) != 0) {
       s[i++] = (uint8_t)a;
@@ -240,7 +240,7 @@ char *yrxLblStr(lbl_t lb)
 
   s = yrxBufChk(512);
 
-  if (lb != NULL) {
+  if (!yrxLblEmpty(lb)) {
     a = 0;
     while (lbl_rng(lb, a, &a, &b) != 0) {
       s = lbl_chr(s, a);
@@ -266,10 +266,14 @@ static void yrxLblClean()
 vpv_t yrxLblInit(vpv_t v)
 {
   lblpool = mapNew(sizeof(lbl_bits), NULL);
-  
+
   if ( lblpool == NULL ) 
     err(601,yrxStrNoMem);
     
+
+  yrxLblEpsilon = NULL;
+  yrxLblLambda = (lbl_t)lblpool;
+  
   v = vpvAdd(v, yrxLblClean);
   return v;
 }
@@ -286,6 +290,9 @@ lbl_t yrxLblUnion(lbl_t a, lbl_t b)
 {
   lbl_bits c;
   
+  if (yrxLblEmpty(a)) return b;
+  if (yrxLblEmpty(b)) return a;
+  
   lbl_cpy(c,a);
   lbl_or(c,b);
   
@@ -295,6 +302,8 @@ lbl_t yrxLblUnion(lbl_t a, lbl_t b)
 lbl_t yrxLblIntersection(lbl_t a, lbl_t b)
 {
   lbl_bits c;
+  
+  if (yrxLblEmpty(a) || yrxLblEmpty(b)) return yrxLblEpsilon;
   
   lbl_cpy(c,a);
   lbl_and(c,b);
@@ -306,6 +315,9 @@ lbl_t yrxLblDifference(lbl_t a, lbl_t b)
 {
   lbl_bits c;
   
+  if (yrxLblEmpty(a)) return yrxLblEpsilon;
+  if (yrxLblEmpty(b)) return a;
+
   lbl_cpy(c,a);
   lbl_minus(c,b);
   
