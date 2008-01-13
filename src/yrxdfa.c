@@ -131,6 +131,32 @@ state_t yrxDFANextState(state_t st)
 
 
 /****/
+  /* mapping  lbl_t -> (arc_t *) */
+  
+typedef struct lbl2arcp {
+    lbl_t  lbl;
+    arc_t *arcs;
+} lbl2arcp;
+  
+/****/
+
+
+map_t add2merge(vec_t v, arc_t *a)
+{
+  lbl_t lintr;
+  uint32_t k;
+  lbl2arcp *p;
+
+  lintr = yrxLblIntersection(a->lbl, b->lbl);
+  if (!yrxLblEmpty(lintr)) {
+    dbgmsg(" %s\n", yrxLblStr(a->lbl));
+    dbgmsg(" %s\n", yrxLblStr(b->lbl));
+    dbgmsg(" %s\n", yrxLblStr(lintr));
+  }
+  return m;
+}
+
+/****/
 
 static void copyarcs(vec_t arcs, state_t st, tagset_t tags)
 {
@@ -151,7 +177,7 @@ static void copyarcs(vec_t arcs, state_t st, tagset_t tags)
 static void delarc(vec_t  arcs, arc_t *a)
 {
   arc_t *b;
-
+  _dbgmsg("Deleted  -> %d\n", a->to);
   b = vecGet(arcs, vecCnt(arcs)-1);
 
   yrxTagsFree(a->tags);
@@ -165,61 +191,72 @@ static void delarc(vec_t  arcs, arc_t *a)
 static vec_t marked;
 static void determinize(state_t st)
 {
-  uint32_t k;
-  arc_t *arc, *a;
+  uint32_t k,j;
+  arc_t *arc;
+  arc_t *arc_tmp;
   vec_t  arclist;
-  vec_t  newarcs;
-
-  newarcs = vecNew(sizeof(arc_t));
+  tagset_t  finaltags = NULL;
+  vec_t  tomerge = NULL;
 
   arclist = vpvGet(FA, st);
-
+  
+  tomerge = vecFreeClean(tomerge,);
+  tomerge = vecNew(sizeof(lbl2arcp));
+  if (tomerge == NULL) err(713,yrxStrNoMem);
+  
+  vecSetVal(marked, st, st, state_t);
   k = 0;
   while (k < vecCnt(arclist)) {
     arc = vecGet(arclist, k++);
-    if (arc->to == 0) {
+    if (arc->lbl == yrxLblLambda) {
       /* It's a final state! */
-      /* ensure lambda arc is the first in the arclist */
-      if (k > 1) {
-        a = vecGet(arclist, 0);
-        if (a->to == 0) {
-          tagset_t tmps = yrxTagsUnion(a->tags, arc->tags);
-          yrxTagsFree(a->tags);
-          a->tags = tmps;
-          delarc(arclist, arc);
-          k--;
-        }
-        else {
-          arc_t tmpa = *a;
-         *a = *arc;
-         *arc = tmpa;
-        }
+      finaltags = yrxTagsUnion(finaltags, arc->tags);
+      _dbgmsg("Got final %d (%p , %p)\n", st,arc->tags,finaltags);
+      delarc(arclist, arc);
+      k--;
+    }
+    else if (arc->lbl == yrxLblEpsilon) {
+      _dbgmsg("Copy from %d to %d [k==%d]\n",arc->to, st,k);
+      if (vecGetVal(marked, arc->to, state_t) != st) {
+        vecSetVal(marked, arc->to, st, state_t);
+        copyarcs(arclist, arc->to, arc->tags);
       }
+      delarc(arclist, arc);
+      k--; /* undo the index increment */
     }
     else {
-      if (yrxLblEmpty(arc->lbl)) {
-        _dbgmsg("Copy from %d to %d\n",a->to, st);
-        if (vecGetVal(marked, arc->to, state_t) != st) {
-          vecSetVal(marked, arc->to, st, state_t);
-          copyarcs(arclist, arc->to, arc->tags);
-        }
-        delarc(arclist, arc);
-        k--; /* undo the index increment */
-      }
-      else {
-        pushonce(arc->to);
-      }
+      add2merge(tomerge, arc);
+      pushonce(arc->to);
+    } 
+  }
+  if (finaltags != NULL) { /* ensure arc to 0 is the first one! */
+    arc_t  a;
+    
+    if (vecCnt(arclist) > 0) {
+      arc = vecGet(arclist, 0);
+      a = *arc;
     }
+    arc = &a;
+
+    arc->to   = 0;
+    arc->lbl  = yrxLabel("");
+    arc->tags = finaltags;
+    
+    _dbgmsg("Fixed final %d\n", st);
+    vecAdd(arclist,arc);
   }
 }
 
 void yrxDFA()
 {
  state_t st;
- dbgmsg ("DFA\n");    
+ _dbgmsg ("DFA\n");    
+ 
  if (marked == NULL) 
    marked = vecNew(sizeof(state_t));
-   
+ 
+ if (marked == NULL) err(712,yrxStrNoMem);
+    
  resetstack();
  pushonce(1);
  
@@ -227,6 +264,8 @@ void yrxDFA()
    determinize(st);
  } 
 }
+
+
 
 /*****/
 
@@ -249,14 +288,14 @@ void yrxNFAAddarc(state_t from, state_t to, lbl_t l, tag_t tag)
 
   vecAdd(arclist,&arc);
   
-  dbgmsg("nfa_addarc(%d, %d, \"%s\", %08X)\n",from,to,yrxLblStr(l),tag);
+  _dbgmsg("nfa_addarc(%d, %d, \"%s\", %08X)\n",from,to,yrxLblStr(l),tag);
 }
 
 static void yrxDFAClean()
 {
   uint32_t k;
   
-  dbgmsg ("Clean FA\n");
+  _dbgmsg ("Clean FA\n");
   if (FA != NULL) {
     for (k=0; k < ulvCnt(FA); k++) {
       if (FA[k] != NULL) FA[k] = vecFree(FA[k]);
@@ -268,7 +307,7 @@ static void yrxDFAClean()
 
 vpv_t yrxDFAInit(vpv_t v)
 {
-  dbgmsg ("Init FA\n");
+  _dbgmsg ("Init FA\n");
   v = vpvAdd(v,yrxDFAClean);
   
   if (FA == NULL) FA = vpvNew();

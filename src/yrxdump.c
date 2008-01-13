@@ -90,7 +90,7 @@ static void dmp_dot()
   printf("\trankdir=LR;\n");
 
   printf("\tnode [shape = circle];\n");
-  printf("\t0 [  style= filled, label = \"0\"];\n") ;
+  printf("\t0 [ style= filled, label = \"0\" ] ;\n") ;
 
   from = yrxDFAStartState();
 
