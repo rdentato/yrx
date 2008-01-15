@@ -133,27 +133,53 @@ state_t yrxDFANextState(state_t st)
 /****/
   /* mapping  lbl_t -> (arc_t *) */
   
-typedef struct lbl2arcp {
+typedef struct lbl2arcs {
     lbl_t  lbl;
-    arc_t *arcs;
-} lbl2arcp;
+    usv_t  arcs;
+} lbl2arcs;
   
+void l2a_clean(lbl2arcs *a)
+{
+  if (a->arcs) a->arcs = usvFree(a->arcs);
+}
+
+vec_t l2a_reset(vec_t a)
+{
+  uint32_t k;
+  lbl2arcs *p;
+  
+  for (k=0; k<vecCnt(a); k++) {
+    p = vecGet(a,k);
+    if (p->arcs)
+      usvCnt(p->arcs) = 0;
+  }
+  
+  return a;
+}
 /****/
 
 
-map_t add2merge(vec_t v, arc_t *a)
+void add2merge(vec_t v, arc_t *a, uint32_t arc_n)
 {
   lbl_t lintr;
-  uint32_t k;
-  lbl2arcp *p;
+  uint32_t k,j;
+  lbl2arcs *p;
+  lbl_t l;
 
-  lintr = yrxLblIntersection(a->lbl, b->lbl);
-  if (!yrxLblEmpty(lintr)) {
-    dbgmsg(" %s\n", yrxLblStr(a->lbl));
-    dbgmsg(" %s\n", yrxLblStr(b->lbl));
-    dbgmsg(" %s\n", yrxLblStr(lintr));
+  for (k = 0; k< vecCnt(v); k++) {
+    p = vecGet(v,k);
+    lintr = yrxLblIntersection(a->lbl, p->lbl);
+    if (!yrxLblEmpty(lintr)) {
+      dbgmsg(" %s\n", yrxLblStr(a->lbl));
+      dbgmsg(" %s\n", yrxLblStr(p->lbl));
+      dbgmsg(" %s\n", yrxLblStr(lintr));
+    }
   }
-  return m;
+  if (a != NULL) {
+    p = vecAdd(v,p);
+    p->lbl = a->lbl;
+    p->arcs = usvAdd(NULL,k);
+  }
 }
 
 /****/
@@ -188,7 +214,8 @@ static void delarc(vec_t  arcs, arc_t *a)
   vecCnt(arcs)--;
 }
 
-static vec_t marked;
+static vec_t  tomerge = NULL;
+static vec_t  marked  = NULL;
 static void determinize(state_t st)
 {
   uint32_t k,j;
@@ -196,14 +223,10 @@ static void determinize(state_t st)
   arc_t *arc_tmp;
   vec_t  arclist;
   tagset_t  finaltags = NULL;
-  vec_t  tomerge = NULL;
 
+  tomerge = l2a_reset(tomerge);
+  
   arclist = vpvGet(FA, st);
-  
-  tomerge = vecFreeClean(tomerge,);
-  tomerge = vecNew(sizeof(lbl2arcp));
-  if (tomerge == NULL) err(713,yrxStrNoMem);
-  
   vecSetVal(marked, st, st, state_t);
   k = 0;
   while (k < vecCnt(arclist)) {
@@ -225,7 +248,7 @@ static void determinize(state_t st)
       k--; /* undo the index increment */
     }
     else {
-      add2merge(tomerge, arc);
+      add2merge(tomerge, arc, k);
       pushonce(arc->to);
     } 
   }
@@ -239,7 +262,7 @@ static void determinize(state_t st)
     arc = &a;
 
     arc->to   = 0;
-    arc->lbl  = yrxLabel("");
+    arc->lbl  = yrxLblLambda;
     arc->tags = finaltags;
     
     _dbgmsg("Fixed final %d\n", st);
@@ -250,19 +273,15 @@ static void determinize(state_t st)
 void yrxDFA()
 {
  state_t st;
- _dbgmsg ("DFA\n");    
+  _dbgmsg ("DFA\n");    
  
- if (marked == NULL) 
-   marked = vecNew(sizeof(state_t));
- 
- if (marked == NULL) err(712,yrxStrNoMem);
     
- resetstack();
- pushonce(1);
+  resetstack();
+  pushonce(1);
  
- while ((st = pop()) != 0) {
-   determinize(st);
- } 
+  while ((st = pop()) != 0) {
+    determinize(st);
+  } 
 }
 
 
@@ -302,8 +321,9 @@ static void yrxDFAClean()
     }
     FA = vpvFree(FA);
   }
+  if (marked != NULL) marked = vecFree(marked);
+  if (tomerge != NULL) tomerge = vecFreeClean(tomerge, (vecCleaner)l2a_clean);
 }
-
 
 vpv_t yrxDFAInit(vpv_t v)
 {
@@ -312,6 +332,13 @@ vpv_t yrxDFAInit(vpv_t v)
   
   if (FA == NULL) FA = vpvNew();
   if (FA == NULL) err(701,yrxStrNoMem);
+  
+  if (marked == NULL) marked = vecNew(sizeof(state_t));
+  if (marked == NULL) err(712,yrxStrNoMem);
+  
+  if (tomerge == NULL) tomerge = vecNew(sizeof(lbl2arcs));
+  if (tomerge == NULL) err(713,yrxStrNoMem);
+  
   return v;
 }
 
