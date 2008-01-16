@@ -162,41 +162,44 @@ vec_t l2a_reset(vec_t a)
 void add2merge(vec_t v, arc_t *a, uint32_t arc_n)
 {
   lbl_t lintr;
-  uint32_t k,j;
+  uint32_t k;
   lbl2arcs *p;
   lbl2arcs  q;
-  lbl_t l;
 
-  q->lbl = a->lbl;
-  q->arcs = usvAdd(arc_n);
-  
-  for (k = 0; k< vecCnt(v) && !yrxLblEmpty(q->lbl); k++) {
+  q.lbl = a->lbl;
+  q.arcs = usvAdd(NULL,arc_n);
+  k = vecCnt(v);
+  while (k-- > 0 && !yrxLblEmpty(q.lbl)) {
     p = vecGet(v,k);
     
-    if (yrxLblEqual(q->lbl, p->lbl) {
-      p->arcs = usvAppend(p->arcs,q->arcs);
-      q->lbl = yrxLblEpsilon;
+    if (yrxLblEqual(q.lbl, p->lbl)) {
+      p->arcs = usvAppend(p->arcs,q.arcs);
+      q.lbl = yrxLblEpsilon;
     }
     else {
-      lintr = yrxLblIntersection(q->lbl, p->lbl);
-      if (yrxLblEqual(lintr, q->lbl)) {
+      lintr = yrxLblIntersection(q.lbl, p->lbl);
+      if (yrxLblEqual(lintr, q.lbl)) {
         p->lbl  = yrxLblMinus(p->lbl, lintr);
-        q->arcs = usvAdd(q->arcs, p->arcs);
+        q.arcs = usvAppend(q.arcs, p->arcs);
       }  
       else if (yrxLblEqual(lintr, p->lbl)) {
-        q->lbl  = yrxLblMinus(q->lbl, lintr);
-        p->arcs = usvAdd(p->arcs, q->arcs);
+        q.lbl  = yrxLblMinus(q.lbl, lintr);
+        p->arcs = usvAppend(p->arcs, q.arcs);
       }
       else if (!yrxLblEmpty(lintr)) {
-        q->lbl = 
+        lbl2arcs *t = vecAdd(v,&q);
+        t->lbl  = lintr;
+        t->arcs = usvAppend(usvDup(q.arcs), p->arcs);
+        p->lbl  = yrxLblMinus(p->lbl,lintr);
+        q.lbl  = yrxLblMinus(q.lbl,lintr); 
       }
     }
   }
-  if (!yrxLblEmpty(q->lbl)) {
+  if (!yrxLblEmpty(q.lbl)) {
     p = vecAdd(v,&q);
   }
   else {
-    q->arcs = usvFree(q->arcs);
+    q.arcs = usvFree(q.arcs);
   }
 }
 
@@ -236,9 +239,8 @@ static vec_t  tomerge = NULL;
 static vec_t  marked  = NULL;
 static void determinize(state_t st)
 {
-  uint32_t k,j;
+  uint32_t k;
   arc_t *arc;
-  arc_t *arc_tmp;
   vec_t  arclist;
   tagset_t  finaltags = NULL;
 
@@ -266,7 +268,7 @@ static void determinize(state_t st)
       k--; /* undo the index increment */
     }
     else {
-      add2merge(tomerge, arc, k);
+      add2merge(tomerge, arc, k-1);
       pushonce(arc->to);
     } 
   }

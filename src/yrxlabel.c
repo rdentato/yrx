@@ -311,7 +311,7 @@ lbl_t yrxLblIntersection(lbl_t a, lbl_t b)
   return lbl(c); 
 }
 
-lbl_t yrxLblDifference(lbl_t a, lbl_t b)
+lbl_t yrxLblMinus(lbl_t a, lbl_t b)
 {
   lbl_bits c;
   

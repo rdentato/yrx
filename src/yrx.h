@@ -61,7 +61,7 @@ lbl_t    yrxLblLambda;
 
 lbl_t    yrxLabel(char *l);
 int      yrxLblEqual(lbl_t a, lbl_t b);
-lbl_t    yrxLblDifference(lbl_t a, lbl_t b);
+lbl_t    yrxLblMinus(lbl_t a, lbl_t b);
 lbl_t    yrxLblIntersection(lbl_t a, lbl_t b);
 lbl_t    yrxLblUnion(lbl_t a, lbl_t b);
 vpv_t    yrxLblInit(vpv_t v);

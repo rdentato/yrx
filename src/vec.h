@@ -138,8 +138,8 @@ typedef uint16_t *usv_t ;
 #define usvSort(b)      qsort(b, usvCnt(b), blkU16sz, blkU16cmp)
 #define usvUniq(b)      blkUniq((uint8_t *)b, blkU16sz)
 
-#define usvAdd(b,v)     usvSet(b, usvCnt(b), v)
-#define usvPush(b,v)    usvSet(b, usvCnt(b), v)  
+#define usvAdd(b,v)     usvSet(b, blkDepth(b), v)
+#define usvPush(b,v)    usvSet(b, blkDepth(b), v)
 #define usvTop(b)       ((!b || !usvCnt(b))? 0 : usvGet(b,usvCnt(b)-1))
 #define usvPop(b)       ((!b || !usvCnt(b))? 0 : usvGet(b,--usvCnt(b)))
 
