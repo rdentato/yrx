@@ -164,21 +164,39 @@ void add2merge(vec_t v, arc_t *a, uint32_t arc_n)
   lbl_t lintr;
   uint32_t k,j;
   lbl2arcs *p;
+  lbl2arcs  q;
   lbl_t l;
 
-  for (k = 0; k< vecCnt(v); k++) {
+  q->lbl = a->lbl;
+  q->arcs = usvAdd(arc_n);
+  
+  for (k = 0; k< vecCnt(v) && !yrxLblEmpty(q->lbl); k++) {
     p = vecGet(v,k);
-    lintr = yrxLblIntersection(a->lbl, p->lbl);
-    if (!yrxLblEmpty(lintr)) {
-      dbgmsg(" %s\n", yrxLblStr(a->lbl));
-      dbgmsg(" %s\n", yrxLblStr(p->lbl));
-      dbgmsg(" %s\n", yrxLblStr(lintr));
+    
+    if (yrxLblEqual(q->lbl, p->lbl) {
+      p->arcs = usvAppend(p->arcs,q->arcs);
+      q->lbl = yrxLblEpsilon;
+    }
+    else {
+      lintr = yrxLblIntersection(q->lbl, p->lbl);
+      if (yrxLblEqual(lintr, q->lbl)) {
+        p->lbl  = yrxLblMinus(p->lbl, lintr);
+        q->arcs = usvAdd(q->arcs, p->arcs);
+      }  
+      else if (yrxLblEqual(lintr, p->lbl)) {
+        q->lbl  = yrxLblMinus(q->lbl, lintr);
+        p->arcs = usvAdd(p->arcs, q->arcs);
+      }
+      else if (!yrxLblEmpty(lintr)) {
+        q->lbl = 
+      }
     }
   }
-  if (a != NULL) {
-    p = vecAdd(v,p);
-    p->lbl = a->lbl;
-    p->arcs = usvAdd(NULL,k);
+  if (!yrxLblEmpty(q->lbl)) {
+    p = vecAdd(v,&q);
+  }
+  else {
+    q->arcs = usvFree(q->arcs);
   }
 }
 
