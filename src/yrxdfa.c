@@ -113,7 +113,7 @@ static arc_t *nextArc(state_t st)
 }
 
 
-arc_t *yrxDFANextArc()
+arc_t *yrxDFANextArc(void)
 {
   return nextArc(0); 
 }
@@ -153,7 +153,7 @@ vec_t l2a_reset(vec_t a)
     if (p->arcs)
       usvCnt(p->arcs) = 0;
   }
-  
+  vecCnt(a) = 0;
   return a;
 }
 /****/
@@ -173,20 +173,31 @@ void add2merge(vec_t v, arc_t *a, uint32_t arc_n)
     p = vecGet(v,k);
     
     if (yrxLblEqual(q.lbl, p->lbl)) {
+      dbgmsg("Equal labels: %s\t", yrxLblStr(q.lbl));
+      dbgmsg("%s\n", yrxLblStr(p->lbl));
       p->arcs = usvAppend(p->arcs,q.arcs);
       q.lbl = yrxLblEpsilon;
     }
     else {
       lintr = yrxLblIntersection(q.lbl, p->lbl);
       if (yrxLblEqual(lintr, q.lbl)) {
+        dbgmsg("q * p = q %s\t", yrxLblStr(q.lbl));
+        dbgmsg("%s\t", yrxLblStr(p->lbl));
+        dbgmsg("%s\n", yrxLblStr(lintr));
         p->lbl  = yrxLblMinus(p->lbl, lintr);
         q.arcs = usvAppend(q.arcs, p->arcs);
       }  
       else if (yrxLblEqual(lintr, p->lbl)) {
+        dbgmsg("q * p = p %s\t", yrxLblStr(q.lbl));
+        dbgmsg("%s\t", yrxLblStr(p->lbl));
+        dbgmsg("%s\n", yrxLblStr(lintr));
         q.lbl  = yrxLblMinus(q.lbl, lintr);
         p->arcs = usvAppend(p->arcs, q.arcs);
       }
       else if (!yrxLblEmpty(lintr)) {
+        dbgmsg("q * p = t %s\t", yrxLblStr(q.lbl));
+        dbgmsg("%s\t", yrxLblStr(p->lbl));
+        dbgmsg("%s\n", yrxLblStr(lintr));
         lbl2arcs *t = vecAdd(v,&q);
         t->lbl  = lintr;
         t->arcs = usvAppend(usvDup(q.arcs), p->arcs);
@@ -239,10 +250,12 @@ static vec_t  tomerge = NULL;
 static vec_t  marked  = NULL;
 static void determinize(state_t st)
 {
-  uint32_t k;
+  uint32_t k,j;
   arc_t *arc;
   vec_t  arclist;
+  vec_t  newarcs;
   tagset_t  finaltags = NULL;
+  lbl2arcs *p;
 
   tomerge = l2a_reset(tomerge);
   
@@ -272,6 +285,10 @@ static void determinize(state_t st)
       pushonce(arc->to);
     } 
   }
+  /* Build the new list of arcs */
+
+  newarcs = vecNew(sizeof(arc_t));
+
   if (finaltags != NULL) { /* ensure arc to 0 is the first one! */
     arc_t  a;
     
@@ -288,9 +305,19 @@ static void determinize(state_t st)
     _dbgmsg("Fixed final %d\n", st);
     vecAdd(arclist,arc);
   }
+
+  dbgmsg("state: %d\n",st);
+  for (k = 0; k < vecCnt(tomerge); k++) {
+    p = vecGet(tomerge,k);
+    dbgmsg("\t%s \t",yrxLblStr(p->lbl));
+    for (j = 0; j < usvCnt(p->arcs); j++) {
+      dbgmsg("%d \t",p->arcs[j]);
+    }
+    dbgmsg("\n");
+  }
 }
 
-void yrxDFA()
+void yrxDFA(void)
 {
  state_t st;
   _dbgmsg ("DFA\n");    
@@ -330,7 +357,7 @@ void yrxNFAAddarc(state_t from, state_t to, lbl_t l, tag_t tag)
   _dbgmsg("nfa_addarc(%d, %d, \"%s\", %08X)\n",from,to,yrxLblStr(l),tag);
 }
 
-static void yrxDFAClean()
+static void yrxDFAClean(void)
 {
   uint32_t k;
   

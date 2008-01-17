@@ -23,14 +23,14 @@ void usage(void)
   exit(1);
 }
 
-static void init()
+static void init(void)
 {
   yrxCleanVec = vpvNew();
   yrxCleanVec = yrxLblInit(yrxCleanVec); 
   yrxCleanVec = yrxDFAInit(yrxCleanVec);
 }
 
-static void cleanup()
+static void cleanup(void)
 {
   uint16_t k;
   

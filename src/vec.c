@@ -176,14 +176,22 @@ static uint8_t *blkset(uint8_t *b, uint16_t ndx, void *val, uint8_t sz)
 uint8_t *blkAppend(uint8_t *b, uint8_t *a, uint8_t sz)
 {
   uint32_t k;
-  blk_t bl = blkNodePtr(b);
+  blk_t bl;
+  blk_t al;
 
-  k = blkCnt(b) + blkCnt(a);
+  if (blkDepth(a) == 0) return b;
+
+  if (b == NULL) b = blkNew(sz);
+
+  bl = blkNodePtr(b);
+  al = blkNodePtr(a);
+
+  k = bl->cnt + al->cnt;
 
   if (k > bl->slt)
     bl = blksetsize(bl, (uint16_t) (k+1) ,sz);
 
-  memcpy(b+(bl->cnt * sz), a, blkCnt(a) * sz);
+  memcpy(bl->elem + (bl->cnt * sz), a, al->cnt * sz);
   bl->cnt = (uint16_t)k;
 
   return bl->elem;
@@ -912,12 +920,11 @@ void mapdelnode(map_t m, mapNode **parent)
 
 void mapDel(map_t m, void *e)
 {
-  mapNode  *node;
   mapNode **parent;
 
   parent = &(m->root);
 
-  node = mapsearch(m, &parent, e);
+  mapsearch(m, &parent, e);
   mapdelnode(m,parent);
    _dbgmsg("mapDel() Deleted: %p FROM: %p\n", node, parent);
   return;

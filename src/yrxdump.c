@@ -13,9 +13,9 @@
 */
 
 #include "yrx.h"
-
+/*
 static FILE *outf;
-
+*/
 #if 0
 static void dmp_plain_lbl(uint8_t *l)
 {
@@ -64,6 +64,7 @@ static void dmp_plain(Automata *dfa)
 }
 
 #endif
+
 static uint8_t *dmp_dotchr(uint8_t c)
 {
   static char buf[8];
@@ -79,7 +80,7 @@ static uint8_t *dmp_dotchr(uint8_t c)
   return buf;
 }
 
-static void dmp_dot()
+static void dmp_dot(void)
 {
   uint32_t from;
   arc_t *a;
@@ -102,7 +103,7 @@ static void dmp_dot()
       while (pairs[0] <= pairs[1]) {
         printf("%s",dmp_dotchr(pairs[0]));
         if (pairs[0] != pairs[1]) {
-          printf("-");
+          if (pairs[1] > pairs[0] +1) printf("-");
           printf("%s",dmp_dotchr(pairs[1]));          
         }
         pairs += 2;
