@@ -90,6 +90,8 @@ state_t  yrxDFANextState(state_t st);
 /*****************************/
 void yrxParse(char **rxs, int rxn);
 void yrxParseErr(int errn, char *errmsg);
+state_t yrxNextState(void);
+
 
 /*****************************/
 void yrxDump(uint8_t fmt);
