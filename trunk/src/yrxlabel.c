@@ -45,7 +45,7 @@ static map_t lblpool;
                            (b)[12]|| (b)[13]|| (b)[14]|| (b)[15])))
 
 #define lbl_eq(a,b)    (((a) == (b)) || \
-                        ((a) && (b) && memcmp(a,b,sizeof(lbl_bits))))
+                        ((a) && (b) && (memcmp(a,b,sizeof(lbl_bits)) == 0)))
 
 #define lbl(l) mapAdd(lblpool, l);
 
@@ -245,7 +245,7 @@ char *yrxLblStr(lbl_t lb)
     while (lbl_rng(lb, a, &a, &b) != 0) {
       s = lbl_chr(s, a);
       if (a != b) {
-        *s++ = '-';
+        if (b > (a+1)) *s++ = '-';
         s = lbl_chr(s, b);
       }
       a = b +1 ;
@@ -258,7 +258,7 @@ char *yrxLblStr(lbl_t lb)
 
 /***************/
 
-static void yrxLblClean()
+static void yrxLblClean(void)
 {
   lblpool = mapFree(lblpool); 
 }
