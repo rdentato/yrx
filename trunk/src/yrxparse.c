@@ -33,10 +33,11 @@ void yrxParseErr(int errn, char *errmsg)
 
 /**************************************************/
 
-static state_t nextstate(void);
+#define nextstate yrxNextState
+
 static uint16_t nstates = 1;
 
-static state_t nextstate(void)
+state_t yrxNextState(void)
 {
   if (nstates == 65500)
     yrxParseErr(502,"More than 65500 states!!");
