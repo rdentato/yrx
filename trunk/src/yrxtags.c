@@ -73,10 +73,10 @@ tagset_t yrxTagsUnion(tagset_t a, tagset_t b)
   int cmp;
   
   if (a == b || b == NULL)
-    return ulvDup(a);
+    return a;
 
   if (a == NULL)
-    return ulvDup(b);
+    return yrxTagsDup(b);
 
   while (j < ulvCnt(a)  && k < ulvCnt(b)) {
     cmp = tag_cmpExprType(a[j],b[k]);
@@ -92,7 +92,8 @@ tagset_t yrxTagsUnion(tagset_t a, tagset_t b)
     
   while (k < ulvCnt(b))
     c = ulvAdd(c,b[k++]);
-  
+    
+  ulvFree(a);
   return c;
 }
 
@@ -102,24 +103,24 @@ tagset_t yrxTagsDifference(tagset_t a, tagset_t b)
   tagset_t c=NULL;
   int cmp;
   
-  if (a == b || a == NULL) return NULL;
-  
-  if (b == NULL)
-    return ulvDup(a);
-  
-  while (j < ulvCnt(a)  && k < ulvCnt(b)) {
-    cmp = tag_cmpExprType(a[j],b[k]);
-    if (cmp < 0)
-      c = ulvAdd(c,a[j++]);
-    else if (cmp > 0)
-      k++;
-    else { /* Same expression and same type! */
-      j++; k++;
+  if (a != b && a != NULL) {
+    if (b == NULL)
+      return a;
+    
+    while (j < ulvCnt(a)  && k < ulvCnt(b)) {
+      cmp = tag_cmpExprType(a[j],b[k]);
+      if (cmp < 0)
+        c = ulvAdd(c,a[j++]);
+      else if (cmp > 0)
+        k++;
+      else { /* Same expression and same type! */
+        j++; k++;
+      }
     }
-  }
-  while (j < ulvCnt(a))
-    c = ulvAdd(c,a[j++]);
-  
+    while (j < ulvCnt(a))
+      c = ulvAdd(c,a[j++]);
+  }  
+  ulvFree(a);
   return c;  
 }
 
@@ -131,10 +132,10 @@ tagset_t yrxTagsIntersection(tagset_t a, tagset_t b)
   int expr;
   
   if (a == b || b == NULL)
-    return ulvDup(a);
+    return a;
   
   if (a == NULL)
-    return ulvDup(b);
+    return yrxTagsDup(b);
     
   while (j < ulvCnt(a)  && k < ulvCnt(b)) {
     cmp = tag_cmpExpr(a[j],b[k]);  
@@ -169,9 +170,9 @@ tagset_t yrxTagsIntersection(tagset_t a, tagset_t b)
   
   while (k < ulvCnt(b))
     c = ulvAdd(c,b[k++]);
-  
+    
+  ulvFree(a);
   return c;  
-  
 }
 
 int yrxTagsEmpty(tagset_t a)
