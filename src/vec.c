@@ -255,16 +255,24 @@ int blkU32cmp (const void *a, const void *b) { return *((uint32_t *)a) - *((uint
 int blkU16cmp (const void *a, const void *b) { return *((uint16_t *)a) - *((uint16_t *)b) ; }
 int blkCHRcmp (const void *a, const void *b) { return *((uint8_t *)a)  - *((uint8_t *)b) ; }
 
-void blkUniq(uint8_t *b,uint8_t sz)
+uint8_t *blkUniq(uint8_t *b,uint8_t ty)
 {
   uint32_t j;
   uint8_t *a, *p;
+  uint8_t sz;
 
-  if (b == NULL) return;
+  if (b == NULL) return b;
 
   j = blkCnt(b);
-  if (j < 2) return;
+  if (j < 2) return b;
 
+  switch(ty) {
+    case blkCHR: sz = blkCHRsz; ucvSort(b); break;
+    case blkU16: sz = blkU16sz; usvSort(b); break;
+    case blkU32: sz = blkU32sz; ulvSort(b); break;
+    default    : return b;
+  }
+  
   a = b+sz;
   p = b+sz;
   while (--j > 0) {
@@ -276,7 +284,9 @@ void blkUniq(uint8_t *b,uint8_t sz)
      a += sz;
   }
   blkCnt(b) = (uint16_t)((p-b)/sz);
+  return b;
 }
+
 
 uint8_t *blkCpy(uint8_t *a,uint8_t *b, uint8_t sz)
 {
@@ -294,6 +304,23 @@ uint8_t *blkCpy(uint8_t *a,uint8_t *b, uint8_t sz)
     a = bl->elem;
   }
   return a;
+}
+
+int blkCmp(uint8_t *a, uint8_t *b, uint8_t sz)
+{
+  uint16_t k = blkDepth(a); 
+  uint16_t j = blkDepth(b);
+  int ret = 0;
+  
+  if (k == 0 && j == 0) return 0;
+  if (k == 0) return -1;
+  if (j == 0) return 1;
+  
+  ret = memcmp(a,b,((k<j) ? k : j) * sz );
+  
+  if (ret == 0)
+    ret = (int)k - (int)j;
+  return ret;
 }
 
 /**************************/

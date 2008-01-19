@@ -43,7 +43,7 @@ typedef ulv_t    tagset_t;
 #define yrxTagType(t) (((t) >> 16) & 0x00FF)
 #define yrxTagExpr(t)  ((t) >> 24)
 
-tagset_t yrxTagset           ();
+tagset_t yrxTagset           (tag_t tag);
 tagset_t yrxTagsFree         (tagset_t a);
 tagset_t yrxTagsUnion        (tagset_t a, tagset_t b);
 tagset_t yrxTagsIntersection (tagset_t a, tagset_t b);
@@ -51,6 +51,8 @@ tagset_t yrxTagsDifference   (tagset_t a, tagset_t b);
 int      yrxTagsEmpty        (tagset_t a);
 uint8_t *yrxTagsStr          (tagset_t a);
 tagset_t yrxTagsIncrement    (tagset_t a);
+
+#define yrxTagsDup ulvDup
 
 /*****************************/
 typedef uint16_t   lbl_bits[16];
@@ -79,7 +81,7 @@ typedef struct {
 
 vpv_t    yrxDFAInit(vpv_t v);
 
-void     yrxNFAAddarc(state_t from, state_t to, lbl_t l, tag_t tag);
+void     yrxNFAAddarc(state_t from, state_t to, lbl_t l, tagset_t tags);
 void     yrxDFA();
 
 arc_t   *yrxDFANextArc();

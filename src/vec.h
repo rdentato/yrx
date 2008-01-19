@@ -79,7 +79,7 @@ int blkU32cmp (const void *a, const void *b);
 int blkU16cmp (const void *a, const void *b);
 int blkCHRcmp (const void *a, const void *b);
 
-void blkUniq(uint8_t *b,uint8_t sz);
+uint8_t *blkUniq(uint8_t *b,uint8_t ty);
 
 #define blkNodePtr(b) ((blk_t)(((uint8_t *)b) - blkOffset))
 #define blkCnt(b)     (blkNodePtr(b)->cnt)
@@ -89,6 +89,8 @@ void blkUniq(uint8_t *b,uint8_t sz);
 #define blkReset(b,s) (b? (blkCnt(b)=0, (void *)b) : (void *)blkNew(s))
 
 #define blkDup(b,s) blkCpy(NULL,b,s)
+
+int blkCmp(uint8_t *a, uint8_t *b, uint8_t sz);
 
 /**********************/
 
@@ -110,9 +112,9 @@ typedef uint32_t *ulv_t ;
 
 #define ulvAppend(a,b)  (ulv_t)blkAppend(a,b,blkU32sz)
 #define ulvSort(b)      qsort(b, ulvCnt(b), blkU32sz, blkU32cmp)
-#define ulvUniq(b)      blkUniq((uint8_t *)b, blkU32sz)
+#define ulvUniq(b)      blkUniq((uint8_t *)b, blkU32)
 
-#define ulvAdd(b,v)     ulvSet(b, blkDepth(b), v)
+#define ulvAdd(b,v)     ulvSet(b, ulvDepth(b), v)
 #define ulvPush         ulvAdd
 #define ulvTop(b)       ((!b || !ulvCnt(b))? 0 : ulvGet(b,ulvCnt(b)-1))
 #define ulvPop(b)       ((!b || !ulvCnt(b))? 0 : ulvGet(b,--ulvCnt(b)))
@@ -136,13 +138,14 @@ typedef uint16_t *usv_t ;
 
 #define usvAppend(a,b)  (usv_t)blkAppend((uint8_t *)a,(uint8_t *)b,blkU16sz)
 #define usvSort(b)      qsort(b, usvCnt(b), blkU16sz, blkU16cmp)
-#define usvUniq(b)      blkUniq((uint8_t *)b, blkU16sz)
+#define usvUniq(b)      (usv_t)blkUniq((uint8_t *)b, blkU16)
 
-#define usvAdd(b,v)     usvSet(b, blkDepth(b), v)
-#define usvPush(b,v)    usvSet(b, blkDepth(b), v)
+#define usvAdd(b,v)     usvSet(b, usvDepth(b), v)
+#define usvPush         usvAdd
 #define usvTop(b)       ((!b || !usvCnt(b))? 0 : usvGet(b,usvCnt(b)-1))
 #define usvPop(b)       ((!b || !usvCnt(b))? 0 : usvGet(b,--usvCnt(b)))
 
+#define usvCmp(a,b)     blkCmp((uint8_t *)a, (uint8_t *)b, blkU16sz)
 /**********************/
 
 typedef uint8_t *ucv_t ;
@@ -160,10 +163,10 @@ typedef uint8_t *ucv_t ;
 
 #define ucvAppend(a,b)  (ucv_t)blkAppend((uint8_t *)a,(uint8_t *)b,blkCHRsz)
 #define ucvSort(b)      qsort(b, ucvCnt(b), blkCHRsz, blkCHRcmp)
-#define ucvUniq(b)      blkUniq((uint8_t *)b, blkCHRsz)
+#define ucvUniq(b)      blkUniq((uint8_t *)b, blkCHR)
 
-#define ucvAdd(b,v)     ucvSet(b, ucvCnt(b), v)
-#define ucvPush(b,v)    ucvSet(b, ucvCnt(b), v)  
+#define ucvAdd(b,v)     ucvSet(b, ucvDepth(b), v)
+#define ucvPush         ucvPush
 #define ucvTop(b)       ((!b || !ucvCnt(b))? 0 : ucvGet(b,ucvCnt(b)-1))
 #define ucvPop(b)       ((!b || !ucvCnt(b))? 0 : ucvGet(b,--ucvCnt(b)))
 
@@ -172,19 +175,20 @@ typedef uint8_t *ucv_t ;
 
 typedef void **vpv_t ;
 
-#define vpvNew()      (vpv_t)blkNew(blkPTRsz)
-#define vpvFree(b)    (vpv_t)blkFree((uint8_t *)b)
+#define vpvNew()        (vpv_t)blkNew(blkPTRsz)
+#define vpvFree(b)      (vpv_t)blkFree((uint8_t *)b)
+#define vpvAppend(a,b)  (vpv_t)blkAppend((uint8_t *)a,(uint8_t *)b,blkPTRsz)
 
-#define vpvCnt        blkCnt
-#define vpvSlt        blkSlt
-#define vpvDepth      blkDepth
-#define vpvReset(b)   ((vpv_t)blkReset((blk_t)(b),blkPTRsz))
+#define vpvCnt          blkCnt
+#define vpvSlt          blkSlt
+#define vpvDepth        blkDepth
+#define vpvReset(b)     ((vpv_t)blkReset((blk_t)(b),blkPTRsz))
 
-#define vpvGet(b,n)   ((void *)blkGetPtr((uint8_t *)b, n))
-#define vpvSet(b,n,v) ((vpv_t)blkSetPtr((uint8_t *)b, n, (void *)v))
+#define vpvGet(b,n)     ((void *)blkGetPtr((uint8_t *)b, n))
+#define vpvSet(b,n,v)   ((vpv_t)blkSetPtr((uint8_t *)b, n, (void *)v))
 
-#define vpvAdd(b,v)     vpvSet(b, vpvCnt(b), v)
-#define vpvPush(b,v)    vpvSet(b, vpvCnt(b), v)                        
+#define vpvAdd(b,v)     vpvSet(b, vpvDepth(b), v)
+#define vpvPush         vpvAdd
 #define vpvTop(b)       ((!b || !vpvCnt(b))? 0 : vpvGet(b,vpvCnt(b)-1))
 #define vpvPop(b)       ((!b || !vpvCnt(b))? 0 : vpvGet(b,--vpvCnt(b)))
 
