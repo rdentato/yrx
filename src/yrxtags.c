@@ -25,9 +25,13 @@ uint8_t *yrxTagsStr(tagset_t a)
   p = (char *)s;
   if (a != NULL) {
     for (k=0; k < ulvCnt(a); k++) {
-      sprintf(p,"%c%02X_%04X ", yrxTagType(a[k]),
-                                  yrxTagExpr(a[k]), yrxTagDelta(a[k]));
-      p += 9;
+      sprintf(p,"%c%X ", yrxTagType(a[k]), yrxTagExpr(a[k]));
+      while (*p) p++;
+      
+      if (yrxTagDelta(a[k]) > 0) {
+        sprintf(p-1,"_%X ", yrxTagDelta(a[k]));
+        while (*p) p++;
+      }
     }
   }
   

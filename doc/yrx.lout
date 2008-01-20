@@ -45,7 +45,7 @@ YRX makes use of @I{tagged automata} where each arc may carry
 a set of @I{tags}. The idea of using tags for marking the current
 position within the input text was initially found in @Cite {$AhoUllman77}
 where Aho and Ullman suggest to use an {@Sym epsilon}-transition tagged
-with @F "/" to implement the lookahed operator.
+with '@F"/"' to implement the lookahed operator.
 
 @LP
 Ville Laurikari in @Cite{$Laurikari} fully described how to solve the
