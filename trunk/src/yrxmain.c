@@ -51,7 +51,7 @@ int main(int argc, char **argv)
   while (argn < argc) {
     if (argv[argn][0] != '-') break;
     switch (argv[argn][1]) {
-      case 'f': 
+      case 'f': break;
     }
     argn++; 
   }

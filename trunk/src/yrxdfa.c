@@ -175,32 +175,32 @@ void add2merge(vec_t v, arc_t *a)
     p = vecGet(v,k);
     
     if (yrxLblEqual(q.lbl, p->lbl)) {
-      dbgmsg("Equal labels: %s\t", yrxLblStr(q.lbl));
-      dbgmsg("%s\n", yrxLblStr(p->lbl));
+      _dbgmsg("Equal labels: %s\t", yrxLblStr(q.lbl));
+      _dbgmsg("%s\n", yrxLblStr(p->lbl));
       p->arcs = vpvAppend(p->arcs,q.arcs);
       q.lbl = yrxLblEpsilon;
     }
     else {
       lintr = yrxLblIntersection(q.lbl, p->lbl);
       if (yrxLblEqual(lintr, q.lbl)) {
-        dbgmsg("q * p = q %s\t", yrxLblStr(q.lbl));
-        dbgmsg("%s\t", yrxLblStr(p->lbl));
-        dbgmsg("%s\n", yrxLblStr(lintr));
+        _dbgmsg("q * p = q %s\t", yrxLblStr(q.lbl));
+        _dbgmsg("%s\t", yrxLblStr(p->lbl));
+        _dbgmsg("%s\n", yrxLblStr(lintr));
         p->lbl  = yrxLblMinus(p->lbl, lintr);
         q.arcs = vpvAppend(q.arcs, p->arcs);
       }  
       else if (yrxLblEqual(lintr, p->lbl)) {
-        dbgmsg("q * p = p %s\t", yrxLblStr(q.lbl));
-        dbgmsg("%s\t", yrxLblStr(p->lbl));
-        dbgmsg("%s\n", yrxLblStr(lintr));
+        _dbgmsg("q * p = p %s\t", yrxLblStr(q.lbl));
+        _dbgmsg("%s\t", yrxLblStr(p->lbl));
+        _dbgmsg("%s\n", yrxLblStr(lintr));
         q.lbl  = yrxLblMinus(q.lbl, lintr);
         p->arcs = vpvAppend(p->arcs, q.arcs);
       }
       else if (!yrxLblEmpty(lintr)) {
         lbl2arcs *t = vecAdd(v,&q);
-        dbgmsg("q * p = t %s\t", yrxLblStr(q.lbl));
-        dbgmsg("%s\t", yrxLblStr(p->lbl));
-        dbgmsg("%s\n", yrxLblStr(lintr));
+        _dbgmsg("q * p = t %s\t", yrxLblStr(q.lbl));
+        _dbgmsg("%s\t", yrxLblStr(p->lbl));
+        _dbgmsg("%s\n", yrxLblStr(lintr));
         t->lbl  = lintr;
         t->arcs = vpvAppend(usvDup(q.arcs), p->arcs);
         p->lbl  = yrxLblMinus(p->lbl,lintr);

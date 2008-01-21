@@ -75,3 +75,38 @@ typedef uint32_t step;
 #define getARG2(s)   ((s) >> 16)
 
 static ulv_t pgm; 
+
+
+
+static void addop(uint8_t opcode, uint8_t arg1, uint16_t arg2)
+{
+  pgm = ulvAdd(pgm,(arg2 << 16) | (arg1 << 8) | opcode));
+}
+
+
+
+void yrxASM(void)
+{
+  uint32_t from;
+  arc_t *a;
+  uint8_t *pairs;
+
+  from = yrxDFAStartState();
+
+  while (from != 0) {
+    while ((a = yrxDFANextArc()) != NULL) {
+      pairs = yrxLblPairs(a->lbl);
+      while (pairs[0] <= pairs[1]) {
+        if (pairs[0] != pairs[1]) {
+          if (pairs[1] > pairs[0] +1) 
+            ;
+        }
+        pairs += 2;
+      }
+      
+      if (a->tags) {
+      }
+    }
+    from = yrxDFANextState(from);
+  }
+}

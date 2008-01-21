@@ -47,7 +47,7 @@ tagset_t yrxTagset(tag_t tag)
   
   ts = ulvNew();
   if (ts != NULL) {
-    ulvSet(ts,0,tag);
+    ts = ulvSet(ts,0,tag);
   }
   return ts;
 }
