@@ -19,7 +19,7 @@
 static vpv_t FA      = NULL;
 static vpv_t mrgd    = NULL;
 static vec_t tomerge = NULL;
-static vec_t marked  = NULL;
+static usv_t marked  = NULL;
 
 /*****/
 
@@ -260,20 +260,6 @@ static void copyarcs(vec_t arcs, state_t st, tagset_t tags)
   }
 }
 
-static void delarc(vec_t  arcs, arc_t *a)
-{
-  arc_t *b;
-  _dbgmsg("Deleted  -> %d\n", a->to);
-  b = vecGet(arcs, vecCnt(arcs)-1);
-
-  yrxTagsFree(a->tags);
-  if (a != b) {
-   *a = *b;
-  }
-  b->tags = NULL;
-  vecCnt(arcs)--;
-}
-
 usv_t destlist(vpv_t arcs)
 {
   uint32_t j;
@@ -287,9 +273,9 @@ usv_t destlist(vpv_t arcs)
   
   lst = usvUniq(lst);
 
-  dbgmsg("destlist: \n");
+  _dbgmsg("destlist: \n");
   for (j=0; j<usvCnt(lst); j++) {
-    dbgmsg("\t %d\n",lst[j]);
+    _dbgmsg("\t %d\n",lst[j]);
   }
 
   return lst;
@@ -308,7 +294,7 @@ static void determinize(state_t st)
   tomerge = l2a_reset(tomerge);
   
   arclist = vpvGet(FA, st);
-  vecSetVal(marked, st, st, state_t);
+  marked = usvSet(marked, st, st);
   k = 0;
   while (k < vecCnt(arclist)) {
     arc = vecGet(arclist, k++);
@@ -319,8 +305,8 @@ static void determinize(state_t st)
     }
     else if (arc->lbl == yrxLblEpsilon) {
       _dbgmsg("Copy from %d to %d [k==%d]\n",arc->to, st,k);
-      if (vecGetVal(marked, arc->to, state_t) != st) {
-        vecSetVal(marked, arc->to, st, state_t);
+      if (usvGet(marked, arc->to) != st) {
+        marked = usvSet(marked, arc->to, st);
         copyarcs(arclist, arc->to, arc->tags);
       }
     }
@@ -340,7 +326,7 @@ static void determinize(state_t st)
     vecAdd(newarcs,&a);
   }
 
-  dbgmsg("state: %d\n",st);
+  _dbgmsg("state: %d\n",st);
   for (k = 0; k < vecCnt(tomerge); k++) {
     p = vecGet(tomerge,k);
     if (vpvCnt(p->arcs) == 1) {
@@ -385,16 +371,34 @@ static void determinize(state_t st)
 
 void yrxDFA(void)
 {
- state_t st;
+  state_t st;
+  uint32_t k;
   _dbgmsg ("DFA\n");    
  
-    
+  if (mrgd == NULL) mrgd = vpvNew();
+  if (mrgd == NULL) err(702,yrxStrNoMem);
+  
+  if (marked == NULL) marked = usvNew();
+  if (marked == NULL) err(712,yrxStrNoMem);
+  
+  if (tomerge == NULL) tomerge = vecNew(sizeof(lbl2arcs));
+  if (tomerge == NULL) err(713,yrxStrNoMem);
+      
   resetstack();
   pushonce(1);
  
   while ((st = pop()) != 0) {
     determinize(st);
   } 
+  
+  if (mrgd != NULL) {
+    for (k=0; k < vpvCnt(mrgd); k++) {
+      if (mrgd[k] != NULL) mrgd[k] = usvFree(mrgd[k]);
+    }
+    mrgd = vpvFree(mrgd);
+  }
+  if (marked != NULL) marked = usvFree(marked);
+  if (tomerge != NULL) tomerge = vecFreeClean(tomerge, (vecCleaner)l2a_clean);
 }
 
 
@@ -432,14 +436,7 @@ static void yrxDFAClean(void)
     }
     FA = vpvFree(FA);
   }
-  if (mrgd != NULL) {
-    for (k=0; k < vpvCnt(mrgd); k++) {
-      if (mrgd[k] != NULL) mrgd[k] = usvFree(mrgd[k]);
-    }
-    mrgd = vpvFree(mrgd);
-  }
-  if (marked != NULL) marked = vecFree(marked);
-  if (tomerge != NULL) tomerge = vecFreeClean(tomerge, (vecCleaner)l2a_clean);
+
 }
 
 vpv_t yrxDFAInit(vpv_t v)
@@ -449,16 +446,7 @@ vpv_t yrxDFAInit(vpv_t v)
   
   if (FA == NULL) FA = vpvNew();
   if (FA == NULL) err(701,yrxStrNoMem);
-  
-  if (mrgd == NULL) mrgd = vpvNew();
-  if (mrgd == NULL) err(702,yrxStrNoMem);
-  
-  if (marked == NULL) marked = vecNew(sizeof(state_t));
-  if (marked == NULL) err(712,yrxStrNoMem);
-  
-  if (tomerge == NULL) tomerge = vecNew(sizeof(lbl2arcs));
-  if (tomerge == NULL) err(713,yrxStrNoMem);
-  
+
   return v;
 }
 
