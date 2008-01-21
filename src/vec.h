@@ -119,6 +119,8 @@ typedef uint32_t *ulv_t ;
 #define ulvTop(b)       ((!b || !ulvCnt(b))? 0 : ulvGet(b,ulvCnt(b)-1))
 #define ulvPop(b)       ((!b || !ulvCnt(b))? 0 : ulvGet(b,--ulvCnt(b)))
 
+#define ulvLast         ulvTop      
+
 /**********************/
 
 typedef uint16_t *usv_t ;
