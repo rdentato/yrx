@@ -15,7 +15,7 @@
 
 include ../config.mk
 
-CFLAGS = $(DEBUG) -I../utils/lua -Wall -O2 -g 
+CFLAGS = $(DEBUG) -Wall -O2 -g 
 
 # LDFLAGS = -L ../utils/lua
 # LIBS   = -llua -lm

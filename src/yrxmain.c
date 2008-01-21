@@ -42,21 +42,28 @@ static void cleanup(void)
 int main(int argc, char **argv)
 {
   int argn = 1;
-  char **rxs;
+  int rxn = 0;
+  char **rxs = NULL;
 
   init();
   atexit(cleanup);
   
   while (argn < argc) {
     if (argv[argn][0] != '-') break;
+    switch (argv[argn][1]) {
+      case 'f': 
+    }
     argn++; 
   }
-  rxs = argv + argn;
-  argn = argc - argn;
+  
+  if (rxs == NULL) {
+    rxs = argv + argn;
+    rxn = argc - argn;
+  }
+  
+  if (rxn < 1 || 250 < rxn) usage();
 
-  if (argn < 1 || 250 < argn) usage();
-
-  yrxParse(rxs, argn);
+  yrxParse(rxs, rxn);
   yrxDump(0);
   
   exit(0);
