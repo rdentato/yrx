@@ -16,75 +16,69 @@
 
 /*****/
 
-#define asmop(x,a,b,c,d,e,f) static char op##x[] = {a,b,c,d};
 
-asmop(CBD,'C','B','D',0x61,"0110 0001","Capture Begin (with Displacement)") 
-asmop(CBZ,'C','B','Z',0x60,"0110 0000","Capture Begin (with Zero displacement)")
-asmop(CED,'C','E','D',0x63,"0110 0011","Capture End (with Displacement)")     
-asmop(CEZ,'C','E','Z',0x62,"0110 0010","Capture End (with Zero displacement)")
-          
-asmop(CMP,'C','M','P',0x31,"0011 0001","Compare")
-asmop(CMZ,'C','M','Z',0x30,"0011 0000","Compare with 0")
-          
-asmop(DIM,'D','I','M',0x37,"0011 0111","")
-          
-asmop(FEQ,'F','E','Q',0x49,"0100 1001","Fail on Equal")
-asmop(FGE,'F','G','E',0x4A,"0100 1010","Fail on Greater or Equal")
-asmop(FGT,'F','G','T',0x4B,"0100 1011","Fail on Greater Than")
-asmop(FLE,'F','L','E',0x4C,"0100 1100","Fail on Less or Equal")
-asmop(FLT,'F','L','T',0x4D,"0100 1101","Fail on Less Than")    
-asmop(FNE,'F','N','E',0x4E,"0100 1110","Fail on Not Equal")
-          
-asmop(GET,'G','E','T',0x32,"0011 0010","GET next input char")
-          
-asmop(JEQ,'J','E','Q',0x41,"0100 0001","Jump on Equal")           
-asmop(JGE,'J','G','E',0x42,"0100 0010","Jump on Less Than")       
-asmop(JGT,'J','G','T',0x43,"0100 0011","Jump on Greater or Equal")
-asmop(JLE,'J','L','E',0x44,"0100 0100","Jump on Not Equal")
-asmop(JLT,'J','L','T',0x45,"0100 0101","Jump on Less or Equal")   
-asmop(JMP,'J','M','P',0x47,"0100 0111","JuMP")
-asmop(JNE,'J','N','E',0x46,"0100 0110","Jump on Greater Than")    
-          
-asmop(JOF,'J','O','F',0x40,"0100 0000","Jump on Fail")
-          
-asmop(MRK,'M','R','K',0x33,"0011 0011","MaRK tag")
-asmop(MTC,'M','T','C',0x35,"0011 0101","MaTCh tag")
-asmop(NCP,'N','C','P',0x36,"0011 0110","Number of Captures")
-asmop(NOP,'N','O','P',0x38,"0011 1000","No OPeration")
-asmop(NRX,'N','R','X',0x34,"0011 0100","Number of Regular eXpressions")
-asmop(RET,'R','E','T',0x4F,"0100 1111","RETurn")
+#define CPB 0x02  /*  000000 10  Capture Begin                 */
+#define CPE 0x03  /*  000000 11  Capture End                   */
 
-/*****/
+#define MTC 0x01  /* 00 0000 01  MaTCh                         */
+#define MRK 0x05  /* 00 0001 01  MaRK                          */
+
+#define CMP 0x21  /* 00 1000 01  Compare                       */
+#define GET 0x25  /* 00 1001 01  GET next input char           */
+#define DIM 0x29  /* 00 1010 01                                */
+#define NCP 0x2D  /* 00 1011 01  Number of Captures            */
+#define NRX 0x31  /* 00 1100 01  Number of Regular eXpressions */
+#define NOP 0x35  /* 00 1101 01  No OPeration                  */
+
+#define ONF 0x04  /* 00 0001 00  jump ON Fail                  */
+#define FEQ 0x08  /* 00 0010 00  Fail on Equal                 */
+#define FGE 0x0C  /* 00 0011 00  Fail on Greater or Equal      */
+#define FGT 0x10  /* 00 0100 00  Fail on Greater Than          */
+#define FLE 0x14  /* 00 0101 00  Fail on Less or Equal         */
+#define FLT 0x18  /* 00 0110 00  Fail on Less Than             */
+#define FNE 0x1C  /* 00 0111 00  Fail on Not Equal             */
+
+#define RET 0x20  /* 00 1000 00  RETurn                        */
+#define JMP 0x24  /* 00 1001 00  JuMP                          */
+#define JEQ 0x28  /* 00 1010 00  Jump on Equal                 */
+#define JGE 0x2C  /* 00 1011 00  Jump on Less Than             */
+#define JGT 0x30  /* 00 1100 00  Jump on Greater or Equal      */
+#define JLE 0x34  /* 00 1101 00  Jump on Not Equal             */
+#define JLT 0x38  /* 00 1110 00  Jump on Less or Equal         */
+#define JNE 0x3C  /* 00 1111 00  Jump on Greater Than          */
 
 
+static char *op[0x40];
 
-asmop(CPB,'C','B','D',0x02,"0000 0010","Capture Begin") 
-asmop(CPE,'C','E','D',0x03,"0000 0011","Capture End")     
-asmop(DIM,'D','I','M',0x05,"0000 0101","")
-asmop(FEQ,'F','E','Q',0x06,"0000 0100","Fail on Equal")
-asmop(FGE,'F','G','E',0x08,"0000 1000","Fail on Greater or Equal")
-asmop(MTC,'M','T','C',0x09,"0000 1001","MaTCh tag")
-asmop(FGT,'F','G','T',0x0C,"0000 1100","Fail on Greater Than")
-asmop(MRK,'M','R','K',0x0D,"0000 1101","MaRK tag")
-asmop(FLE,'F','L','E',0x10,"0001 0000","Fail on Less or Equal")
-asmop(FLT,'F','L','T',0x14,"0001 0100","Fail on Less Than")    
-asmop(FNE,'F','N','E',0x18,"0001 1000","Fail on Not Equal")
-asmop(JOF,'O','N','F',0x20,"0010 0000","jump ON Fail")
-asmop(CMP,'C','M','P',0x21,"0010 0001","Compare")
-asmop(CMP,'C','M','Z',0x31,"0011 0001","Compare")
-asmop(JEQ,'J','E','Q',0x24,"0010 0100","Jump on Equal")           
-asmop(GET,'G','E','T',0x25,"0010 0101","GET next input char")
-asmop(JGE,'J','G','E',0x28,"0010 1000","Jump on Less Than")       
-asmop(NCP,'N','C','P',0x29,"0010 1001","Number of Captures")
-asmop(JGT,'J','G','T',0x2C,"0010 1100","Jump on Greater or Equal")
-asmop(NOP,'N','O','P',0x2D,"0010 1101","No OPeration")
-asmop(JLE,'J','L','E',0x30,"0011 0000","Jump on Not Equal")
-asmop(JLT,'J','L','T',0x34,"0011 0100","Jump on Less or Equal")   
-asmop(JNE,'J','N','E',0x38,"0011 1000","Jump on Greater Than")    
-asmop(NRX,'N','R','X',0x39,"0011 1001","Number of Regular eXpressions")
-asmop(JMP,'J','M','P',0x3C,"0011 1100","JuMP")
-asmop(RET,'R','E','T',0x3D,"0011 1101","RETurn")
-                                   
+#define opcode(a) op[a] = #a 
+static void op_init(void)
+{
+  opcode(CPB);
+  opcode(CPE);
+  opcode(MTC);
+  opcode(MRK);
+  opcode(CMP);
+  opcode(GET);
+  opcode(DIM);
+  opcode(NCP);
+  opcode(NRX);
+  opcode(NOP);
+  opcode(ONF);
+  opcode(FEQ);
+  opcode(FGE);
+  opcode(FGT);
+  opcode(FLE);
+  opcode(FLT);
+  opcode(FNE);
+  opcode(RET);
+  opcode(JMP);
+  opcode(JEQ);
+  opcode(JGE);
+  opcode(JGT);
+  opcode(JLE);
+  opcode(JLT);
+  opcode(JNE);
+}                                  
                                    
                                    
 
@@ -108,12 +102,21 @@ typedef uint32_t step;
 static ulv_t pgm; 
 
 
-
 static void addop(uint8_t opcode, uint8_t arg1, uint16_t arg2)
 {
-  pgm = ulvAdd(pgm,(arg2 << 16) | (arg1 << 8) | opcode));
+  uint32_t step;
+ 
+  printf("\t%s %u,%u\n",op[opcode], arg1, arg2);
+  /* 
+  step = (arg2 << 16) | (arg1 << 8) | opcode);
+  pgm = ulvAdd(pgm,step);
+  */
 }
 
+static void addtarget(uint8_t type, uint16_t sub, uint16_t state)
+{
+  printf("%c_%u_%u:\n",type, state, sub);
+}
 
 
 void yrxASM(void)
@@ -125,6 +128,8 @@ void yrxASM(void)
   from = yrxDFAStartState();
 
   while (from != 0) {
+    addlbl('S',0,from);
+    addop(GET,0,0);
     while ((a = yrxDFANextArc()) != NULL) {
       pairs = yrxLblPairs(a->lbl);
       while (pairs[0] <= pairs[1]) {
