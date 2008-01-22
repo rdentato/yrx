@@ -131,16 +131,21 @@ void yrxASM(void)
     addlbl('S',0,from);
     addop(GET,0,0);
     while ((a = yrxDFANextArc()) != NULL) {
+      if (a->lbl == yrxLblLambda) 
       pairs = yrxLblPairs(a->lbl);
       while (pairs[0] <= pairs[1]) {
-        if (pairs[0] != pairs[1]) {
-          if (pairs[1] > pairs[0] +1) 
-            ;
+        if (pairs[0] == pairs[1]) {
+          addop(CMP,pairs[0],0);
+          addop(JEQ,0,a->to);
         }
+        else if (pairs[1] > pairs[0] +1) {
+        } 
+            ;
         pairs += 2;
       }
       
       if (a->tags) {
+        addlbl('A',0,from);
       }
     }
     from = yrxDFANextState(from);
