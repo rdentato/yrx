@@ -25,25 +25,28 @@ void usage(void)
 
 static void init(void)
 {
-  yrxCleanVec = vpvNew();
-  yrxCleanVec = yrxLblInit(yrxCleanVec); 
-  yrxCleanVec = yrxDFAInit(yrxCleanVec);
+  yrxLblInit(); 
+  yrxDFAInit();
+  yrxASMInit();
 }
 
 static void cleanup(void)
 {
-  uint16_t k;
-  
-  for (k = 0; k < vpvCnt(yrxCleanVec); k++) {
-     ((void (*)())(yrxCleanVec[k])) () ;
-  }
+  yrxLblClean(); 
+  yrxDFAClean();
+  yrxASMClean();  
 }
+
+#define DO_DOT  0x00000001
+#define DO_ASM  0x00000002
 
 int main(int argc, char **argv)
 {
   int argn = 1;
   int rxn = 0;
   char **rxs = NULL;
+  
+  uint32_t to_do = DO_DOT;
 
   init();
   atexit(cleanup);
@@ -51,7 +54,8 @@ int main(int argc, char **argv)
   while (argn < argc) {
     if (argv[argn][0] != '-') break;
     switch (argv[argn][1]) {
-      case 'f': break;
+      case 'g': to_do = DO_DOT; break;
+      case 'a': to_do = DO_ASM; break;
     }
     argn++; 
   }
@@ -64,7 +68,10 @@ int main(int argc, char **argv)
   if (rxn < 1 || 250 < rxn) usage();
 
   yrxParse(rxs, rxn);
-  yrxDump(0);
+  switch (to_do) {
+     case DO_DOT: yrxDump(0); break;
+     case DO_ASM: yrxASM(1); break;
+  }
   
   exit(0);
 }
