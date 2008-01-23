@@ -205,13 +205,12 @@ void yrxASM(int optimize)
       if (a->tags) {
       }
       a = yrxDFANextArc();
-      if (a == NULL) addop(RET,0); 
       arcn++;
     }
     if (final_ts != NULL) {
       addop(MTC,0);
-      addop(RET,0); 
     } 
+      addop(RET,0); 
     from = yrxDFANextState(from);
   }
 }
