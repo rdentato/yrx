@@ -258,24 +258,21 @@ char *yrxLblStr(lbl_t lb)
 
 /***************/
 
-static void yrxLblClean(void)
+void yrxLblClean(void)
 {
   lblpool = mapFree(lblpool); 
 }
 
-vpv_t yrxLblInit(vpv_t v)
+void yrxLblInit(void)
 {
   lblpool = mapNew(sizeof(lbl_bits), NULL);
 
   if ( lblpool == NULL ) 
     err(601,yrxStrNoMem);
     
-
   yrxLblEpsilon = NULL;
   yrxLblLambda = (lbl_t)lblpool;
   
-  v = vpvAdd(v, yrxLblClean);
-  return v;
 }
 
 

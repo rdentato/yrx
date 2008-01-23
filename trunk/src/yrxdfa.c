@@ -114,9 +114,20 @@ static arc_t *nextArc(state_t st)
   return a;
 }
 
+arc_t *yrxDFAGetArc(state_t st, uint16_t arcn)
+{
+  return  vecGet(FA[st],arcn); 
+}
+
 
 arc_t *yrxDFANextArc(void)
 {
+  return nextArc(0); 
+}
+
+arc_t *yrxDFAFirstArc(state_t st)
+{
+  nextArc(st);
   return nextArc(0); 
 }
 
@@ -140,12 +151,12 @@ typedef struct lbl2arcs {
     vpv_t  arcs;
 } lbl2arcs;
   
-void l2a_clean(lbl2arcs *a)
+static void l2a_clean(lbl2arcs *a)
 {
   if (a->arcs) a->arcs = vpvFree(a->arcs);
 }
 
-vec_t l2a_reset(vec_t a)
+static vec_t l2a_reset(vec_t a)
 {
   uint32_t k;
   lbl2arcs *p;
@@ -161,7 +172,7 @@ vec_t l2a_reset(vec_t a)
 /****/
 
 
-void add2merge(vec_t v, arc_t *a)
+static void add2merge(vec_t v, arc_t *a)
 {
   lbl_t lintr;
   uint32_t k;
@@ -216,7 +227,7 @@ void add2merge(vec_t v, arc_t *a)
   }
 }
 
-tagset_t tagsunion(vpv_t arcs)
+static tagset_t tagsunion(vpv_t arcs)
 {
   tagset_t ts = NULL;
   uint32_t k;
@@ -229,7 +240,7 @@ tagset_t tagsunion(vpv_t arcs)
   return ts;
 }
 
-tagset_t tagsintersection(vpv_t arcs)
+static tagset_t tagsintersection(vpv_t arcs)
 {
   tagset_t ts = NULL;
   uint32_t k;
@@ -260,7 +271,7 @@ static void copyarcs(vec_t arcs, state_t st, tagset_t tags)
   }
 }
 
-usv_t destlist(vpv_t arcs)
+static usv_t destlist(vpv_t arcs)
 {
   uint32_t j;
   arc_t *arc;
@@ -425,7 +436,7 @@ void yrxNFAAddarc(state_t from, state_t to, lbl_t l, tagset_t tags)
   vecAdd(arclist,&arc);
 }
 
-static void yrxDFAClean(void)
+void yrxDFAClean(void)
 {
   uint32_t k;
   
@@ -436,17 +447,11 @@ static void yrxDFAClean(void)
     }
     FA = vpvFree(FA);
   }
-
 }
 
-vpv_t yrxDFAInit(vpv_t v)
-{
-  _dbgmsg ("Init FA\n");
-  v = vpvAdd(v,yrxDFAClean);
-  
+void yrxDFAInit(void)
+{  
   if (FA == NULL) FA = vpvNew();
   if (FA == NULL) err(701,yrxStrNoMem);
-
-  return v;
 }
 

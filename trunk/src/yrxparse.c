@@ -13,7 +13,6 @@
 */
 
 #include "yrx.h"
-#define MAXCAPTURES  32
 
 /**************************************************/
 static const char *cur_rx  = NULL;
@@ -183,7 +182,7 @@ static state_t term(state_t state)
   if ( c == '(') {
     c = nextch();
     ncapt = capt++;
-    if (ncapt >= MAXCAPTURES) yrxParseErr(505,"Too many captures");
+    if (ncapt >= yrxTagMaxCapt) yrxParseErr(505,"Too many captures");
 
     start = nextstate();
 
