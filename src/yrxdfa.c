@@ -18,6 +18,7 @@
 
 static vpv_t FA      = NULL;
 static vpv_t mrgd    = NULL;
+static map_t invmrgd = NULL;
 static vec_t tomerge = NULL;
 static usv_t marked  = NULL;
 
@@ -118,7 +119,6 @@ arc_t *yrxDFAGetArc(state_t st, uint16_t arcn)
 {
   return  vecGet(FA[st],arcn); 
 }
-
 
 arc_t *yrxDFANextArc(void)
 {
@@ -271,15 +271,30 @@ static void copyarcs(vec_t arcs, state_t st, tagset_t tags)
   }
 }
 
+typedef struct {
+  usv_t   list;
+  state_t state;  
+} invmrgd_t;
+
+int invmrgd_cmp(invmrgd_t *a, invmrgd_t *b)
+{
+  return usvCmp(a->list , b->list);
+}
+
 static usv_t destlist(vpv_t arcs)
 {
   uint32_t j;
   arc_t *arc;
   usv_t lst = NULL;
+  usv_t tl;
   
   for (j=0; j < vpvCnt(arcs); j++) {
     arc = vpvGet(arcs,j);
-    lst = usvAdd(lst,arc->to);
+    tl = vpvGet(mrgd,arc->to);
+    if (tl == NULL)
+      lst = usvAdd(lst,arc->to);
+    else
+      lst = usvAppend(lst,tl);
   }
   
   lst = usvUniq(lst);
@@ -340,41 +355,39 @@ static void determinize(state_t st)
   _dbgmsg("state: %d\n",st);
   for (k = 0; k < vecCnt(tomerge); k++) {
     p = vecGet(tomerge,k);
+    a.lbl  = p->lbl;
     if (vpvCnt(p->arcs) == 1) {
       arc = p->arcs[0];
       a.to = arc->to;
-      a.lbl = p->lbl;
       a.tags = yrxTagsDup(arc->tags);
-      vecAdd(newarcs,&a); 
-      pushonce(a.to);
     }
     else {
-      usv_t st_mrgd = destlist(p->arcs);
+      usv_t st_mrgd;
+      invmrgd_t *inv;
+      invmrgd_t  invnew;
       
-      if (usvCmp(st_mrgd, vpvGet(mrgd,st)) == 0) {
-        a.to = st;
-        a.lbl = p->lbl;
-        a.tags = tagsunion(p->arcs);
-        vecAdd(newarcs,&a); 
-      }  
-      else {
-        a.to   = yrxNextState();
-        a.lbl  = p->lbl;
-        a.tags = tagsintersection(p->arcs);
-        vecAdd(newarcs,&a); 
-        
-        mrgd=vpvSet(mrgd, a.to, st_mrgd);
+      st_mrgd = destlist(p->arcs);
+      invnew.list = st_mrgd;
+      invnew.state   = 0;
+      inv = mapGetOrAdd(invmrgd,&invnew);
+    
+      a.tags = tagsintersection(p->arcs);
+     
+      if (inv->state == 0) { /* just added! */
+        inv->state   = yrxNextState();
+        mrgd=vpvSet(mrgd, inv->state, st_mrgd);
         st_mrgd = NULL;
-        pushonce(a.to);
-        
         for (j = 0; j < vpvCnt(p->arcs); j++) {
           arc = p->arcs[j];
-          yrxNFAAddarc(a.to, arc->to, yrxLblEpsilon,
+          yrxNFAAddarc(inv->state, arc->to, yrxLblEpsilon,
                          yrxTagsIncrement(yrxTagsDifference(yrxTagsDup(arc->tags), a.tags)));
         }
       }
+      a.to = inv->state;
       st_mrgd = usvFree(st_mrgd);
     }
+    vecAdd(newarcs,&a); 
+    pushonce(a.to);
   }
   arclist = vecFree(arclist);
   FA[st] = newarcs;
@@ -395,6 +408,10 @@ void yrxDFA(void)
   if (tomerge == NULL) tomerge = vecNew(sizeof(lbl2arcs));
   if (tomerge == NULL) err(713,yrxStrNoMem);
       
+  if (invmrgd == NULL) invmrgd = mapNew(sizeof(invmrgd_t),
+                                                 (mapCmp_t)invmrgd_cmp);
+  if (invmrgd == NULL) err(715,yrxStrNoMem);
+  
   resetstack();
   pushonce(1);
  
@@ -408,8 +425,11 @@ void yrxDFA(void)
     }
     mrgd = vpvFree(mrgd);
   }
-  if (marked != NULL) marked = usvFree(marked);
-  if (tomerge != NULL) tomerge = vecFreeClean(tomerge, (vecCleaner)l2a_clean);
+  
+  marked = usvFree(marked);
+  tomerge = vecFreeClean(tomerge, (vecCleaner)l2a_clean);
+  invmrgd = mapFree(invmrgd);
+
 }
 
 
@@ -447,6 +467,7 @@ void yrxDFAClean(void)
     }
     FA = vpvFree(FA);
   }
+  resetstack();
 }
 
 void yrxDFAInit(void)
