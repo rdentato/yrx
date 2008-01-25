@@ -198,7 +198,7 @@ void yrxASM(int optimize)
           addop(CMP, pairs[0]);
           addop(FLT, 0);
           addop(CMP, pairs[1]);
-          addop(JLT, targ('S', a->to));
+          addop(JLE, targ('S', a->to));
         } 
         pairs += 2;
       }
@@ -210,7 +210,7 @@ void yrxASM(int optimize)
     if (final_ts != NULL) {
       addop(MTC,0);
     } 
-      addop(RET,0); 
+    addop(RET,0); 
     from = yrxDFANextState(from);
   }
 }

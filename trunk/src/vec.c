@@ -875,7 +875,7 @@ static void mapbalance(map_t m)
   }
 }
 
-void *mapAdd(map_t m, void *e)
+void *mapadd(map_t m, void *e, int update)
 {
   mapNode *node;
   mapNode **parent;
@@ -885,14 +885,25 @@ void *mapAdd(map_t m, void *e)
   node = mapsearch(m, &parent, e);
   if (node == NULL) {
     node = mapnewnode(m);
+    update = 1;
    *parent = node;
   }
 
   _dbgmsg("ADD: %p to %p\n", node,parent);
-
-  memcpy(node->elem, e, m->nodes->esz - offsetof(mapNode, elem));
+  if (update)
+    memcpy(node->elem, e, m->nodes->esz - offsetof(mapNode, elem));
   mapbalance(m);
   return node->elem;
+}
+
+void *mapAdd(map_t m, void *e)
+{
+  return mapadd(m,e,1);
+}
+
+void *mapGetOrAdd(map_t m, void *e)
+{
+  return mapadd(m,e,0);
 }
 
 void *mapGet(map_t m, void *e)

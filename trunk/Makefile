@@ -30,9 +30,15 @@ config:
 	@echo "Edit the config.mk file before building YRX"
 	
 YRX:
-	cd utils; make
 	cd src; make
 	
 clean:
-	cd utils; make clean
 	cd src; make clean
+	
+tarball:
+	echo yrx_`date +%Y%m%d`.tgz
+	ls yrx
+	#svn checkout http://yrx.googlecode.com/svn/trunk/ yrx
+	#tar cvzf yrx_`date +%Y%m%d`.tgz yrx
+	#rm -rf yrx
+

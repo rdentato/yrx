@@ -348,6 +348,7 @@ typedef mapVec *map_t;
 map_t    mapNew         (uint16_t elemsz, mapCmp_t f);
 map_t    mapFreeClean   (map_t m, vecCleaner cln);
 void    *mapAdd         (map_t m, void *e);
+void    *mapGetOrAdd    (map_t m, void *e);
 void     mapDel         (map_t m, void *e);
 
 void    *mapGet         (map_t m, void *e);
