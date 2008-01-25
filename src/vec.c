@@ -14,13 +14,9 @@
 
 /** DISCLAIMER
 **
-**   These vector functions are used within the YRX project
+**   These functions are to be used within the YRX project
 ** <http://yrx.sourceforge.net>. No claim of their applicatbility
 ** outside that project is made!
-**
-**   One day, maybe, they will become a more general and useful
-** library.
-**
 */
 
 /*

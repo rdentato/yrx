@@ -16,12 +16,11 @@
 
 /*****/
 
+#define CPB 0x06  /* 0 00001 10  Capture Begin                 */
+#define CPE 0x07  /* 0 00001 11  Capture End                   */
 
-#define CPB 0x02  /* 0 00000 10  Capture Begin                 */
-#define CPE 0x03  /* 0 00000 11  Capture End                   */
-
-#define MTC 0x01  /* 00 0000 01  MaTCh                         */
-#define MRK 0x05  /* 00 0001 01  MaRK                          */
+#define MTC 0x02  /* 0 00000 10  MaTCh                         */
+#define MRK 0x03  /* 0 00000 11  MaRK                          */
 
 #define NRX 0x21  /* 00 1000 01  Number of Regular eXpressions */
 #define CMP 0x25  /* 00 1001 01  Compare                       */
@@ -48,6 +47,7 @@
 #define JNE 0x3C  /* 00 1111 00  Jump on Greater Than          */
 
 #define isjmp(x) (((x) & 0x23) == 0x20)
+#define istag(x) (((x) & 0x03) >  0x01)
 
 uint8_t nargs(uint8_t op)
 {
@@ -124,16 +124,37 @@ typedef struct {
 #define setARG0(s,x) (((s) = ((s) & 0xFF)) | (((x) & 0xFFFFFF) << 8))
 #define getARG0(s)   ((s) >> 8)
 
-static void addop(uint8_t opcode, uint32_t arg)
+static void dumpasm(uint32_t step)
 {
-  uint32_t step;
-
-  /* printf(";\t0x%02X 0x%02X %d\n",opcode, opcode & 0xD3, isjmp(opcode));*/
+  uint8_t opcode;
+  uint32_t arg;
+  int8_t capnum;
+  
+  opcode  = step & 0xFF;
+  arg     = step >> 8;
+  
   if (opcode == CMP) {
     printf("\t%s '%c'\n",op[opcode],arg);
   }
   else if (isjmp(opcode)) {
     printf("\t%s %c%u\n",op[opcode],arg & 0xFF,arg>>8);
+  }
+  else if (istag(opcode)) {
+    capnum = (opcode & 0x7F) >> 2;
+    opcode = (opcode & 0x03);
+    if (capnum > 0) opcode += 0x04;
+    
+    if (capnum == 0) {
+      printf("\t%s %u",op[opcode],arg & 0xFF);
+    }
+    else {
+      printf("\t%s %u,%u",op[opcode],capnum,arg & 0xFF);
+    }
+    arg = arg >> 8;
+    if (arg != 0) {
+      printf(",%u",arg);
+    }
+    printf("\n");
   }
   else {
     switch (nargs(opcode)) {
@@ -141,9 +162,17 @@ static void addop(uint8_t opcode, uint32_t arg)
       case 1: printf("\t%s %X\n",op[opcode],arg); break;
       case 2: printf("\t%s %X\n",op[opcode],arg); break;
     }
-  }
+  }  
+}
+
+static void addop(uint8_t opcode, uint32_t arg)
+{
+  uint32_t step;
+  
+  step = (arg << 8) | opcode ;
+  dumpasm(step);
+  
   /* 
-  step = (arg2 << 16) | (arg1 << 8) | opcode);
   pgm = ulvAdd(pgm,step);
   */
 }
@@ -158,6 +187,23 @@ static void addtarget(uint32_t lbl)
 
 static void addtags(tagset_t ts)
 {
+  uint16_t k;
+  uint8_t op;
+  uint8_t capnum;
+  uint32_t arg;
+  
+  if (ts != NULL) {
+    for (k=0; k < ulvCnt(ts); k++) {
+      op = yrxTagType(ts[k]);
+      arg = (yrxTagDelta(ts[k]) << 8) | yrxTagExpr(ts[k]);
+      if (op == TAG_MRK) 
+        addop(MRK,arg);
+      else if (op == TAG_FIN) 
+        addop(MTC,arg);
+      else {
+      }
+    }
+  }
 }
 
 void yrxASM(int optimize)
@@ -166,13 +212,12 @@ void yrxASM(int optimize)
   arc_t *a;
   uint8_t *pairs;
   tagset_t final_ts;
-  uint16_t arcn = 0;
+  uint32_t arcn = 1;
 
   from = yrxDFAStartState();
 
   while (from != 0) {
     addtarget(targ('S',from));
-    arcn = 0;
     final_ts = NULL;
     
     a = yrxDFAFirstArc(from);
@@ -192,24 +237,33 @@ void yrxASM(int optimize)
       while (pairs[0] <= pairs[1]) {
         if (pairs[0] == pairs[1]) {
           addop(CMP, pairs[0]);
-          addop(JEQ, targ('S',a->to));
+          if (a->tags) 
+            addop(JEQ, targ('A',arcn));
+          else
+            addop(JEQ, targ('S',a->to));
         }
         else {
           addop(CMP, pairs[0]);
           addop(FLT, 0);
           addop(CMP, pairs[1]);
-          addop(JLE, targ('S', a->to));
+          if (a->tags) 
+            addop(JEQ, targ('A',arcn));
+          else
+            addop(JEQ, targ('S',a->to));
         } 
         pairs += 2;
       }
+      addop(JMP,targ('Z',from)); 
       if (a->tags) {
+        addtarget(targ('A',arcn));
+        addtags(a->tags);    
+        addop(JMP, targ('S', a->to));
       }
       a = yrxDFANextArc();
       arcn++;
     }
-    if (final_ts != NULL) {
-      addop(MTC,0);
-    } 
+    addtarget(targ('Z',from));
+    addtags(final_ts);
     addop(RET,0); 
     from = yrxDFANextState(from);
   }
