@@ -53,6 +53,11 @@ UPX=test
 ## UPX, just uncomment next line.
 #UPX=upx
 
+#### SVN
+TSVN = /c/Programmi/TortoiseSVN/bin/TortoiseProc.exe
+## Full qualified path for TortoiseSVN on mingw/msys
+## Used to create a tarball. You probably won't need it!
+
 #########
 ######### NO Configurable items below this line
 #########
