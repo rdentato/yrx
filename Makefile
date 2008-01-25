@@ -34,11 +34,22 @@ YRX:
 	
 clean:
 	cd src; make clean
-	
-tarball:
-	echo yrx_`date +%Y%m%d`.tgz
-	ls yrx
-	#svn checkout http://yrx.googlecode.com/svn/trunk/ yrx
-	#tar cvzf yrx_`date +%Y%m%d`.tgz yrx
-	#rm -rf yrx
 
+	
+SVN_URL=http://yrx.googlecode.com/svn/trunk
+SVN_PATH=yrx
+SVN_TAR=tar cvzf $(SVN_TBALL) $(SVNPATH)
+SVN_TBALL=yrx_`date +%Y%m%d`.tgz 
+ifeq ($(SYS),MINGW)
+SVN_CMD = $(TSVN) /command:export /url:$(SVN_URL) /path:$(SVN_PATH) /notempfile /closeonend:1
+else
+SVN_CMD = svn export $(SVN_URL) $(SVN_PATH)
+endif
+
+tarball:
+	rm -rf $(SVN_PATH)
+	mkdir $(SVN_PATH)
+	$(SVN_CMD)
+	rm -f $(SVN_TBALL)
+	$(SVN_TAR)
+	rm -rf yrx
