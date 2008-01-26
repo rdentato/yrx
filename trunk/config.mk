@@ -11,27 +11,27 @@
 # express or implied warranty.
 
 # This makefile is for GNU tool chain it has been tested under
-# Windows (Mingw) and Linux (Slackware 11 & Xubuntu 7.10)
+# Windows (Mingw/Msys) and Linux (Slackware 11 & Xubuntu 7.10)
 
 # $Id$
 
 # Modify this file according your system before building yrx
 
 #### SYSTEM
-## Try to guess which system we running on
+## Assume Linux
+SYS=LINUX
+## Try to guess which system we are running on:
 
 # SYS=$(shell uname | grep -i -c mingw)
 # ifeq ($(SYS),1)
 
+# Count on the existence of the OSTYPE variable
 ifeq ($(OSTYPE),msys)
-SYS=MINGW
-else
-SYS=LINUX
+ SYS=MINGW
 endif
 
-## Or simply uncoment the approriate line if guessing doesn't work
+## Or simply uncoment next line if you're using mingw
 #SYS=MINGW
-#SYS=LINUX
 
 #### LOG2_ASM
 ## Uncomment next line to use the inline assembler version of |llog2()|
@@ -71,5 +71,3 @@ _OBJ=o
 
 AR=ar rcu
 
-#sys:
-#	@echo ${SYS}
