@@ -30,16 +30,15 @@
 #define NOP 0x35  /* 00 1101 01  No OPeration                  */
 
 #define RET 0x04  /* 00 0001 00  RETurn                        */
-#define FEQ 0x08  /* 00 0010 00  Fail on Equal                 */
-#define FGE 0x0C  /* 00 0011 00  Fail on Greater or Equal      */
-#define FGT 0x10  /* 00 0100 00  Fail on Greater Than          */
-#define FLE 0x14  /* 00 0101 00  Fail on Less or Equal         */
-#define FLT 0x18  /* 00 0110 00  Fail on Less Than             */
-#define FNE 0x1C  /* 00 0111 00  Fail on Not Equal             */
+#define REQ 0x08  /* 00 0010 00  Return on EQual                 */
+#define RGE 0x0C  /* 00 0011 00  Return on Greater or Equal      */
+#define RGT 0x10  /* 00 0100 00  Return on Greater Than          */
+#define RLE 0x14  /* 00 0101 00  Return on Less or Equal         */
+#define RLT 0x18  /* 00 0110 00  Return on Less Than             */
+#define RNE 0x1C  /* 00 0111 00  Return on Not Equal             */
 
-#define ONF 0x20  /* 00 1000 00  jump ON Fail                  */
 #define JMP 0x24  /* 00 1001 00  JuMP                          */
-#define JEQ 0x28  /* 00 1010 00  Jump on Equal                 */
+#define JEQ 0x28  /* 00 1010 00  Jump on EQual                 */
 #define JGE 0x2C  /* 00 1011 00  Jump on Less Than             */
 #define JGT 0x30  /* 00 1100 00  Jump on Greater or Equal      */
 #define JLE 0x34  /* 00 1101 00  Jump on Not Equal             */
@@ -83,13 +82,12 @@ void yrxASMInit(void)
   opcode(NCP);
   opcode(NRX);
   opcode(NOP);
-  opcode(ONF);
-  opcode(FEQ);
-  opcode(FGE);
-  opcode(FGT);
-  opcode(FLE);
-  opcode(FLT);
-  opcode(FNE);
+  opcode(REQ);
+  opcode(RGE);
+  opcode(RGT);
+  opcode(RLE);
+  opcode(RLT);
+  opcode(RNE);
   opcode(RET);
   opcode(JMP);
   opcode(JEQ);
@@ -140,15 +138,17 @@ static void dumpasm(uint32_t step)
     printf("\t%s %c%u\n",op[opcode],arg & 0xFF,arg>>8);
   }
   else if (istag(opcode)) {
-    capnum = (opcode & 0x7F) >> 2;
+    capnum = (opcode & 0x7C) >> 2;
     opcode = (opcode & 0x03);
-    if (capnum > 0) opcode += 0x04;
+    if (capnum > 0) opcode |= 0x04;
     
     if (capnum == 0) {
       printf("\t%s %u",op[opcode],arg & 0xFF);
     }
     else {
-      printf("\t%s %u,%u",op[opcode],capnum,arg & 0xFF);
+      char c = ')';
+      if (opcode == CPB) c ='(';
+      printf("\t%c%02u %u,%u",c,capnum,arg & 0xFF,arg>>8);
     }
     arg = arg >> 8;
     if (arg != 0) {
@@ -197,11 +197,18 @@ static void addtags(tagset_t ts)
       op = yrxTagType(ts[k]);
       arg = (yrxTagDelta(ts[k]) << 8) | yrxTagExpr(ts[k]);
       if (op == TAG_MRK) 
-        addop(MRK,arg);
+        op=MRK;
       else if (op == TAG_FIN) 
-        addop(MTC,arg);
+        op=MTC;
       else {
+        capnum = op & 0x1F;
+        if (op >= 'a')
+          op = CPB;
+        else
+          op = CPE;
+        op = (op & 0x03) | (capnum << 2);
       }
+      addop(op,arg);
     }
   }
 }
@@ -213,6 +220,7 @@ void yrxASM(int optimize)
   uint8_t *pairs;
   tagset_t final_ts;
   uint32_t arcn = 1;
+  uint32_t first;
 
   from = yrxDFAStartState();
 
@@ -225,13 +233,12 @@ void yrxASM(int optimize)
     if (a == NULL) err(978,"Unexpected state!");
     
     if (a->lbl == yrxLblLambda) {
-      final_ts = a->tags;
+      addtags(a->tags);
       a = yrxDFANextArc();
-      arcn++;
     }
     
     if (a != NULL) addop(GET,0); 
-    
+    first = arcn;    
     while (a != NULL) {
       pairs = yrxLblPairs(a->lbl);
       while (pairs[0] <= pairs[1]) {
@@ -244,27 +251,34 @@ void yrxASM(int optimize)
         }
         else {
           addop(CMP, pairs[0]);
-          addop(FLT, 0);
+          addop(RLT, 0);
           addop(CMP, pairs[1]);
           if (a->tags) 
-            addop(JEQ, targ('A',arcn));
+            addop(JLT, targ('A',arcn));
           else
-            addop(JEQ, targ('S',a->to));
+            addop(JLT, targ('S',a->to));
         } 
         pairs += 2;
-      }
-      addop(JMP,targ('Z',from)); 
-      if (a->tags) {
-        addtarget(targ('A',arcn));
-        addtags(a->tags);    
-        addop(JMP, targ('S', a->to));
       }
       a = yrxDFANextArc();
       arcn++;
     }
-    addtarget(targ('Z',from));
-    addtags(final_ts);
     addop(RET,0); 
+    
+    a = yrxDFAFirstArc(from);
+    if (a->lbl == yrxLblLambda) {
+      a = yrxDFANextArc();
+    }
+    while (a != NULL) {
+      if (a->tags) {
+        addtarget(targ('A',first));
+        addtags(a->tags);    
+        addop(JMP, targ('S', a->to));
+      }
+      a = yrxDFANextArc();
+      first++;
+    }
+    
     from = yrxDFANextState(from);
   }
 }

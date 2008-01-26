@@ -183,7 +183,6 @@ static state_t term(state_t state)
     c = nextch();
     ncapt = capt++;
     if (ncapt >= yrxTagMaxCapt) yrxParseErr(505,"Too many captures");
-
     start = nextstate();
 
     alt = nextstate();
@@ -344,8 +343,6 @@ void yrxParse(char **rxs, int rxn)
   for (i = 0; i < rxn; i++) {
     parse(rxs[i],i+1);
   }
-  
-  yrxDFA();
   
 }
 

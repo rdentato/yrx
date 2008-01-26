@@ -68,6 +68,7 @@ int main(int argc, char **argv)
   if (rxn < 1 || 250 < rxn) usage();
 
   yrxParse(rxs, rxn);
+  yrxDFA();
   switch (to_do) {
      case DO_DOT: yrxDump(0); break;
      case DO_ASM: yrxASM(1); break;
