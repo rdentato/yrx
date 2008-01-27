@@ -16,54 +16,6 @@
 /*
 static FILE *outf;
 */
-#if 0
-static void dmp_plain_lbl(uint8_t *l)
-{
-  if (*l == 0) {
-    printf("(e)");
-    return;
-  }
-
-  /*putchar(*l);*/
-  l++;
-  while (l[0] <= l[1]) {
-    printf("%s",yrxLabelStr(*l++));
-    printf("%s",yrxLabelStr(*l++));
-  }
-}
-
-static void dmp_plain_tags(uint8_t *t)
-{
-  if (*t == 0) return;
-
-  printf(" / ");
-
-  while (t[0] != '\0') {
-    printf("%s ",yrxTagStr(t[0],t[1]));
-    t += 2;
-  }
-}
-
-
-static void dmp_plain(Automata *dfa)
-{
-  uint32_t from;
-  Arc *a;
-
-  from = yrxStartState(dfa);
-
-  while (from != 0) {
-    while ((a = yrxGetArc(dfa)) != NULL) {
-      printf("%5d -> %-5d %p / %p  ", from, a->to, a->lbl, a->tags);
-      dmp_plain_lbl(yrxArcLabel(a));
-      dmp_plain_tags(yrxArcTags(a));
-      printf("\n");
-    }
-    from = yrxNextState(dfa);
-  }
-}
-
-#endif
 
 static uint8_t *dmp_dotchr(uint8_t c)
 {

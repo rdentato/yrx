@@ -117,7 +117,12 @@ static arc_t *nextArc(state_t st)
 
 arc_t *yrxDFAGetArc(state_t st, uint16_t arcn)
 {
-  return  vecGet(FA[st],arcn); 
+  arc_t *arc;
+  if (vpvGet(FA,st) == NULL) return NULL;
+  if (arcn >= vecCnt((vec_t)(FA[st]))) return NULL;
+  arc = vecGet(FA[st],arcn);
+  if (arc->to != 0) pushonce(arc->to);
+  return  arc; 
 }
 
 arc_t *yrxDFANextArc(void)
