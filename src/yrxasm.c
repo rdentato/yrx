@@ -30,12 +30,12 @@
 #define NOP 0x35  /* 00 1101 01  No OPeration                  */
 
 #define RET 0x04  /* 00 0001 00  RETurn                        */
-#define REQ 0x08  /* 00 0010 00  Return on EQual                 */
-#define RGE 0x0C  /* 00 0011 00  Return on Greater or Equal      */
-#define RGT 0x10  /* 00 0100 00  Return on Greater Than          */
-#define RLE 0x14  /* 00 0101 00  Return on Less or Equal         */
-#define RLT 0x18  /* 00 0110 00  Return on Less Than             */
-#define RNE 0x1C  /* 00 0111 00  Return on Not Equal             */
+#define REQ 0x08  /* 00 0010 00  Return on EQual               */
+#define RGE 0x0C  /* 00 0011 00  Return on Greater or Equal    */
+#define RGT 0x10  /* 00 0100 00  Return on Greater Than        */
+#define RLE 0x14  /* 00 0101 00  Return on Less or Equal       */
+#define RLT 0x18  /* 00 0110 00  Return on Less Than           */
+#define RNE 0x1C  /* 00 0111 00  Return on Not Equal           */
 
 #define JMP 0x24  /* 00 1001 00  JuMP                          */
 #define JEQ 0x28  /* 00 1010 00  Jump on EQual                 */
@@ -126,7 +126,7 @@ static void dumpasm(uint32_t step)
 {
   uint8_t opcode;
   uint32_t arg;
-  int8_t capnum;
+  uint8_t capnum;
   
   opcode  = step & 0xFF;
   arg     = step >> 8;
@@ -135,7 +135,13 @@ static void dumpasm(uint32_t step)
     printf("\t%s '%c'\n",op[opcode],arg);
   }
   else if (isjmp(opcode)) {
-    printf("\t%s %c%u\n",op[opcode],arg & 0xFF,arg>>8);
+    switch(opcode & 0xC0) {
+      case 0x40: capnum = 'A'; break;
+      case 0x80: capnum = 'L'; break;
+      case 0xC0: capnum = 'R'; break;
+      default  : capnum = 'S'; break;
+    }
+    printf("\t%s %c%u\n",op[opcode & ~0xC0],capnum,arg);
   }
   else if (istag(opcode)) {
     capnum = (opcode & 0x7C) >> 2;
@@ -175,6 +181,16 @@ static void addop(uint8_t opcode, uint32_t arg)
   /* 
   pgm = ulvAdd(pgm,step);
   */
+}
+
+static void addjmp(uint8_t opcode, uint8_t ty, uint32_t arg)
+{
+  switch(ty) {
+    case 'A' : opcode |= 0x40 ; break ;
+    case 'L' : opcode |= 0x80 ; break ;
+    case 'R' : opcode |= 0xC0 ; break ;
+  } 
+  addop(opcode,arg);
 }
 
 #define targ(a,b) ((a) | ((b)<<8))
@@ -265,18 +281,18 @@ void yrxASM(int optimize)
       if (pmin == pmax) {
         addop(CMP, pmin);
         if (a->tags) 
-          addop(JEQ, targ('A',first + parc ));
+          addjmp(JEQ, 'A',first + parc );
         else
-          addop(JEQ, targ('S',a->to));
+          addjmp(JEQ, 'S',a->to);
       }
       else {
         addop(CMP, pmin);
         addop(RLT, 0);
         addop(CMP, pmax);
         if (a->tags) 
-          addop(JLT, targ('A',first + parc));
+          addjmp(JLE, 'A', first + parc);
         else
-          addop(JLT, targ('S',a->to));
+          addjmp(JLE, 'S', a->to);
       }      
     }
     
@@ -287,7 +303,7 @@ void yrxASM(int optimize)
       if ((a->lbl != yrxLblLambda) && (a->tags != NULL)) {
         addtarget(targ('A',first));
         addtags(a->tags);    
-        addop(JMP, targ('S', a->to));
+        addjmp(JMP, 'S', a->to);
       }
       first++;
     }
