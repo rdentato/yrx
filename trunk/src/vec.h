@@ -86,7 +86,7 @@ uint8_t *blkUniq(uint8_t *b,uint8_t ty);
 #define blkSlt(b)     (blkNodePtr(b)->slt)
 #define blkDepth(b)   ((b)?blkCnt(b):0)
 
-#define blkReset(b,s) (b? (blkCnt(b)=0, (void *)b) : (void *)blkNew(s))
+#define blkReset(b,s) ((b)? (blkCnt(b)=0, (void *)(b)) : (void *)blkNew(s))
 
 #define blkDup(b,s) blkCpy(NULL,b,s)
 
@@ -111,7 +111,7 @@ typedef uint32_t *ulv_t ;
 #define ulvSet(b,n,v) ((ulv_t)blkSetInt((uint8_t *)b, n, (uint32_t)v, blkU32))
 
 #define ulvAppend(a,b)  (ulv_t)blkAppend(a,b,blkU32sz)
-#define ulvSort(b)      qsort(b, ulvCnt(b), blkU32sz, blkU32cmp)
+#define ulvSort(b)      (qsort(b, ulvCnt(b), blkU32sz, blkU32cmp),b)
 #define ulvUniq(b)      blkUniq((uint8_t *)b, blkU32)
 
 #define ulvAdd(b,v)     ulvSet(b, ulvDepth(b), v)

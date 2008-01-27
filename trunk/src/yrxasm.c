@@ -148,7 +148,7 @@ static void dumpasm(uint32_t step)
     else {
       char c = ')';
       if (opcode == CPB) c ='(';
-      printf("\t%c%02u %u,%u",c,capnum,arg & 0xFF,arg>>8);
+      printf("\t%c%02u %u",c,capnum,arg & 0xFF);
     }
     arg = arg >> 8;
     if (arg != 0) {
@@ -218,9 +218,13 @@ void yrxASM(int optimize)
   uint32_t from;
   arc_t *a;
   uint8_t *pairs;
+  uint8_t  pmin, pmax;
+  uint32_t parc;
   tagset_t final_ts;
   uint32_t arcn = 1;
   uint32_t first;
+  uint32_t k;
+  ulv_t minmax = NULL;
 
   from = yrxDFAStartState();
 
@@ -228,57 +232,67 @@ void yrxASM(int optimize)
     addtarget(targ('S',from));
     final_ts = NULL;
     
-    a = yrxDFAFirstArc(from);
-    
+    k = 0;
+    a = yrxDFAGetArc(from, 0);
     if (a == NULL) err(978,"Unexpected state!");
     
     if (a->lbl == yrxLblLambda) {
       addtags(a->tags);
-      a = yrxDFANextArc();
+      a = yrxDFAGetArc(from, ++k);
     }
     
     if (a != NULL) addop(GET,0); 
-    first = arcn;    
+    first = arcn;
+
+    minmax = ulvReset(minmax);
     while (a != NULL) {
       pairs = yrxLblPairs(a->lbl);
       while (pairs[0] <= pairs[1]) {
-        if (pairs[0] == pairs[1]) {
-          addop(CMP, pairs[0]);
-          if (a->tags) 
-            addop(JEQ, targ('A',arcn));
-          else
-            addop(JEQ, targ('S',a->to));
-        }
-        else {
-          addop(CMP, pairs[0]);
-          addop(RLT, 0);
-          addop(CMP, pairs[1]);
-          if (a->tags) 
-            addop(JLT, targ('A',arcn));
-          else
-            addop(JLT, targ('S',a->to));
-        } 
+        minmax = ulvAdd(minmax, (pairs[0] << 24) |
+                                (pairs[1] << 16) | k);
         pairs += 2;
       }
-      a = yrxDFANextArc();
       arcn++;
+      a = yrxDFAGetArc(from, ++k);
     }
+    minmax = ulvSort(minmax);
+    
+    for (k = 0; k < ulvCnt(minmax); k++) {
+      pmin = minmax[k] >> 24;
+      pmax = (minmax[k] >> 16) & 0x00FF;
+      parc = minmax[k] & 0xFFFF;
+      a = yrxDFAGetArc(from, parc);
+      if (pmin == pmax) {
+        addop(CMP, pmin);
+        if (a->tags) 
+          addop(JEQ, targ('A',first + parc ));
+        else
+          addop(JEQ, targ('S',a->to));
+      }
+      else {
+        addop(CMP, pmin);
+        addop(RLT, 0);
+        addop(CMP, pmax);
+        if (a->tags) 
+          addop(JLT, targ('A',first + parc));
+        else
+          addop(JLT, targ('S',a->to));
+      }      
+    }
+    
     addop(RET,0); 
     
-    a = yrxDFAFirstArc(from);
-    if (a->lbl == yrxLblLambda) {
-      a = yrxDFANextArc();
-    }
-    while (a != NULL) {
-      if (a->tags) {
+    k = 0;
+    while ((a = yrxDFAGetArc(from, k++))) {
+      if ((a->lbl != yrxLblLambda) && (a->tags != NULL)) {
         addtarget(targ('A',first));
         addtags(a->tags);    
         addop(JMP, targ('S', a->to));
       }
-      a = yrxDFANextArc();
       first++;
     }
-    
+   
     from = yrxDFANextState(from);
   }
+  minmax = ulvFree(minmax);
 }
