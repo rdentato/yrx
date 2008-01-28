@@ -376,7 +376,7 @@ static void determinize(state_t st)
       invnew.state   = 0;
       inv = mapGetOrAdd(invmrgd,&invnew);
     
-        a.tags = tagsintersection(p->arcs);   
+      a.tags = tagsintersection(p->arcs);   
       if (inv->state == 0) { /* to be added! */
         inv->state = yrxNextState();
         mrgd = vpvSet(mrgd, inv->state, st_mrgd);
@@ -390,14 +390,7 @@ static void determinize(state_t st)
                             yrxTagsDup(arc->tags), a.tags)));
         }
       }
-      /*
-      else {
-        if (inv->state == st)
-          a.tags = tagsunion(p->arcs);   
-        else 
-          a.tags = tagsintersection(p->arcs);   
-      }
-      */
+
       a.to = inv->state;
       st_mrgd = usvFree(st_mrgd);
     }

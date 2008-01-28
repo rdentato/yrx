@@ -113,14 +113,21 @@ typedef struct {
 } rng2arc;
 
 
-#define setOP(s,x)   ((s) = ((s) & ~0xFF)  | ((x) & 0xFF))
-#define getOP(s)     ((s) & 0xFF)
-#define setARG1(s,x) (((s) = ((s) & ~0xFF00)) | (((x) & 0xFF) << 8))
-#define getARG1(s)   (((s) & 0xFF00) >> 8)
-#define setARG2(s,x) (((s) = ((s) & 0xFFFF)) | (((x) & 0xFFFF) << 16))
-#define getARG2(s)   ((s) >> 16)
-#define setARG0(s,x) (((s) = ((s) & 0xFF)) | (((x) & 0xFFFFFF) << 8))
-#define getARG0(s)   ((s) >> 8)
+static uint8_t *dmp_asmchr(uint8_t c)
+{
+  static char buf[8];
+  
+  if (c <= 32   || c > 126  || c == '\\' || c == '"' ||
+      c == '\'') {
+    sprintf(buf,"%02X",c);
+  }
+  else {
+    buf[0] = '\''; buf[1] = c;
+    buf[2] = '\''; buf[3] = '\0';
+  }
+
+  return buf;
+}
 
 static void dumpasm(uint32_t step)
 {
@@ -132,7 +139,7 @@ static void dumpasm(uint32_t step)
   arg     = step >> 8;
   
   if (opcode == CMP) {
-    printf("\t%s '%c'\n",op[opcode],arg);
+    printf("\t%s %s\n",op[opcode],dmp_asmchr(arg));
   }
   else if (isjmp(opcode)) {
     switch(opcode & 0xC0) {
@@ -229,18 +236,60 @@ static void addtags(tagset_t ts)
   }
 }
 
+static void linasm(state_t from, uint32_t first, ulv_t minmax)
+{
+  uint32_t k;
+  uint8_t  pmin, pmax;
+  uint32_t parc;
+  uint8_t  jmpop;
+  arc_t *a;
+
+    for (k = 0; k < ulvCnt(minmax); k++) {
+      pmin = minmax[k] >> 24;
+      pmax = (minmax[k] >> 16) & 0x00FF;
+      parc = minmax[k] & 0xFFFF;
+      a = yrxDFAGetArc(from, parc);
+      if (pmin == pmax) {
+        addop(CMP, pmin);
+        jmpop = JEQ;
+      }
+      else {
+        jmpop = JMP;
+        if ( pmin > 0) {
+          addop(CMP, pmin);
+          addop(RLT, 0);
+        }
+        if ( pmax < 255) {
+          addop(CMP, pmax);
+          jmpop = JLE;
+        }
+      }      
+      if (a->tags) addjmp(jmpop, 'A', first + parc);
+      else         addjmp(jmpop, 'S', a->to);
+    }
+    
+    addop(RET,0); 
+    
+    k = 0;
+    while ((a = yrxDFAGetArc(from, k++))) {
+      if ((a->lbl != yrxLblLambda) && (a->tags != NULL)) {
+        addtarget(targ('A',first));
+        addtags(a->tags);    
+        addjmp(JMP, 'S', a->to);
+      }
+      first++;
+    }
+}
+
 void yrxASM(int optimize)
 {
   uint32_t from;
-  arc_t *a;
   uint8_t *pairs;
-  uint8_t  pmin, pmax;
-  uint32_t parc;
   tagset_t final_ts;
   uint32_t arcn = 1;
-  uint32_t first;
   uint32_t k;
   ulv_t minmax = NULL;
+  arc_t *a;
 
   from = yrxDFAStartState();
 
@@ -258,7 +307,6 @@ void yrxASM(int optimize)
     }
     
     if (a != NULL) addop(GET,0); 
-    first = arcn;
 
     minmax = ulvReset(minmax);
     while (a != NULL) {
@@ -268,46 +316,12 @@ void yrxASM(int optimize)
                                 (pairs[1] << 16) | k);
         pairs += 2;
       }
-      arcn++;
       a = yrxDFAGetArc(from, ++k);
     }
     minmax = ulvSort(minmax);
-    
-    for (k = 0; k < ulvCnt(minmax); k++) {
-      pmin = minmax[k] >> 24;
-      pmax = (minmax[k] >> 16) & 0x00FF;
-      parc = minmax[k] & 0xFFFF;
-      a = yrxDFAGetArc(from, parc);
-      if (pmin == pmax) {
-        addop(CMP, pmin);
-        if (a->tags) 
-          addjmp(JEQ, 'A',first + parc );
-        else
-          addjmp(JEQ, 'S',a->to);
-      }
-      else {
-        addop(CMP, pmin);
-        addop(RLT, 0);
-        addop(CMP, pmax);
-        if (a->tags) 
-          addjmp(JLE, 'A', first + parc);
-        else
-          addjmp(JLE, 'S', a->to);
-      }      
-    }
-    
-    addop(RET,0); 
-    
-    k = 0;
-    while ((a = yrxDFAGetArc(from, k++))) {
-      if ((a->lbl != yrxLblLambda) && (a->tags != NULL)) {
-        addtarget(targ('A',first));
-        addtags(a->tags);    
-        addjmp(JMP, 'S', a->to);
-      }
-      first++;
-    }
-   
+ 
+    linasm(from, arcn, minmax);
+    arcn += k;
     from = yrxDFANextState(from);
   }
   minmax = ulvFree(minmax);
