@@ -254,11 +254,11 @@ static void linasm(state_t from, uint32_t first, ulv_t minmax)
         jmpop = JEQ;
       }
       else {
-        jmpop = JMP;
         if ( pmin > 0) {
           addop(CMP, pmin);
           addop(RLT, 0);
         }
+        jmpop = JMP;
         if ( pmax < 255) {
           addop(CMP, pmax);
           jmpop = JLE;
