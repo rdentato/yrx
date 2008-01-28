@@ -35,27 +35,12 @@ def @ttt { {Italic} @Font to }
 @Title { Introduction }
 @Begin
 @PP
-YRX is a package to create lexical scanners. At its core
-there is a function that takes a set of regular expressions
-and transform it in a Determinstic Finite Automata which is
-then transformed in code or simulated.
-
+YRX is a package to help creating lexical scanners and other text
+processing tools.
 @LP
-YRX makes use of @I{tagged automata} where each arc may carry
-a set of @I{tags}. The idea of using tags for marking the current
-position within the input text was initially found in @Cite {$AhoUllman77}
-where Aho and Ullman suggest to use an {@Sym epsilon}-transition tagged
-with '@F"/"' to implement the lookahed operator.
-
-@LP
-Ville Laurikari in @Cite{$Laurikari} fully described how to solve the
-submatch problem using tagged automata. I believe that YRX automata are a
-subset of Laurikari's ones but I have made no attempt to prove it.
-
-@LP
-The substring matching problem was also solved in @Cite {$dube00} where
-Dube and Feeley describe an approach based on building the parse tree of
-a regular expression.
+It is based on an algorithm that converts a list of Regular Expressions
+into a Tagged Deterministic Finite Automata which can be directly 
+transformed in C code or simulated.
 
 @End @Section
 
@@ -63,66 +48,59 @@ a regular expression.
 @Title { Regular Expressions }
 @Begin
 
-@PP YRX regular expressions are defined as follows:
+@PP
+YRX regular expressions are defined on a set of characters encoded with
+one of the ISO 8859-@I{x} encoding. Acutally YRX is 8 bits clean and only
+makes the assumption that the lower 7 bits of the encoding follow the
+ASCII standard.
 
 @DP {0.9f @Font @Tbl 
 aformat {@Cell A | @Cell B}
 {
-@Rowa A {}   B{Any non-special character matches itself}
+@Rowa A {@I c}   B{any non-special character @I c matches itself}
 @Rowa A {.}  B{matches any character}
-@Rowa A {()} B{delimit captures}
-@Rowa A {"\\"} B{escape next character. If there's no special
+@Rowa A {()} B{delimit captures and sub expressions}
+@Rowa A {(@I{X}" \| "@I{Y})} B{matches one of the regular expressions @I{X}
+or @I{Y}}
+@Rowa A {"\\"@I{c}} B{escape character @I{c}. If there's no special
 meaning associated with the escaped sequence,
-the regular character is matched.}
+the character @I{c} is matched.}
 @Rowa A {[]} B{delimit character class. "[\^...]" complements the class.}
-@Rowa A {*} B{Matches preceding expression zero or more times.}
-@Rowa A {+} B{As above but matches one or more repetitions.}
-@Rowa A {?} B{As above but matches only zero or one repetitions.}
-@Rowa A {"\\!"} B{Mark right context} 
+@Rowa A {*} B{matches preceding expression zero or more times.}
+@Rowa A {+} B{as above but matches one or more repetitions.}
+@Rowa A {?} B{as above but matches only zero or one repetitions.}
+@Rowa A {"\\!"} B{mark right context} 
 @Rowa A {"\\"@I{ooo}} B{matches the character whose code is @I{ooo} in octal}  
-@Rowa A {"\\a"} B{Equivalent to [A-Za-z]} 
-@Rowa A {"\\A"} B{Equivalent to "[\^A-Za-z]"}
-@Rowa A {"\\b"} B{Matches a backspace character (ASCII 8)}
-@Rowa A {"\\d"} B{Equivalent to [0-9]}
-@Rowa A {"\\D"} B{Equivalent to "[\^0-9]"}
-@Rowa A {"\\e"} B{An escaped character (see section xx)}
-@Rowa A {"\\E"} B{Change the escape character (see section xx)}
-@Rowa A {"\\f"} B{Matches a form feed (ASCII x)}
-@Rowa A {"\\h"} B{Equivalent to [0-9A-Z-z]}
-@Rowa A {"\\H"} B{Equivalent to "[\^0-9A-Z-z]"}
-@Rowa A {"\\l"} B{Equivalent to [a-z]} 
-@Rowa A {"\\L"} B{Equivalent to "[\^a-z]"}
-@Rowa A {"\\n"} B{Matches a newline (ASCII 10)}
-@Rowa A {"\\o"} B{Equivalent to [0-7]} 
-@Rowa A {"\\O"} B{Equivalent to "[\^0-7]"}
-@Rowa A {"\\r"} B{Matches a carraige return (ASCII 13)}
-@Rowa A {"\\s"} B{Equivalent to [" \\n\\r\\b\\t\\v\\f"]} 
-@Rowa A {"\\S"} B{Equivalent to ["\^ \\n\\r\\b\\t\\v\\f"]} 
-@Rowa A {"\\t"} B{Matches a tab (ASCII 9)}
-@Rowa A {"\\u"} B{Equivalent to [A-Z]} 
-@Rowa A {"\\U"} B{Equivalent to "[\^A-Z]"}
-@Rowa A {"\\v"} B{Matches a vertical tab (ASCII x)}
-@Rowa A {"\\w"} B{Equivalent to [_"\\a"]} 
-@Rowa A {"\\W"} B{Equivalent to ["\^\\w]"}
+@Rowa A {"\\a"} B{equivalent to [A-Za-z]} 
+@Rowa A {"\\A"} B{equivalent to "[\^A-Za-z]"}
+@Rowa A {"\\b"} B{matches a backspace character (ASCII 8)}
+@Rowa A {"\\d"} B{equivalent to [0-9]}
+@Rowa A {"\\D"} B{equivalent to "[\^0-9]"}
+@Rowa A {"\\e"} B{an escaped character (see section xx)}
+@Rowa A {"\\E"} B{change the escape character (see section xx)}
+@Rowa A {"\\f"} B{matches a form feed (ASCII x)}
+@Rowa A {"\\h"} B{equivalent to [0-9A-Z-z]}
+@Rowa A {"\\H"} B{equivalent to "[\^0-9A-Z-z]"}
+@Rowa A {"\\l"} B{equivalent to [a-z]} 
+@Rowa A {"\\L"} B{equivalent to "[\^a-z]"}
+@Rowa A {"\\n"} B{matches a newline (ASCII 10)}
+@Rowa A {"\\o"} B{equivalent to [0-7]} 
+@Rowa A {"\\O"} B{equivalent to "[\^0-7]"}
+@Rowa A {"\\r"} B{matches a carraige return (ASCII 13)}
+@Rowa A {"\\s"} B{equivalent to [" \\n\\r\\b\\t\\v\\f"]} 
+@Rowa A {"\\S"} B{equivalent to ["\^ \\n\\r\\b\\t\\v\\f"]} 
+@Rowa A {"\\t"} B{matches a tab (ASCII 9)}
+@Rowa A {"\\u"} B{equivalent to [A-Z]} 
+@Rowa A {"\\U"} B{equivalent to "[\^A-Z]"}
+@Rowa A {"\\v"} B{matches a vertical tab (ASCII x)}
+@Rowa A {"\\w"} B{equivalent to [_"\\a"]} 
+@Rowa A {"\\W"} B{equivalent to ["\^\\w]"}
 @Rowa A {"\\x"@I{hh}} 
       B {matches the character whose code is @I{hh} in hexadecimal}
-@Rowa A {"\\y"} B{Equivalent to [" \\t"]} 
-@Rowa A {"\\Y"} B{Equivalent to ["\^ \\t"]} 
+@Rowa A {"\\y"} B{equivalent to [" \\t"]} 
+@Rowa A {"\\Y"} B{equivalent to ["\^ \\t"]} 
 }
 }
-## @DP
-
-@End @Section
-
-@Section
-@Title { Lexer }
-@Begin
-@PP
-YRX solves the following problem:
-Given a set of regular expressions @M{lbrace e sub 1, e sub 2, ... rbrace}
-and a text @M{T} determine which expression matches the beginning of @M{T}.
-@LP
-
 @End @Section
 
 @Section
@@ -130,9 +108,32 @@ and a text @M{T} determine which expression matches the beginning of @M{T}.
 @Begin
 
 @PP
-The concept of @I {tag-equivalence} explains why the usual
-algorithms on regular expressions need to be modifiad to handle
-tagged regular expression. 
+YRX makes use of @I{tagged automata} where each arc may carry
+a set of @I{tags}. Tags indicate that the current position in the text
+input is somewhat special (e.g. is the beginning of a submatch to capture)
+and needs to be saved.
+
+@LP
+The approach is not new, it is already present in the first edition
+of @I{Principles of Compiler Design} by Aho and Ullman @Cite {$AhoUllman77}
+as a way to implement the lookahed operator.
+
+@LP
+Ville Laurikari in his master thesis @Cite{$Laurikari} uses tagged automata
+to give a general solution to the problem of extracting submatch. 
+
+@LP
+Note that different solutions are possible as the one in @Cite {$dube00}
+where Dube and Feeley use the parse tree of a regular expression.
+
+@LP
+Introducing tags in the algorithms to convert a NFA to a DFA, makes them
+more complex. For instance, many known algorithms assume that the two
+regular expressions @F"a(b)" and @F"(a)b" are equivalent since they both 
+recognize the same language but this is clearly not the case when we are
+interested in the tags values at the end of the matching process. The first
+expression would give us @F"a" as the first capture, while the second one
+would give us @F"b". The TDFA has to reflect this difference.
 
 @LP
 Two regular expressions @M{r} and @M{s}, are @I equivalent (@M{r = s})
@@ -144,105 +145,35 @@ Two regular expressions @M{r} and @M{s}, are @I {tag-equivalent}
 sets of tags upon successful match.
 
 @LP
-For example @M{ a(bc)d = (ab)cd} but
-@M{a(bc)d " " notequal sub @tag " " (ab)cd} 
-because they both accept the same language (the string @F {abcd}) but  
-specify different values for the tags.
-
-@LP
- The interpretation of a tagged transition labeled with
-@M{ @F{a} " / " @tag supp d on {x,k}}
-is that upon reading the character @F{a}, the
-value of a variable @M{v sub {x,k}} is set to current position 
-minus @M{d} and the FA moves to the next state.
-
-@LP 
-Each tag @M{ @tag supp d on {x,k}} assigns to an associated variable
-@M{v sub {x,k}} the value @M{pos - d} where @M{pos} is the current position
-within the input text.
-
-@LP
-No interpretation is given for tagged {@Sym epsilon}-transitions
-as their only purpose will be to help propagating tags.
-
-@LP
 Given a tag @M{s = @tag supp d on {x,k} }, @I {x} is the @I type
 of @I{s}, @I{d} the @I displacement of @I{s} and @M{k} is
 the index of the expression the tag is related to.
 
+@LP 
+When an arc containing the tag @M{ @tag supp d on {x,k}} is chosen,
+a variable @M{v sub {x,k}} is given the value @M{(pos - d)} where
+@M{pos} is the current position within the input text.
+minus @M{d} and the FA moves to the next state.
+
+@LP 
+These are the operations that are defined on tags and sets of tags. They
+will be used during the creation of the TDFA, 
+
 @LP
-The tag @I increment operation @M{()sup{+}} is defined such that:
+The tag @I increment operation @M{()sup{+}} is defined as:
   @M{({@tag supp d on {x,k}}) sup {+} =  {@tag supp {(d+1)} on {x,k}} }
   
 @LP
 The increment operation over a set of tags
 @M{S = {lbrace s sub 1, s sub 2 ,..., s sub n rbrace }} 
-is defined such that:
+is defined as:
 @DP @Center 
   @Math {(S) sup{+} 
               = lbrace (s sub {1}) sup {+}, (s sub {2}) sup {+} ,..., (s sub {n}) sup {+} rbrace }
 
 @DP
 
-##    Given a set of tags @M{S = {lbrace s sub 1, s sub 2 ,..., s sub n rbrace }}
-##  and a tag @M{@tag supp d on {x,k}}, @I adding a tag to @M {S} is defined as:
-##  
-##  @DP @Center @Math {
-##    S circleplus @tag supp d on {x} = 
-##        matrix atleft { blbrace  }  {
-##          row col {{lbrace s sub 1, s sub 2 ,..., s sub n, @tag supp d on {x} rbrace } /0.3c
-##          {lbrace s sub 1 ,..., s sub {j-1} , @tag supp {min(k,d)} on {x,k} , s sub {j+1} ,..., s sub n rbrace }}
-##              col {{@R if " " not exists " " j @R" : " s sub j = @tag supp k on {x,k} in S } /0.3c
-##                  {@R if " "  exists " " j @R" : " s sub j = @tag supp k on {x,k} in S }}
-##        }
-##  }
-##  @DP
-##  
-## 
-## The @I addition operation between tags is defined such that:
-## @DP
-## @Center @Math {
-##   @tag supp k on {y} circleplus @tag supp d on {w} = 
-##       matrix atleft { blbrace  }  {
-##         row col {{lbrace  @tag supp k on {y} , @tag supp d on {w}  rbrace }
-##                  /0.3c {lbrace @tag supp {min(k,d)} on {y} rbrace}
-##                 }
-##             col {{@R if " " y != w}
-##                  /0.5c {@R if " " y = w}
-##                 }
-##       }
-## }
-## 
-## @DP
-## Informally, the @I addition of two tags is a set which contains both tags
-## if they are of different types or a tag of the same type with a
-## displacement that is the minimum of the two displacements.
-## 
-## @LP
-
-Given two sets of tags @M{S = {lbrace s sub 1, s sub 2 ,..., s sub n rbrace }},
-and @M{R = {lbrace r sub 1, r sub 2 ,..., r sub m rbrace }} 
-the following operations are defined:
-
-## @DP @Center
-## @Math {
-##   matrix  {
-##     row mcol {S cup tsub @tag " " R 
-##               ^= big bcup atop {0.7f @Font {{1 <= i <= n} /0.1c {1 <= j <= m}} } (s sub i circleplus r sub j ) }
-##         lcol {"   "} lcol {@R{"tag-union"}}
-##     row lcol {" "}             
-##               
-##     row mcol { S " " minus " " R
-##               ^=  {lbrace @tag supp d on {x,k} " | " @tag supp d on {x,k} in S "  " logicaland "  " @tag supp d on {x,k} notin R rbrace } }
-##         lcol {"   "} lcol {@R{"difference"}}
-##     row lcol {" "}             
-##     row mcol { S " " cap " " R 
-##               ^= {lbrace  @tag supp {d} on {x,k} " | " @tag supp d on {x,k} in S "  " logicaland "  " @tag supp d on {x,k} in R  rbrace }}
-##         lcol {"   "} lcol {@R{"intersection"}}
-##   }
-## }
-## 
-## @DP
+Given two sets of tags @M{S} and @M{R} the following operations are defined:
 
 @DP @Center
 @Math {
@@ -278,84 +209,80 @@ the following operations are defined:
 }
 
 @DP
-For a tag @M{@tag supp d on {x,k}} to be in the @I {tag-union} of
-@M{S} and @M{R} one of this must be true:
 
-@BL indent { @DisplayIndent } gap {0.5v}
- @LI {@M{@tag supp d on {x,k} in S} and there's no tag of type 
-@M{x} referring to the expression @M{k} in @M{R}; }
- @LI {@M{@tag supp d on {x,k} in R} and there's no tag of type 
-@M{x}  referring to the expression @M{k} in @M{S}; }
- @LI {both @M{S} and @M{R} have a tag of type @M{x}  referring to the
-expression @M{k} and @M{d} is selected according the type @M{x}. }
-@EL
-
-For a tag @M{@tag supp d on {x,k}} to be in the @I {tag-intersection} of
-@M{S} and @M{R} one of this must be true:
-
-@BL indent { @DisplayIndent } gap {0.5v}
- @LI {@M{@tag supp d on {x,k} in S} and there's no tag referring to
-the expression @M{k} in @M{R}, regardless the type; }
- @LI {@M{@tag supp d on {x,k} in R} and there's no tag referring to
-the expression @M{k} in @M{S}, regardless the type; }
- @LI {both @M{S} and @M{R} have a tag of type @M{x}  referring to the
-expression @M{k} and @M{d} is selected according the type @M{x}. }
-@EL
+The @I {tag-union} is defined as the regular union on sets except that 
+if there are two tags of the same type and they also refer to the same RE,
+@M{@tag supp {d'} on {x,k}} and @M{@tag supp {d''} on {x,k}} only one of them
+is included. Which one is chosen depends on the type of the tag.
 
 @LP
-
+The @I {tag-intersection} is defined as the regular intersection on sets
+except that if tags referring the Regular Epression @M{k} are present
+only in one of the two sets, they are included in the intersection. 
+This reflects the fact for the RE @M{k} there was only one arc. 
 
 
 @LP
 In the following we'll refer to four types of tags:
 
 @CD 0.9 @Scale @Tbl
-aformat{ @Cell width {8f} A| @Cell  width {5f} i {ctr} B | @Cell  width {3f} C }
+aformat{ @Cell width {8f} A| @Cell  width {5f} i {ctr} B | @Cell  width {3f} C | @Cell  width {8f} i {ctr} D }
 {
 @Rowa
 A { Tag }
 B { Symbol }
 C { Var}
-#D { @M{sel()} }
+D { @M{sel sub {x}()} }
 rulebelow { yes }
 @Rowa
 A { Begin Capture }
 B { @M{( supp d on n} }
 C { @M{bc sub n } }
-#D { @M{max(x,y) } }
+D { @M{max() } }
 @Rowa
 A { End Capture }
 B { @M{) supp d on n} }
 C { @M{ec sub n } }
-#D { @M{min(x,y) }}
+D { @M{min() }}
 @Rowa
 A { Mark }
 B { @M{"#" sup d} }
 C { @M{mrk} }
-#D { @M{min(x,y) }}
+D { @M{min() }}
 @Rowa
 A { Match }
 B { @M{$ sup d} }
 C { @M{end} }
-#D { @M{min(x,y) }}
+D { @M{min() }}
 }
 
+The selection functions @M{sel sub x ()} are chosen so to capture
+@I{longest-leftmost} subexpression.
 
-## @Diag{
-##  { A:: @Circle hsize {0.45f} {0.7f @Font {1}}} |1.5c 
-##  { B:: @Circle hsize {0.45f} {0.7f @Font {2}}}
-##  //
-##  @Arrow from {A} to {B} ylabel { @M{epsilon " / " @tag supp d on {x,k}}} 
-## }
- 
 @End @Section
 
 @Section
 @Title { From RE to TNFA }
 @Begin
 @PP
-The diagrams in figure @NumberOf{re2nfa} shows how to convert a regular
-expression into a TNFA. 
+@PP
+To convert a regular expression into a NFA,
+@F"YRX" proceeds as described in figure @NumberOf{re2nfa} where:
+@BL
+@LI { @I a and @I b are characters;}
+@LI { @I X and @I Y are generic regular expressions;}
+@LI { @Sym epsilon denotes empty transitions that can be followed
+without consuming any input;}
+@LI { @Sym lambda denotes transitions toward the final state 0 and must
+be followed only when no other match is possible.}
+@EL 
+Every state has a {@Sym lambda}-transition but for simplicity only those
+that carry a set of tags are shown in the diagrams.
+
+@LP
+Note that the expression @F"(X)*" captures 0 or more repetitions of
+@F"X" not just the last one. In other words, the expression @F"(ab)*" 
+captures @F"ababab" when matching the input text @F"abababcde".
 
 
 @Figure
@@ -684,11 +611,6 @@ written  @M{a(b*)c}.
 @Begin
 @PP
 
-## There are two source of non-determinism in a NFA constructed using the
-## rules defined in figure @NumberOf{re2nfa} transitions that can be followed
-## without consuming any input ({@Sym epsilon}-transitions) and multiple
-## transitions under the same character (ambiguous transition).
- 
 The determinization algorithm processes each state once removing
 {@Sym epsilon}-transitions first (possibly introducing new ambiguous
 transitions) and then resolving any ambiguities:
@@ -757,7 +679,7 @@ F { ==> }
 @Arrow from { A } to { B }
        ylabel { 1.2f @Font {@Sym epsilon "/"@M{T sub 1} }}
 @Arrow from { B } to { C }
-       ylabel { 1.2f @Font a"/"@M{T sub 2}} 
+       ylabel { 1.2f @Font A"/"@M{T sub 2}} 
 }
 
 @Diag {
@@ -768,16 +690,18 @@ marginvertical { 0.2c }
 {
 @Rowa
 A { A:: @Circle hsize {0.5f} {0.75f @Font {1}}}
-C { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
+# C { B:: @Circle hsize {0.5f} {0.75f @Font {2}}}
 E { C:: @Circle hsize {0.5f} {0.75f @Font {3}}}
 }
 //
-@CCurveArrow from { A } to { C }
-        ylabel { 1.2f @Font {a "/" @M{T sub 1 {cup tsub {@tag}} T sub 2} }}
-@Arrow from { B } to { C } ylabel { 1.2f @Font a"/"@M{T sub 2}} 
+@Arrow from { A } to { C }
+        ylabel { 1.2f @Font {A "/" @M{T sub 1 {cup tsub {@tag}} T sub 2} }}
+#@Arrow from { B } to { C } ylabel { 1.2f @Font a"/"@M{T sub 2}} 
 
 }
 }
+
+
 @DP
 
 @ID @OneRow @Pas {
@@ -1149,6 +1073,37 @@ the string "\""@F{b1}"\""  matches both.
 @Begin
 @PP
 A DFA can be directly translate into code.
+@BeginSubSections
+
+@SubSection
+@Title { Virtual Machine}
+@Begin
+@PP
+xxxx
+@End @SubSection
+
+@SubSection
+@Title { VM Assembler language }
+@Begin
+@PP
+xxxx
+@End @SubSection
+
+@SubSection
+@Title { Optimization }
+@Begin
+@PP
+xxxx
+@End @SubSection
+
+@SubSection
+@Title { C code }
+@Begin
+@PP
+xxxx
+@End @SubSection
+
+@EndSubSections
 @End @Section
 
 #### REFERENCE #####################################
