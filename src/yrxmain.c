@@ -19,7 +19,9 @@
 
 void usage(void)
 {
-	fprintf(stderr,"Usage: yrxcc rx1 [rx2 ... rx250]\n ");
+	fprintf(stderr,"Usage: yrx [opt] rx1 [rx2 ... rx250]\n ");
+	fprintf(stderr,"  opt:  -a generate ASM code\n ");
+	fprintf(stderr,"        -g generate DOT graph\n ");
   exit(1);
 }
 
