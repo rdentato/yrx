@@ -16,11 +16,11 @@
 
 /*****/
 
-#define CPB 0x06  /* 0 00001 10  Capture Begin                 */
-#define CPE 0x07  /* 0 00001 11  Capture End                   */
-
 #define MTC 0x02  /* 0 00000 10  MaTCh                         */
 #define MRK 0x03  /* 0 00000 11  MaRK                          */
+
+#define CPB 0x06  /* 0 00001 10  Capture Begin                 */
+#define CPE 0x07  /* 0 00001 11  Capture End                   */
 
 #define NRX 0x21  /* 00 1000 01  Number of Regular eXpressions */
 #define CMP 0x25  /* 00 1001 01  Compare                       */
@@ -125,7 +125,7 @@ static uint8_t *dmp_asmchr(uint8_t c)
     buf[0] = '\''; buf[1] = c;
     buf[2] = '\''; buf[3] = '\0';
   }
-
+  
   return buf;
 }
 
@@ -153,14 +153,18 @@ static void dumpasm(uint32_t step)
   else if (istag(opcode)) {
     capnum = (opcode & 0x7C) >> 2;
     opcode = (opcode & 0x03);
+    
     if (capnum > 0) opcode |= 0x04;
     
     if (capnum == 0) {
-      printf("\t%s %u",op[opcode],arg & 0xFF);
+      printf("\t%s %u",op[opcode & 0x03],arg & 0xFF);
     }
     else {
-      char c = ')';
-      if (opcode == CPB) c ='(';
+      char c = 'X';
+      switch (opcode) {
+        case CPB        : c ='('; break;
+        case CPE        : c =')'; break;
+      }
       printf("\t%c%02u %u",c,capnum,arg & 0xFF);
     }
     arg = arg >> 8;
@@ -206,7 +210,6 @@ static void addtarget(uint32_t lbl)
 {
   printf("%c%u:\n", lbl & 0xFF, lbl >> 8);
 }
-
 
 static void addtags(tagset_t ts)
 {
@@ -266,19 +269,91 @@ static void linasm(state_t from, uint32_t first, ulv_t minmax)
       }      
       if (a->tags) addjmp(jmpop, 'A', first + parc);
       else         addjmp(jmpop, 'S', a->to);
-    }
-    
-    addop(RET,0); 
-    
-    k = 0;
-    while ((a = yrxDFAGetArc(from, k++))) {
-      if ((a->lbl != yrxLblLambda) && (a->tags != NULL)) {
-        addtarget(targ('A',first));
-        addtags(a->tags);    
-        addjmp(JMP, 'S', a->to);
+    }    
+}
+
+static void binasm(state_t from, uint32_t first, ulv_t minmax)
+{
+  int i,j,k;
+  uint8_t  pmin, pmax;
+  uint32_t parc;
+  ulv_t stck=NULL;  
+  arc_t *a;
+  uint8_t  jmpop;
+  uint32_t cnt_T = 0;
+  static uint32_t cnt_L = 1;
+
+  if (ulvCnt(minmax) > 0) {
+    stck = ulvPush(stck,0);
+    stck = ulvPush(stck,ulvCnt(minmax) - 1);
+    while (ulvDepth(stck) > 1) {
+      j = ulvPop(stck);
+      i = ulvPop(stck);
+      k = (i+j)/2;
+      pmin = minmax[k] >> 24;
+      pmax = (minmax[k] >> 16) & 0x00FF;
+      parc = minmax[k] & 0xFFFF;
+      
+      a = yrxDFAGetArc(from, parc);
+      
+      addtarget(targ('L',cnt_L + k));
+      jmpop = JLE;
+      if (pmin == 0 && pmax == 255) {
+        jmpop = JMP;
       }
-      first++;
+      else if (((k+1) <= j) && (k-1) >= i) {
+        cnt_T++;
+        addop(CMP,pmax);
+        addjmp(JGT,'L',cnt_L + ((k+1)+j)/2 );
+        if (pmin != pmax) 
+          addop(CMP,pmin);
+        else
+          jmpop = JEQ;
+      } 
+      else if ((k-1) >= i) {
+        addop(CMP,pmax);
+        addop(RGT,0);
+        if (pmin != pmax) 
+          addop(CMP,pmin);
+        else
+          jmpop = JEQ;
+      }
+      else if ((k+1) <= j) {
+        addop(CMP,pmin);
+        addop(RLT,0);
+        if (pmin != pmax) 
+          addop(CMP,pmin);
+        else
+          jmpop = JEQ;
+      }
+      else {
+        addop(CMP,pmin);
+        if (pmin != pmax) {
+          addop(RLT,0);
+          addop(CMP,pmax);
+          addop(RGT,0);
+        }
+        else {
+          addop(RNE,0);
+        }
+        jmpop = JMP;
+      }
+      
+      if (a->tags) addjmp(jmpop, 'A', first + parc);
+      else         addjmp(jmpop, 'S', a->to);        
+      
+      if ((k+1) <= j) {
+        stck = ulvPush(stck,k+1);
+        stck = ulvPush(stck,j);
+      }
+      if ( (k-1) >= i) {
+        stck = ulvPush(stck,i);
+        stck = ulvPush(stck,k - 1);
+      }
     }
+  }
+  cnt_L += ulvCnt(minmax);
+  stck = ulvFree(stck);
 }
 
 void yrxASM(int optimize)
@@ -302,13 +377,15 @@ void yrxASM(int optimize)
     if (a == NULL) err(978,"Unexpected state!");
     
     if (a->lbl == yrxLblLambda) {
-      addtags(a->tags);
+      final_ts = a->tags;
       a = yrxDFAGetArc(from, ++k);
     }
     
-    if (a != NULL) addop(GET,0); 
-
     minmax = ulvReset(minmax);
+    
+    if (a != NULL) addop(GET,0); 
+    if (final_ts) addtags(final_ts);
+
     while (a != NULL) {
       pairs = yrxLblPairs(a->lbl);
       while (pairs[0] <= pairs[1]) {
@@ -319,8 +396,21 @@ void yrxASM(int optimize)
       a = yrxDFAGetArc(from, ++k);
     }
     minmax = ulvSort(minmax);
- 
-    linasm(from, arcn, minmax);
+    
+    /*linasm(from, arcn, minmax);*/
+    binasm(from, arcn, minmax);
+
+    addop(RET,0); 
+    
+    k = 0;
+    while ((a = yrxDFAGetArc(from, k++))) {
+      if ((a->lbl != yrxLblLambda) && (a->tags != NULL)) {
+        addtarget(targ('A',arcn+k-1));
+        addtags(a->tags);    
+        addjmp(JMP, 'S', a->to);
+      }
+    }
+
     arcn += k;
     from = yrxDFANextState(from);
   }

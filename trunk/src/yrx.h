@@ -94,6 +94,7 @@ arc_t   *yrxDFAFirstArc(state_t st);
 arc_t   *yrxDFANextArc(void);
 arc_t   *yrxDFAGetArc(state_t st, uint16_t arcn);
 vec_t    yrxDFAArcs(state_t from);
+uint16_t yrxDFACntArcs(state_t st);
 
 state_t  yrxDFANextState(state_t st);
 

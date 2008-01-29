@@ -115,13 +115,20 @@ static arc_t *nextArc(state_t st)
   return a;
 }
 
+uint16_t yrxDFACntArcs(state_t st)
+{
+  if (vpvGet(FA,st) == NULL) return 0;
+  return vecCnt((vec_t)(FA[st]));
+}
+
 arc_t *yrxDFAGetArc(state_t st, uint16_t arcn)
 {
   arc_t *arc;
-  if (vpvGet(FA,st) == NULL) return NULL;
-  if (arcn >= vecCnt((vec_t)(FA[st]))) return NULL;
+
+  if (arcn >= yrxDFACntArcs(st)) return NULL;
   arc = vecGet(FA[st],arcn);
   if (arc->to != 0) pushonce(arc->to);
+  
   return  arc; 
 }
 
@@ -146,7 +153,6 @@ state_t yrxDFANextState(state_t st)
   nextArc(st); 
   return st;
 }
-
 
 /****/
   /* mapping  lbl_t -> (arc_t *) */
