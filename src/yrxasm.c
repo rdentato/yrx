@@ -37,6 +37,7 @@
 #define RLT 0x18  /* 00 0110 00  Return on Less Than           */
 #define RNE 0x1C  /* 00 0111 00  Return on Not Equal           */
 
+#define ONR 0x20  /* 00 1000 00  ON Return                     */
 #define JMP 0x24  /* 00 1001 00  JuMP                          */
 #define JEQ 0x28  /* 00 1010 00  Jump on EQual                 */
 #define JGE 0x2C  /* 00 1011 00  Jump on Less Than             */
@@ -89,6 +90,7 @@ void yrxASMInit(void)
   opcode(RLT);
   opcode(RNE);
   opcode(RET);
+  opcode(ONR);
   opcode(JMP);
   opcode(JEQ);
   opcode(JGE);
@@ -200,7 +202,8 @@ static void addjmp(uint8_t opcode, uint8_t ty, uint32_t arg)
     case 'A' : opcode |= 0x40 ; break ;
     case 'L' : opcode |= 0x80 ; break ;
     case 'R' : opcode |= 0xC0 ; break ;
-  } 
+  }
+  if (opcode == JMP && arg == 0) opcode = RET; 
   addop(opcode,arg);
 }
 
@@ -275,6 +278,7 @@ static void linasm(state_t from, uint32_t first, ulv_t minmax)
 static void binasm(state_t from, uint32_t first, ulv_t minmax)
 {
   int i,j,k;
+  int t;
   uint8_t  pmin, pmax;
   uint32_t parc;
   ulv_t stck=NULL;  
@@ -290,6 +294,7 @@ static void binasm(state_t from, uint32_t first, ulv_t minmax)
       j = ulvPop(stck);
       i = ulvPop(stck);
       k = (i+j)/2;
+
       pmin = minmax[k] >> 24;
       pmax = (minmax[k] >> 16) & 0x00FF;
       parc = minmax[k] & 0xFFFF;
@@ -301,54 +306,80 @@ static void binasm(state_t from, uint32_t first, ulv_t minmax)
       if (pmin == 0 && pmax == 255) {
         jmpop = JMP;
       }
-      else if (((k+1) <= j) && (k-1) >= i) {
+      else if (((k+1) <= j) && (k-1) >= i) {  /* /\ */
         cnt_T++;
         addop(CMP,pmax);
         addjmp(JGT,'L',cnt_L + ((k+1)+j)/2 );
-        if (pmin != pmax) 
+        if (pmin != pmax) {
           addop(CMP,pmin);
+          jmpop = JGT;
+        }
         else
           jmpop = JEQ;
       } 
-      else if ((k-1) >= i) {
-        addop(CMP,pmax);
-        addop(RGT,0);
-        if (pmin != pmax) 
-          addop(CMP,pmin);
-        else
-          jmpop = JEQ;
-      }
-      else if ((k+1) <= j) {
-        addop(CMP,pmin);
-        addop(RLT,0);
-        if (pmin != pmax) 
-          addop(CMP,pmin);
-        else
-          jmpop = JEQ;
-      }
-      else {
-        addop(CMP,pmin);
-        if (pmin != pmax) {
-          addop(RLT,0);
+      else if ((k-1) >= i) { /* /x */
+        if (pmin == pmax) {
           addop(CMP,pmax);
-          addop(RGT,0);
+          addop(RGT,0);          
+          jmpop = JEQ;
         }
         else {
-          addop(RNE,0);
+          if (pmax != 255) {
+            addop(CMP,pmax);
+            addop(RGT,0);
+          }
+          addop(CMP,pmin);
+          jmpop = JGT;
+        }
+      }
+      else if ((k+1) <= j) { /* x\ */
+        if (pmin != 0) {
+          addop(CMP,pmin);
+          addop(RLT,0);          
+        }
+        if (pmin == pmax)
+          jmpop = JEQ;
+        else 
+          addop(CMP,pmax);
+      }
+      else {  /* xx */
+        if (pmin == pmax) {
+          addop(CMP,pmin);
+          addop(RNE,0);          
+        }
+        else {
+          if (pmin != 0) {
+            addop(CMP,pmin);
+            addop(RLT,0);
+          }
+          if (pmax != 255) {
+            addop(CMP,pmax);
+            addop(RGT,0);
+          }
         }
         jmpop = JMP;
       }
-      
+
       if (a->tags) addjmp(jmpop, 'A', first + parc);
       else         addjmp(jmpop, 'S', a->to);        
-      
+
       if ((k+1) <= j) {
         stck = ulvPush(stck,k+1);
         stck = ulvPush(stck,j);
+        t = ((k+1)+j)/2;
+      
+        if ((minmax[t] >> 24) == pmax + 1) {
+          minmax[t] &= 0x00FFFFFF;
+        } 
       }
-      if ( (k-1) >= i) {
+      if ((k-1) >= i) {
         stck = ulvPush(stck,i);
         stck = ulvPush(stck,k - 1);
+        t = (i+(k-1))/2;
+      
+        if (((minmax[t] >> 16) & 0x00FF) == pmin - 1) {
+          minmax[t] |= 0x00FF0000;
+        } 
       }
     }
   }
@@ -377,15 +408,13 @@ void yrxASM(int optimize)
     if (a == NULL) err(978,"Unexpected state!");
     
     if (a->lbl == yrxLblLambda) {
-      final_ts = a->tags;
+      addjmp(ONR,'A', arcn);
       a = yrxDFAGetArc(from, ++k);
     }
+    if (a != NULL) addop(GET,0);
     
     minmax = ulvReset(minmax);
     
-    if (a != NULL) addop(GET,0); 
-    if (final_ts) addtags(final_ts);
-
     while (a != NULL) {
       pairs = yrxLblPairs(a->lbl);
       while (pairs[0] <= pairs[1]) {
@@ -404,7 +433,7 @@ void yrxASM(int optimize)
     
     k = 0;
     while ((a = yrxDFAGetArc(from, k++))) {
-      if ((a->lbl != yrxLblLambda) && (a->tags != NULL)) {
+      if ((a->tags != NULL)) {
         addtarget(targ('A',arcn+k-1));
         addtags(a->tags);    
         addjmp(JMP, 'S', a->to);
