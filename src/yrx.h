@@ -105,7 +105,7 @@ state_t  yrxDFANextState(state_t st);
 void yrxParse(char **rxs, int rxn);
 void yrxParseErr(int errn, char *errmsg);
 state_t yrxNextState(void);
-
+state_t yrxMaxState(void);
 
 /*****************************/
 void yrxDump(uint8_t fmt);
@@ -114,7 +114,7 @@ void yrxDump(uint8_t fmt);
 void yrxASMClean(void);
 void yrxASMInit(void);
 
-void yrxASM(int optimize);
+void yrxASM(uint32_t optimize);
 /*****************************/
 
 EXTERN(char *, yrxStrNoMem, = "Out of memory");
@@ -129,8 +129,5 @@ EXTERN(uint8_t, yrxBuf[YRX_BUF_MAX], );
 
 /*****************************/
 
-vpv_t yrxCleanVec;
-
-/*****************************/
 
 #endif /* YRX_H */

@@ -238,6 +238,7 @@ static void add2merge(vec_t v, arc_t *a)
   }
 }
 
+#if 0
 static tagset_t tagsunion(vpv_t arcs)
 {
   tagset_t ts = NULL;
@@ -250,6 +251,8 @@ static tagset_t tagsunion(vpv_t arcs)
   }
   return ts;
 }
+#endif
+
 
 static tagset_t tagsintersection(vpv_t arcs)
 {
@@ -386,7 +389,7 @@ static void determinize(state_t st)
       inv = mapGetOrAdd(invmrgd,&invnew);
     
       a.tags = tagsintersection(p->arcs);   
-      if (inv->state == 0) { /* to be added! */
+      if (inv->state == 0) { /* A state to be added! */
         inv->state = yrxNextState();
         mrgd = vpvSet(mrgd, inv->state, st_mrgd);
         st_mrgd = NULL;
@@ -408,6 +411,24 @@ static void determinize(state_t st)
   }
   arclist = vecFree(arclist);
   FA[st] = newarcs;
+}
+
+static void fixdfa()
+{
+  arc_t *arc;
+  state_t st;
+
+  for (st = 1; st < vpvCnt(FA); st++) {
+    if (!pushed(st)) { 
+      FA[st] = vecFree(FA[st]);
+    }
+    else if (FA[st]!= NULL) {
+      arc = vecGet(FA[st],0);
+      if (arc != NULL && arc->lbl == yrxLblLambda) {
+        arc->tags = yrxTagsDecrement(arc->tags);
+      }
+    }
+  }
 }
 
 void yrxDFA(void)
@@ -436,6 +457,12 @@ void yrxDFA(void)
     determinize(st);
   } 
   
+  /* cleanup unreachable states      */
+  /* fix tags on lambda transitions  */
+  /* renumber states (TODO)          */
+  /* compute equivalent states (TODO)*/
+  fixdfa();
+  
   if (mrgd != NULL) {
     for (k=0; k < vpvCnt(mrgd); k++) {
       if (mrgd[k] != NULL) mrgd[k] = usvFree(mrgd[k]);
@@ -446,7 +473,8 @@ void yrxDFA(void)
   marked = usvFree(marked);
   tomerge = vecFreeClean(tomerge, (vecCleaner)l2a_clean);
   invmrgd = mapFree(invmrgd);
-
+  
+  resetstack();
 }
 
 

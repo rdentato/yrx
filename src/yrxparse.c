@@ -43,6 +43,12 @@ state_t yrxNextState(void)
   return ++nstates ;
 }
 
+state_t yrxMaxState(void)
+{
+  return nstates ;
+}
+
+
 /**************************************************/
 /* = Parsing expressions
 **  Parsing is implemented as a Recursive Descent Parser
