@@ -310,11 +310,13 @@ static usv_t destlist(vpv_t arcs)
   
   lst = usvUniq(lst);
 
-  _dbgmsg("destlist: \n");
+  #if 0
+  dbgmsg("destlist: \n");
   for (j=0; j<usvCnt(lst); j++) {
-    _dbgmsg("\t %d\n",lst[j]);
+    dbgmsg("\t %d\n",lst[j]);
   }
-
+  #endif
+  
   return lst;
 }
 
@@ -333,6 +335,7 @@ static void determinize(state_t st)
   arclist = vpvGet(FA, st);
   marked = usvSet(marked, st, st);
   k = 0;
+  /* Compute which arcs need to be merged */
   while (k < vecCnt(arclist)) {
     arc = vecGet(arclist, k++);
     if (arc->lbl == yrxLblLambda) {

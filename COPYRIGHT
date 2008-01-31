@@ -1,12 +1,44 @@
 YRX makes use of other Open Source packages. Packages have been chosen so 
 that their licenses are compatible.
 
+Unless otherwise noted, the following copyright applies:
+ 
+ Copyright notice and Terms of use
+ 
+ (C) 2007 by Remo Dentato (rdentato@users.sourceforge.net)
+
+Permission to use, copy, modify and distribute this code and
+its documentation for any purpose is hereby granted without
+fee, provided that the above copyright notice, or equivalent
+attribution acknowledgement, appears in all copies and
+supporting documentation.
+
+Copyright holder makes no representations about the suitability
+of this software for any purpose. It is provided "as is" without
+express or implied warranty.
+
+
 ---------------
-src/pstdint.h
-utils/bstring
+The file |src/pstdint.h| entirely subject to the following:
+      Copyright (c) 2005-2007 Paul Hsieh.
+
+and is distributed under the terms of the new BSD license (see below)
+
+See: <See: <http://www.azillionmonkeys.com/qed/pstdint.h/hashtable>
+for the original code.
+
+---------------
+The function |scrambleint()| within the file |src/vec.c| contains code
+that is subject to the following:
+      Copyright (c) 2002, 2004, Christopher Clark
+      
+and is distributed under the terms of the new BSD license (see below)
+
+See: <http://www.cl.cam.ac.uk/~cwc22/hashtable> for the original code.
    
-    Copyright (c) 2005-2007 Paul Hsieh
-   
+---------------
+NEW BDS LICENSE
+
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
     are met:
@@ -34,35 +66,8 @@ utils/bstring
     STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
     OF THE POSSIBILITY OF SUCH DAMAGE.
-
    
 ---------------
 
-In file vec.c the hash functions have been derived by those presented
-by Julienne Walker on <http://www.eternallyconfuzzled.com>.
 
-FNV algorithm (by Glenn Fowler, Phong Vo and Landon Curt Noll) has been
-placed in the Public Domain <http://www.isthe.com/chongo/tech/comp/fnv>
-          
-One-At-Time hash (by Bob Jenkins) is public domain and described at
-<http://burtleburtle.net/bob/hash>.
-          
----------------
-All other files:
- 
- Copyright notice and Terms of use
- 
- (C) 2007 by Remo Dentato (rdentato@users.sourceforge.net)
-
-Permission to use, copy, modify and distribute this code and
-its documentation for any purpose is hereby granted without
-fee, provided that the above copyright notice, or equivalent
-attribution acknowledgement, appears in all copies and
-supporting documentation.
-
-Copyright holder makes no representations about the suitability
-of this software for any purpose. It is provided "as is" without
-express or implied warranty.
-
----------------
 
