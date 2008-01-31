@@ -19,7 +19,7 @@ express or implied warranty.
 
 
 ---------------
-The file |src/pstdint.h| entirely subject to the following:
+The file |src/pstdint.h| is subject to the following:
       Copyright (c) 2005-2007 Paul Hsieh.
 
 and is distributed under the terms of the new BSD license (see below)

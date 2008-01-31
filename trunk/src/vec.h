@@ -92,6 +92,10 @@ uint8_t *blkUniq(uint8_t *b,uint8_t ty);
 
 int blkCmp(uint8_t *a, uint8_t *b, uint8_t sz);
 
+uint8_t *blkInsInt(uint8_t *b, uint16_t ndx, uint32_t val, uint8_t ty);
+uint8_t *blkDelInt(uint8_t *b, uint16_t ndx, uint8_t ty);
+
+
 /**********************/
 
 typedef uint32_t *ulv_t ;
@@ -109,6 +113,8 @@ typedef uint32_t *ulv_t ;
 
 #define ulvGet(b,n)   ((uint32_t)blkGetInt((uint8_t *)b, n, blkU32))
 #define ulvSet(b,n,v) ((ulv_t)blkSetInt((uint8_t *)b, n, (uint32_t)v, blkU32))
+#define ulvIns(b,n,v) ((ulv_t)blkInsInt((uint8_t *)b, n, (uint32_t)v, blkU32))
+#define ulvDel(b,n)   ((uint32_t)blkDelInt((uint8_t *)b, n, blkU32))
 
 #define ulvAppend(a,b)  (ulv_t)blkAppend(a,b,blkU32sz)
 #define ulvSort(b)      (qsort(b, ulvCnt(b), blkU32sz, blkU32cmp),b)
@@ -139,7 +145,7 @@ typedef uint16_t *usv_t ;
 #define usvSet(b,n,v)   ((usv_t)blkSetInt((uint8_t *)b, n, (uint16_t)v, blkU16))
 
 #define usvAppend(a,b)  (usv_t)blkAppend((uint8_t *)a,(uint8_t *)b,blkU16sz)
-#define usvSort(b)      qsort(b, usvCnt(b), blkU16sz, blkU16cmp)
+#define usvSort(b)      (qsort(b, usvCnt(b), blkU16sz, blkU16cmp),b)
 #define usvUniq(b)      (usv_t)blkUniq((uint8_t *)b, blkU16)
 
 #define usvAdd(b,v)     usvSet(b, usvDepth(b), v)
@@ -164,7 +170,7 @@ typedef uint8_t *ucv_t ;
 #define ucvSet(b,n,v)   ((ucv_t)blkSetInt(b, n, (uint8_t)v, blkCHR))
 
 #define ucvAppend(a,b)  (ucv_t)blkAppend((uint8_t *)a,(uint8_t *)b,blkCHRsz)
-#define ucvSort(b)      qsort(b, ucvCnt(b), blkCHRsz, blkCHRcmp)
+#define ucvSort(b)      (qsort(b, ucvCnt(b), blkCHRsz, blkCHRcmp),b)
 #define ucvUniq(b)      blkUniq((uint8_t *)b, blkCHR)
 
 #define ucvAdd(b,v)     ucvSet(b, ucvDepth(b), v)

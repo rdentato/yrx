@@ -59,61 +59,52 @@ uint8_t nargs(uint8_t op)
    } 
 }
 
-typedef struct {
-  uint8_t  op;
-  uint8_t  arg1;
-  uint16_t arg2;
-  uint32_t targ;
-} step_t;
+static ulv_t pgm; 
+static ulv_t trg; 
 
-static vec_t pgm; 
-
-#define opcode(a) op[a] = #a 
+#define opstr(a) op[a] = #a 
 static char *op[0x40];
 
 void yrxASMInit(void)
 {
-  opcode(CPB);
-  opcode(CPE);
-  opcode(MTC);
-  opcode(MRK);
-  opcode(CMP);
-  opcode(GET);
-  opcode(DIM);
-  opcode(NCP);
-  opcode(NRX);
-  opcode(NOP);
-  opcode(REQ);
-  opcode(RGE);
-  opcode(RGT);
-  opcode(RLE);
-  opcode(RLT);
-  opcode(RNE);
-  opcode(RET);
-  opcode(ONR);
-  opcode(JMP);
-  opcode(JEQ);
-  opcode(JGE);
-  opcode(JGT);
-  opcode(JLE);
-  opcode(JLT);
-  opcode(JNE);
+  opstr(CPB);
+  opstr(CPE);
+  opstr(MTC);
+  opstr(MRK);
+  opstr(CMP);
+  opstr(GET);
+  opstr(DIM);
+  opstr(NCP);
+  opstr(NRX);
+  opstr(NOP);
+  opstr(REQ);
+  opstr(RGE);
+  opstr(RGT);
+  opstr(RLE);
+  opstr(RLT);
+  opstr(RNE);
+  opstr(RET);
+  opstr(ONR);
+  opstr(JMP);
+  opstr(JEQ);
+  opstr(JGE);
+  opstr(JGT);
+  opstr(JLE);
+  opstr(JLT);
+  opstr(JNE);
   
-  pgm = vecNew(sizeof(step_t));
+  pgm = ulvNew();
   if (pgm == NULL) err(934,yrxStrNoMem);
+  
+  trg = ulvNew(); 
+  if (trg == NULL) err(935,yrxStrNoMem);
 }
 
 void yrxASMClean(void)
 {
-  if (pgm != NULL) vecFree(pgm); 
+  pgm =  ulvFree(pgm); 
+  trg =  ulvFree(trg); 
 }
-
-typedef struct {
-  uint16_t arc;
-  uint8_t  min;
-  uint8_t  max;
-} rng2arc;
-
 
 static uint8_t *dmp_asmchr(uint8_t c)
 {
@@ -131,7 +122,7 @@ static uint8_t *dmp_asmchr(uint8_t c)
   return buf;
 }
 
-static void dumpasm(uint32_t step)
+static void dumpstep(uint32_t step)
 {
   uint8_t opcode;
   uint32_t arg;
@@ -141,7 +132,7 @@ static void dumpasm(uint32_t step)
   arg     = step >> 8;
   
   if (opcode == CMP) {
-    printf("\t%s %s\n",op[opcode],dmp_asmchr(arg));
+    printf("%s %s\n",op[opcode],dmp_asmchr(arg));
   }
   else if (isjmp(opcode)) {
     switch(opcode & 0xC0) {
@@ -150,7 +141,7 @@ static void dumpasm(uint32_t step)
       case 0xC0: capnum = 'R'; break;
       default  : capnum = 'S'; break;
     }
-    printf("\t%s %c%u\n",op[opcode & ~0xC0],capnum,arg);
+    printf("%s %c%u\n",op[opcode & ~0xC0],capnum,arg);
   }
   else if (istag(opcode)) {
     capnum = (opcode & 0x7C) >> 2;
@@ -159,7 +150,7 @@ static void dumpasm(uint32_t step)
     if (capnum > 0) opcode |= 0x04;
     
     if (capnum == 0) {
-      printf("\t%s %u",op[opcode & 0x03],arg & 0xFF);
+      printf("%s %u",op[opcode & 0x03],arg & 0xFF);
     }
     else {
       char c = 'X';
@@ -167,7 +158,7 @@ static void dumpasm(uint32_t step)
         case CPB        : c ='('; break;
         case CPE        : c =')'; break;
       }
-      printf("\t%c%02u %u",c,capnum,arg & 0xFF);
+      printf("%c%02u %u",c,capnum,arg & 0xFF);
     }
     arg = arg >> 8;
     if (arg != 0) {
@@ -177,11 +168,39 @@ static void dumpasm(uint32_t step)
   }
   else {
     switch (nargs(opcode)) {
-      case 0: printf("\t%s\n",op[opcode]); break;
-      case 1: printf("\t%s %X\n",op[opcode],arg); break;
-      case 2: printf("\t%s %X\n",op[opcode],arg); break;
+      case 0: printf("%s\n",op[opcode]); break;
+      case 1: printf("%s %X\n",op[opcode],arg); break;
+      case 2: printf("%s %X\n",op[opcode],arg); break;
     }
   }  
+}
+
+static void dumplbl(uint32_t lbl)
+{
+  char c = ' ';
+  
+  if (lbl != 0) {
+    switch(lbl & 0xC0000000) {
+      case 0x40000000: c = 'A'; break;
+      case 0x80000000: c = 'L'; break;
+      case 0xC0000000: c = 'R'; break;
+      default  :       c = 'S'; break;
+    }
+    printf("%c%-5u",c,lbl & 0x00FFFFFF);
+  }
+  else 
+    printf("      ");
+}
+
+static void dumpasm()
+{
+   uint16_t k;
+   uint32_t t;
+   
+   for (k=0; k < ulvCnt(pgm); k++) {
+     dumplbl(ulvGet(trg,k));
+     dumpstep(ulvGet(pgm,k));
+   } 
 }
 
 static void addop(uint8_t opcode, uint32_t arg)
@@ -189,11 +208,7 @@ static void addop(uint8_t opcode, uint32_t arg)
   uint32_t step;
   
   step = (arg << 8) | opcode ;
-  dumpasm(step);
-  
-  /* 
   pgm = ulvAdd(pgm,step);
-  */
 }
 
 static void addjmp(uint8_t opcode, uint8_t ty, uint32_t arg)
@@ -207,11 +222,15 @@ static void addjmp(uint8_t opcode, uint8_t ty, uint32_t arg)
   addop(opcode,arg);
 }
 
-#define targ(a,b) ((a) | ((b)<<8))
-
-static void addtarget(uint32_t lbl)
+static void addtarget(uint8_t ty, uint32_t lbl)
 {
-  printf("%c%u:\n", lbl & 0xFF, lbl >> 8);
+  lbl = lbl & 0x00FFFFFF;
+  switch(ty) {
+    case 'A' : lbl |= 0x40000000 ; break ;
+    case 'L' : lbl |= 0x80000000 ; break ;
+    case 'R' : lbl |= 0xC0000000 ; break ;
+  }
+  trg = ulvSet(trg, ulvDepth(pgm), lbl);
 }
 
 static void addtags(tagset_t ts)
@@ -301,7 +320,7 @@ static void binasm(state_t from, uint32_t first, ulv_t minmax)
       
       a = yrxDFAGetArc(from, parc);
       
-      addtarget(targ('L',cnt_L + k));
+      addtarget('L',cnt_L + k);
       jmpop = JLE;
       if (pmin == 0 && pmax == 255) {
         jmpop = JMP;
@@ -387,7 +406,7 @@ static void binasm(state_t from, uint32_t first, ulv_t minmax)
   stck = ulvFree(stck);
 }
 
-void yrxASM(int optimize)
+void yrxASM(uint32_t optimize)
 {
   uint32_t from;
   uint8_t *pairs;
@@ -400,7 +419,7 @@ void yrxASM(int optimize)
   from = yrxDFAStartState();
 
   while (from != 0) {
-    addtarget(targ('S',from));
+    addtarget('S',from);
     final_ts = NULL;
     
     k = 0;
@@ -408,9 +427,7 @@ void yrxASM(int optimize)
     if (a == NULL) err(978,"Unexpected state!");
     
     if (a->lbl == yrxLblLambda) {
-      final_ts = yrxTagsDecrement(yrxTagsDup(a->tags));
-      addtags(final_ts);
-      final_ts = yrxTagsFree(final_ts);
+      addtags(a->tags);
       a = yrxDFAGetArc(from, ++k);
     }
     if (a != NULL) addop(GET,0);
@@ -436,7 +453,7 @@ void yrxASM(int optimize)
     k = 0;
     while ((a = yrxDFAGetArc(from, k++))) {
       if ((a->lbl != yrxLblLambda) && (a->tags != NULL)) {
-        addtarget(targ('A',arcn+k-1));
+        addtarget('A',arcn+k-1);
         addtags(a->tags);    
         addjmp(JMP, 'S', a->to);
       }
@@ -446,4 +463,5 @@ void yrxASM(int optimize)
     from = yrxDFANextState(from);
   }
   minmax = ulvFree(minmax);
+  dumpasm();
 }

@@ -204,6 +204,42 @@ uint8_t *blkSetPtr(uint8_t *b, uint16_t ndx, void *val)
   return blkset(b,ndx,&val, blkPTRsz);
 }
 
+uint8_t *blkInsInt(uint8_t *b, uint16_t ndx, uint32_t val, uint8_t ty)
+{
+  uint16_t d;
+  
+  d = blkDepth(b);
+  if (ndx < d) {
+    /* make room*/
+    b = blkset(b,d,&val, sz[ty]);
+    memmove( b + sz[ty] * (ndx+1), 
+             b + sz[ty] * (ndx),
+             sz[ty] * (blkCnt(b) - (ndx+1)) );
+    memcpy(b+ sz[ty] * (ndx), &val, sz[ty]);
+  }
+  else
+    b = blkset(b,ndx,&val, sz[ty]);
+    
+  return b;
+}
+
+uint8_t *blkDelInt(uint8_t *b, uint16_t ndx, uint8_t ty)
+{
+  uint16_t d;
+  
+  d = blkDepth(b);
+  if (ndx < d) {
+    /* make room*/
+    memmove( b + sz[ty] * (ndx), 
+             b + sz[ty] * (ndx+1),
+             sz[ty] * (blkCnt(b) - (ndx+1)) );
+    blkCnt(b)--;
+  } 
+  return b;
+}
+
+
+
 static void *blkget(uint8_t *b, uint16_t ndx, uint8_t sz)
 {
   blk_t bl;
@@ -263,9 +299,9 @@ uint8_t *blkUniq(uint8_t *b,uint8_t ty)
   if (j < 2) return b;
 
   switch(ty) {
-    case blkCHR: sz = blkCHRsz; ucvSort(b); break;
-    case blkU16: sz = blkU16sz; usvSort(b); break;
-    case blkU32: sz = blkU32sz; ulvSort(b); break;
+    case blkCHR: sz = blkCHRsz; b = ucvSort(b); break;
+    case blkU16: sz = blkU16sz; b = usvSort(b); break;
+    case blkU32: sz = blkU32sz; b = ulvSort(b); break;
     default    : return b;
   }
   
