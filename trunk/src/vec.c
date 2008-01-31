@@ -234,6 +234,7 @@ uint8_t *blkDelInt(uint8_t *b, uint16_t ndx, uint8_t ty)
              b + sz[ty] * (ndx+1),
              sz[ty] * (blkCnt(b) - (ndx+1)) );
     blkCnt(b)--;
+    memset(b+sz[ty]*blkCnt(b),0,sz[ty]);
   } 
   return b;
 }

@@ -118,7 +118,6 @@ static uint8_t *dmp_asmchr(uint8_t c)
     buf[0] = '\''; buf[1] = c;
     buf[2] = '\''; buf[3] = '\0';
   }
-  
   return buf;
 }
 
@@ -261,13 +260,41 @@ static void addtags(tagset_t ts)
   }
 }
 
+static uint8_t step_op(uint32_t step)
+{
+   step &= 0x7F;
+   if (istag(step)) {
+   }
+}
+
+static void optimizer(uint16_t optlvl)
+{
+  uint32_t k;
+  
+  if (optlvl == 0) return;
+  
+  k = ulvCnt(pgm);
+  if (k == 0) return;
+  
+  while (k-- > 1) {
+    if ((pgm[k-1] & 0x3F) == JMP) {
+      while ((k < ulvCnt(pgm)) && (ulvGet(trg,k) == 0)) {
+        ulvDel(pgm,k);
+        ulvDel(trg,k);
+      }
+    }
+    else
+      k--; 
+  }
+}
+
 static void linasm(state_t from, uint32_t first, ulv_t minmax)
 {
   uint32_t k;
   uint8_t  pmin, pmax;
   uint32_t parc;
   uint8_t  jmpop;
-  arc_t *a;
+  arc_t   *a;
 
     for (k = 0; k < ulvCnt(minmax); k++) {
       pmin = minmax[k] >> 24;
@@ -406,7 +433,7 @@ static void binasm(state_t from, uint32_t first, ulv_t minmax)
   stck = ulvFree(stck);
 }
 
-void yrxASM(uint32_t optimize)
+void yrxASM(uint32_t optlvl)
 {
   uint32_t from;
   uint8_t *pairs;
@@ -463,5 +490,6 @@ void yrxASM(uint32_t optimize)
     from = yrxDFANextState(from);
   }
   minmax = ulvFree(minmax);
+  optimizer(1);
   dumpasm();
 }
