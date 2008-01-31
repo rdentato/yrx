@@ -408,7 +408,9 @@ void yrxASM(int optimize)
     if (a == NULL) err(978,"Unexpected state!");
     
     if (a->lbl == yrxLblLambda) {
-      addjmp(ONR,'A', arcn);
+      final_ts = yrxTagsDecrement(yrxTagsDup(a->tags));
+      addtags(final_ts );
+      final_ts = yrxTagsFree(final_ts);
       a = yrxDFAGetArc(from, ++k);
     }
     if (a != NULL) addop(GET,0);
@@ -433,7 +435,7 @@ void yrxASM(int optimize)
     
     k = 0;
     while ((a = yrxDFAGetArc(from, k++))) {
-      if ((a->tags != NULL)) {
+      if ((a->lbl != yrxLblLambda) && (a->tags != NULL)) {
         addtarget(targ('A',arcn+k-1));
         addtags(a->tags);    
         addjmp(JMP, 'S', a->to);
