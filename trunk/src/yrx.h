@@ -51,6 +51,7 @@ tagset_t yrxTagsDifference   (tagset_t a, tagset_t b);
 int      yrxTagsEmpty        (tagset_t a);
 uint8_t *yrxTagsStr          (tagset_t a);
 tagset_t yrxTagsIncrement    (tagset_t a);
+tagset_t yrxTagsDecrement    (tagset_t a);
 
 #define yrxTagsDup ulvDup
 

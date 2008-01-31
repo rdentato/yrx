@@ -187,7 +187,7 @@ static state_t term(state_t state)
 
     alt = nextstate();
     to  = nextstate();
-    yrxNFAAddarc(alt,to,yrxLblEpsilon,yrxTagset(yrxTag(TAG_CE(ncapt),cur_nrx,0)));
+    yrxNFAAddarc(alt,to,yrxLblEpsilon,yrxTagset(yrxTag(TAG_CE(ncapt),cur_nrx,1)));
 
     t1 = expr(start);
     while (t1 > 0) {
@@ -208,21 +208,21 @@ static state_t term(state_t state)
     
     switch (peekch(0)) {
        case '?':  yrxNFAAddarc(start, alt, yrxLblEpsilon, yrxTagset(yrxTagNone));
-                  yrxNFAAddarc(state, start, yrxLblEpsilon, yrxTagset(yrxTag(TAG_CB(ncapt), cur_nrx,0)));
+                  yrxNFAAddarc(state, start, yrxLblEpsilon, yrxTagset(yrxTag(TAG_CB(ncapt), cur_nrx,1)));
                   c = nextch();
                   break;
 
        case '+':  yrxNFAAddarc(alt, start, yrxLblEpsilon, yrxTagset(yrxTagNone));
-                  yrxNFAAddarc(state, start, yrxLblEpsilon, yrxTagset(yrxTag(TAG_CB(ncapt),cur_nrx,0)));
+                  yrxNFAAddarc(state, start, yrxLblEpsilon, yrxTagset(yrxTag(TAG_CB(ncapt),cur_nrx,1)));
                   c = nextch();
                   break;
 
        case '*':  yrxNFAAddarc(alt, start, yrxLblEpsilon, yrxTagset(yrxTagNone));
-                  yrxNFAAddarc(state, alt, yrxLblEpsilon, yrxTagset(yrxTag(TAG_CB(ncapt), cur_nrx,0)));
+                  yrxNFAAddarc(state, alt, yrxLblEpsilon, yrxTagset(yrxTag(TAG_CB(ncapt), cur_nrx,1)));
                   c = nextch();
                   break;
 
-       default :  yrxNFAAddarc(state, start, yrxLblEpsilon, yrxTagset(yrxTag(TAG_CB(ncapt),cur_nrx,0)));
+       default :  yrxNFAAddarc(state, start, yrxLblEpsilon, yrxTagset(yrxTag(TAG_CB(ncapt),cur_nrx,1)));
                   break;
     }
 
@@ -239,7 +239,7 @@ static state_t term(state_t state)
                   return state;
 
       case ':' :  to = nextstate();
-                  yrxNFAAddarc(state, to, yrxLblEpsilon, yrxTagset(yrxTag(TAG_MRK,cur_nrx,0)));
+                  yrxNFAAddarc(state, to, yrxLblEpsilon, yrxTagset(yrxTag(TAG_MRK,cur_nrx,1)));
                   c = nextch(); c = nextch();
                   return to;
 
@@ -328,7 +328,7 @@ static state_t parse(const char *rx,uint16_t nrx)
 
   if (peekch(0) != -1) yrxParseErr(508,"Unexpected character ");
 
-  yrxNFAAddarc(state, 0, yrxLblLambda, yrxTagset(yrxTag(TAG_FIN, cur_nrx,0)));
+  yrxNFAAddarc(state, 0, yrxLblLambda, yrxTagset(yrxTag(TAG_FIN, cur_nrx,1)));
 
   return state;
 }

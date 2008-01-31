@@ -197,3 +197,15 @@ tagset_t yrxTagsIncrement(tagset_t a)
   return a;
 }
 
+tagset_t yrxTagsDecrement(tagset_t a)
+{
+  uint32_t k;
+
+  if (a != NULL) {
+    for (k = 0; k < ulvCnt(a); k++) {
+      if (yrxTagDelta(a[k]) > 0) a[k]--;
+      else err(805,"Tag displacement out or range");
+    }
+  }
+  return a;
+}
