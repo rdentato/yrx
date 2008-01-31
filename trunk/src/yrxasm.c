@@ -409,7 +409,7 @@ void yrxASM(int optimize)
     
     if (a->lbl == yrxLblLambda) {
       final_ts = yrxTagsDecrement(yrxTagsDup(a->tags));
-      addtags(final_ts );
+      addtags(final_ts);
       final_ts = yrxTagsFree(final_ts);
       a = yrxDFAGetArc(from, ++k);
     }
