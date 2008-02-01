@@ -128,6 +128,10 @@ EXTERN(uint8_t, yrxBuf[YRX_BUF_MAX], );
                                        : (err(617,yrxStrNoMem), NULL))
 
 /*****************************/
+EXTERN(FILE *, yrxFileIn, );
+EXTERN(FILE *, yrxFileOut, );
+
+/*****************************/
 
 
 #endif /* YRX_H */

@@ -30,6 +30,9 @@ static void init(void)
   yrxLblInit(); 
   yrxDFAInit();
   yrxASMInit();
+  
+  yrxFileIn  = stdin;
+  yrxFileOut = stdout;
 }
 
 static void cleanup(void)
@@ -37,6 +40,10 @@ static void cleanup(void)
   yrxLblClean(); 
   yrxDFAClean();
   yrxASMClean();  
+  if (yrxFileIn != stdin)
+    fclose(yrxFileIn);
+  if (yrxFileOut != stdout)
+    fclose(yrxFileOut);
 }
 
 #define DO_DOT  0x00000001

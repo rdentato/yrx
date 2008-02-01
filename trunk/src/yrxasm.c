@@ -115,7 +115,7 @@ static uint8_t *dmp_asmchr(uint8_t c)
   if (c <= 32   || c > 126  || c == '\\' || c == '"' ||
       c == '\'') {
     sprintf(buf,"%02X",c);
-  }
+  } 
   else {
     buf[0] = '\''; buf[1] = c;
     buf[2] = '\''; buf[3] = '\0';
@@ -133,7 +133,7 @@ static void dumpstep(uint32_t step)
   arg     = step >> 8;
   
   if (opcode == CMP) {
-    printf("%s %s\n",op[opcode],dmp_asmchr(arg));
+    fprintf(yrxFileOut,"%s %s\n",op[opcode],dmp_asmchr(arg));
   }
   else if (isjmp(opcode)) {
     switch(opcode & 0xC0) {
@@ -142,7 +142,7 @@ static void dumpstep(uint32_t step)
       case 0xC0: capnum = 'R'; break;
       default  : capnum = 'S'; break;
     }
-    printf("%s %c%u\n",op[opcode & ~0xC0],capnum,arg);
+    fprintf(yrxFileOut,"%s %c%u\n",op[opcode & ~0xC0],capnum,arg);
   }
   else if (istag(opcode)) {
     capnum = (opcode & 0x7C) >> 2;
@@ -151,27 +151,27 @@ static void dumpstep(uint32_t step)
     if (capnum > 0) opcode |= 0x04;
     
     if (capnum == 0) {
-      printf("%s %u",op[opcode & 0x03],arg & 0xFF);
+      fprintf(yrxFileOut,"%s %u",op[opcode & 0x03],arg & 0xFF);
     }
     else {
       char c = 'X';
       switch (opcode) {
-        case CPB        : c ='('; break;
-        case CPE        : c =')'; break;
+        case CPB : c ='('; break;
+        case CPE : c =')'; break;
       }
-      printf("%c%02u %u",c,capnum,arg & 0xFF);
+      fprintf(yrxFileOut,"%c%02u %u",c,capnum,arg & 0xFF);
     }
     arg = arg >> 8;
     if (arg != 0) {
-      printf(",%u",arg);
+      fprintf(yrxFileOut,",%u",arg);
     }
-    printf("\n");
+    fprintf(yrxFileOut,"\n");
   }
   else {
     switch (nargs(opcode)) {
-      case 0: printf("%s\n",op[opcode]); break;
-      case 1: printf("%s %X\n",op[opcode],arg); break;
-      case 2: printf("%s %X\n",op[opcode],arg); break;
+      case 0: fprintf(yrxFileOut,"%s\n",op[opcode]); break;
+      case 1: fprintf(yrxFileOut,"%s %X\n",op[opcode],arg); break;
+      case 2: fprintf(yrxFileOut,"%s %X\n",op[opcode],arg); break;
     }
   }  
 }
@@ -187,16 +187,15 @@ static void dumplbl(uint32_t lbl)
       case 0x000000C0: c = 'R'; break;
       default  :       c = 'S'; break;
     }
-    printf("%c%-5u",c,lbl >> 8);
+    fprintf(yrxFileOut,"%c%-5u",c,lbl >> 8);
   }
   else 
-    printf("      ");
+    fprintf(yrxFileOut,"      ");
 }
 
 static void dumpasm()
 {
    uint16_t k;
-   uint32_t t;
    
    for (k=0; k < ulvCnt(pgm); k++) {
      dumplbl(ulvGet(trg,k));
@@ -232,17 +231,12 @@ static void addtarget(uint8_t ty, uint32_t lbl)
 
 static void addjmp(uint8_t opcode, uint8_t ty, uint32_t arg)
 {
-  uint32_t t;
-  
-  if (opcode == JMP) {
-   if (ty == 'S' && arg == 0) opcode = RET;
-   else if ((t = ulvGet(trg,ulvDepth(pgm))) != 0) {
-     
-   }
-  }
-  if (ty == 'L') {
+  if (opcode == JMP && arg == 0)
+    opcode = RET;
+    
+  if (ty == 'L')
     trg_L = usvSet(trg_L,arg,ulvCnt(pgm));
-  }
+
   addop(opcode | targ(ty),arg);
 }
 
@@ -277,6 +271,7 @@ static void addtags(tagset_t ts)
 static void optimizer(uint16_t optlvl)
 {
   uint32_t k;
+  uint32_t t,j;
   
   if (optlvl == 0) return;
   
@@ -284,23 +279,67 @@ static void optimizer(uint16_t optlvl)
   if (k == 0) return;
   
   while (k-- > 1) {
-    if ((pgm[k-1] & 0x3F) == JMP) {
-      /* Eliminate dead code */
-      while ((k < ulvCnt(pgm)) && (ulvGet(trg,k) == 0)) {
+    dbgmsg("STEP: %d\n",k);
+
+    /* Eliminate dead code */
+    while ( (k < ulvCnt(pgm)) &&
+            ((pgm[k-1] & 0x3F) == JMP) &&
+            (ulvGet(trg,k) == 0)) {
+      ulvDel(pgm,k);
+      ulvDel(trg,k);
+    }
+
+    if ((pgm[k] & 0x3F) == JMP) {
+      /* Eliminate JMP to JMP */
+      t = ulvGet(trg,k);
+      if (( t & 0xC0) == 0x80) {
+        j = usvGet(trg_L, (t >>8));
+        pgm[j] = (pgm[j] & 0x3F) | (pgm[k] & 0xFFFFFFC0) ;
         ulvDel(pgm,k);
         ulvDel(trg,k);
-      }
-      /* Eliminate JMP to JMP */
-      /* TODO */
-      #if 0
-      /* Eliminate JMP to next step */
-      while ((k > 1) &&  (pgm[k-1] == ulvGet(trg,k))) {
-        ulvDel(pgm,k-1);
-        ulvDel(trg,k-1);
+        usvSet(trg_L, (t >>8),0);
         k--;
       }
-      #endif
     }
+
+    /* Eliminate JMP to next step */
+    while ((k > 1) && (k < ulvCnt(pgm)-1) &&
+           (pgm[k] == ulvGet(trg,k+1))) {
+      ulvDel(pgm,k);
+      ulvDel(trg,k);
+      k--;
+    }
+       
+    if ( (pgm[k] & 0x3F) == JEQ) {
+      if ((pgm[k-1] & 0x3F) == JGT) {
+        t = (pgm[k-1] & 0xFFFFFFC0) | JMP;
+        dbgmsg("XX %d %08X %08X\n",k,pgm[k+1],usvGet(trg,k+1));
+        if ((pgm[k+1] == t) || usvGet(trg,k+1) == t) {
+          ulvDel(pgm,k-1);
+          ulvDel(trg,k-1);
+          k--;
+        }
+      }
+    }
+    
+    #if 0
+
+ {
+    }
+
+    
+    if ((pgm[k-1] & 0x3F) == JEQ) {
+      if ((k > 1) && (pgm[k-2] & 0x3F) == JGT) {
+        t = (pgm[k-2] & 0xFFFFFFC0) | JMP;
+        if ((pgm[k] == t) || usvGet(trg,k) == t) {
+          ulvDel(pgm,k-2);
+          ulvDel(trg,k-2);
+          k--;
+        }
+      }
+    }
+    #endif
+
   }
 }
 
