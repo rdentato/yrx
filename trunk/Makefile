@@ -52,4 +52,4 @@ tarball:
 	$(SVN_CMD)
 	rm -f $(SVN_TBALL)
 	$(SVN_TAR)
-	rm -rf yrx
+#	rm -rf yrx

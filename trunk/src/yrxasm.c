@@ -61,6 +61,7 @@ uint8_t nargs(uint8_t op)
 
 static ulv_t pgm; 
 static ulv_t trg; 
+static usv_t trg_L;
 
 #define opstr(a) op[a] = #a 
 static char *op[0x40];
@@ -102,8 +103,9 @@ void yrxASMInit(void)
 
 void yrxASMClean(void)
 {
-  pgm =  ulvFree(pgm); 
-  trg =  ulvFree(trg); 
+  pgm   = ulvFree(pgm); 
+  trg   = ulvFree(trg); 
+  trg_L = usvFree(trg_L);
 }
 
 static uint8_t *dmp_asmchr(uint8_t c)
@@ -179,13 +181,13 @@ static void dumplbl(uint32_t lbl)
   char c = ' ';
   
   if (lbl != 0) {
-    switch(lbl & 0xC0000000) {
-      case 0x40000000: c = 'A'; break;
-      case 0x80000000: c = 'L'; break;
-      case 0xC0000000: c = 'R'; break;
+    switch(lbl & 0x000000C0) {
+      case 0x00000040: c = 'A'; break;
+      case 0x00000080: c = 'L'; break;
+      case 0x000000C0: c = 'R'; break;
       default  :       c = 'S'; break;
     }
-    printf("%c%-5u",c,lbl & 0x00FFFFFF);
+    printf("%c%-5u",c,lbl >> 8);
   }
   else 
     printf("      ");
@@ -202,6 +204,16 @@ static void dumpasm()
    } 
 }
 
+static uint32_t targ(uint8_t ty)
+{
+  switch(ty) {
+    case 'A' : return 0x40 ; break ;
+    case 'L' : return 0x80 ; break ;
+    case 'R' : return 0xC0 ; break ;
+  }
+  return 0;
+}
+
 static void addop(uint8_t opcode, uint32_t arg)
 {
   uint32_t step;
@@ -210,26 +222,28 @@ static void addop(uint8_t opcode, uint32_t arg)
   pgm = ulvAdd(pgm,step);
 }
 
-static void addjmp(uint8_t opcode, uint8_t ty, uint32_t arg)
-{
-  switch(ty) {
-    case 'A' : opcode |= 0x40 ; break ;
-    case 'L' : opcode |= 0x80 ; break ;
-    case 'R' : opcode |= 0xC0 ; break ;
-  }
-  if (opcode == JMP && arg == 0) opcode = RET; 
-  addop(opcode,arg);
-}
-
 static void addtarget(uint8_t ty, uint32_t lbl)
 {
-  lbl = lbl & 0x00FFFFFF;
-  switch(ty) {
-    case 'A' : lbl |= 0x40000000 ; break ;
-    case 'L' : lbl |= 0x80000000 ; break ;
-    case 'R' : lbl |= 0xC0000000 ; break ;
-  }
+  if (ty == 'L' && usvGet(trg_L,lbl) == 0) return;
+  
+  lbl = (lbl << 8) | JMP | targ(ty);
   trg = ulvSet(trg, ulvDepth(pgm), lbl);
+}
+
+static void addjmp(uint8_t opcode, uint8_t ty, uint32_t arg)
+{
+  uint32_t t;
+  
+  if (opcode == JMP) {
+   if (ty == 'S' && arg == 0) opcode = RET;
+   else if ((t = ulvGet(trg,ulvDepth(pgm))) != 0) {
+     
+   }
+  }
+  if (ty == 'L') {
+    trg_L = usvSet(trg_L,arg,ulvCnt(pgm));
+  }
+  addop(opcode | targ(ty),arg);
 }
 
 static void addtags(tagset_t ts)
@@ -260,13 +274,6 @@ static void addtags(tagset_t ts)
   }
 }
 
-static uint8_t step_op(uint32_t step)
-{
-   step &= 0x7F;
-   if (istag(step)) {
-   }
-}
-
 static void optimizer(uint16_t optlvl)
 {
   uint32_t k;
@@ -278,13 +285,22 @@ static void optimizer(uint16_t optlvl)
   
   while (k-- > 1) {
     if ((pgm[k-1] & 0x3F) == JMP) {
+      /* Eliminate dead code */
       while ((k < ulvCnt(pgm)) && (ulvGet(trg,k) == 0)) {
         ulvDel(pgm,k);
         ulvDel(trg,k);
       }
+      /* Eliminate JMP to JMP */
+      /* TODO */
+      #if 0
+      /* Eliminate JMP to next step */
+      while ((k > 1) &&  (pgm[k-1] == ulvGet(trg,k))) {
+        ulvDel(pgm,k-1);
+        ulvDel(trg,k-1);
+        k--;
+      }
+      #endif
     }
-    else
-      k--; 
   }
 }
 
