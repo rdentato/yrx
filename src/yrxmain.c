@@ -20,8 +20,11 @@
 void usage(void)
 {
 	fprintf(stderr,"Usage: yrx [opt] rx1 [rx2 ... rx250]\n ");
-	fprintf(stderr,"  opt:  -a generate ASM code\n ");
-	fprintf(stderr,"        -g generate DOT graph\n ");
+	fprintf(stderr,"  opt: -a         generate ASM code\n ");
+	fprintf(stderr,"       -C         generate C code\n ");
+	fprintf(stderr,"       -g         generate DOT graph\n ");
+	fprintf(stderr,"       -o fname   set output file\n ");
+	fprintf(stderr,"       -Ox        set optimization level\n ");
   exit(1);
 }
 
@@ -40,19 +43,23 @@ static void cleanup(void)
   yrxLblClean(); 
   yrxDFAClean();
   yrxASMClean();  
-  if (yrxFileIn != stdin)
+  if (yrxFileIn && yrxFileIn != stdin)
     fclose(yrxFileIn);
-  if (yrxFileOut != stdout)
+  if (yrxFileOut && yrxFileOut != stdout)
     fclose(yrxFileOut);
 }
 
 #define DO_DOT  0x00000001
 #define DO_ASM  0x00000002
+#define DO_C    0x00000003
+
+static uint8_t optlvl = 1;
 
 int main(int argc, char **argv)
 {
   int argn = 1;
   int rxn = 0;
+  char *tmp = NULL;
   char **rxs = NULL;
   
   uint32_t to_do = DO_DOT;
@@ -62,9 +69,25 @@ int main(int argc, char **argv)
   
   while (argn < argc) {
     if (argv[argn][0] != '-') break;
+    if (argv[argn][1] == '-') break;
+    
     switch (argv[argn][1]) {
       case 'g': to_do = DO_DOT; break;
       case 'a': to_do = DO_ASM; break;
+      
+      case 'O': if (argv[argn][2]) optlvl = argv[argn][2] - '0';
+                break;
+                
+      case 'o': if (argv[argn][2])
+                  tmp = argv[argn]+2;
+                else if (argn < (argc +1)) {
+                  tmp = argv[++argn];
+                }
+                if ((tmp == NULL) || 
+                    ((yrxFileOut = fopen(tmp,"w")) == NULL))
+                  err(923,"Unable to open output file");
+                break;
+      
     }
     argn++; 
   }
@@ -78,9 +101,11 @@ int main(int argc, char **argv)
 
   yrxParse(rxs, rxn);
   yrxDFA();
-  switch (to_do) {
-     case DO_DOT: yrxDump(0); break;
-     case DO_ASM: yrxASM(1); break;
+  switch (to_do & 0x03) {
+     case DO_DOT: yrxGraph(0); break;
+     case DO_ASM: yrxASM(optlvl);
+                  yrxASMDump();
+                  break;
   }
   
   exit(0);

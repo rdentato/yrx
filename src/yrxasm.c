@@ -193,7 +193,7 @@ static void dumplbl(uint32_t lbl)
     fprintf(yrxFileOut,"      ");
 }
 
-static void dumpasm()
+void yrxASMDump(void)
 {
    uint16_t k;
    
@@ -276,10 +276,12 @@ static void optimizer(uint16_t optlvl)
   if (optlvl == 0) return;
   
   k = ulvCnt(pgm);
+  
   if (k == 0) return;
   
-  while (k-- > 1) {
-    dbgmsg("STEP: %d\n",k);
+  /* peephole optimization */
+  while (k-- > 0) {
+    _dbgmsg("STEP: %d\n",k);
 
     /* Eliminate dead code */
     while ( (k < ulvCnt(pgm)) &&
@@ -303,7 +305,7 @@ static void optimizer(uint16_t optlvl)
     }
 
     /* Eliminate JMP to next step */
-    while ((k > 1) && (k < ulvCnt(pgm)-1) &&
+    while ((k > 0) && (k < ulvCnt(pgm)-1) &&
            (pgm[k] == ulvGet(trg,k+1))) {
       ulvDel(pgm,k);
       ulvDel(trg,k);
@@ -313,7 +315,7 @@ static void optimizer(uint16_t optlvl)
     if ( (pgm[k] & 0x3F) == JEQ) {
       if ((pgm[k-1] & 0x3F) == JGT) {
         t = (pgm[k-1] & 0xFFFFFFC0) | JMP;
-        dbgmsg("XX %d %08X %08X\n",k,pgm[k+1],usvGet(trg,k+1));
+        _dbgmsg("XX %d %08X %08X\n",k,pgm[k+1],usvGet(trg,k+1));
         if ((pgm[k+1] == t) || usvGet(trg,k+1) == t) {
           ulvDel(pgm,k-1);
           ulvDel(trg,k-1);
@@ -321,7 +323,9 @@ static void optimizer(uint16_t optlvl)
         }
       }
     }
+
     
+        
     #if 0
 
  {
@@ -545,6 +549,8 @@ void yrxASM(uint32_t optlvl)
     from = yrxDFANextState(from);
   }
   minmax = ulvFree(minmax);
-  optimizer(1);
-  dumpasm();
+  optimizer(optlvl);
 }
+
+
+
