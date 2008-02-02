@@ -70,7 +70,7 @@ static void dmp_dot(void)
 }
 
 
-void yrxDump(uint8_t fmt)
+void yrxGraph(uint8_t fmt)
 {
   dmp_dot();
 }
