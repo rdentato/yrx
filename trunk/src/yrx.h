@@ -118,6 +118,8 @@ void yrxASMInit(void);
 void yrxASM(uint32_t optimize);
 void yrxASMDump(void);
 
+void yrxCDump(void);
+
 /*****************************/
 
 EXTERN(char *, yrxStrNoMem, = "Out of memory");
