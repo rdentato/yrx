@@ -74,6 +74,7 @@ int main(int argc, char **argv)
     switch (argv[argn][1]) {
       case 'g': to_do = DO_DOT; break;
       case 'a': to_do = DO_ASM; break;
+      case 'C': to_do = DO_C  ; break;
       
       case 'O': if (argv[argn][2]) optlvl = argv[argn][2] - '0';
                 break;
@@ -105,6 +106,9 @@ int main(int argc, char **argv)
      case DO_DOT: yrxGraph(0); break;
      case DO_ASM: yrxASM(optlvl);
                   yrxASMDump();
+                  break;
+     case DO_C:   yrxASM(optlvl);
+                  yrxCDump();
                   break;
   }
   

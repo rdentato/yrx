@@ -123,7 +123,7 @@ static uint8_t *dmp_asmchr(uint8_t c)
   return buf;
 }
 
-static void dumpstep(uint32_t step)
+static void dmp_asmstep(uint32_t step)
 {
   uint8_t opcode;
   uint32_t arg;
@@ -187,10 +187,10 @@ static void dumplbl(uint32_t lbl)
       case 0x000000C0: c = 'R'; break;
       default  :       c = 'S'; break;
     }
-    fprintf(yrxFileOut,"%c%-5u",c,lbl >> 8);
+    fprintf(yrxFileOut,"%c%-5u: ",c,lbl >> 8);
   }
   else 
-    fprintf(yrxFileOut,"      ");
+    fprintf(yrxFileOut,"        ");
 }
 
 void yrxASMDump(void)
@@ -199,7 +199,7 @@ void yrxASMDump(void)
    
    for (k=0; k < ulvCnt(pgm); k++) {
      dumplbl(ulvGet(trg,k));
-     dumpstep(ulvGet(pgm,k));
+     dmp_asmstep(ulvGet(pgm,k));
    } 
 }
 
@@ -323,27 +323,6 @@ static void optimizer(uint16_t optlvl)
         }
       }
     }
-
-    
-        
-    #if 0
-
- {
-    }
-
-    
-    if ((pgm[k-1] & 0x3F) == JEQ) {
-      if ((k > 1) && (pgm[k-2] & 0x3F) == JGT) {
-        t = (pgm[k-2] & 0xFFFFFFC0) | JMP;
-        if ((pgm[k] == t) || usvGet(trg,k) == t) {
-          ulvDel(pgm,k-2);
-          ulvDel(trg,k-2);
-          k--;
-        }
-      }
-    }
-    #endif
-
   }
 }
 
@@ -552,5 +531,104 @@ void yrxASM(uint32_t optlvl)
   optimizer(optlvl);
 }
 
+/**************************/
 
+static uint8_t *dmp_cchr(uint8_t c)
+{
+  static char buf[8];
+  
+  if (c <= 32   || c > 126  || c == '\\' || c == '"' ||
+      c == '\'') {
+    sprintf(buf,"0x%02X",c);
+  } 
+  else {
+    buf[0] = '\''; buf[1] = c;
+    buf[2] = '\''; buf[3] = '\0';
+  }
+  return buf;
+}
+
+static void dmp_cstep(uint32_t step,uint32_t lbl)
+{
+  uint8_t opcode;
+  uint32_t arg;
+  uint8_t capnum;
+  static uint32_t ch=' ';
+  
+  opcode  = step & 0xFF;
+  arg     = step >> 8;
+  
+  if (opcode == CMP) {
+    ch = arg;
+  }
+  else {
+    dumplbl(lbl);
+    if (opcode == GET) {
+      ch = '\0';
+      fprintf(yrxFileOut,"if ((ch = yrxGet()) < 0) goto ret;\n");    
+    }
+    else if ((opcode & 0x03) == 0x00) {
+      switch (opcode & 0x1F) {
+        case RGT: fprintf(yrxFileOut,"if (ch >  %s) ",dmp_cchr(ch));  break;
+        case RGE: fprintf(yrxFileOut,"if (ch >= %s) ",dmp_cchr(ch));  break;
+        case RLT: fprintf(yrxFileOut,"if (ch <  %s) ",dmp_cchr(ch));  break;
+        case RLE: fprintf(yrxFileOut,"if (ch <= %s) ",dmp_cchr(ch));  break;
+        case REQ: fprintf(yrxFileOut,"if (ch == %s) ",dmp_cchr(ch));  break;
+        case RNE: fprintf(yrxFileOut,"if (ch != %s) ",dmp_cchr(ch));  break;
+      }
+      if ((opcode & 0x20) != 0x00) {
+        switch(opcode & 0xC0) {
+          case 0x40: capnum = 'A'; break;
+          case 0x80: capnum = 'L'; break;
+          case 0xC0: capnum = 'R'; break;
+          default  : capnum = 'S'; break;
+        }
+        fprintf(yrxFileOut,"goto %c%u;\n",capnum,arg);
+      }
+      else 
+        fprintf(yrxFileOut,"goto ret;\n");    
+    }
+    else if (istag(opcode)) {
+      capnum = (opcode & 0x7C) >> 2;
+      opcode = (opcode & 0x03);
+      
+      if (capnum > 0) opcode |= 0x04;
+      
+      if (capnum == 0) {
+        fprintf(yrxFileOut,"%s %u",op[opcode & 0x03],arg & 0xFF);
+      }
+      else {
+        char c = 'X';
+        switch (opcode) {
+          case CPB : c ='('; break;
+          case CPE : c =')'; break;
+        }
+        fprintf(yrxFileOut,"%c%02u %u",c,capnum,arg & 0xFF);
+      }
+      arg = arg >> 8;
+      if (arg != 0) {
+        fprintf(yrxFileOut,",%u",arg);
+      }
+      fprintf(yrxFileOut,"\n");
+    }
+    else {
+      switch (nargs(opcode)) {
+        case 0: fprintf(yrxFileOut,"%s\n",op[opcode]); break;
+        case 1: fprintf(yrxFileOut,"%s %X\n",op[opcode],arg); break;
+        case 2: fprintf(yrxFileOut,"%s %X\n",op[opcode],arg); break;
+      }
+    }
+  }  
+}
+
+void yrxCDump(void)
+{
+  uint16_t k;
+   
+  fprintf(yrxFileOut,"        start=yrxPos();\n");
+  for (k = 0; k < ulvCnt(pgm); k++) {
+    dmp_cstep(ulvGet(pgm,k),ulvGet(trg,k));
+  } 
+  fprintf(yrxFileOut,"ret:    return;\n");
+}
 
