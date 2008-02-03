@@ -12,7 +12,7 @@
 ** express or implied warranty.
 */
 
-#include "yrx.h"
+#include "yrxlib.h"
 
 
 static uint8_t *dmp_dotchr(uint8_t c)

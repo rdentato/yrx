@@ -12,7 +12,7 @@
 ** express or implied warranty.
 */
 
-#include "yrx.h"
+#include "yrxlib.h"
 
 /**************************************************/
 static const char *cur_rx  = NULL;

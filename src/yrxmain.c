@@ -12,7 +12,7 @@
 ** express or implied warranty.
 */
 
-#include "yrx.h"
+#include "yrxlib.h"
 
 void usage(void)
 {
