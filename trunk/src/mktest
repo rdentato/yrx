@@ -13,5 +13,6 @@
 ##
 
 make
+echo "Compiling x"
 yrx -C -ox.c $*
 gcc -O2 -ox yrxtest.c
