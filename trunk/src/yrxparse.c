@@ -336,6 +336,8 @@ static state_t parse(const char *rx,uint16_t nrx)
 
   yrxNFAAddarc(state, 0, yrxLblLambda, yrxTagset(yrxTag(TAG_FIN, cur_nrx,1)));
 
+  yrxNCP = ucvSet(yrxNCP,nrx,capt+1);
+  
   return state;
 }
 

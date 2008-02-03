@@ -116,9 +116,8 @@ void yrxASMClean(void);
 void yrxASMInit(void);
 
 void yrxASM(uint32_t optimize);
-void yrxASMDump(void);
 
-void yrxCDump(void);
+void yrxC(uint32_t optimize);
 
 /*****************************/
 
@@ -137,6 +136,7 @@ EXTERN(FILE *, yrxFileIn, );
 EXTERN(FILE *, yrxFileOut, );
 
 EXTERN(uint8_t, yrxNRX, = 0);
+EXTERN(ucv_t, yrxNCP, = NULL);
 
 /*****************************/
 

@@ -16,8 +16,8 @@
 
 /*****/
 
-#define MTC 0x02  /* 0 00000 10  MaTCh                         */
-#define MRK 0x03  /* 0 00000 11  MaRK                          */
+#define MRK 0x02  /* 0 00000 10  MaRK                          */
+#define MTC 0x03  /* 0 00000 11  MaTCh                         */
 
 #define CPB 0x06  /* 0 00001 10  Capture Begin                 */
 #define CPE 0x07  /* 0 00001 11  Capture End                   */
@@ -135,6 +135,9 @@ static void dmp_asmstep(uint32_t step)
   if (opcode == CMP) {
     fprintf(yrxFileOut,"%s %s\n",op[opcode],dmp_asmchr(arg));
   }
+  else if (opcode == NCP) {
+    fprintf(yrxFileOut,"%s %u,%u\n",op[opcode], arg & 0xFF, arg >> 8);
+  }
   else if (isjmp(opcode)) {
     switch(opcode & 0xC0) {
       case 0x40: capnum = 'A'; break;
@@ -193,7 +196,7 @@ static void dumplbl(uint32_t lbl)
     fprintf(yrxFileOut,"        ");
 }
 
-void yrxASMDump(void)
+void asm_dump(void)
 {
    uint16_t k;
    
@@ -221,6 +224,8 @@ static void addop(uint8_t opcode, uint32_t arg)
   pgm = ulvAdd(pgm,step);
 }
 
+#define addop2(c,a,b) addop(c, ((a) << 8) | (b))
+
 static void addtarget(uint8_t ty, uint32_t lbl)
 {
   if (ty == 'L' && usvGet(trg_L,lbl) == 0) return;
@@ -244,26 +249,31 @@ static void addtags(tagset_t ts)
 {
   uint16_t k;
   uint8_t op;
+  uint8_t match = 0;
   uint8_t capnum;
   uint32_t arg;
   
   if (ts != NULL) {
     for (k=0; k < ulvCnt(ts); k++) {
-      op = yrxTagType(ts[k]);
-      arg = (yrxTagDelta(ts[k]) << 8) | yrxTagExpr(ts[k]);
-      if (op == TAG_MRK) 
-        op=MRK;
-      else if (op == TAG_FIN) 
-        op=MTC;
-      else {
-        capnum = op & 0x1F;
-        if (op >= 'a')
-          op = CPB;
-        else
-          op = CPE;
-        op = (op & 0x03) | (capnum << 2);
+      if (match == 0 || match == yrxTagExpr(ts[k])) {
+        op = yrxTagType(ts[k]);
+        arg = (yrxTagDelta(ts[k]) << 8) | yrxTagExpr(ts[k]);
+        if (op == TAG_MRK) 
+          op=MRK;
+        else if (op == TAG_FIN) {
+          match = yrxTagExpr(ts[k]);
+          op=MTC;
+        }
+        else {
+          capnum = op & 0x1F;
+          if (op >= 'a')
+            op = CPB;
+          else
+            op = CPE;
+          op = (op & 0x03) | (capnum << 2);
+        }
+        addop(op,arg);
       }
-      addop(op,arg);
     }
   }
 }
@@ -322,6 +332,13 @@ static void optimizer(uint16_t optlvl)
           k--;
         }
       }
+    }
+    
+    if (pgm[k]   == GET && (k < ulvCnt(pgm)-4) &&
+        pgm[k+1] == RLT && (pgm[k+2] & 0xFF) == CMP &&
+        ((pgm[k+3] == RLT) ||(pgm[k+3] == RNE))) {
+          ulvDel(pgm,k+1);
+          ulvDel(trg,k+1);
     }
   }
 }
@@ -471,7 +488,7 @@ static void binasm(state_t from, uint32_t first, ulv_t minmax)
   stck = ulvFree(stck);
 }
 
-void yrxASM(uint32_t optlvl)
+static void asm_build(uint32_t optlvl)
 {
   uint32_t from;
   uint8_t *pairs;
@@ -485,6 +502,9 @@ void yrxASM(uint32_t optlvl)
 
   addop(NRX,yrxNRX);
   
+  for (k=1; k <= yrxNRX; k++)
+    addop2(NCP, ucvGet(yrxNCP,k), k);
+  
   while (from != 0) {
     addtarget('S',from);
     final_ts = NULL;
@@ -497,7 +517,10 @@ void yrxASM(uint32_t optlvl)
       addtags(a->tags);
       a = yrxDFAGetArc(from, ++k);
     }
-    if (a != NULL) addop(GET,0);
+    if (a != NULL) {
+      addop(GET,0);
+      addop(RLT,0);
+    }
     
     minmax = ulvReset(minmax);
     
@@ -533,6 +556,12 @@ void yrxASM(uint32_t optlvl)
   optimizer(optlvl);
 }
 
+void yrxASM(uint32_t optlvl)
+{
+  asm_build(optlvl);
+  asm_dump();
+}
+
 /**************************/
 
 static uint8_t *dmp_cchr(uint8_t c)
@@ -545,10 +574,13 @@ static uint8_t *dmp_cchr(uint8_t c)
   } 
   else {
     buf[0] = '\''; buf[1] = c;
-    buf[2] = '\''; buf[3] = '\0';
+    buf[2] = '\''; buf[3] = ' ';
+    buf[4] = '\0';
   }
   return buf;
 }
+
+static ucv_t ncp = NULL;
 
 static void dmp_cstep(uint32_t step,uint32_t lbl)
 {
@@ -562,12 +594,16 @@ static void dmp_cstep(uint32_t step,uint32_t lbl)
   
   if (opcode == CMP) {
     ch = arg;
+    if (lbl != 0) {
+      dumplbl(lbl);
+      fprintf(yrxFileOut,"\n");
+    }
   }
-  else {
+  else if (opcode != NRX && opcode != NCP) {
     dumplbl(lbl);
     if (opcode == GET) {
       ch = '\0';
-      fprintf(yrxFileOut,"if ((ch = yrxGet()) < 0) goto ret;\n");    
+      fprintf(yrxFileOut,"ch = yrxGet();");    
     }
     else if ((opcode & 0x03) == 0x00) {
       switch (opcode & 0x1F) {
@@ -585,43 +621,74 @@ static void dmp_cstep(uint32_t step,uint32_t lbl)
           case 0xC0: capnum = 'R'; break;
           default  : capnum = 'S'; break;
         }
-        fprintf(yrxFileOut,"goto %c%u;\n",capnum,arg);
+        fprintf(yrxFileOut,"goto %c%u;",capnum,arg);
       }
       else 
-        fprintf(yrxFileOut,"goto ret;\n");    
+        fprintf(yrxFileOut,"goto S0;");    
     }
     else if (istag(opcode)) {
       capnum = (opcode & 0x7C) >> 2;
-      opcode = (opcode & 0x03);
       
-      if (capnum > 0) opcode |= 0x04;
-      
-      if (opcode == MRK) {
-      }
       if (opcode == MTC) {
-        fprintf(yrxFileOut,"match = %u;\n",arg & 0xFF);
+        fprintf(yrxFileOut,"match = %u;\n",(arg & 0xFF));
+        fprintf(yrxFileOut,"        ");
       }
       
+      fprintf(yrxFileOut,"tags[%u] = yrxPos()", 
+                     ncp[(arg & 0xFF) - 1] + capnum + (opcode & 0x01));
+      if ((arg >> 8) > 0)
+        fprintf(yrxFileOut,"-%u", arg >>8);    
+      fprintf(yrxFileOut,";");
     }
-    else {
-      switch (nargs(opcode)) {
-        case 0: fprintf(yrxFileOut,"%s\n",op[opcode]); break;
-        case 1: fprintf(yrxFileOut,"%s %X\n",op[opcode],arg); break;
-        case 2: fprintf(yrxFileOut,"%s %X\n",op[opcode],arg); break;
-      }
-    }
+    fprintf(yrxFileOut,"\n");    
   }  
 }
 
-void yrxCDump(void)
+static void c_dump(void)
 {
-  uint16_t k;
-   
-  fprintf(yrxFileOut,"        start=yrxPos();\n");
-  fprintf(yrxFileOut,"        match=0;\n");
+  uint16_t k = 0;
+  
+  ncp = ucvReset(ncp);
+  ncp = ucvSet(ncp,0,0);
+
+  fprintf(yrxFileOut,"{\n");
+
+  fprintf(yrxFileOut,"        register int ch;\n");
+  fprintf(yrxFileOut,"        unsigned char nrx = %u;\n", yrxNRX);
+  fprintf(yrxFileOut,"        unsigned char ncp[%u] = { 0", yrxNRX+1);
+  
+  for (k=1; k <= yrxNRX; k++) {
+    ncp = ucvSet(ncp, k, ncp[k-1] + 2 * ucvGet(yrxNCP,k));
+    fprintf(yrxFileOut,", %u",ncp[k]);
+  }
+  fprintf(yrxFileOut," };\n");
+  
+  fprintf(yrxFileOut,"        yrxPosType tags[%u];\n", ncp[yrxNRX]);
+  fprintf(yrxFileOut,"        yrxPosType start = yrxPos();\n");
+  
+  fprintf(yrxFileOut,"        unsigned char match = 0;\n\n");
+  
+  fprintf(yrxFileOut,"        memset(tags,0,sizeof(tags));\n\n");
   for (k = 0; k < ulvCnt(pgm); k++) {
     dmp_cstep(ulvGet(pgm,k),ulvGet(trg,k));
   } 
-  fprintf(yrxFileOut,"ret:    return;\n");
+  
+  fprintf(yrxFileOut,"S0:\n");
+  fprintf(yrxFileOut,"        if (match != 0) {\n");
+  fprintf(yrxFileOut,"          ch = ncp[match-1];\n");
+  fprintf(yrxFileOut,"          if (tags[ch] != 0) tags[ch+1] = tags[ch]\n");
+  fprintf(yrxFileOut,"          tags[ch] = start;\n");
+  fprintf(yrxFileOut,"          for (ch = ch+2; ch < ncp[match]; ch ++) {\n");
+  fprintf(yrxFileOut,"          }\n");
+  fprintf(yrxFileOut,"        }\n");
+  fprintf(yrxFileOut,"        \n");
+  fprintf(yrxFileOut,"        yrxMatch(match);\n");
+  fprintf(yrxFileOut,"}\n");
+  ucvFree(ncp);
 }
 
+void yrxC(uint32_t optlvl)
+{
+  asm_build(optlvl);
+  c_dump();
+}
