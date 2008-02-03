@@ -136,6 +136,8 @@ EXTERN(uint8_t, yrxBuf[YRX_BUF_MAX], );
 EXTERN(FILE *, yrxFileIn, );
 EXTERN(FILE *, yrxFileOut, );
 
+EXTERN(uint8_t, yrxNRX, = 0);
+
 /*****************************/
 
 

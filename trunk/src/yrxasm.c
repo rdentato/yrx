@@ -483,6 +483,8 @@ void yrxASM(uint32_t optlvl)
 
   from = yrxDFAStartState();
 
+  addop(NRX,yrxNRX);
+  
   while (from != 0) {
     addtarget('S',from);
     final_ts = NULL;
@@ -594,22 +596,12 @@ static void dmp_cstep(uint32_t step,uint32_t lbl)
       
       if (capnum > 0) opcode |= 0x04;
       
-      if (capnum == 0) {
-        fprintf(yrxFileOut,"%s %u",op[opcode & 0x03],arg & 0xFF);
+      if (opcode == MRK) {
       }
-      else {
-        char c = 'X';
-        switch (opcode) {
-          case CPB : c ='('; break;
-          case CPE : c =')'; break;
-        }
-        fprintf(yrxFileOut,"%c%02u %u",c,capnum,arg & 0xFF);
+      if (opcode == MTC) {
+        fprintf(yrxFileOut,"match = %u;\n",arg & 0xFF);
       }
-      arg = arg >> 8;
-      if (arg != 0) {
-        fprintf(yrxFileOut,",%u",arg);
-      }
-      fprintf(yrxFileOut,"\n");
+      
     }
     else {
       switch (nargs(opcode)) {
@@ -626,6 +618,7 @@ void yrxCDump(void)
   uint16_t k;
    
   fprintf(yrxFileOut,"        start=yrxPos();\n");
+  fprintf(yrxFileOut,"        match=0;\n");
   for (k = 0; k < ulvCnt(pgm); k++) {
     dmp_cstep(ulvGet(pgm,k),ulvGet(trg,k));
   } 

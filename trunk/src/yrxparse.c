@@ -346,6 +346,8 @@ void yrxParse(char **rxs, int rxn)
   if (rxn < 1 || 250 < rxn)
     yrxParseErr(501,"Invalid number of argument");
     
+  yrxNRX = rxn;
+  
   for (i = 0; i < rxn; i++) {
     parse(rxs[i],i+1);
   }
