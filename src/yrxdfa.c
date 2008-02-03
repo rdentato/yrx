@@ -238,7 +238,7 @@ static void add2merge(vec_t v, arc_t *a)
   }
 }
 
-#if 0
+#if 1
 static tagset_t tagsunion(vpv_t arcs)
 {
   tagset_t ts = NULL;
@@ -388,8 +388,8 @@ static void determinize(state_t st)
       invnew.state   = 0;
       inv = mapGetOrAdd(invmrgd,&invnew);
     
-      a.tags = tagsintersection(p->arcs);   
       if (inv->state == 0) { /* A state to be added! */
+        a.tags = tagsintersection(p->arcs);   
         inv->state = yrxNextState();
         mrgd = vpvSet(mrgd, inv->state, st_mrgd);
         st_mrgd = NULL;
@@ -402,6 +402,7 @@ static void determinize(state_t st)
                             yrxTagsDup(arc->tags), a.tags)));
         }
       }
+      else  a.tags = tagsunion(p->arcs);   
 
       a.to = inv->state;
       st_mrgd = usvFree(st_mrgd);
