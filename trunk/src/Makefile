@@ -17,18 +17,23 @@ include ../config.mk
 
 CFLAGS = $(DEBUG) -Wall -O2 -g 
 
-# LDFLAGS = -L ../utils/lua
-# LIBS   = -llua -lm
+LDFLAGS = -L ../utils/lua -L.
+#LIBS   = -llua -lm
 
 OFILES = yrxparse.$(_OBJ)\
          yrxlabel.$(_OBJ)\
          yrxtags.$(_OBJ)\
          yrxdfa.$(_OBJ) \
          yrxgraph.$(_OBJ)\
-         yrxasm.$(_OBJ)
+         yrxasm.$(_OBJ)\
+         yrxlib.$(_OBJ)
 
-yrx$(_EXE):	$(OFILES) yrxmain.$(_OBJ) vec.$(_OBJ) 
-	gcc -o yrx$(_EXE) yrxmain.$(_OBJ) $(OFILES) vec.$(_OBJ) $(LDFLAGS) $(LIBS)
+yrx$(_EXE): libyrxlib.a yrxmain.$(_OBJ) 
+	gcc -o yrx$(_EXE) yrxmain.$(_OBJ) $(LDFLAGS) -lyrxlib $(LIBS) 
+
+libyrxlib.a: $(OFILES) vec.$(_OBJ) 
+	$(AR) libyrxlib.a $(OFILES) vec.$(_OBJ) 
+	
 
 vec.$(_OBJ): vec.c vec.h
 	gcc $(CFLAGS) $(LOG2_ASM) -c -o vec.$(_OBJ) vec.c
@@ -40,4 +45,5 @@ clean:
 	rm -f yrx$(_EXE) vt$(_EXE)
 	rm -f x.*
 	rm -f *.$(_OBJ)
+	rm -f libyrxlib.a
 	
