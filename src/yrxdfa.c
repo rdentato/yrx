@@ -513,6 +513,7 @@ void yrxDFAClean(void)
     FA = vpvFree(FA);
   }
   resetstack();
+  yrxNCP = ucvFree(yrxNCP);
 }
 
 void yrxDFAInit(void)

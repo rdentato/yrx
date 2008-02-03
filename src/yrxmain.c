@@ -104,12 +104,8 @@ int main(int argc, char **argv)
   yrxDFA();
   switch (to_do & 0x03) {
      case DO_DOT: yrxGraph(0); break;
-     case DO_ASM: yrxASM(optlvl);
-                  yrxASMDump();
-                  break;
-     case DO_C:   yrxASM(optlvl);
-                  yrxCDump();
-                  break;
+     case DO_ASM: yrxASM(optlvl);   break;
+     case DO_C:   yrxC(optlvl);     break;
   }
   
   exit(0);
