@@ -15,7 +15,7 @@
 #define HUL_MAIN
 #define YRX_MAIN
 
-#include "yrx.h"
+#include "yrxlib.h"
 
 
 void yrxInit(void)

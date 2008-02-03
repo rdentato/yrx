@@ -12,7 +12,7 @@
 ** express or implied warranty.
 */
 
-#include "yrx.h"
+#include "yrxlib.h"
 
 uint8_t *yrxTagsStr(tagset_t a)
 {
