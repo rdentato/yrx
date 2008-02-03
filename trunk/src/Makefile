@@ -25,7 +25,7 @@ OFILES = yrxparse.$(_OBJ)\
          yrxtags.$(_OBJ)\
          yrxdfa.$(_OBJ) \
          yrxgraph.$(_OBJ)\
-         yrxasm.$(_OBJ)\
+         yrxcode.$(_OBJ)\
          yrxlib.$(_OBJ)
 
 yrx$(_EXE): libyrxlib.a yrxmain.$(_OBJ) 

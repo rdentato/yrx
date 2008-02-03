@@ -12,8 +12,8 @@
 ** express or implied warranty.
 */
 
-#ifndef YRX_H
-#define YRX_H
+#ifndef YRXLIB_H
+#define YRXLIB_H
 
 #include "hul.h"
 #include "vec.h"
@@ -117,7 +117,7 @@ void yrxASMInit(void);
 
 void yrxASM(uint32_t optimize);
 
-void yrxC(uint32_t optimize);
+void yrxC(uint32_t optimize, char *fn);
 
 /*****************************/
 
@@ -144,4 +144,4 @@ void yrxInit(void);
 void yrxCleanup(void);
 
 
-#endif /* YRX_H */
+#endif /* YRXLIB_H */
