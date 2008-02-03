@@ -140,5 +140,8 @@ EXTERN(ucv_t, yrxNCP, = NULL);
 
 /*****************************/
 
+void yrxInit(void);
+void yrxCleanup(void);
+
 
 #endif /* YRX_H */

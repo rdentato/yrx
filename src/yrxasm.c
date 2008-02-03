@@ -47,6 +47,7 @@
 #define JNE 0x3C  /* 00 1111 00  Jump on Greater Than          */
 
 #define isjmp(x) (((x) & 0x23) == 0x20)
+#define isret(x) (((x) & 0x23) == 0x00)
 #define istag(x) (((x) & 0x03) >  0x01)
 
 uint8_t nargs(uint8_t op)
@@ -321,11 +322,11 @@ static void optimizer(uint16_t optlvl)
       ulvDel(trg,k);
       k--;
     }
-       
+    
+    /* Eliminate JGT x /JEQ y/JMP x sequence */
     if ( (pgm[k] & 0x3F) == JEQ) {
       if ((pgm[k-1] & 0x3F) == JGT) {
         t = (pgm[k-1] & 0xFFFFFFC0) | JMP;
-        _dbgmsg("XX %d %08X %08X\n",k,pgm[k+1],usvGet(trg,k+1));
         if ((pgm[k+1] == t) || usvGet(trg,k+1) == t) {
           ulvDel(pgm,k-1);
           ulvDel(trg,k-1);
@@ -334,15 +335,17 @@ static void optimizer(uint16_t optlvl)
       }
     }
     
+    /* remove useless check for GET return */
     if (pgm[k]   == GET && (k < ulvCnt(pgm)-4) &&
         pgm[k+1] == RLT && (pgm[k+2] & 0xFF) == CMP &&
-        ((pgm[k+3] == RLT) ||(pgm[k+3] == RNE))) {
+        (isret(pgm[k+3]) && (pgm[k+3] != REQ))) {
           ulvDel(pgm,k+1);
           ulvDel(trg,k+1);
     }
   }
 }
 
+#if 0
 static void linasm(state_t from, uint32_t first, ulv_t minmax)
 {
   uint32_t k;
@@ -375,6 +378,7 @@ static void linasm(state_t from, uint32_t first, ulv_t minmax)
       else         addjmp(jmpop, 'S', a->to);
     }    
 }
+#endif 
 
 static void binasm(state_t from, uint32_t first, ulv_t minmax)
 {
@@ -603,7 +607,7 @@ static void dmp_cstep(uint32_t step,uint32_t lbl)
     dumplbl(lbl);
     if (opcode == GET) {
       ch = '\0';
-      fprintf(yrxFileOut,"ch = yrxGet();");    
+      fprintf(yrxFileOut,"ch = yrxGet(ys);");    
     }
     else if ((opcode & 0x03) == 0x00) {
       switch (opcode & 0x1F) {
@@ -634,7 +638,7 @@ static void dmp_cstep(uint32_t step,uint32_t lbl)
         fprintf(yrxFileOut,"        ");
       }
       
-      fprintf(yrxFileOut,"tags[%u] = yrxPos()", 
+      fprintf(yrxFileOut,"tags[%u] = yrxPos(ys)", 
                      ncp[(arg & 0xFF) - 1] + capnum + (opcode & 0x01));
       if ((arg >> 8) > 0)
         fprintf(yrxFileOut,"-%u", arg >>8);    
@@ -651,7 +655,7 @@ static void c_dump(void)
   ncp = ucvReset(ncp);
   ncp = ucvSet(ncp,0,0);
 
-  fprintf(yrxFileOut,"{\n");
+  fprintf(yrxFileOut,"int yrxMatch(yrxStream ys, yrxPosType *cap) {\n");
 
   fprintf(yrxFileOut,"        register int ch;\n");
   fprintf(yrxFileOut,"        unsigned char nrx = %u;\n", yrxNRX);
@@ -664,25 +668,26 @@ static void c_dump(void)
   fprintf(yrxFileOut," };\n");
   
   fprintf(yrxFileOut,"        yrxPosType tags[%u];\n", ncp[yrxNRX]);
-  fprintf(yrxFileOut,"        yrxPosType start = yrxPos();\n");
+  fprintf(yrxFileOut,"        yrxPosType start = yrxPos(ys);\n");
   
   fprintf(yrxFileOut,"        unsigned char match = 0;\n\n");
   
   fprintf(yrxFileOut,"        memset(tags,0,sizeof(tags));\n\n");
+  
   for (k = 0; k < ulvCnt(pgm); k++) {
     dmp_cstep(ulvGet(pgm,k),ulvGet(trg,k));
   } 
   
-  fprintf(yrxFileOut,"S0:\n");
+  fprintf(yrxFileOut,"S0    :\n");
   fprintf(yrxFileOut,"        if (match != 0) {\n");
   fprintf(yrxFileOut,"          ch = ncp[match-1];\n");
-  fprintf(yrxFileOut,"          if (tags[ch] != 0) tags[ch+1] = tags[ch]\n");
+  fprintf(yrxFileOut,"          if (tags[ch] != 0) tags[ch+1] = tags[ch];\n");
   fprintf(yrxFileOut,"          tags[ch] = start;\n");
-  fprintf(yrxFileOut,"          for (ch = ch+2; ch < ncp[match]; ch ++) {\n");
+  fprintf(yrxFileOut,"          for ( ; ch < ncp[match]; ch ++) {\n");
   fprintf(yrxFileOut,"          }\n");
   fprintf(yrxFileOut,"        }\n");
   fprintf(yrxFileOut,"        \n");
-  fprintf(yrxFileOut,"        yrxMatch(match);\n");
+  fprintf(yrxFileOut,"        return match;\n");
   fprintf(yrxFileOut,"}\n");
   ucvFree(ncp);
 }

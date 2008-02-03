@@ -12,9 +12,6 @@
 ** express or implied warranty.
 */
 
-#define HUL_MAIN
-#define YRX_MAIN
-
 #include "yrx.h"
 
 void usage(void)
@@ -26,27 +23,6 @@ void usage(void)
 	fprintf(stderr,"       -o fname   set output file\n ");
 	fprintf(stderr,"       -Ox        set optimization level\n ");
   exit(1);
-}
-
-static void init(void)
-{
-  yrxLblInit(); 
-  yrxDFAInit();
-  yrxASMInit();
-  
-  yrxFileIn  = stdin;
-  yrxFileOut = stdout;
-}
-
-static void cleanup(void)
-{
-  yrxLblClean(); 
-  yrxDFAClean();
-  yrxASMClean();  
-  if (yrxFileIn && yrxFileIn != stdin)
-    fclose(yrxFileIn);
-  if (yrxFileOut && yrxFileOut != stdout)
-    fclose(yrxFileOut);
 }
 
 #define DO_DOT  0x00000001
@@ -64,8 +40,8 @@ int main(int argc, char **argv)
   
   uint32_t to_do = DO_DOT;
 
-  init();
-  atexit(cleanup);
+  yrxInit();
+  atexit(yrxCleanup);
   
   while (argn < argc) {
     if (argv[argn][0] != '-') break;
