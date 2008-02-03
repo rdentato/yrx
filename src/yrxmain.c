@@ -18,7 +18,7 @@ void usage(void)
 {
 	fprintf(stderr,"Usage: yrx [opt] rx1 [rx2 ... rx250]\n ");
 	fprintf(stderr,"  opt: -a         generate ASM code\n ");
-	fprintf(stderr,"       -C         generate C code\n ");
+	fprintf(stderr,"       -C[:fn]    generate the C function fn()\n ");
 	fprintf(stderr,"       -g         generate DOT graph\n ");
 	fprintf(stderr,"       -o fname   set output file\n ");
 	fprintf(stderr,"       -Ox        set optimization level\n ");
@@ -37,6 +37,7 @@ int main(int argc, char **argv)
   int rxn = 0;
   char *tmp = NULL;
   char **rxs = NULL;
+  char *fn = NULL;
   
   uint32_t to_do = DO_DOT;
 
@@ -50,7 +51,11 @@ int main(int argc, char **argv)
     switch (argv[argn][1]) {
       case 'g': to_do = DO_DOT; break;
       case 'a': to_do = DO_ASM; break;
-      case 'C': to_do = DO_C  ; break;
+      case 'C': to_do = DO_C  ; 
+                if (argv[argn][2] == ':' && argv[argn][3] != '\0') {
+                  fn = argv[argn]+3;
+                }
+                break;
       
       case 'O': if (argv[argn][2]) optlvl = argv[argn][2] - '0';
                 break;
@@ -81,7 +86,7 @@ int main(int argc, char **argv)
   switch (to_do & 0x03) {
      case DO_DOT: yrxGraph(0); break;
      case DO_ASM: yrxASM(optlvl);   break;
-     case DO_C:   yrxC(optlvl);     break;
+     case DO_C:   yrxC(optlvl,fn);     break;
   }
   
   exit(0);

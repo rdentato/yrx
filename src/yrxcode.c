@@ -13,6 +13,7 @@
 */
 
 #include "yrxlib.h"
+#include "yrx.h"
 
 /*****/
 
@@ -639,7 +640,7 @@ static void dmp_cstep(uint32_t step,uint32_t lbl)
       }
       
       fprintf(yrxFileOut,"tags[%u] = yrxPos(ys)", 
-                     ncp[(arg & 0xFF) - 1] + capnum + (opcode & 0x01));
+                     ncp[(arg & 0xFF) - 1] + 2 * capnum + (opcode & 0x01));
       if ((arg >> 8) > 0)
         fprintf(yrxFileOut,"-%u", arg >>8);    
       fprintf(yrxFileOut,";");
@@ -648,14 +649,16 @@ static void dmp_cstep(uint32_t step,uint32_t lbl)
   }  
 }
 
-static void c_dump(void)
+static void c_dump(char *fn)
 {
   uint16_t k = 0;
   
   ncp = ucvReset(ncp);
   ncp = ucvSet(ncp,0,0);
 
-  fprintf(yrxFileOut,"int yrxMatch(yrxStream ys, yrxPosType *cap) {\n");
+  if (fn == NULL) fn = "yrxExec";
+  
+  fprintf(yrxFileOut,"yrxResult *%s(yrxStream ys) {\n",fn);
 
   fprintf(yrxFileOut,"        register int ch;\n");
   fprintf(yrxFileOut,"        unsigned char nrx = %u;\n", yrxNRX);
@@ -667,7 +670,8 @@ static void c_dump(void)
   }
   fprintf(yrxFileOut," };\n");
   
-  fprintf(yrxFileOut,"        yrxPosType tags[%u];\n", ncp[yrxNRX]);
+  fprintf(yrxFileOut,"        static yrxResult res;\n");
+  fprintf(yrxFileOut,"        static yrxPosType tags[%u];\n", ncp[yrxNRX]);
   fprintf(yrxFileOut,"        yrxPosType start = yrxPos(ys);\n");
   
   fprintf(yrxFileOut,"        unsigned char match = 0;\n\n");
@@ -679,21 +683,25 @@ static void c_dump(void)
   } 
   
   fprintf(yrxFileOut,"S0    :\n");
+  fprintf(yrxFileOut,"        res.match = match;\n");
+  fprintf(yrxFileOut,"        res.ncapt = 0;\n");
+  fprintf(yrxFileOut,"        res.capt  = NULL;\n");
+  fprintf(yrxFileOut,"        \n");
   fprintf(yrxFileOut,"        if (match != 0) {\n");
   fprintf(yrxFileOut,"          ch = ncp[match-1];\n");
   fprintf(yrxFileOut,"          if (tags[ch] != 0) tags[ch+1] = tags[ch];\n");
   fprintf(yrxFileOut,"          tags[ch] = start;\n");
-  fprintf(yrxFileOut,"          for ( ; ch < ncp[match]; ch ++) {\n");
-  fprintf(yrxFileOut,"          }\n");
+  fprintf(yrxFileOut,"          res.ncapt = (ncp[match] - ncp[match -1])/2;\n");
+  fprintf(yrxFileOut,"          res.capt  = tags + ncp[match -1];\n");
   fprintf(yrxFileOut,"        }\n");
   fprintf(yrxFileOut,"        \n");
-  fprintf(yrxFileOut,"        return match;\n");
+  fprintf(yrxFileOut,"        return &res;\n");
   fprintf(yrxFileOut,"}\n");
   ucvFree(ncp);
 }
 
-void yrxC(uint32_t optlvl)
+void yrxC(uint32_t optlvl, char *fn)
 {
   asm_build(optlvl);
-  c_dump();
+  c_dump(fn);
 }
