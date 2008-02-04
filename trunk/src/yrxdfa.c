@@ -323,7 +323,7 @@ static usv_t destlist(vpv_t arcs)
   return lst;
 }
 
-static void determinize(state_t st)
+static void determinize(state_t st,uint32_t opts)
 {
   uint32_t k,j;
   arc_t *arc;
@@ -353,22 +353,28 @@ static void determinize(state_t st)
         copyarcs(arclist, arc->to, arc->tags);
       }
     }
-    else {
+    else if (opts > 1) {
       add2merge(tomerge, arc);
     } 
+    else {
+      lbl2arcs q;
+      q.lbl = arc->lbl;
+      q.arcs = vpvAdd(NULL,arc);
+      p = vecAdd(tomerge,&q);
+    }
   }
   
   /* Build the new list of arcs */
-
+  
   newarcs = vecNew(sizeof(arc_t));
-
+  
   if (finaltags != NULL) { /* ensure arc to 0 is the first one */
     a.to   = 0;
     a.lbl  = yrxLblLambda;
     a.tags = finaltags;
     vecAdd(newarcs,&a);
   }
-
+  
   _dbgmsg("state: %d\n",st);
   for (k = 0; k < vecCnt(tomerge); k++) {
     p = vecGet(tomerge,k);
@@ -388,22 +394,31 @@ static void determinize(state_t st)
       invnew.state   = 0;
       inv = mapGetOrAdd(invmrgd,&invnew);
     
+      a.tags = tagsintersection(p->arcs);   
       if (inv->state == 0) { /* A state to be added! */
-        a.tags = tagsintersection(p->arcs);   
         inv->state = yrxNextState();
         mrgd = vpvSet(mrgd, inv->state, st_mrgd);
         st_mrgd = NULL;
+        dbgmsg("NEW STATE: %u = ",inv->state);
         for (j = 0; j < vpvCnt(p->arcs); j++) {
           arc = p->arcs[j];
+          dbgmsg("%u, ",arc->to);
+          #if 1
           yrxNFAAddarc(inv->state, arc->to,
                        yrxLblEpsilon,
                        yrxTagsIncrement(
                           yrxTagsDifference(
                             yrxTagsDup(arc->tags), a.tags)));
+          #else
+          yrxNFAAddarc(inv->state, arc->to,
+                       yrxLblEpsilon,
+                       yrxTagsIncrement(yrxTagsDup(arc->tags)));
+          #endif
         }
+        dbgmsg("\n");
       }
-      else  a.tags = tagsunion(p->arcs);   
-
+      /* else  a.tags = tagsunion(p->arcs); */
+  
       a.to = inv->state;
       st_mrgd = usvFree(st_mrgd);
     }
@@ -412,6 +427,7 @@ static void determinize(state_t st)
   }
   arclist = vecFree(arclist);
   FA[st] = newarcs;
+
 }
 
 static void fixdfa()
@@ -436,8 +452,11 @@ void yrxDFA(uint32_t opts)
 {
   state_t st;
   uint32_t k;
-  _dbgmsg ("DFA\n");    
+  
+  dbgmsg ("DFA opt:%u\n",opts);    
  
+  if (opts == 0) return;
+  
   if (mrgd == NULL) mrgd = vpvNew();
   if (mrgd == NULL) err(702,yrxStrNoMem);
   
@@ -455,7 +474,7 @@ void yrxDFA(uint32_t opts)
   pushonce(1);
  
   while ((st = pop()) != 0) {
-    determinize(st);
+    determinize(st,opts);
   } 
   
   /* cleanup unreachable states      */

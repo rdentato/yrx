@@ -262,6 +262,10 @@ static void addtags(tagset_t ts)
         arg = (yrxTagDelta(ts[k]) << 8) | yrxTagExpr(ts[k]);
         if (op == TAG_MRK) 
           op=MRK;
+        else if (op == TAG_XPR) {
+          op=NOP;
+          arg = 0;
+        }
         else if (op == TAG_FIN) {
           match = yrxTagExpr(ts[k]);
           op=MTC;
@@ -274,7 +278,8 @@ static void addtags(tagset_t ts)
             op = CPE;
           op = (op & 0x03) | (capnum << 2);
         }
-        addop(op,arg);
+        if (op != NOP)
+          addop(op,arg);
       }
     }
   }
@@ -294,9 +299,21 @@ static void optimizer(uint16_t optlvl)
   /* peephole optimization */
   while (k-- > 0) {
     _dbgmsg("STEP: %d\n",k);
+    
+    /* Eliminate NOP */
+    if (pgm[k] == NOP) {
+      if (ulvGet(trg,k-1) != 0 && ulvGet(trg,k+1) == 0) {
+        trg = ulvSet(trg,k+1,trg[k]);
+        trg[k] = 0;
+      }
+      if (ulvGet(trg,k) == 0) {
+        ulvDel(pgm,k);
+        ulvDel(trg,k);
+      }
+    }
 
     /* Eliminate dead code */
-    while ( (k < ulvCnt(pgm)) &&
+    if ( (k < ulvCnt(pgm)) &&
             ((pgm[k-1] & 0x3F) == JMP) &&
             (ulvGet(trg,k) == 0)) {
       ulvDel(pgm,k);
@@ -317,7 +334,7 @@ static void optimizer(uint16_t optlvl)
     }
 
     /* Eliminate JMP to next step */
-    while ((k > 0) && (k < ulvCnt(pgm)-1) &&
+    if ((k > 0) && (k < ulvCnt(pgm)-1) &&
            (pgm[k] == ulvGet(trg,k+1))) {
       ulvDel(pgm,k);
       ulvDel(trg,k);
@@ -342,7 +359,7 @@ static void optimizer(uint16_t optlvl)
         (isret(pgm[k+3]) && (pgm[k+3] != REQ))) {
           ulvDel(pgm,k+1);
           ulvDel(trg,k+1);
-    }
+    }    
   }
 }
 
@@ -375,8 +392,10 @@ static void linasm(state_t from, uint32_t first, ulv_t minmax)
           jmpop = JLE;
         }
       }      
-      if (a->tags) addjmp(jmpop, 'A', first + parc);
-      else         addjmp(jmpop, 'S', a->to);
+      if (yrxTagsEmpty(a->tags))
+         addjmp(jmpop, 'S', a->to);
+      else
+         addjmp(jmpop, 'A', first + parc);
     }    
 }
 #endif 
@@ -465,10 +484,11 @@ static void binasm(state_t from, uint32_t first, ulv_t minmax)
         }
         jmpop = JMP;
       }
-
-      if (a->tags) addjmp(jmpop, 'A', first + parc);
-      else         addjmp(jmpop, 'S', a->to);        
-
+      if (yrxTagsEmpty(a->tags))
+         addjmp(jmpop, 'S', a->to);
+      else
+         addjmp(jmpop, 'A', first + parc);
+         
       if ((k+1) <= j) {
         stck = ulvPush(stck,k+1);
         stck = ulvPush(stck,j);
@@ -547,7 +567,7 @@ static void asm_build(uint32_t optlvl)
     
     k = 0;
     while ((a = yrxDFAGetArc(from, k++))) {
-      if ((a->lbl != yrxLblLambda) && (a->tags != NULL)) {
+      if ((a->lbl != yrxLblLambda) && !yrxTagsEmpty(a->tags)) {
         addtarget('A',arcn+k-1);
         addtags(a->tags);    
         addjmp(JMP, 'S', a->to);
@@ -609,6 +629,9 @@ static void dmp_cstep(uint32_t step,uint32_t lbl)
     if (opcode == GET) {
       ch = '\0';
       fprintf(yrxFileOut,"ch = yrxGet(ys);");    
+    }
+    else if (opcode == NOP) {
+      fprintf(yrxFileOut,";");    
     }
     else if ((opcode & 0x03) == 0x00) {
       switch (opcode & 0x1F) {
