@@ -63,8 +63,6 @@ static tag_t tag_sel(tag_t a, tag_t b)
   
   if (a > b) { t = a; a = b; b = t; }
   
-  return b;
-  
   if (yrxTagType(a) > TAG_CB(0)) return b; /* max */
   else return a; /* min */
 }
