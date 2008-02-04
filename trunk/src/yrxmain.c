@@ -26,6 +26,7 @@ void usage(void)
 }
 
 #define DO_DOT  0x00000001
+#define DO_NFA  0x00000101
 #define DO_ASM  0x00000002
 #define DO_C    0x00000003
 
@@ -49,7 +50,10 @@ int main(int argc, char **argv)
     if (argv[argn][1] == '-') break;
     
     switch (argv[argn][1]) {
+      case 'N': to_do = DO_NFA; break;
+      
       case 'g': to_do = DO_DOT; break;
+      
       case 'a': to_do = DO_ASM; break;
       case 'C': to_do = DO_C  ; 
                 if (argv[argn][2] == ':' && argv[argn][3] != '\0') {
@@ -57,7 +61,8 @@ int main(int argc, char **argv)
                 }
                 break;
       
-      case 'O': if (argv[argn][2]) optlvl = argv[argn][2] - '0';
+      case 'O': if (argv[argn][2]) 
+                  optlvl = argv[argn][2] - '0';
                 break;
                 
       case 'o': if (argv[argn][2])
@@ -82,8 +87,9 @@ int main(int argc, char **argv)
   if (rxn < 1 || 250 < rxn) usage();
 
   yrxParse(rxs, rxn);
-  yrxDFA();
-  switch (to_do & 0x03) {
+  if (to_do != DO_NFA)
+    yrxDFA(to_do);
+  switch (to_do & 0xFF) {
      case DO_DOT: yrxGraph(0); break;
      case DO_ASM: yrxASM(optlvl);   break;
      case DO_C:   yrxC(optlvl,fn);     break;

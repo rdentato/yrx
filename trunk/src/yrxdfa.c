@@ -432,7 +432,7 @@ static void fixdfa()
   }
 }
 
-void yrxDFA(void)
+void yrxDFA(uint32_t opts)
 {
   state_t st;
   uint32_t k;

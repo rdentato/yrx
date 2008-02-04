@@ -89,7 +89,7 @@ void     yrxDFAClean(void);
 void     yrxDFAInit(void);
 
 void     yrxNFAAddarc(state_t from, state_t to, lbl_t l, tagset_t tags);
-void     yrxDFA();
+void     yrxDFA(uint32_t opts);
 
 arc_t   *yrxDFAFirstArc(state_t st);
 arc_t   *yrxDFANextArc(void);
