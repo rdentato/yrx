@@ -32,10 +32,11 @@ typedef uint32_t tag_t;
 typedef ulv_t    tagset_t;
 
 #define yrxTagNone   0
-#define TAG_CB(n)  ('a'+n)
-#define TAG_CE(n)  ('A'+n)
+#define TAG_CB(n)  ('a'+(n))
+#define TAG_CE(n)  ('A'+(n))
 #define TAG_MRK    (':')
 #define TAG_FIN    ('$')
+#define TAG_XPR    ('#')
 
 #define yrxTag(t,n,d) (((n) << 24) | ((t) << 16) | (d))
 

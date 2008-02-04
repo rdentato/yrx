@@ -62,8 +62,8 @@ static tag_t tag_sel(tag_t a, tag_t b)
   tag_t t;
   
   if (a > b) { t = a; a = b; b = t; }
-  
-  if (yrxTagType(a) > TAG_CB(0)) return b; /* max */
+
+  if (yrxTagType(a) >= TAG_CB(0)) return b; /* max */
   else return a; /* min */
 }
 
@@ -162,6 +162,7 @@ tagset_t yrxTagsIntersection(tagset_t a, tagset_t b)
         }
       } while ( j < ulvCnt(a) && k < ulvCnt(b) && 
                                         tag_cmpExpr(a[j],b[k] == 0));
+                                        
       /* discard other tags of the same expression */
       while (j < ulvCnt(a) && yrxTagExpr(a[j]) == expr)
         j++;
@@ -169,6 +170,7 @@ tagset_t yrxTagsIntersection(tagset_t a, tagset_t b)
         k++;
     }
   }
+  
   while (j < ulvCnt(a))
     c = ulvAdd(c,a[j++]);
   
@@ -181,7 +183,8 @@ tagset_t yrxTagsIntersection(tagset_t a, tagset_t b)
 
 int yrxTagsEmpty(tagset_t a)
 {
-  return (a == NULL || ulvCnt(a) == 0);
+  return (a == NULL || ulvCnt(a) == 0 ||
+          ((ulvCnt(a) == 1) && (yrxTagType(a[0]) == TAG_XPR)) );
 }
 
 tagset_t yrxTagsIncrement(tagset_t a)
