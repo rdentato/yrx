@@ -399,7 +399,7 @@ static void determinize(state_t st,uint32_t opts)
         inv->state = yrxNextState();
         mrgd = vpvSet(mrgd, inv->state, st_mrgd);
         st_mrgd = NULL;
-        dbgmsg("NEW STATE: %u = ",inv->state);
+        dbgmsg("NEW STATE: %3u -> %u = ",st,inv->state);
         for (j = 0; j < vpvCnt(p->arcs); j++) {
           arc = p->arcs[j];
           dbgmsg("%u, ",arc->to);
@@ -417,7 +417,10 @@ static void determinize(state_t st,uint32_t opts)
         }
         dbgmsg("\n");
       }
-      /* else  a.tags = tagsunion(p->arcs); */
+      else {
+         /*a.tags = tagsunion(p->arcs); */
+        dbgmsg("OLD STATE: %3u -> %u \n",st, inv->state);
+      }
   
       a.to = inv->state;
       st_mrgd = usvFree(st_mrgd);

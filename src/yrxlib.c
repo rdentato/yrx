@@ -17,13 +17,12 @@
 
 #include "yrxlib.h"
 
-
 void yrxInit(void)
 {
   yrxLblInit(); 
   yrxDFAInit();
   yrxASMInit();
-  
+
   yrxFileIn  = stdin;
   yrxFileOut = stdout;
 }
@@ -38,3 +37,4 @@ void yrxCleanup(void)
   if (yrxFileOut && yrxFileOut != stdout)
     fclose(yrxFileOut);
 }
+

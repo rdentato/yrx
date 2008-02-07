@@ -62,9 +62,11 @@ static tag_t tag_sel(tag_t a, tag_t b)
   tag_t t;
   
   if (a > b) { t = a; a = b; b = t; }
-
+  return b;
+  #if 0
   if (yrxTagType(a) >= TAG_CB(0)) return b; /* max */
   else return a; /* min */
+  #endif
 }
 
 #define tag_cmpExprType(a,b) ((int)((a) >> 16) - (int)((b) >> 16))
