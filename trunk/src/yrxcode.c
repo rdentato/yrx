@@ -25,10 +25,12 @@
 
 #define NRX 0x21  /* 00 1000 01  Number of Regular eXpressions */
 #define CMP 0x25  /* 00 1001 01  Compare                       */
-#define DIM 0x29  /* 00 1010 01                                */
-#define NCP 0x2D  /* 00 1011 01  Number of Captures            */
-#define GET 0x31  /* 00 1100 01  GET next input char           */
-#define NOP 0x35  /* 00 1101 01  No OPeration                  */
+#define NCP 0x29  /* 00 1010 01  Number of Captures            */
+#define GET 0x2D  /* 00 1011 01  GET next input char           */
+#define NOP 0x31  /* 00 1100 01  No OPeration                  */
+#define DEC 0x35  /* 00 1101 01  DECrement D                   */
+#define INC 0x39  /* 00 1110 01  INCrement D                   */
+#define ZRO 0x3D  /* 00 1111 01  set D to ZeRO                 */
 
 #define RET 0x04  /* 00 0001 00  RETurn                        */
 #define REQ 0x08  /* 00 0010 00  Return on EQual               */
@@ -76,10 +78,12 @@ void yrxASMInit(void)
   opstr(MRK);
   opstr(CMP);
   opstr(GET);
-  opstr(DIM);
   opstr(NCP);
   opstr(NRX);
   opstr(NOP);
+  opstr(DEC);
+  opstr(INC);
+  opstr(ZRO);
   opstr(REQ);
   opstr(RGE);
   opstr(RGT);
@@ -269,6 +273,9 @@ static void addtags(tagset_t ts)
         else if (op == TAG_FIN) {
           match = yrxTagExpr(ts[k]);
           op=MTC;
+        }
+        else if (op == TAG_INC) {
+          op=INC;
         }
         else {
           capnum = op & 0x1F;
@@ -539,6 +546,7 @@ static void asm_build(uint32_t optlvl)
     if (a == NULL) err(978,"Unexpected state!");
     
     if (a->lbl == yrxLblLambda) {
+      addop(DEC,0);
       addtags(a->tags);
       a = yrxDFAGetArc(from, ++k);
     }
@@ -628,10 +636,19 @@ static void dmp_cstep(uint32_t step,uint32_t lbl)
     dumplbl(lbl);
     if (opcode == GET) {
       ch = '\0';
-      fprintf(yrxFileOut,"ch = yrxGet(ys);");    
+      fprintf(yrxFileOut,"ch = yrxGet(ys); ypos = yrxPos(ys);");          
     }
     else if (opcode == NOP) {
       fprintf(yrxFileOut,";");    
+    }
+    else if (opcode == INC) {
+      fprintf(yrxFileOut,"delta++;");    
+    }
+    else if (opcode == DEC) {
+      fprintf(yrxFileOut,"if (delta >0) delta--;");    
+    }
+    else if (opcode == ZRO) {
+      fprintf(yrxFileOut,"delta = 0;");    
     }
     else if ((opcode & 0x03) == 0x00) {
       switch (opcode & 0x1F) {
@@ -662,10 +679,10 @@ static void dmp_cstep(uint32_t step,uint32_t lbl)
         fprintf(yrxFileOut,"        ");
       }
       
-      fprintf(yrxFileOut,"tags[%u] = yrxPos(ys)", 
+      fprintf(yrxFileOut,"tags[%u] = ypos - delta ", 
                      ncp[(arg & 0xFF) - 1] + 2 * capnum + (opcode & 0x01));
       if ((arg >> 8) > 0)
-        fprintf(yrxFileOut,"-%u", arg >>8);    
+        fprintf(yrxFileOut,"- %u", arg >>8);    
       fprintf(yrxFileOut,";");
     }
     fprintf(yrxFileOut,"\n");    
@@ -684,6 +701,7 @@ static void c_dump(char *fn)
   fprintf(yrxFileOut,"yrxResult *%s(yrxStream ys) {\n",fn);
 
   fprintf(yrxFileOut,"        register int ch;\n");
+  fprintf(yrxFileOut,"        unsigned long delta = 1;\n");
   fprintf(yrxFileOut,"        unsigned char nrx = %u;\n", yrxNRX);
   fprintf(yrxFileOut,"        unsigned char ncp[%u] = { 0", yrxNRX+1);
   
@@ -696,6 +714,7 @@ static void c_dump(char *fn)
   fprintf(yrxFileOut,"        static yrxResult res;\n");
   fprintf(yrxFileOut,"        static yrxPosType tags[%u];\n", ncp[yrxNRX]);
   fprintf(yrxFileOut,"        yrxPosType start = yrxPos(ys);\n");
+  fprintf(yrxFileOut,"        yrxPosType ypos;\n");
   
   fprintf(yrxFileOut,"        unsigned char match = 0;\n\n");
   
