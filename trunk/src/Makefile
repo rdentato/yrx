@@ -33,7 +33,6 @@ yrx$(_EXE): libyrxlib.a yrxmain.$(_OBJ)
 
 libyrxlib.a: $(OFILES) vec.$(_OBJ) 
 	$(AR) libyrxlib.a $(OFILES) vec.$(_OBJ) 
-	
 
 vec.$(_OBJ): vec.c vec.h
 	gcc $(CFLAGS) $(LOG2_ASM) -c -o vec.$(_OBJ) vec.c
