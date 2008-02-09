@@ -52,6 +52,20 @@ tagset_t yrxTagset(tag_t tag)
   return ts;
 }
 
+tagset_t yrxTagAdd(tagset_t ts, tag_t tag)
+{
+  uint16_t k;
+  
+  if (tag == yrxTagNone) return ts;
+  ts = ulvAdd(ts,tag);
+  
+  k = ulvCnt(ts);
+  
+  
+  return ts;
+}
+
+
 tagset_t yrxTagsFree(tagset_t a)
 {
   return ulvFree(a);
