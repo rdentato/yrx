@@ -37,6 +37,8 @@ typedef ulv_t    tagset_t;
 #define TAG_MRK    (':')
 #define TAG_FIN    ('$')
 #define TAG_XPR    ('#')
+#define TAG_INC    ('+')
+#define TAG_DEC    ('-')
 
 #define yrxTag(t,n,d) (((n) << 24) | ((t) << 16) | (d))
 
