@@ -112,7 +112,7 @@ state_t yrxMaxState(void);
 
 /*****************************/
 
-void yrxGraph(uint8_t fmt);
+void yrxGraph(FILE *f, uint8_t fmt);
 
 /*****************************/
 void yrxASMClean(void);

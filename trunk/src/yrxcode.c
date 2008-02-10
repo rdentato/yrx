@@ -546,7 +546,6 @@ static void asm_build(uint32_t optlvl)
     if (a == NULL) err(978,"Unexpected state!");
     
     if (a->lbl == yrxLblLambda) {
-      addop(DEC,0);
       addtags(a->tags);
       a = yrxDFAGetArc(from, ++k);
     }
@@ -679,7 +678,7 @@ static void dmp_cstep(uint32_t step,uint32_t lbl)
         fprintf(yrxFileOut,"        ");
       }
       
-      fprintf(yrxFileOut,"tags[%u] = ypos - delta ", 
+      fprintf(yrxFileOut,"tags[%u] = ypos", 
                      ncp[(arg & 0xFF) - 1] + 2 * capnum + (opcode & 0x01));
       if ((arg >> 8) > 0)
         fprintf(yrxFileOut,"- %u", arg >>8);    
@@ -701,7 +700,7 @@ static void c_dump(char *fn)
   fprintf(yrxFileOut,"yrxResult *%s(yrxStream ys) {\n",fn);
 
   fprintf(yrxFileOut,"        register int ch;\n");
-  fprintf(yrxFileOut,"        unsigned long delta = 1;\n");
+  fprintf(yrxFileOut,"        unsigned long delta = 0;\n");
   fprintf(yrxFileOut,"        unsigned char nrx = %u;\n", yrxNRX);
   fprintf(yrxFileOut,"        unsigned char ncp[%u] = { 0", yrxNRX+1);
   

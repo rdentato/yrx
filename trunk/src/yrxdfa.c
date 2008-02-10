@@ -393,9 +393,11 @@ static void determinize(state_t st,uint32_t opts)
       invnew.list = st_mrgd;
       invnew.state   = 0;
       inv = mapGetOrAdd(invmrgd,&invnew);
-    
-      a.tags = tagsintersection(p->arcs);   
+      
+      a.tags =  NULL;
+          
       if (inv->state == 0) { /* A state to be added! */
+        a.tags = tagsintersection(p->arcs);
         inv->state = yrxNextState();
         mrgd = vpvSet(mrgd, inv->state, st_mrgd);
         st_mrgd = NULL;
@@ -403,25 +405,32 @@ static void determinize(state_t st,uint32_t opts)
         for (j = 0; j < vpvCnt(p->arcs); j++) {
           arc = p->arcs[j];
           dbgmsg("%u, ",arc->to);
-          #if 1
           yrxNFAAddarc(inv->state, arc->to,
                        yrxLblEpsilon,
                        yrxTagsIncrement(
                           yrxTagsDifference(
                             yrxTagsDup(arc->tags), a.tags)));
-          #else
-          yrxNFAAddarc(inv->state, arc->to,
-                       yrxLblEpsilon,
-                       yrxTagsIncrement(yrxTagsDup(arc->tags)));
-          #endif
         }
         dbgmsg("\n");
       }
+      else if (inv->state == st) {
+        a.tags = tagsintersection(p->arcs);
+        inv->state = yrxNextState();
+        mrgd = vpvSet(mrgd, inv->state, st_mrgd);
+        st_mrgd = NULL;
+        dbgmsg("LOOP STATE: %3u -> %u  \n",st,inv->state);
+        
+        yrxNFAAddarc(inv->state, st,
+                     yrxLblEpsilon,
+                         yrxTagsIncrement(
+                             yrxTagsDifference(tagsunion(p->arcs),
+                                               a.tags)));
+      } 
       else {
-         /*a.tags = tagsunion(p->arcs); */
+        a.tags = tagsintersection(p->arcs);
         dbgmsg("OLD STATE: %3u -> %u \n",st, inv->state);
       }
-  
+      
       a.to = inv->state;
       st_mrgd = usvFree(st_mrgd);
     }
@@ -451,13 +460,26 @@ static void fixdfa()
   }
 }
 
+static void stepgraph(uint32_t n)
+{
+  char step_fname[16];
+  FILE *f = NULL;
+  
+  sprintf(step_fname,"x_%05d.dot",n);
+  f = fopen(step_fname,"w");
+  if (f == NULL) err(771,"Can't open file");
+  yrxGraph(f,0);
+  fclose(f);  
+}
+
 void yrxDFA(uint32_t opts)
 {
   state_t st;
   uint32_t k;
+  int step = -1;
   
   dbgmsg ("DFA opt:%u\n",opts);    
- 
+   
   if (opts == 0) return;
   
   if (mrgd == NULL) mrgd = vpvNew();
@@ -472,12 +494,19 @@ void yrxDFA(uint32_t opts)
   if (invmrgd == NULL) invmrgd = mapNew(sizeof(invmrgd_t),
                                                  (mapCmp_t)invmrgd_cmp);
   if (invmrgd == NULL) err(715,yrxStrNoMem);
-  
+ 
+  if (opts == 5) {
+    step = 0;
+    stepgraph(step++);
+    opts = 2;
+  }
+   
   resetstack();
   pushonce(1);
  
   while ((st = pop()) != 0) {
     determinize(st,opts);
+    if (step > 0) stepgraph(step++);
   } 
   
   /* cleanup unreachable states      */
@@ -485,6 +514,7 @@ void yrxDFA(uint32_t opts)
   /* renumber states (TODO)          */
   /* compute equivalent states (TODO)*/
   fixdfa();
+  if (step > 0) stepgraph(step++);
   
   if (mrgd != NULL) {
     for (k=0; k < vpvCnt(mrgd); k++) {
