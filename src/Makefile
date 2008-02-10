@@ -42,7 +42,7 @@ vt$(_EXE):	vt.$(_OBJ) vec.$(_OBJ)
 
 clean:
 	rm -f yrx$(_EXE) vt$(_EXE)
-	rm -f x.*
+	rm -f x*.*
 	rm -f *.$(_OBJ)
 	rm -f libyrxlib.a
 	
