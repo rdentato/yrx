@@ -16,3 +16,4 @@ make
 rm -rf x_*.*
 yrx -O5 $*
 dot -Tpng -O x_*.dot
+rm -rf x_*.dot

@@ -121,6 +121,21 @@ void yrxASMInit(void);
 void yrxASM(uint32_t optimize);
 
 void yrxC(uint32_t optimize, char *fn);
+/*****************************/
+
+typedef struct {
+  usv_t stack;
+  bit_t pushed;
+} yrxStack;
+
+yrxStack *yrxStkNew();
+yrxStack *yrxStkFree();
+
+unsigned short yrxStkPop(yrxStack *ys);
+yrxStack *yrxStkPushOnce(yrxStack *ys,state_t st);
+yrxStack *yrxStkReset(yrxStack *ys);
+int yrxStkPushed(yrxStack *ys,state_t val);
+
 
 /*****************************/
 

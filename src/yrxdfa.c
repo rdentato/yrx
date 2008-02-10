@@ -22,72 +22,15 @@ static map_t invmrgd = NULL;
 static vec_t tomerge = NULL;
 static usv_t marked  = NULL;
 
+static yrxStack *ys = NULL;
+static yrxStack *yn = NULL;
+
+#define pushonce(s,x)    (s = yrxStkPushOnce(s,x))
+#define resetstack(s)    (s = yrxStkReset(s))
+#define pop(s)            yrxStkPop(s)
+#define pushed(s,x)       yrxStkPushed(s,x)
+
 /*****/
-
-
-/**************************************************/
-
-/* == A special flavour of stack
-**  This function implements a stack of integers where values
-** can be pushed only once.
-**  For example in the code:
-** {{
-**    push(4);
-**    ...
-**    push(4);
-** }}
-** the value 4 will be pushed only the first time.
-**  Values must be strictly positive as pushing 0 has the effect
-** of resetting the stack.
-*/
-
-static state_t stkonce(state_t val,char op)
-{
-  static usv_t stack  = NULL;
-  static bit_t pushed = NULL;
-
-  if (val == 0) op = 'Z';
-
-  switch (op) {
-    case 'Z' : stack  = usvFree(stack);
-               pushed = bitFree(pushed);
-               val = 0;
-               break;
-
-    case 'O' : val = usvPop(stack);
-               break;
-
-    case 'C' : return (0 != bitTest(pushed,val));
-
-    case 'H' : if (stack == NULL) {
-                 stack  = usvNew();
-                 pushed = bitNew();
-               }
-               if (!bitTest(pushed,val)) {
-                 stack  = usvPush(stack,val);
-                 pushed = bitSet(pushed,val);
-               }
-               break;
-  }
-
-  return val;
-}
-
-/* {{ Macros to manage the stack */
-
-/*    Reset the stack */
-#define resetstack() stkonce(0,'Z')
-
-/*    Push a value (only once!) */
-#define pushonce(v)  stkonce(v,'H')
-
-/*    Pop the element on the stack (0 if it's empty) */
-#define pop()        stkonce(1,'O')
-
-/*    Check if a value has been ever pushed in the stack */
-#define pushed(v)    stkonce(v,'C')
-
-/* }} */
 
 /**************/
 
@@ -111,7 +54,7 @@ static arc_t *nextArc(state_t st)
     return NULL;
   
   a = vecGet(FA[curst],curarcn++);
-  if (a->to != 0) pushonce(a->to);
+  if (a->to != 0) pushonce(yn,a->to);
   return a;
 }
 
@@ -127,7 +70,7 @@ arc_t *yrxDFAGetArc(state_t st, uint16_t arcn)
 
   if (arcn >= yrxDFACntArcs(st)) return NULL;
   arc = vecGet(FA[st],arcn);
-  if (arc->to != 0) pushonce(arc->to);
+  if (arc->to != 0) pushonce(yn,arc->to);
   
   return  arc; 
 }
@@ -146,10 +89,10 @@ arc_t *yrxDFAFirstArc(state_t st)
 state_t yrxDFANextState(state_t st)
 {
   if (st == 0) {
-    resetstack();
-    pushonce(1);
+    resetstack(yn);
+    pushonce(yn,1);
   }
-  st = pop();
+  st = pop(yn);
   nextArc(st); 
   return st;
 }
@@ -435,7 +378,7 @@ static void determinize(state_t st,uint32_t opts)
       st_mrgd = usvFree(st_mrgd);
     }
     vecAdd(newarcs,&a); 
-    pushonce(a.to);
+    pushonce(ys,a.to);
   }
   arclist = vecFree(arclist);
   FA[st] = newarcs;
@@ -448,7 +391,7 @@ static void fixdfa()
   state_t st;
 
   for (st = 1; st < vpvCnt(FA); st++) {
-    if (!pushed(st)) { 
+    if (!pushed(ys,st)) { 
       FA[st] = vecFree(FA[st]);
     }
     else if (FA[st]!= NULL) {
@@ -478,8 +421,6 @@ void yrxDFA(uint32_t opts)
   uint32_t k;
   int step = -1;
   
-  dbgmsg ("DFA opt:%u\n",opts);    
-   
   if (opts == 0) return;
   
   if (mrgd == NULL) mrgd = vpvNew();
@@ -500,11 +441,13 @@ void yrxDFA(uint32_t opts)
     stepgraph(step++);
     opts = 2;
   }
+  
+  dbgmsg ("DFA opt:%u\n",opts);    
    
-  resetstack();
-  pushonce(1);
+  resetstack(ys);
+  pushonce(ys,1);
  
-  while ((st = pop()) != 0) {
+  while ((st = pop(ys)) != 0) {
     determinize(st,opts);
     if (step > 0) stepgraph(step++);
   } 
@@ -527,7 +470,7 @@ void yrxDFA(uint32_t opts)
   tomerge = vecFreeClean(tomerge, (vecCleaner)l2a_clean);
   invmrgd = mapFree(invmrgd);
   
-  resetstack();
+  ys = yrxStkFree(ys);
 }
 
 
@@ -565,8 +508,9 @@ void yrxDFAClean(void)
     }
     FA = vpvFree(FA);
   }
-  resetstack();
   yrxNCP = ucvFree(yrxNCP);
+  ys = yrxStkFree(yn);
+  yn = yrxStkFree(ys);
 }
 
 void yrxDFAInit(void)
