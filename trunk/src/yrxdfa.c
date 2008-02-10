@@ -357,6 +357,7 @@ static void determinize(state_t st,uint32_t opts)
         dbgmsg("\n");
       }
       else if (inv->state == st) {
+        #if 0
         a.tags = tagsintersection(p->arcs);
         inv->state = yrxNextState();
         mrgd = vpvSet(mrgd, inv->state, st_mrgd);
@@ -368,6 +369,18 @@ static void determinize(state_t st,uint32_t opts)
                          yrxTagsIncrement(
                              yrxTagsDifference(tagsunion(p->arcs),
                                                a.tags)));
+        #else
+        a.tags = tagsunion(p->arcs);
+        inv->state = yrxNextState();
+        mrgd = vpvSet(mrgd, inv->state, st_mrgd);
+        st_mrgd = NULL;
+        dbgmsg("LOOP STATE: %3u -> %u  \n",st,inv->state);
+        
+        yrxNFAAddarc(inv->state, st,
+                     yrxLblEpsilon,
+                     yrxTagNone );
+        
+        #endif
       } 
       else {
         a.tags = tagsintersection(p->arcs);
