@@ -21,7 +21,6 @@ LDFLAGS = -L ../utils/lua -L.
 #LIBS   = -llua -lm
 
 OFILES = yrxparse.$(_OBJ)\
-         yrxlabel.$(_OBJ)\
          yrxtags.$(_OBJ)\
          yrxdfa.$(_OBJ) \
          yrxgraph.$(_OBJ)\
