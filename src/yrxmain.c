@@ -22,6 +22,10 @@ void usage(void)
 	fprintf(stderr,"       [-g[x]]    generate DOT graph (default)\n ");
 	fprintf(stderr,"       -o fname   set output file\n ");
 	fprintf(stderr,"       -Ox        set optimization level\n ");
+	fprintf(stderr,"                  0 stop after parsing\n ");
+	fprintf(stderr,"                  1 only remove epsilon transitions\n ");
+	fprintf(stderr,"                  2 full optimization\n ");
+	fprintf(stderr,"                  5 create a dot file at each step\n ");
   exit(1);
 }
 

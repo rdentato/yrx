@@ -356,8 +356,8 @@ static void determinize(state_t st,uint32_t opts)
         }
         dbgmsg("\n");
       }
-      else if (inv->state == st) {
-        #if 0
+      else if (0 && inv->state == st) {
+        #if 1
         a.tags = tagsintersection(p->arcs);
         inv->state = yrxNextState();
         mrgd = vpvSet(mrgd, inv->state, st_mrgd);
@@ -432,7 +432,7 @@ void yrxDFA(uint32_t opts)
 {
   state_t st;
   uint32_t k;
-  int step = -1;
+  uint32_t step = 0;
   
   if (opts == 0) return;
   
@@ -450,7 +450,6 @@ void yrxDFA(uint32_t opts)
   if (invmrgd == NULL) err(715,yrxStrNoMem);
  
   if (opts == 5) {
-    step = 0;
     stepgraph(step++);
     opts = 2;
   }
@@ -461,8 +460,15 @@ void yrxDFA(uint32_t opts)
   pushonce(ys,1);
  
   while ((st = pop(ys)) != 0) {
+    if (step > 0) {
+      determinize(st,1);
+      stepgraph(step++);
+    }
     determinize(st,opts);
-    if (step > 0) stepgraph(step++);
+    if (step > 0) {
+      stepgraph(step++);
+    }
+    
   } 
   
   /* cleanup unreachable states      */
