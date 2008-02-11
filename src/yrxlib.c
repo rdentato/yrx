@@ -38,3 +38,77 @@ void yrxCleanup(void)
     fclose(yrxFileOut);
 }
 
+/**************************************************/
+
+/* == A special flavour of stack
+**  This function implements a stack of integers where values
+** can be pushed only once.
+**  For example in the code:
+** {{
+**    push(4);
+**    ...
+**    push(4);
+** }}
+** the value 4 will be pushed only the first time.
+**  Values must be strictly positive as pushing 0 has the effect
+** of resetting the stack.
+*/
+
+yrxStack *yrxStkNew()
+{
+  yrxStack *ys;
+  
+  ys = malloc(sizeof(yrxStack));
+  if (ys == NULL) err(349,yrxStrNoMem);
+  
+  ys->stack  = usvNew();
+  ys->pushed = bitNew();
+  
+  return ys;
+}
+
+
+yrxStack *yrxStkFree( yrxStack *ys)
+{
+  if (ys) {
+    ys->stack  = usvFree(ys->stack);
+    ys->pushed = bitFree(ys->pushed);
+    free(ys);
+  }
+  return NULL; 
+}
+
+yrxStack *yrxStkReset(yrxStack *ys)
+{
+  if (ys != NULL) {
+    ys->stack  = usvFree(ys->stack);
+    ys->pushed = bitFree(ys->pushed);
+  }
+  return ys; 
+}
+
+state_t yrxStkPop(yrxStack *ys)
+{
+  if (ys == NULL) return 0;
+  return usvPop(ys->stack);
+}
+
+yrxStack *yrxStkPushOnce(yrxStack *ys,state_t val)
+{
+  if (ys == NULL) ys = yrxStkNew();
+  if (!bitTest(ys->pushed,val)) {
+    ys->stack  = usvPush(ys->stack,val);
+    ys->pushed = bitSet(ys->pushed,val);
+  }
+  
+  return ys;  
+}
+
+
+int yrxStkPushed(yrxStack *ys,state_t val)
+{
+  if (ys == NULL) return 1;
+  return (0 != bitTest(ys->pushed,val)); 
+}
+
+
