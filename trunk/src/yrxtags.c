@@ -77,10 +77,6 @@ static tag_t tag_sel(tag_t a, tag_t b)
   
   if (a > b) { t = a; a = b; b = t; }
   return a;
-  #if 0
-  if (yrxTagType(a) >= TAG_CB(0)) return b; /* max */
-  else return a; /* min */
-  #endif
 }
 
 #define tag_cmpExprType(a,b) ((int)((a) >> 16) - (int)((b) >> 16))
@@ -227,4 +223,12 @@ tagset_t yrxTagsDecrement(tagset_t a)
     }
   }
   return a;
+}
+
+int yrxTagsSelect(tagset_t a, tagset_t b)
+{
+  uint32_t k,j;
+   
+  
+  
 }
