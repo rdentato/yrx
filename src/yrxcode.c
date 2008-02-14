@@ -165,8 +165,8 @@ static void dmp_asmstep(uint32_t step)
     else {
       char c = 'X';
       switch (opcode) {
-        case CPB : c ='('; break;
-        case CPE : c =')'; break;
+        case CPB : c ='B'; break;
+        case CPE : c ='E'; break;
       }
       fprintf(yrxFileOut,"%c%02u %u",c,capnum,arg & 0xFF);
     }
@@ -263,6 +263,7 @@ static void addtags(tagset_t ts)
     for (k=0; k < ulvCnt(ts); k++) {
       if (match == 0 || match == yrxTagExpr(ts[k])) {
         op = yrxTagType(ts[k]);
+        _dbgmsg("OP: 0x%02X\n",op);
         arg = (yrxTagDelta(ts[k]) << 8) | yrxTagExpr(ts[k]);
         if (op == TAG_MRK) 
           op=MRK;
@@ -278,8 +279,8 @@ static void addtags(tagset_t ts)
           op=INC;
         }
         else {
-          capnum = op & 0x1F;
-          if (op >= 'a')
+          capnum = (op & 0x3F) >> 1;
+          if ((op & 0x01) == 0)
             op = CPB;
           else
             op = CPE;

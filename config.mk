@@ -13,7 +13,7 @@
 # This makefile is for GNU tool chain it has been tested under
 # Windows (Mingw/Msys) and Linux (Slackware 11 & Xubuntu 7.10)
 
-# $Id$
+# $Id:$
 
 # Modify this file according your system before building yrx
 
