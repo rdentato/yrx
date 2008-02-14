@@ -19,19 +19,29 @@ uint8_t *yrxTagsStr(tagset_t a)
   uint8_t *s;
   char *p;
   uint16_t k=0;
+  char buf[16];
   
   s = yrxBufChk(512);
  
   p = (char *)s;
   if (a != NULL) {
     for (k=0; k < ulvCnt(a); k++) {
-      sprintf(p,"%c%X ", yrxTagType(a[k]), yrxTagExpr(a[k]));
+      if (yrxTagType(a[k]) >= TAG_CB(0)) {
+        sprintf(buf,"(%X,",(yrxTagType(a[k]) & 0x3F)>> 1);
+        buf[0] += yrxTagType(a[k])  & 1;
+      }
+      else {
+        buf[0] = yrxTagType(a[k]);
+        buf[1] = '\0';
+      }
+      sprintf(p,"[%s%X", buf, yrxTagExpr(a[k]));
       while (*p) p++;
       
       if (yrxTagDelta(a[k]) > 0) {
-        sprintf(p-1,"_%X ", yrxTagDelta(a[k]));
+        sprintf(p,",%X", yrxTagDelta(a[k]));
         while (*p) p++;
       }
+      *p++ = ']';
     }
   }
   
@@ -225,10 +235,3 @@ tagset_t yrxTagsDecrement(tagset_t a)
   return a;
 }
 
-int yrxTagsSelect(tagset_t a, tagset_t b)
-{
-  uint32_t k,j;
-   
-  
-  
-}

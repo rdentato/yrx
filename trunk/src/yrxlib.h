@@ -32,8 +32,10 @@ typedef uint32_t tag_t;
 typedef ulv_t    tagset_t;
 
 #define yrxTagNone   0
-#define TAG_CB(n)  ('A'+(n))
-#define TAG_CE(n)  ('a'+(n))
+
+#define TAG_CB(n)  (((((n)+1) & 0x1F)<<1) | 0x40)
+#define TAG_CE(n)  (TAG_CB(n)+1)
+
 #define TAG_MRK    (':')
 #define TAG_FIN    ('$')
 #define TAG_XPR    ('#')
@@ -46,7 +48,7 @@ typedef ulv_t    tagset_t;
 #define yrxTagType(t) (((t) >> 16) & 0x00FF)
 #define yrxTagExpr(t)  ((t) >> 24)
 
-tagset_t yrxTagset           (tag_t tag);
+tagset_t yrxTagset           (tag_t    tag);
 tagset_t yrxTagsFree         (tagset_t a);
 tagset_t yrxTagsUnion        (tagset_t a, tagset_t b);
 tagset_t yrxTagsIntersection (tagset_t a, tagset_t b);
@@ -105,6 +107,7 @@ state_t  yrxDFANextState(state_t st);
 #define  yrxDFAStartState() yrxDFANextState(0);
 
 /*****************************/
+
 void yrxParse(char **rxs, int rxn);
 void yrxParseErr(int errn, char *errmsg);
 state_t yrxNextState(void);
@@ -115,12 +118,12 @@ state_t yrxMaxState(void);
 void yrxGraph(FILE *f, uint8_t fmt);
 
 /*****************************/
+
 void yrxASMClean(void);
 void yrxASMInit(void);
-
 void yrxASM(uint32_t optimize);
-
 void yrxC(uint32_t optimize, char *fn);
+
 /*****************************/
 
 typedef struct {
@@ -136,12 +139,11 @@ yrxStack *yrxStkPushOnce(yrxStack *ys,state_t st);
 yrxStack *yrxStkReset(yrxStack *ys);
 int yrxStkPushed(yrxStack *ys,state_t val);
 
-
 /*****************************/
 
 EXTERN(char *, yrxStrNoMem, = "Out of memory");
 
-/**************************************************/
+/*****************************/
 #define YRX_BUF_MAX 512
 
 EXTERN(uint8_t, yrxBuf[YRX_BUF_MAX], );
@@ -150,6 +152,7 @@ EXTERN(uint8_t, yrxBuf[YRX_BUF_MAX], );
                                        : (err(617,yrxStrNoMem), NULL))
 
 /*****************************/
+
 EXTERN(FILE *, yrxFileIn, );
 EXTERN(FILE *, yrxFileOut, );
 
@@ -160,6 +163,5 @@ EXTERN(ucv_t, yrxNCP, = NULL);
 
 void yrxInit(void);
 void yrxCleanup(void);
-
 
 #endif /* YRXLIB_H */
