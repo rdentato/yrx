@@ -210,6 +210,17 @@ static tagset_t tagsintersection(vpv_t arcs)
   return ts;
 }
 
+
+static tagset_t tagsselect(vpv_t arcs)
+{
+  tagset_t ts = NULL;
+  uint32_t k,j;
+  arc_t *arc;
+ 
+  
+  return ts;
+}
+
 /****/
 
 static void copyarcs(vec_t arcs, state_t st, tagset_t tags)
