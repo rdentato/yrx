@@ -26,12 +26,12 @@ uint8_t *yrxTagsStr(tagset_t a)
   p = (char *)s;
   if (a != NULL) {
     for (k=0; k < ulvCnt(a); k++) {
-      if (yrxTagType(a[k]) >= TAG_CB(0)) {
+      if ((yrxTagType(a[k]) & 0x7F) >= TAG_CB(0)) {
         sprintf(buf,"(%X,",(yrxTagType(a[k]) & 0x3F)>> 1);
         buf[0] += yrxTagType(a[k])  & 1;
       }
       else {
-        buf[0] = yrxTagType(a[k]);
+        buf[0] = yrxTagType(a[k]) & 0x7F;
         buf[1] = '\0';
       }
       sprintf(p,"[%s%X", buf, yrxTagExpr(a[k]));
@@ -155,7 +155,7 @@ tagset_t yrxTagsIntersection(tagset_t a, tagset_t b)
   uint32_t j=0,k=0;
   tagset_t c=NULL;
   int cmp;
-  int expr;
+  uint8_t expr;
   
   if (a == b || b == NULL)
     return a;
@@ -183,7 +183,7 @@ tagset_t yrxTagsIntersection(tagset_t a, tagset_t b)
           k++; j++;      
         }
       } while ( j < ulvCnt(a) && k < ulvCnt(b) && 
-                                        tag_cmpExpr(a[j],b[k] == 0));
+                                        tag_cmpExpr(a[j],b[k]) == 0);
                                         
       /* discard other tags of the same expression */
       while (j < ulvCnt(a) && yrxTagExpr(a[j]) == expr)
@@ -233,5 +233,85 @@ tagset_t yrxTagsDecrement(tagset_t a)
     }
   }
   return a;
+}
+
+tagset_t yrxTagsSelect(tagset_t a, tagset_t b)
+{
+  tagset_t c = NULL;
+  uint32_t j=0,k=0;
+  int cmp;
+  uint8_t expr;
+  
+  
+  while (j < ulvCnt(a)  && k < ulvCnt(b)) {
+    expr = yrxTagExpr(a[j]);
+    cmp = tag_cmpExpr(a[j], b[k]);
+    
+    if (cmp == 0) {
+      /* same expression */
+      uint32_t jj,kk;
+      
+      jj = j;
+      
+      /* Skip not capturing tags in a */
+      while (jj < ulvCnt(a) &&
+             yrxTagType(a[jj]) < TAG_CB(0) &&
+             yrxTagExpr(a[jj]) == expr) {
+        jj++;
+      }
+        
+      if (jj >= ulvCnt(a) || yrxTagExpr(a[jj]) != expr) {
+        /* No capturing tags in a */
+        j = jj;
+        cmp = 1;
+        break;
+      }
+        
+      kk = k;
+      
+      /* Skip not capturing tags in b */
+      while (kk < ulvCnt(b) &&
+             yrxTagType(b[kk]) < TAG_CB(0) &&
+             yrxTagExpr(b[kk]) == expr) {
+        kk++;
+      }
+        
+      if (kk >= ulvCnt(b) || yrxTagExpr(b[kk]) != expr) {
+        /* No capturing tags in b */
+        k = kk;
+        cmp = -1;
+        break;
+      }
+       
+      /* select the "minimizing set" */ 
+      while (jj < ulvCnt(a) && yrxTagExpr(a[jj]) == expr &&
+             kk < ulvCnt(b) && yrxTagExpr(b[kk]) == expr &&
+             cmp == 0) {
+        cmp = yrxTagType(a[jj]) - yrxTagType(b[kk]);
+      }
+    }
+
+    
+    if (cmp < 0) {
+      /*b has no tag for the current expr, copy all tags from a */
+      do {
+        c = ulvAdd(c,a[j++]);
+      } while (j < ulvCnt(a) && yrxTagExpr(a[j]) == expr);
+    }
+    else if (cmp > 0) {
+      /*a has no tag for the current expr, copy all tags from b*/
+      do {
+        c = ulvAdd(c,b[k++]);
+      } while (k < ulvCnt(b) && yrxTagExpr(b[k]) == expr);
+    }
+  }
+  
+  while (j < ulvCnt(a))
+    c = ulvAdd(c,a[j++]);
+  
+  while (k < ulvCnt(b))
+    c = ulvAdd(c,b[k++]);
+
+  return c;
 }
 

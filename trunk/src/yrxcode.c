@@ -275,9 +275,6 @@ static void addtags(tagset_t ts)
           match = yrxTagExpr(ts[k]);
           op=MTC;
         }
-        else if (op == TAG_INC) {
-          op=INC;
-        }
         else {
           capnum = (op & 0x3F) >> 1;
           if ((op & 0x01) == 0)
