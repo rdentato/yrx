@@ -115,7 +115,7 @@ static char* escaped(void)
 
   c = peekch(0);
 
-  if ( c < 0 || c == '*' || c == '+' || c == '?' || c == '-' ||
+  if ( c < 0    || c == '*' || c == '+' || c == '?' || c == '-' ||
        c == '(' || c == ')' || c == ']' || c == '[' || c == '|') {
     return NULL;
   }
@@ -161,7 +161,7 @@ static char *cclass(void)
     c = nextch();
     while (c != ']') {
       c = nextch();
-      if (c == '\\') c = (nextch(), 0);
+      if (c == '\\') c = (nextch(), 0); /* c is set to 0 to skip \] */
       if (c < 0) yrxParseErr(504,"Unterminated class");
     }
     l = str_set(j, cur_pos);
@@ -183,7 +183,10 @@ static state_t term(state_t state)
 
   c = peekch(0);
 
-  if ( c < 0) return 0;
+  if ( c < 0) {
+    yrxNFAAddarc(state, 0, yrxLblLambda, yrxTagset(yrxTag(TAG_FIN, cur_nrx,1)));
+    return 0;
+  }
 
   if ( c == '(') {
     c = nextch();
@@ -334,8 +337,6 @@ static state_t parse(const char *rx,uint16_t nrx)
   state =  expr(1);
 
   if (peekch(0) != -1) yrxParseErr(508,"Unexpected character ");
-
-  yrxNFAAddarc(state, 0, yrxLblLambda, yrxTagset(yrxTag(TAG_FIN, cur_nrx,1)));
 
   yrxNCP = ucvSet(yrxNCP,nrx,capt+1);
 
