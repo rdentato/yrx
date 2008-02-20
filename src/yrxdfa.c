@@ -235,7 +235,7 @@ static void copyarcs(vec_t arcs, state_t st, tagset_t tags)
   while (k < vecCnt(arcsf)) {
     b = vecGet(arcsf,k++);
     a = vecAdd(arcs,b);
-    a->tags = yrxTagsUnion(ulvDup(b->tags), tags);
+    a->tags = yrxTagsUnion(yrxTagsDup(b->tags), tags);
   }
 }
 
@@ -295,12 +295,13 @@ static void determinize(state_t st,uint32_t opts)
   /* Compute which arcs need to be merged */
   while (k < vecCnt(arclist)) {
     arc = vecGet(arclist, k++);
-    if (arc->lbl == yrxLblLambda) {
+    if (arc->to == 0) {
       /* It's a final state! */
       finaltags = yrxTagsUnion(finaltags, arc->tags);
       _dbgmsg("Got final %d (%p , %p)\n", st,arc->tags,finaltags);
     }
     else if (arc->lbl == yrxLblEpsilon) {
+      /* an eps-transition. Copy arcs */
       _dbgmsg("Copy from %d to %d [k==%d]\n",arc->to, st,k);
       if (usvGet(marked, arc->to) != st) {
         marked = usvSet(marked, arc->to, st);
