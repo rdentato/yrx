@@ -1,0 +1,26 @@
+.T Gel - Project statement
+
+.% Objectives
+
+  To create a Lua binding for gema that will work on both Unix and Windows
+
+.%% Deliverables
+
+  .[] Static library (libgel.a libgel.lib)
+  .[] Dynamic library (libgel.so.a, gel.dll)
+  .[] Executable that mimic gema behavior 
+      but provides gel functions (gel)
+  .[] Lua stand-alone interpreter statically
+      linked with libgel (gua)
+  .[] Documentation
+  .[] Examples
+  
+.% Activies
+
+  .[A1] Define lua API
+  .[A2] Create C bindings
+  
+
+.% Schedule
+
+.% Issues

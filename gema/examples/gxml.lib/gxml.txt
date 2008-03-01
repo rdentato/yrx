@@ -1,0 +1,11 @@
+.T XML Parsing
+.A Remo Dentato
+.D 15 Nov 2003
+.I gxmldoc
+
+.% Introduction
+
+  This is an event-driven parser a-la SAX. Each tag is recognized and the appropriate handler
+is invoked.
+
+

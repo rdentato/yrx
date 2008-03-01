@@ -1,0 +1,38 @@
+#.T GXML
+#.A Remo Dentato
+#.a
+#  This script is a frontend for a xml parser implementend with gel. 
+#..
+
+# .% Directories
+#  It is assumed that the libraries files are in subdirectory named '|gxml.lib|
+# in the same subdirectory as the script.
+
+DIR=`dirname $0`/gxml.lib
+EXE=`basename $0`
+
+# .% Handler list
+#  For simplicity, the list of handlers is managed through the file '|handlers|.
+# It could have been computed on the fly.
+
+if [ "X$1" = "X-l" ] ; then
+  cat $DIR/handlers
+  exit 0
+fi
+
+# .% Usage
+
+if [ $# -le 1 ] ; then
+  echo "Usage: $EXE handler file.xml"
+  echo "       $EXE -l"
+  exit 1
+fi
+
+# .%Do it!
+#   This script is also used for testing the build process for gel. If you move it 
+# somwhere else, you shuld make so that '|GEL| point to the gel executable. It might
+# simply be '|gel| if you put it in your path.
+
+GEL="../src/gel"
+
+$GEL -p '@set{s;unix}' -f $DIR/xml.gel -l $DIR/$1handler.lua $2

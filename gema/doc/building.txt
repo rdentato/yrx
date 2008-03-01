@@ -1,0 +1,288 @@
+.Title Gema - Building notes
+.Author Remo Dentato
+
+.: Abstract
+  Description of how to build and install gema tools both for
+Unix and Windows platforms.
+
+  It should be enough to follow the instruction in the sections below
+to have everything up and running.
+
+  If something goes wrong, here (and in the scripts) are described all
+the details that should help you to fix the problem.
+
+.% Building gema on a Unix platform
+
+  Gema has been built and tested on many Unix platforms. See the
+'<section=tested> for a detailed list.
+
+.%% The building process
+
+  The '|gbuild| script, when executed with no argument, will configure
+the environment appropriately for your system, then will compile '|gema|
+togheter with '|gel| and '|gua| if lua libraries are found.
+
+  Assuming that your working directory is '|~\works\gema|, you start the
+building process with:
+
+.v
+  ~\works\gema> cd src
+  ~\works\gema\src> ./gbuild
+..
+
+  Upon a successful compilation, the testsuite is launched to verify that
+everything went well.
+
+  Ad hoc configurations (for example, the location of Lua libraries) may
+be made at the beginning of the script.
+
+  The '|gbuild| script only contains the configuration logic and a simple
+interface to the '|Makefile| that contains all the rules for building
+'|gema|.
+
+  Other options for '|gbuild| are:
+
+  [config] Performs the configuration step only. If this step does not 
+           work for your system you can set up all the variables in the
+           '|gbuild| script and set the '|NOAUTO| variable to 1.
+ 
+  [install] Copy the executables and libraries to the direcotry specified
+           by the '|INSTALLDIR| variable.
+  
+  [clean]  Clean up directories removing temporary files generated during
+           the building process.
+          
+  [all]    Configure, compile and execute tests '(equivalent to specifying
+           no option at all).
+
+  [gema]   Only builds gema. Note that you have to add the extension if
+           it is mandatory on your system.
+        
+           For example if you are using msys on Windows, you have to give
+           the command '|./gbuild gema.exe| instead of '|./gbuild gema|
+
+  [gel]    Same as above for '|gel|
+  
+  [gua]    Same as above for '|gua|
+        
+  [test]   Executes the testsuites.
+  
+  Alternatively you can use '|make| (that will take care of calling
+'|gbuild| for configuration):
+
+.v
+  ~\works\gema> cd src
+  ~\works\gema\src> make
+  ~\works\gema\src> make test
+..
+
+
+.%% Building Lua
+
+  If you do not have already Lua installed on your system, you may easily
+get it working. Just download it from http://www.lua.org , uncompress
+the tar file and build the libraries with '|make| or using the '|build|
+script that comes in the distribution. Read the configuration notes so
+that you can match your system requirement.
+
+  Do not forget to modify the values of '|LUAINCPATH| and '|LUALIBPATH|
+in the '|gbuild| script to make them point to the right directories.
+
+
+.% Building gema on a Windows platform
+
+
+.%% Supported compilers 
+
+  Gema has been tested on many flavours of Windows: Win98, WinNT,
+Win2K and WinXP, it should work on Me but it has not been tested.
+
+  There are four compilers supported by the '|gbuild| batch file:
+
+  [Mingw + Msys]  '|Mingw| is a collection of freely available and freely
+                   distributable Windows specific header files and import
+                   libraries combined with GNU toolsets that allow one to
+                   produce native Windows programs that do not rely on any
+                   3rd-party DLLs.
+
+                   '|MSYS| is a '/Minimal SYStem/ to provide POSIX/Bourne
+                   configure scripts the ability to execute and create a
+                   Makefile used by make. '(Taken from mingw website)
+
+                   They are available at at http://www.mingw.org. Once
+                   you have installed them, read the Unix section for
+                   building details.
+ 
+                   This is the preferred building way if you want to modify
+                   '|gema| source files, it makes easier to keep
+                   consistency with other Unix versions.
+
+ 
+  [lcc-win32]     The lcc-win32 system is a full featured C Development
+                   Environment for Microsoft Operating Systems written by
+                   Jacob Navia. He continued the work of Hanson and Fraser,
+                   who wrote the original lcc compiler.
+
+                   It contains IDE, high-level editor with automatic
+                   formatting and syntax coloring, and number of utilities
+                   including profiler and version control system.  '(Taken
+                   from Q Software website)
+                   
+                   It is free for non-commercial use and it's available at
+                   http://www.cs.virginia.edu/~lcc-win32/ .
+
+                   To be used it needs virtually no configuration, it is
+                   enough that the tools (by default under c:\lcc\bin) are
+                   in the path.
+                   
+                   It should be the easiest way if you want to build
+                   gema on Windows and do not currently have a C compiler
+                   installed on your machine.
+
+  [Borland C++]   Borland C++ compiler (command line, version 5.5.1)
+                   is freely available at:
+        http://www.borland.com/products/downloads/download_cbuilder.html
+
+                   It's easy to install and only requires to modify two
+                   files (bcc32.cfg and ilink32.cfg) following the
+                   instruction on Borland site for configuration.
+                   
+                   To be used for building gema, it is enough for its
+                   tools (by default under c:\Borland\bcc32\bin) to be in
+                   the current path.
+                   
+                   The building process has also been tested with the
+                   version 5.6 that used to be shipped with Borland
+                   C++Builder 6.0.
+                   
+  [Microsft Visual C++ 6.0] To use the Microsoft compiler, you need to run
+                   '|vcvars32.bat| to have the environment ready for the
+                   building process.
+                   
+  [Open Watcom]    The famous Watcom compiler is now open source! Get it from
+                   http://www.openwatcom.org
+  
+  [Digital Mars]
+
+
+.%% The gbuild batch file
+
+  Once the environment has been set appropriately for you compiler, you can 
+start the '|gbuild| batch file.
+
+  Start the console so it has enough Environment Memory, all tests have been
+performed with at least 4096K available.
+
+  If you want also to compile the Lua bindings ('|libgel.lib|, '|gel.exe|
+and '|gua.exe|) you need to specify where the lua libraries and includes
+are. Set the '|LUALIBPATH| and '|LUAINCPATH| appropriately.
+
+  Assuming that your working directory is '|D:\works\gema|, you start the
+building process with:
+
+.v
+  D:\works\gema> cd src
+  D:\works\gema\src> gbuild
+..
+
+  Everything will be rebuilt, and the tests will be executed.
+  
+  After that, copy the exe files in a directory that is in your path and
+the gel library '|libgel.lib| somewhere your compiler will be able to
+get it from.
+
+.%% Building Lua
+
+  The '|gbuild| script assumes that the lua static libraries are named
+'|liblua.lib| and '|liblualib.lib|.
+    
+  If the Makefile that comes with lua does not work for you, you can use
+the command '|gbuild lua| do add an extra step for building Lua.
+  
+  Specify the directory where you uncompressed the Lua tarball (for
+example '|d:\works\Lua-5.0|) in the '|LUAHOME| variable.
+
+  See the '|'^fn:lbuild^'| file for details on how Lua is compiled,it
+uses the same logic as the Unix shell script '|build| that comes with Lua
+distribution. 
+
+  Note that the process may not work if Lua souce files are on a different
+volume than the gema source file, the easiest option is to have the '|gema|
+sourcetree and the '|Lua| sourcetree in the same directory so that the
+default value for '|LUAHOME| ('|..\..\Lua-5.0|) will work.
+
+.% Files
+
+The building process uses the following files:
+
+  [Makefile] Used only for Unix. Everything but the configuration logic
+        is in there.
+  
+  [gbuild] Contains the logic for setting up the correct environment
+        for each Unix system.
+
+        The command '|gbuild -h| shows the possible options.        
+  
+  [conf] Starts as an empty file. After configuration will be included
+        in the Makefile and will contain the assignment of values to 
+        macros.
+  
+  [gbuild.bat] Contains the logic for building gema, gel and gua.
+        The command '|gbuild /?| shows all the possible options.        
+ 
+  [lbuild.bat] Compiles lua starting from '|%LUAHOME%|.
+  
+  [setx.btt] It's used to store the value of current directory. It's
+        needed due to the lack in Win9x of the '|pushd| command (and in
+        general due to the fact that Windows batch files are much less 
+        flexible than Unix shell scripts).
+  
+  [conf.bat] It will be generated during the configuration phase on 
+        Windows. It is not strictly needed but it's useful to have in
+        case we want to build lua.
+        
+  [*.x or x.*] Temporary files.
+
+
+.% Tested configurations '!tested
+
+.%% Unix
+
+.t       |       |        |               |            |
+  S.O    | vers  |  arch  | distribution  |  compiler  |
+---------+-------+--------+---------------+------------+
+ Linux   |  2.4  |   x86  | Debian 2.2    | gcc 3.2.2  ||
+ Linux   |  2.4  |   x86  | Redhat 9.0    | gcc 3.2.2  ||
+ Linux   |  2.4  |   x86  | Mandrake 9.0  | gcc 3.2.2  ||
+ Linux   |  2.4  |  AMD64 | Suse 8 ES     | gcc 3.2.2  ||
+ Linux   |  2.2  |  Alpha | Debian 3.0    | gcc 2.95.4 ||
+ FreeBSD |  4.8  |   x86  |               | gcc 2.95.4 ||
+ NetBSD  | 1.6.1 |   x86  |               | gcc 2.95.3 ||
+ Solaris |   9   |  R220  |               | gcc 3.2.2  ||
+ MacOS X |  10.1 | PPC-G4 | SERVER Edition| gcc 2.95.2 ||
+ MacOS X |  10.2 | PPC-G4 | SERVER Edition| gcc 2.95.2 ||
+ IRIX    |       |        |               |            ||
+ AIX     |       |        |               |            ||
+ HP-UX   |       |        |               |            ||
+ OSF1    |       |        |               |            ||
+..
+
+The functions '|gel.getvar()| and '|gel.setvar()| do not work
+properly on the '|AMD64| architecture.
+
+.%% Windows
+
+.t             |    |    |    |    |    |    |
+               | XP | 2K | NT | ME | 98 | 95 |
+---------------+----+----+----+----+----+----+
+ msys-gcc 3.2  |  X |  X |    |    |  X |    |-
+ BCC 5.5       |  X |    |    |    |    |    |-
+ BCC 5.6       |    |    |    |    |  X |    |-
+ MSVC 6.0      |    |    |    |    |  X |    |-
+ lcc-win 3.8   |  X |    |    |    |    |    |-
+ lcc-win 3.6   |    |    |    |    |  X |    |-
+ Digital Mars  |  X |    |    |    |    |    |-
+ Open Watcom   |  X |    |    |    |    |    |-
+
+..
+

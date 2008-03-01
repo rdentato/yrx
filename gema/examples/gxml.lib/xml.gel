@@ -1,0 +1,380 @@
+! .T XML Parsing
+! .A Remo Dentato
+! .D 15 Nov 2003
+! .I xml_g
+
+! .% Introduction
+!    This is an event-driven parser a-la SAX. Each tag is recognized and the
+! appropriate handler is invoked.
+
+! .% XML handlers
+!    These are the handlers that can be defined:
+!
+!  .[xml.chars(chars)] Called whenever a block of text is encountered. '|CDATA|
+!                      sections and any sequence of characters different from
+!                      '|<| and '|&| are considered as block of text.
+!                      No guarantees on where the block of text will be split,
+!                      so, do not assume it's the end of a word or a line.
+!                      '|chars| will contain the block of text.
+
+!  .[xml.startdoc()]   Signals that the document is just started.
+
+!  .[xml.enddoc()]     Signals that the document is just ended. It's called when
+!                      the end of the file is reached, not at the closure of the 
+!                      root element.
+
+!  .[xml.proc(dir)]    A process directive ('|<? ... ?>|). No split is done.
+
+!  .[xml.opentag(name)] A start tag is encountered. You can access its attributes
+!                      through the '|xml.attrs()| function. If you need them later
+!                      you must save them yourself.
+!                      The tag name is pushed in a stack so that an history of the
+!                      elements encountered is kept. To access that history you 
+!                      use the '|xml.elements()| function._
+!                      If a function '|xml.open.name()| exists it will be called 
+!                      right after '|xml.opentag(name)|.
+
+!  .[xml.closetag(name)] Before this handler is called, the tag will be popped from 
+!                      the stack. If the close tag does not match with the tag on
+!                      stack, an error is issued._
+!                      If a function '|xml.close.name()| exists it will be called 
+!                      right after '|xml.closetag(name)|.
+
+!  .[xml.entref(entity)] An entity ('|&'/entity/;|) has been encountered. If you
+!                      call '|xml.entity('/entity/')| you get the corresponding
+!                      value (see next section).
+!
+!  .[xml.comment(comment)] Called upon a comment ('|<!-- ... -->|). The whole comment
+!                      text is passed to the handler.
+
+!  .[xml.doctype(root,dtd)] A '|<!DOCTYPE ...>| tag has been encountered. The name
+!                      of the root element and the whole dtd (or reference) is
+!                      returned to the handler.
+
+!  .[xml.error(line,col,msg)] If an error is encountered, this handler will be called
+
+! .% XML functions
+!
+!   To access xml objects you can use the following functions.
+!
+!  .[xml.entity(ent,val)] Get the value of an entity if '|ent| is known (e.g. '|&amp;|)
+!                      or it is a character entity (e.g. '|&#32;| or '|&#x20;|); nil
+!                      otherwise._
+!                      You can change the value associated to an entity providing a value
+!                      for the '|val| argument. If you provide '|""|, the entity will be 
+!                      deleted.
+!
+!  .[xml.attr(name)]  There are three ways of calling this function:
+!
+!                      .[] '|xml.attr("attrname")| _
+!                          If you provide a string, it is assumed to be the
+!                          name of an attribute. The corresponding value is returned
+!                          or '|nil| if the attribute is not found.
+!
+!                      .[] '|xml.attr(number)| _
+!                          If you provide a number '/n/, the name of the '/n/th
+!                          attribute is returned (or '|nil| if '/n/ is too big).
+!
+!                      .[] '|xml.attr()| _
+!                          If no argument is provided, the number of defined
+!                          attributes is returned.
+!
+!                    _ Attributes are not saved and will be rewritten when another
+!                      tag will be encountered. If you need to preserve them you must
+!                      provide an ad-hoc mechanism.
+
+!                    _ This function can be used only inside the '|xml.opentag()| handler
+!                      otherwise its behavior is undefined.
+
+!  .[xml.line()]      The current line number in the XML file.
+!  .[xml.column()]    The current col number in the XML file.
+!  .[xml.elements(n)] Access the elements in the stack. Use 0 to access the top element,
+!                      1 for the one right below and so on.
+
+! .% Lua functions
+![
+
+  xml={}
+  xml.vtag={n=0}
+  xml.vstk={n=0}
+  xml.open={}
+  xml.close={}
+
+-- .%% Entities
+
+  xml.ents={}
+
+-- .{ Default entities
+--   Every XML parser must be aware of these:
+  xml.ents["apos"]="'"
+  xml.ents["quot"]="\""
+  xml.ents["gt"]=">"
+  xml.ents["lt"]="<"
+  xml.ents["amp"]="&"
+-- }
+
+--   Entities values can be retrieved through the '{xml.entity()=} function.
+
+  function xml.entity(ent,val)
+    local n=nil
+    local b=10
+    local t=2
+
+    if val then
+      if val == "" then
+        val=nil
+      end
+      xml.ents[ent]=val
+      return val
+    end
+        
+    if xml.ents[ent] then 
+      return(xml.ents[ent])
+    elseif string.sub(ent,1,1) == "#" then
+      -- .{ Check for hex or dec values
+      if string.sub(ent,2,2) == "x" then
+        b=16 ; t=3
+      end
+      -- .}
+      n=tonumber(string.sub(ent,t),b)
+      -- .{ only consider char in the 0..255 range
+      if n and (n > 0) and (n<256) then
+        return(string.char(n))
+      end
+      -- .}
+    end
+   
+    return(nil)
+  end
+
+
+-- .%% Start tag
+--   Push the tag name in a stack before executing the handler.
+--   The '|xml.open| table is searched first
+
+  function xml.st(tag)
+    xml.ss(tag)
+    if xml.open[tag] then xml.open[tag](tag) end
+    table.insert(xml.vstk,tag)
+  end
+    
+-- .%% End tag
+--   Pop the tag name form the stack and choke on misalignments
+-- (or call the '|endtag| handler if the close tag matches)!
+
+  function xml.et(tag)
+    local n=xml.vstk.n
+    
+    if (n == 0) or (xml.vstk[n] ~= tag) then
+      xml.er(xml.line(),xml.column(),"Mismatched tag <"..(tag or "??").."> ("..xml.vstk[n]..")")
+    else
+      table.remove(xml.vstk)
+      if xml.close[tag] then xml.close[tag](tag) end
+      xml.ee(tag)
+    end
+  end
+
+-- .%% Empty tag
+--   An empty tag '|<x/>| is treated exactly as if it was '|<x></x>|
+
+  function xml.xt(name)
+    xml.st(name)
+    xml.et(name)
+  end
+
+-- .%% Attributes !attrs
+--   The '{xml.attr()} function allows you to access the attributes of
+-- the current element. 
+--   Attributes are stored in the '{vtag=} table in pairs:
+--
+-- .f
+--             0     1      2      3      4      5  
+--          +-----+------+------+------+------+----
+--    vtag  |     | name | val  | name | val  | 
+--          +-----+------+------+------+------+-----
+--           ____/ \___________/ \___________/ \_____
+--        tagname     attr. 1       attr. 2       attr.
+-- ..
+
+  function xml.attr(name)
+    local i
+    
+    -- .{ get '/i/th attribute name
+    i=tonumber(name) or 0
+    if i > 0 then
+      return xml.vtag[(i-1)*2+1]
+    end
+    -- .}
+
+    -- .{ map '|name| '$->$ '|value|
+    if name then
+      for i=1,xml.vtag.n,2 do
+        if xml.vtag[i] == name then
+          return xml.vtag[i+1]
+        end
+      end
+      return nil
+    end
+    -- .}
+    
+    -- .{ return number of attributes
+    return math.floor(xml.vtag.n / 2)
+    -- .}
+  end
+  
+  function xml.tagname()
+    return xml.vtag[0]
+  end
+
+-- .%% Current values
+
+-- .{ col/row
+  function xml.line() return(xml.l) end
+  function xml.column() return(xml.c) end
+-- .}
+
+-- .{ Element
+--   The '/n/th element from the top of the stack (0=top).
+  function xml.elements(n)
+    return(xml.vstk[xml.vstk.n-(tonumber(n) or 0)])
+  end
+-- .}
+
+-- .%% End of document
+--   At the end of the document check if the stack is empty;
+-- if not, there must be some missing close tag.
+
+  function xml.ed()
+    local n=xml.vstk.n
+    if xml.vstk.n > 0 then
+      xml.er(xml.line(),xml.column(),"Unbalanced tag at EOF ("..(xml.vstk[n] or "??") ..")")
+    end
+    xml.dd()
+  end
+        
+-- .%% Error handler
+--   The default error handler prints of stderr the error message.
+
+  function xml.err(line,col,msg)
+    print("ERR",line,col,msg)
+  end
+
+-- .%% Null handler
+--   A "do nothing" function used as default handler
+
+  function xml.nul() end
+
+-- .%% Handlers check
+--  Be sure that each handler is a valid function.
+--  The gema rules will call 
+  
+  function xml.chk()
+    xml.ch = xml.chars    or xml.nul
+    xml.sd = xml.startdoc or xml.nul
+    xml.dd = xml.enddoc   or xml.nul
+    xml.sp = xml.space    or xml.nul
+    xml.pr = xml.proc     or xml.nul
+    xml.ss = xml.opentag  or xml.nul
+    xml.ee = xml.closetag or xml.nul
+    xml.en = xml.entref   or xml.nul
+    xml.er = xml.error    or xml.err
+    xml.cm = xml.comment  or xml.nul
+    xml.dt = xml.doctype  or xml.nul
+  end
+
+!]
+
+! .% Gema rules
+
+@set{x;\#}
+
+! .%% Initialize lua functions
+\A=@lua{xml.chk()\;xml.sd()}@start{}
+\Z=@start{}@lua{xml.ed()}
+
+! .%% Entities
+
+\&*\;\G=@lua{xml.en("*")}
+
+! .%% Text
+<txt>=@lua{xml.ch(@esc{$0})}
+
+txt:\P\&=@terminate
+txt:\P\<=@terminate
+
+! .%% Process directives
+!   Here we check for '|<? ... ?>| tags
+
+\<\?<tag>\?\>\G=@lua{xml.pr("$t")}
+
+! .%% Comments
+!  The whole comment is passed back to lua
+\<\!--<U>--\W\>\G=@lua{xml.cm(@esc{$1})}
+
+! .%% Character Data
+\<\![CDATA[*]]\W\>\G=@start{}@lua{xml.ch(@esc{$1})}
+
+
+! .%% Document type
+!   To have a validating parser we have to understand the definitions
+! in the DOCTYPE element or reference them through an external DTD.
+! 
+!   For now, let's have a non-validating parser. Skip DOCTYPE entirely
+! but retain root element name in '{t} and pass the rest to lua (just
+! in case someone needs it).
+
+\<\!DOCTYPE\W<dtype>=@lua{xml.dt("$t",@esc{$1})}
+
+dtype:\A<I>=@start{$1}
+dtype:[*]\>\G=*@end
+dtype:\>=@end
+
+! .%% Tags
+!  According to XML specification (see '?http://www.w3.org?) an element
+! name can only start with a letter, an underscore or a colon. 
+
+@set-parm{idchars;-.:}
+
+\<\/<tag>=@lua{xml.et("$t")}
+
+\<<tag>=@lua{xml.$xt("$t")}
+
+! .{ Get the tag name
+tag:\A.=@terr{Invalid tag name}@end
+tag:\A<N1>=@terr{Invalid tag name}@end
+tag:\A-=@terr{Invalid tag name}@end
+
+tag:\A<I>=@start{$1}
+
+tag:\A?=@terr{Invalid tag name}@end
+! .}
+
+! .{ Get the attlist
+tag:\W<I>\="<u>"=@attr{$1 $2}
+tag:\W<I>\='<u>'=@attr{$1 $2}
+
+attr:<I> <U>=@lua{table.insert(xml.vtag,"$1")\;table.insert(xml.vtag,@esc{$2})}@end
+! .}
+
+! .{ Check for the end of tag
+!  If it's an empty element, the variable '|x| is set to "'|x|"
+tag:\W\/\>=@set{x;x}@end
+tag:\W\>=@end
+! .}
+
+tag:=@terr{Unexpected character}
+
+terr:*=@lua{xml.er(@line,@column,"*")}@end
+
+start:*=@lua{xml.vtag[0]="$1"\;\
+             xml.l=@line\;\
+             xml.c=@column\;\
+             xml.vtag.n=0}\
+             @set{x;s}@set{t;$1}@end
+
+esc:\A="
+esc:\n=\\\n
+esc:"=\\"
+esc:'=\\'
+esc:\\=\\\\
+esc:\Z="

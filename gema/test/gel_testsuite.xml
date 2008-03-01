@@ -1,0 +1,688 @@
+<!--
+ .T Gel testuite
+ .A Remo Dentato
+ .I gelT
+ 
+ .a 
+   This xml file contains the tests to be executed to check
+ that gel has been compiled correctly.
+ .. 
+-->
+<testsuite>
+
+<name sys="win">tfgel.bat</name>
+<name sys="unix">tfgel.sh</name>
+
+<def name="sep" sys="unix">/</def>
+<def name="sep" sys="win">\</def>
+<def name="src">..&sep;src&sep;</def>
+
+<run sys="unix">
+#!/bin/sh
+</run>
+
+<chk sys="unix">
+  RES=FAIL
+  TST=`diff &amp;tst; &amp;res; 2&gt;/dev/null`
+  if [ $? = 0 -a "X$TST" = "X" ]; then  RES=OK ; fi
+  echo "Test &amp;num; [$RES]	(&amp;obj;)"
+</chk>
+
+<chk sys="win">
+  set RES=FAIL
+  fc &amp;tst; &amp;res; &gt;nul
+  if not errorlevel 1 set RES=OK
+  echo Test &amp;num; [%RES%]	(&amp;obj;)
+</chk>
+
+<test>
+<obj>Gema test suite ran by gel</obj>
+
+<run sys="unix" res="tfgma.res" tst="tfgma.tst" chk="yes">
+./gematest &src;gema &gt;&res;
+./gematest &src;gel &gt;&tst;
+</run>
+<run sys="win" res="tfgma.res" tst="tfgma.tst" chk="yes">
+call .\gematest.bat &src;gema &gt;&res;
+call .\gematest.bat &src;gel &gt;&tst;
+</run>
+
+</test>
+
+<test>
+<obj>Basic GEMA syntax</obj>
+<desc>
+Transform "A" in "a" if outside parenthesis and "X" if inside,
+transform "B" in "b" if outside parenthesis and "Y" if inside.
+</desc>
+
+<file f="tf001.gma">
+\A=SOI
+A=a
+B=b
+(&lt;xxx&gt;)=[$1]
+xxx:A=X
+xxx:B=Y
+\Z=EOI\n
+</file>
+
+<file f="tf001.in">
+AaAaAaAa
+A(ABAB)B
+B(BABA)A
+BbBbBbBb
+</file>
+
+<file f="tf001.res">SOI
+aaaaaaaa
+a[XYXY]b
+b[YXYX]a
+bbbbbbbb
+EOI
+</file>
+
+<run res="tf001.res" tst="tf001.tst" chk="yes">
+&src;gel -f tf001.gma tf001.in &gt; &tst;
+</run>
+</test>
+
+<!-- --> 
+<test>
+<obj>Lua function definition</obj>
+<desc>Double every number in the file. Use a separate file for lua functions</desc>
+
+<file f="tf002.lua">
+function x2(x)
+  return x*2
+end
+</file>
+
+<file f="tf002.gma">
+&lt;N&gt;E&lt;N&gt;=@lua{return x2($0)}
+&lt;N&gt;=@lua{return x2($1)}
+</file>
+
+<file f="tf002.in">
+10 .8 -2.3 1E2
+</file>
+
+<file f="tf002.res">
+20 1.6 -4.6 200
+</file>
+
+<run tst="tf002.tst" res="tf002.res" chk="yes">
+&src;gel -f tf002.gma -l tf002.lua tf002.in &gt; &tst;
+</run>
+</test>
+
+<!-- --> 
+<test>
+<obj>Lua function definition inside gel file</obj>
+<desc>Double every number in the file. Define lua functions togheter with
+gema rules.</desc>
+
+<run sys="unix">
+echo "!["         &gt; tf003.gel
+cat tf002.lua &gt;&gt; tf003.gel
+echo "!]"     &gt;&gt; tf003.gel
+cat tf002.gma &gt;&gt; tf003.gel
+</run>
+
+<run sys="win">
+echo ![        &gt; tf003.gel
+type tf002.lua &gt;&gt; tf003.gel
+echo !]        &gt;&gt; tf003.gel
+type tf002.gma &gt;&gt; tf003.gel
+</run>
+
+<run tst="tf003.tst" res="tf002.res" chk="yes">
+&src;gel -f tf003.gel tf002.in &gt; &tst;
+</run>
+</test>
+
+<!-- --> 
+<test>
+<obj>@newline function</obj>
+<desc>Enclose lines between '[' and ']'. A dot '.' is equivalent to a newline</desc>
+
+<file f="tf005.in">Line1
+Line2.
+Line3. Line 4
+Line5
+</file>
+
+<file f="tf005.gma">
+.=@newline
+\A\W=[
+\N\W=][
+&lt;S&gt;=
+\Z=]
+</file>
+
+<file f="tf005.res">[][Line1][Line2][Line3][Line4][Line5]</file>
+
+<run tst="tf005.tst" res="tf005.res" chk="yes">
+&src;gel -f tf005.gma tf005.in &gt; &tst;
+</run>
+</test>
+
+
+<!-- --> 
+<test>
+<obj>Defining rules and parsing from within lua (files)</obj>
+<file f="tf004.lua">
+dofile("tf002.lua")
+gel.rulefile("tf002.gma")
+io.write(gel.parsefile(arg[1]))
+</file>
+
+<run tst="tf004.tst" res="tf002.res" chk="yes">
+&src;gel -lua tf004.lua tf002.in &gt; &tst;
+</run>
+</test>
+
+<!-- --> 
+<test>
+<obj>Defining rules and parsing from within lua (files) (gua)</obj>
+
+<run tst="tf004.tst" res="tf002.res" chk="yes">
+&src;gua tf004.lua tf002.in &gt; &tst;
+</run>
+</test>
+
+<!-- --> 
+<test>
+<obj>Defining rules and parsing from within lua (strings)</obj>
+<file f="tf006.lua">
+dofile("tf002.lua")
+gel.rulestring([[
+&lt;N&gt;E&lt;N&gt;=@lua{return x2($0)}
+&lt;N&gt;=@lua{return x2($1)}
+]])
+io.write(gel.parsestring([[
+
+10 .8 -2.3 1E2
+]]))
+</file>
+
+<run res="tf002.res" tst="tf006.tst" chk="yes">
+&src;gel -lua tf006.lua &gt; &tst;
+</run>
+</test>
+
+<!-- --> 
+<test>
+<obj>Defining rules and parsing from within lua (strings) (gua)</obj>
+
+<run res="tf002.res" tst="tf006.tst" chk="yes">
+&src;gua tf006.lua &gt; &tst;
+</run>
+</test>
+
+
+<!-- --> 
+
+<test>
+<obj>Cleaning rules</obj>
+<desc>
+Show how a domain can be deleted and redefined. Note how
+the rule for '|a| '*must* be redefined!
+</desc>
+<file f="tf007.gel">
+![
+  function g()
+    gel.ruleclear("")
+    gel.rulestring("b='\na=Z")
+  end
+!]
+
+a=Z
+b=,
+.=.@lua{g()}
+</file>
+
+<file f="tf007.in">ababab.ababab</file>
+<file f="tf007.res">Z,Z,Z,.Z'Z'Z'</file>
+
+<run tst="tf007.tst" res="tf007.res" chk="yes">
+&src;gel -f tf007.gel tf007.in &gt; &tst;
+</run>
+</test>
+
+<!-- --> 
+<test>
+<obj>Using domains from lua</obj>
+<desc>
+Parse the same string using two different domains.
+</desc>
+<file f="tf008.lua">
+
+gel.rulestring([[
+aaa:a=1
+aaa:b=0
+bbb:a=0
+bbb:b=1
+]])
+
+str="abaabbaaabbb"
+print(gel.parsestring(str,"aaa"))
+print(gel.parsestring(str,"bbb"))
+</file>
+
+<file f="tf008.res">101100111000
+010011000111
+</file>
+<run tst="tf008.tst" res="tf008.res" chk="yes">
+&src;gel -lua tf008.lua &gt; tf008.tst
+</run>
+</test>
+
+<!-- --> 
+<test>
+<obj>Returning text from lua into gema output stream</obj>
+
+<file f="tf009.gel">
+![
+  function a(x)
+    gel.parsestring(x,"aaa","-")
+  end
+  function b(x)
+    gel.parsestring(x,"bbb","-")
+  end
+!]
+
+*\n*\n=@lua{a("$1")}\n@lua{b("$2")}\n@end
+aaa:a=1
+aaa:b=0
+bbb:a=0
+bbb:b=1
+
+</file>
+
+<file f="tf009.in">abaabbaaabbb
+abaabbaaabbb
+</file>
+<run tst="tf009.tst" res="tf008.res" chk="yes">
+&src;gel -f tf009.gel tf009.in &gt; tf009.tst
+</run>
+</test>
+
+<!-- --> 
+<test>
+<obj>Parsing from a file to a file (gua)</obj>
+
+<file f="tf010.lua">
+gel.rulestring([[
+*\n\G*\n=@aaa{$1}\n@bbb{$2}\n@end
+aaa:a=1
+aaa:b=0
+bbb:a=0
+bbb:b=1
+]])
+
+gel.parsefile("tf009.in","","tf010.tst")
+</file>
+
+<run tst="tf010.tst" res="tf008.res" chk="yes">
+&src;gua tf010.lua
+</run>
+</test>
+
+<!-- --> 
+<test>
+<obj>Setting lua variables</obj>
+
+<file f="tf011.gel">
+![
+ function a()
+   gel.set("x","a")
+ end
+ function b()
+   gel.set("x","b")
+ end
+!]
+
+\A=@set{x;x}
+
+a=@lua{a()}\n
+b=@lua{b()}\n
+1=$x
+</file>
+
+<file f="tf011.in">a1010b0011a1010b1100</file>
+<file f="tf011.res">
+a0a0
+00bb
+a0a0
+bb00</file>
+
+<run tst="tf011.tst" res="tf011.res" chk="yes">
+&src;gel -f tf011.gel tf011.in &gt; tf011.tst
+</run>
+</test>
+
+<!-- --> 
+<test>
+<obj>Getting lua variables</obj>
+
+<file f="tf012.gel">
+![
+ function x() return gel.get("x") end
+!]
+
+\A=@set{x;x}
+
+a=@set{x;a}\n
+b=@set{x;b}\n
+1=@lua{return x()}
+</file>
+
+<run tst="tf012.tst" res="tf011.res" chk="yes">
+&src;gel -f tf012.gel tf011.in &gt; tf012.tst
+</run>
+</test>
+
+<!-- --> 
+<test>
+<obj>Push lua variables</obj>
+
+<file f="tf013.gel">
+![
+ function p(x) gel.push("s",x) end
+!]
+
+\A=@set{n;0}@set{x;x}
+a=@set{x;a}
+b=@set{x;b}
+1=@lua{p("$x")}@incr{n}
+?=
+\Z=@repeat{$n;$s@pop{s}}
+</file>
+
+<file f="tf013.res">bbaabbaa</file>
+
+<run tst="tf013.tst" res="tf013.res" chk="yes">
+&src;gel -f tf013.gel tf011.in &gt; tf013.tst
+</run>
+</test>
+
+<!-- --> 
+<test>
+<obj>Pop lua variables</obj>
+
+<file f="tf014.gel">
+![
+ function p() gel.pop("s") end
+!]
+
+\A=@set{n;0}@set{x;x}
+a=@set{x;a}
+b=@set{x;b}
+1=@push{s;$x}@incr{n}
+?=
+\Z=@repeat{$n;$s@lua{p()}}
+</file>
+
+<run tst="tf014.tst" res="tf013.res" chk="yes">
+&src;gel -f tf014.gel tf011.in &gt; tf014.tst
+</run>
+</test>
+
+<!-- --> 
+<test>
+<obj>Writing into gema output from lua</obj>
+
+<file f="tf015.gma">
+q&lt;N&gt;=QUERY \#$1 RESULT
+</file>
+
+<file f="tf015.gel">
+![
+ function w(q)
+   gel.write("QUERY #"..q.." RESULT")
+ end
+!]
+
+q&lt;N&gt;=@lua{w("$1")}
+</file>
+
+<file f="tf015.in">
+q10
+q02
+q43
+</file>
+
+<run tst="tf015.tst" res="tf015.res" chk="yes">
+&src;gema -f tf015.gma tf015.in &gt; &res; 
+&src;gel -f tf015.gel tf015.in &gt; &tst;
+</run>
+</test>
+
+<!-- --> 
+<test>
+<obj>Using gel streams</obj>
+
+<file f="tf016.in">text to be parsed normally but IWantToTreatSpeciallyASingleWordThatInRealityIsASentenceFormedByCapitalizedWords and then continue normally</file>
+<file f="tf016.res">[text to be parsed normally but ]
+[I]
+[Want]
+[To]
+[Treat]
+[Specially]
+[A]
+[Single]
+[Word]
+[That]
+[In]
+[Reality]
+[Is]
+[A]
+[Sentence]
+[Formed]
+[By]
+[Capitalized]
+[Words]
+[ and then continue normally]
+</file>
+<file f="tf016.lua">
+gel.rulestring([[
+low:&lt;-K&gt;=$0
+low:=@terminate;
+upc:&lt;K1&gt;&lt;j&gt;=$0@end
+]])
+
+s=gel.streamfile(arg[1]);
+l=""
+while s do
+
+  l=gel.parsestream(s,"low")
+
+  if (not l) or (l == "") then
+    l=gel.parsestream(s,"upc")
+  end
+  
+  if (not l) or (l == "") then
+    l=gel.streamgetc(s)
+  end
+  
+  if (not l) or (l == "") then
+    gel.streamclose(s)
+    s=nil
+  else 
+    io.write("["..l.."]\n")
+  end
+end
+
+</file>
+
+<run tst="tf016.tst" res="tf016.res" chk="yes">
+&src;gua tf016.lua tf016.in &gt; &tst;
+</run>
+</test>
+
+<!-- --> 
+<test>
+<obj>Checking \M and @line{x}</obj>
+
+<file f="tf017.gel">
+\M[[*]]&lt;s&gt;=[@line{0} - @line]\n
+((&lt;xxx&gt;))&lt;s&gt;=(@line{0} - @line)\n
+\M1||&lt;xxx&gt;|&lt;aaa&gt;||&lt;s&gt;=|@line{1} - @line|\n
+xxx:x=y
+xxx:&lt;S&gt;=$0
+xxx:&lt;aaa&gt;=$0
+aaa:a=b
+aaa:&lt;S&gt;=$0
+aaa:=@terminate
+</file>
+
+<file f="tf017.in">1:[[xxxxxxxxxxx]]
+2:[[aaaa
+
+3:aaaa]]
+
+4:[[xxxxxxxxxxx
+5:xxxxxxxxxxxxx
+
+
+6:xxxxxxxxxxx]]
+
+7:((xxaxxax))
+
+8:((xxxxxxxxx
+9:xxxxxxxxx))
+A:((xxxxxxxxxxx
+B:xxxxxaaaxxxxx
+C:xxxxxxxxxxx))
+D:||xxaaxx|aaaaa||
+</file>
+
+<file f="tf017.res">1:[1 - 1]
+2:[2 - 5]
+4:[6 - 11]
+7:(6 - 13)
+8:(6 - 15)
+A:(6 - 18)
+D:|19 - 19|
+</file>
+
+
+<run tst="tf017.tst" res="tf017.res" chk="yes">
+&src;gel -f tf017.gel tf017.in &gt; &tst;
+</run>
+</test>
+
+<!-- --> 
+<test>
+<obj>Checking \C behavior</obj>
+
+<file f="tf018.gel">
+\CA=$0
+\Cb=$0
+</file>
+
+<file f="tf018.in">aaa
+aAa
+AAa
+BBB
+bBB
+bbB
+</file>
+
+<file f="tf018.res">AAA
+AAA
+AAA
+bbb
+bbb
+bbb
+aaa
+aAa
+AAa
+BBB
+bBB
+bbB
+</file>
+
+<run tst="tf018.tst" res="tf018.res" chk="yes">
+&src;gema -f tf018.gel tf018.in &gt; &tst;
+&src;gel -f tf018.gel tf018.in &gt;&gt; &tst;
+</run>
+</test>
+
+<!-- --> 
+<test>
+<obj>Checking gel.line() and gel.column()</obj>
+
+<file f="tf019.gel">
+![
+--  function l() return(gel.get("@line")) end
+--  function c() return(gel.get("@column")) end
+  function l() return(gel.line()) end
+  function c() return(gel.column()) end
+!]
+c\M1=(@column:@lua{return c()}:@lua{return gel.column(1)})
+l\M2=(@line:@lua{return l()}:@lua{return gel.line(2)})
+</file>
+
+<file f="tf019.in">
+1234567890
+acaaalacaa
+cbblbbbbcb
+</file>
+
+<file f="tf019.res">
+1234567890
+a(2:2:2)aaa(3:3:3)a(8:8:8)aa
+(1:1:1)bb(4:4:4)bbbb(9:9:9)b
+</file>
+
+<run tst="tf019.tst" res="tf019.res" chk="yes">
+&src;gel -f tf019.gel tf019.in &gt; &tst;
+</run>
+</test>
+
+<!-- --> 
+<test>
+<obj>Checking gel.incr() e gel.decr()</obj>
+
+<file f="tf020.gel">
+@set{x;0}
++=@lua{gel.incr("x")}$x
+-=@lua{gel.decr("x")}$x
+!+=@incr{x}$x
+!-=@decr{x}$x
+?=
+</file>
+
+<file f="tf020.in">
++-++-
+</file>
+
+<file f="tf020.res">10121</file>
+
+<run tst="tf020.tst" res="tf020.res" chk="yes">
+&src;gel -f tf020.gel tf020.in &gt; &tst;
+</run>
+</test>
+
+<!-- --> 
+<test>
+<obj>Checking \Q, \q and @rules{}</obj>
+
+<file f="tf021.gel">
+\Qy=@rules{0}a
+\qy=@rules{0}A
+b=.
+/[10x]/=@rules{0;$0}
+?=
+</file>
+
+<file f="tf021.in">ybxyb0yb1yb</file>
+<file f="tf021.res">1a.0A.0A.1a.</file>
+
+<run tst="tf021.tst" res="tf021.res" chk="yes">
+&src;gel -f tf021.gel tf021.in &gt; &tst;
+</run>
+</test>
+
+</testsuite>

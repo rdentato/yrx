@@ -1,0 +1,13 @@
+! Strip comments from a gel file (both from lua and gel sections)
+
+\\\!=$0
+\N\W\n\G=
+\![<lua>\!]=\![$1\!]
+\!*\n\G=
+lua:--[[*]]--\G=
+lua:--*\n\G=
+lua:\N\W\n\G=
+lua:[[*]]\G=$0
+lua:'<str>'=$0
+lua:"<str>"=$0
+str:\\?=$0

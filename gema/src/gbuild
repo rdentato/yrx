@@ -1,0 +1,226 @@
+
+#!/bin/sh
+#.T GBuild - Build gema on different platform
+#.A Remo Dentato
+#.D November 2003
+#.a
+#   This script is used in conjunction with the '|Makefile| to 
+# build gema (and gel) on different versions of Unix.
+#..
+
+
+uname -a
+date
+
+#.% Defaults
+#  You can set your defaults here.
+#  If you want to keep your defaults, disable the automatic
+# checks setting the '|AUTOCONF| variable to 0.
+
+AUTOCONF=1                         # Try to autoconfig?
+
+SYS=default                        # System identifier
+CC=cc                              # Compiler to use
+CCFLAGS=-O                         # Flags for the compiler
+LIBS="-lm"                         # libs to add when linking
+EXE=""                             # Extension used to identify executables
+
+SHRINK="strip \$@"                 # How to reduce size when installing
+AR="ar rcu"                        # How to create libraries
+RANLIB="ranlib \$@"                # Optional library indexing
+
+INSTALLDIR=/usr/local              # Where to install executables
+
+LUALIBPATH=/usr/local/lib          # Where to search for Lua libraries
+LUAINCPATH=/usr/local/include      # Where to search for Lua includes
+
+#-DBGFLAG=
+DBGFLAG=-DNDEBUG                   # Exclude debugging code?
+
+#-TRCFLAG=
+TRCFLAG=-DTRACE                    # Include the "-trace" option?
+
+#.% Automatic setup
+if [ "X$1" = "Xconfig" ] ; then    
+  if [ "$AUTOCONF" = 1 ] ; then
+
+    # .%% Determine C compiler
+    # Looks for gcc first, otherwise assume cc
+
+    CC=gcc
+    CCFLAGS='-Wall -O2'  
+    gcc -v 2>/dev/null >/dev/null;
+    if [ $? != 0 ] ; then 
+      CC=cc
+      CCFLAGS='-O' 
+    fi
+
+    # .%% Determine System
+    #   Use uname to determine wich Unix we are running on and 
+    # set the appropriate variables.
+
+    SYS=`uname`
+    case "$SYS" in
+      AIX*) SYS=aix;;
+
+     OSF1*) SYS=osf1 ;;
+        
+     IRIX*) SYS=irix ;;
+
+    HP-UX*) SYS=hpux ;; 
+
+    SunOS*) if [ -x /opt/SUNWspro/bin/cc ]; then
+              SYS=suncc
+              CC='/opt/SUNWspro/bin/cc';
+              CCFLAGS='-O'
+            else
+              SYS=sunacc
+              X=`which acc | sed 's/^no.*//'`;
+              if [ -z "$X" ]; then
+                SYS=sunos
+              else
+                CC=acc
+                CCFLAGS='-O'
+              fi
+            fi ;;
+        
+  FreeBSD*) SYS=freebsd
+            LIBS="-Wl,-R/usr/local/lib $LIBS"
+            ;;
+          
+   NetBSD*) SYS=netbsd
+            LUALIBPATH=/usr/pkg/lib
+            LUAINCPATH=/usr/pkg/include
+            LIBS="-Wl,-R/usr/pkg/lib $LIBS"
+            ;;
+ 
+    Linux*) SYS=linux;;
+          
+    MINGW*) SYS=mingw;
+            EXE='.exe';
+            LIBS='' ;
+            upx -V 2>/dev/null >/dev/null
+            if [ $? = 0 ] ; then
+              SHRINK="strip \$@ ; upx \$@" 
+            fi ;;
+          
+    Darwin) SYS=darwin;
+            CCFLAGS='-ansi -Wall -O2' ;;
+
+         *) echo 'Unrecognized system: using defaults.';
+            SYS=default;;
+    esac
+
+    # .%% Look for Lua
+    #  If Lua includes and libs cannot be found where specified by
+    # '|LUAINCPATH| and '|LUALIBPATH|, they are searched in
+    # '|/usr/local/|, then in '|/usr/| and lastly in '|../..|.
+
+    LUAEXE="gel$EXE gua$EXE"                     # Assume LUA is present
+    LUATEST=t_gel
+    LUAMSG=" not"
+
+    X=`find $LUAINCPATH -name lua.h -print 2>/dev/null`
+    if [ "X$X" = "X" ] ; then
+      X=`find /usr/local -name lua.h -print 2>/dev/null`
+      if [ "X$X" = "X" ] ; then
+        X=`find /usr/include -name lua.h -print 2>/dev/null`
+        if [ "X$X" = "X" ] ; then
+          X=`find ../.. -name lua.h -print 2>/dev/null`
+        fi
+      fi
+    fi
+    if [ "X$X" = "X" ] ; then
+      LUAINCPATH=''
+      LUALIBPATH=''
+      LUAEXE=''
+      LUATEST=''
+    else
+      LUAINCPATH="`dirname $X`"
+      LUAMSG=''
+    fi
+
+    if [ "X$LUALIBPATH" != "X" ]; then
+      X=`find $LUALIBPATH -name liblua.a -print 2>/dev/null`
+      if [ "X$X" = "X" ] ; then
+        X=`find /usr/local -name liblua.a -print 2>/dev/null`
+        if [ "X$X" = "X" ] ; then
+          X=`find /usr/lib -name liblua.a -print 2>/dev/null`
+          if [ "X$X" = "X" ] ; then
+            X=`find ../.. -name liblua.a -print 2>/dev/null`
+          fi
+        fi
+      fi
+      if [ "X$X" = "X" ] ; then
+        LUAINCPATH=''
+        LUALIBPATH=''
+        LUAEXE=''
+        LUATEST=''
+      else
+        LUALIBPATH="`dirname $X`"
+        LUAMSG=''
+      fi
+    fi
+  fi
+  
+  # .%% Write the '|conf| file
+
+  echo "SYS=$SYS"                 >conf
+  echo "CC=$CC"                  >>conf
+  echo "CCFLAGS=$CCFLAGS"        >>conf
+  echo "LIBS=$LIBS"              >>conf
+  echo "EXE=$EXE"                >>conf
+  echo "OBJ=$OBJ"                >>conf
+  echo "SHRINK=$SHRINK"          >>conf
+  echo "AR=$AR"                  >>conf
+  echo "RANLIB=$RANLIB"          >>conf
+  echo "INSTALLDIR=$INSTALLDIR"  >>conf
+  echo "LUALIBPATH=$LUALIBPATH"  >>conf
+  echo "LUAINCPATH=$LUAINCPATH"  >>conf
+  echo "LUAEXE=$LUAEXE"          >>conf
+  echo "LUATEST=$LUATEST"        >>conf
+  echo "DBGFLAG=$DBGFLAG"        >>conf
+  echo "TRCFLAG=$TRCFLAG"        >>conf
+  echo "CWD=`pwd`"               >>conf
+ 
+  # .%% Set -x flags
+  # It is important that those script are executable
+  
+  chmod +x ./gbuild ../examples/gxml ../test/gematest
+
+  # .% Complete
+
+  echo "Configuration done for \"$SYS\" (Lua libraries$LUAMSG found)"
+
+  echo >conf.x
+  echo >config.x
+
+fi
+
+# .% Do it!
+#  All rules are in the makefile.
+
+case "X$1" in
+
+       Xclean) make clean ;;
+
+    Xall | X ) make
+               make test ;;
+
+     Xinstall) make install ;;
+
+        Xtest) make test ;;
+
+       Xgema*) make config.x
+        	   make $1 ;;
+
+        Xgel*) make config.x
+        	   make $1 ;;
+
+        Xgua*) make config.x
+        	   make $1 ;;
+
+     Xconfig ) ;;
+
+            *) echo "gbuild [all | config | gema | gel | gua | clean | install | test]" ;;
+esac
