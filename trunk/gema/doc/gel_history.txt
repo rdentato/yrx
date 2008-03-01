@@ -1,0 +1,119 @@
+7 Nov 2003
+  0) Modified gemabuild and Makefile to recognize Mingw as a
+     valid target platform.
+     
+     I had to add the $(EXE) to cope with Windows extension for
+     executables.
+ 
+  1) gema.c has been split in two:
+      - gema.c with the main() function and ARG processing stuff
+      - gema_glob.c (and gema_glob.h) with the "general" functions
+    
+  2) Makefile has been changed to compile a libgema.a library with
+     all the source files excluding gema.c
+     
+     Now the executable gema is build linking gema.o to libgema.a
+     it's pretty useless but helped me to check if my split was
+     correct (or at least usable)
+     
+  3) gema.c has been modified with sections guarded by #ifdef LUA.
+     If you compile gema.c with LUA undefined, you get the plain
+     gema, otherwise you get gel.
+     I've added the gema rules to manage  the -l and -lua options.
+     
+  4) Added the file gel_bind.c to the makefile. It is guarded by
+     #ifdef LUA so to be compiled to void during plain gema
+     compilation.
+     
+  5) Added an entry to the makefile to compile gel. Modified
+     gemabuild to compile both gema and gel.
+     
+     ** It is an unsatisfactory, temporary solution, I've to think
+        on how to change the building process.
+     
+8 Nov 2003
+
+   1) Added NEWLINE e OP_LUA to action.c
+   
+   2) Added OP_NEWLINE e OP_LUA to patimp.h
+   
+   3) Added fake_nl to patimp.h as extern and to read.c as
+      definition (fake_nl is used to implement @newline)
+   
+   4) Removed "static" in front of '|delete_pattern()| and
+      '|delete_patterns()| (I need to call them from gel_bind.c)
+      
+   5) Added a second version '|skip_comment()| that executes lua 
+      code.
+      
+   6) Added two functions to '|cstream.c|: '|cis_eof()| that checks
+      for the end of an input stream and '|cos_whole_string()| that
+      returns the (null terminated) buffer used so far in a string
+      output stream. 
+      
+   7) Added a field ('|int eof|) to '|input_stream_struct|
+      ( defined in '|cstream.c|) to implement '|cis_eof()| and 
+      modifed everything needed to manage it.
+      
+   8) In '|cstream.c| modified '|expand_output_buffer()|. Now it
+      allocates one char more than specified so to be sure that
+      the output buffer of a string stream can be null terminated
+      (I need it for '|cos_whole_string()|.
+      
+   9) In match.c added the lines to manage fake_nl.
+      
+9 Nov 2003
+
+   0) Modified gemabuild (renamed gbuild) and Makefile to automate
+      the building of gema, gel and gua from the same source files.
+
+      Doing gbuild x and make x is almost the same.
+      
+      All the platforms recognized by gema should work (they need
+      testing, of course!). Platforms are distinguished using the
+      command '|uname|
+      
+   1) Test suites from gema and gel can be launched with
+      "make test". I've collected gematest results in a file and
+      checked for its length at the end. If it's non-zero the 
+      test fails and the diffs are printed on the screen.
+      
+   2) Added the example for gel (XML parser). Needed for testing.
+   
+   3) Added gel.htm to the doc directory
+
+15 Nov 2003
+
+   0) Fixed the build and test scripts so to relay only on
+      '/bin/sh' functions.
+      
+   1) Tested on my system and on Sourceforge Compile Farm:
+   	   Darwin usf-cf-ppc-macosx-1 5.5 Darwin Kernel Version 5.5: Thu May 30 14:51:26 PDT 2002; root:xnu/xnu-201.42.3.obj~1/RELEASE_PPC  Power Macintosh powerpc
+   	   SunOS sparc-solaris1 5.9 Generic_112233-03 sun4u sparc SUNW,Ultra-60
+   	   FreeBSD x86-freebsd1 4.9-PRERELEASE FreeBSD 4.9-PRERELEASE #23: Thu Sep 18 22:40:16 PDT 2003     root@usf-cf-x86-freebsd-1:/usr/obj/usr/src/sys/GENERIC  i386
+       NetBSD x86-netbsd1 1.6.1 NetBSD 1.6.1 (GENERIC) #0: Tue Apr  8 12:05:52 UTC 2003     autobuild@tgm.daemon.org:/autobuild/netbsd-1-6/i386/OBJ/autobuild/netbsd-1-6/src/sys/arch/i386/compile/GENERIC i386
+   	   MINGW32_NT-5.1 THOR 1.0.9(0.46/3/2) 2003-07-03 07:26 i686 unknown
+       Linux usf-cf-alpha-linux-1 2.2.20 #2 Wed Mar 20 19:57:28 EST 2002 alpha unknown
+
+16 Nov 2003
+
+   0) Got a segmentation fault for gel on:
+       Linux amd64-linux1 2.4.19-SMP #1 SMP Wed Aug 20 15:58:51 UTC 2003 x86_64 unknown
+      for test 012 and test 015. Not investigated further!
+
+   1) Tested ok on the other SF platforms
+
+17 Nov 2003
+
+   0) Modified gbuild to use -O with cc on SunOS (was a bug)
+
+   1) Modified gema.c to be compiled on DEC OSF1 (# not in first col)
+
+   2) Modified Makefile to use touch instead of rm -f
+
+Dec 2003
+
+   0) Recreated gbuild and gbuild.bat
+   
+   1) Modified gematest and gematest.bat
+    
