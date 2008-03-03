@@ -26,19 +26,23 @@ uint8_t *yrxTagsStr(tagset_t a)
   p = (char *)s;
   if (a != NULL) {
     for (k=0; k < ulvCnt(a); k++) {
-      if ((yrxTagType(a[k]) & 0x7F) >= TAG_CB(0)) {
-        sprintf(buf,"(%X,",(yrxTagType(a[k]) & 0x3F)>> 1);
-        buf[0] += yrxTagType(a[k])  & 1;
-      }
-      else {
+      if (yrxTagType(a[k]) & 0x80) {
         buf[0] = yrxTagType(a[k]) & 0x7F;
         buf[1] = '\0';
       }
+      else{
+        sprintf(buf,"(%X,",(yrxTagType(a[k]) & 0x3F)>> 1);
+        buf[0] += yrxTagType(a[k])  & 1;
+      }
+      
       sprintf(p,"[%s%X", buf, yrxTagExpr(a[k]));
       while (*p) p++;
       
       if (yrxTagDelta(a[k]) > 0) {
-        sprintf(p,",%X", yrxTagDelta(a[k]));
+        *p++ = ',';
+        if (yrxTagType(a[k]) & 0x40)
+          *p++ = '+';
+        sprintf(p,"%X", yrxTagDelta(a[k]));
         while (*p) p++;
       }
       *p++ = ']';

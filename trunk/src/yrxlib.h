@@ -33,12 +33,32 @@ typedef ulv_t    tagset_t;
 
 #define yrxTagNone   0
 
-#define TAG_CB(n)  (((((n)+1) & 0x1F)<<1) | 0x40)
-#define TAG_CE(n)  (TAG_CB(n)+1)
+/*
+    ABCC
+   
+  A
+    xxxxxxxx      expression
+     
+  B  
+    0 z xxxxx y
+      \ \___/ \__ 0: begin, 1: end
+       \    \____ Capture number
+        \________ 0: from pos'   
+    
+    1 z xxxxxx
+      \ \____/
+       \     \____ tag type
+        \_________ 0: from pos'
+
+*/
+
+#define TAG_CB(n)  (((((n)+1) & 0x1F)<<1))
+#define TAG_CE(n)  (TAG_CB(n)|1)
 
 #define TAG_MRK    (':' | 0x80)
 #define TAG_FIN    ('$' | 0x80)
-#define TAG_XPR    ('#')
+#define TAG_XPR    ('#' | 0x80)
+#define TAG_POS    ('!' | 0x80)
 
 #define yrxTag(t,n,d) (((n) << 24) | ((t) << 16) | (d))
 
