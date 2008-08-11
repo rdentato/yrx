@@ -1,0 +1,547 @@
+                       
+:                        /\   __ ____ __   __ 
+:                        \ \ / // __ \\ \ / / 
+:                         \ / // /_/ / \ / /  
+:                          \ // _  _/   \ \   
+:                         / // / \ \__ / / \  
+:                        /_// /   \__//_/ \ \ 
+:                           \/             \/  
+                           
+         -=  YRX - A Regular Expression extension for C  =-
+       (C) 2006 Remo Dentato (rdentato@users.sourceforge.net)
+
+= License
+=========
+
+  Permission to use, copy, modify and distribute this code and
+its documentation for any purpose is hereby granted without fee,
+provided that the above copyright notice, or equivalent attribution
+acknowledgement, appears in all copies and supporting documentation.
+ 
+  Copyright holder makes no representations about the suitability
+of this software for any purpose. It is provided "as is" without
+express or implied warranty.
+
+                           
+= Introduction
+==============
+
+  While YRX is basically an extension to conveniently add regular
+expressions to C its main use is to create lexical scanners. In that
+it is much similar to <re2c:http://re2c.sourceforge.net> than |lex|.
+
+  It consists of a regular expression library (|rx|) and a
+preprocessor (|yrx|).
+
+  The regular expression library is a complete rewrite of the public
+domain regular expressions package release in the public domain by
+<Ozan Yigit:http://www.cs.yorku.ca/~oz/>. Even if I completely
+rewrote it and added many features and optimizations, the basic
+structure remains the same of his package.
+
+  Note that the |rx| library can be used indepedently from the yrx
+preprocessor, it has no dependency.
+
+  
+= General concepts
+==================
+
+ == Input model
+ ^^^^^^^^^^^^^^
+ 
+  YRX tries to match a text stream against a list of regular
+expressions starting from a "current position" in the stream.
+This is very close to the |AWK| model.
+
+  Upon match, the matching portion is returned and the current
+position is advanced past the match.
+
+  An example should clarify things. Assume you have a
+text stream:
+
+     :   xxxxxx ABCDEFGzzzzzzzzzzzzzzzzzz
+     :        | |  
+     :        | `-- Current position
+     :        `-- Already matched text
+             
+  Upon match with the regular expression |"ABC"| the new
+situation will be:
+        
+     :    xxxxxxABC DEFGzzzzzzzzzzzzzzzzzz
+     :            | |  
+     :            | `-- Current position
+     :            `-- Already matched text
+        
+  Streams are read one line at the time. If a line ends with a
+backslash (possibly followed by blanks) the next line is read as
+continuation and the backslash is replaced by a newline (\n).
+      
+
+= Regular expressions  <:regex>
+=====================
+
+  Regular expressions nowdays are widespread but, unfortunately,
+every package has its own extensions and syntax incompatibilities.
+YRX is no way different and here is the flavour of regular
+expressions it handles, I hope you find it intuitive enough.
+Prior knowledge of general expressions concepts is assumed.
+
+
+ == Characters
+ ~~~~~~~~~~~~~
+  Each character matches itself except:
+  
+  [.]      matches any character
+  [\]      escape next character. If there's no special meaning associated
+           with that escaped sequence, the regular character is matched.
+  [[`]]    delimit character class
+  [^]      Beginning of the line (only if placed at the
+           beginning of pattern)
+  [$]      End of line (only if placed at the end of
+           pattern)
+  [*]      Matches preceding character or character class
+           repeated zero or more times.
+  [+]      As above but matches one or more repetitions.
+  [?]      As above but matches only zero or one repetitions. It can also be
+           applied to the recognizers '\N', '\Q', '\B', ...
+  [<>]     Set limits for matching repetitions. For example the regex "X<1,3>"
+           matches a string of 1 to 3 'X'.
+  [(|)]    grouping and alternate. The regex "(ab|cd)" will match the string
+           "ab" or the string "cd". Group cannot be iterated with the '*' or
+           the '+' operator, however they can be made optional if followe by
+           the '?' operator. The regex "(max|min)(imum)?" will match the
+           strings: "min", "max", "minimum" and "maximum".
+  [{}]     delimit captures. Up to eight captures can be defined.
+ 
+  Characters may also be specified through their code in hexadecimal form:
+
+  ------  -----
+   \x41    'A'
+   \x9     \t
+
+ ==  Character class
+ ~~~~~~~~~~~~~~~~~~~
+
+  The standard syntax for character class is supported.
+
+ [[set`]]   matches one of the characters in the set.
+            If the first character in the set is "^",
+            it matches all characters NOT in the set, i.e. 
+            complements the set. A shorthand S-E is 
+            used to specify a set of characters S upto 
+            E, inclusive. The special characters "]" and 
+            "-" have no special meaning if they appear 
+            as the first chars in the set.
+   
+  Also, a set of character classes following the current
+locale settings is defined:
+  
+  [\a]   a letter according current locale
+  [\u]   an uppercase letter according current locale
+  [\l]   a lowercase letter according current locale
+  [\d]   a decimal digit according current locale 
+  [\s]   space character [\b\r\n\t\f]
+  [\y]   a blank character [\t ]
+  [\w]   word character [_A-Za-z0-9]
+  [\h]   an hexadecimal digit according locale [0-9A-Fa-f]
+  [\c]   Control characters (ASCII 1-7)  
+  [\z]   the null character (ASCII 0) 
+
+   Predefined character class may be included in a standard
+character class.
+ 
+ Examples:
+        ---------     --------------------------------------
+        |[a-z]|       any lowercase ASCII alpha
+        |\l|          lowercase alpha according locale
+        |[^]-]|       any char except ] and -
+        |[^A-Z]|      any char except uppercase alpha
+        |[^\u]|       as above but using locale
+                      for uppercase
+        |[a-zA-Z]|    any alpha (may be different from \a)
+
+   
+ ==  Recognizers
+ ~~~~~~~~~~~~~~~~~
+ 
+  To ease scanning source files, some common patterns have
+been predefined
+
+  [\Q]    Single or double quoted string. Examples:
+          
+          :   "abce"
+          :   'defg'
+          :   'AB\'CD'
+          :   'AB''CD'
+          :   "EF\"GE"
+          :   "EF""GE"
+          
+             
+  [\N]    Signed integer number. Examples:
+          
+          :  -3232
+          :  +5
+          :  4325
+          
+          
+  [\F]    Floating point number. Examples:
+
+          :  5.2
+          :  7
+          :  -0.32E4.2
+          :  4e-7.5
+          
+  [\H]    Hexadecimal number. Examples:
+  
+          :  3E2F
+          :  0x3e0a
+          :  0Xf4E
+          
+  [\Y]    A possibly empty sequence of spaces and/or tabs.
+          Note that it is *not* equivalent to |\s*| because
+          \s will also match newlines and other blanks!
+  
+  [\W]    A sequence of alphanumeric characters (including '|_|')
+  
+          :  fun_test
+          :  t0
+          :  3E2F
+                    
+  [\<]     Matches start of word
+  [\>]     Matches end of word
+
+  [\|]     Delimits right context |"xxx\|yyy"| matches the
+           same as |"xxx"| but only if followed by |"yyy"|.
+           It can be used as a form of lookahead.
+           
+           For example "ab\|c" matches 'ab' only in 'abc'
+           and advance current position to c. 
+
+  [\B]     Balanced string. For example |\B()| matches |(a (x y))|
+           The two characters following |\B| must be different
+           
+
+
+ == Modifiers
+ ~~~~~~~~~~~~
+
+  [\C]     Toggle case sensitiveness. The regular expression
+           |"\Cxyz"| matches any upper/lower case combinations
+           of "xyz" like "xYZ", "XyZ", etc
+  
+  [\E]     Set Escape character. *This is to be considered
+           an experimental feature, use it with great care!*
+           An escaped character will always match, whatever
+           the regular expression.
+           For example the text "a'3c" will match the regular
+           expression"\E'abc" because "'3" matches everything,
+           included "b"!
+           Setting it to space will turn it off: "\E wxy"
+
+
+ == Captures
+ ~~~~~~~~~~~
+  Within a regular expression you may want to capture the text
+that matches a part of the pattern for a future used.
+ For example, if you want to capture the macro name in a
+|#define|, you may use a regex like:
+
+:  ^\Y#define\Y(\W)
+          
+ There may be up to eight captures and they may be nested:
+ 
+: rx '([\a]+)(\s+([^\s]*))' 'STA $FFE0'
+:    (STA $FFE0) (STA) ( $FF00) ( $FF00)
+
+ Captures may be referenced within the regex:
+ 
+:  rx '([+-]?)\w+\1' 
+
+                
+=  YRX C Interface
+==================
+
+ == Define streams
+ ~~~~~~~~~~~~~~~~~
+ 
+  In C the text stream is represented by an opaque pointer
+to a {YYSTREAM} structure. Once created the pointer will be
+passed as argument to each function invoked, there's no need
+to actually access the YYSTREAM structure fields. Note how
+this is similar to the |"FILE *"| in the C standard library.
+
+  A new stream can be created from a file or from a character
+buffer using the following functions:
+
+{{ C
+      YYSTREAM *YYFILE   (char *filename, int size);
+      YYSTREAM *YYSTRING (unsigned char *string);
+      void      YYCLOSE  (YYSTREAM *y); 
+}}  
+
+  If {filename} is |NULL|, the stream is connected to {stdin}.
+  The {size} parameters should be set to the length of the 
+longest allowable line (including continuations!). The minimum
+value can be set up through the {MINBUFSIZE} constant in the
+{yrxrt.c} file.
+  A |YYSTREAM| should be closed when no longer needed.
+
+
+ == Matching text
+ ~~~~~~~~~~~~~~~~
+  To match a stream against a set of regular expressions
+you will use the pseudo statement {YYSWITCH} that is a
+switch-like control statement where case labels are regular
+expressions rather than integral values.
+
+  An example should clarify:
+
+: #include "yrx.h"
+: int main(int argc, char **argv)
+: {
+:   YYSTREAM y = YYFILE(NULL,0) /* read from stdin */
+:   int count = 0;
+:
+:   while (y != NULL) {
+:     YYSWITCH (y) {
+:       YYEOF: YYCLOSE(y);
+:              y = NULL;
+:              break;
+:   
+:       "^\Y#define(.*)$" : count++;
+:                           break;
+:     }
+:   }
+:   printf("#defines: %d\n",count);
+: }
+
+
+  The program above will read from stdin and will count
+the number of lines that look like a |#define|. 
+
+  Note the |YYEOF| special case that will match the end of
+the stream. There are also |YYSOL| and |YYEOL| to match,
+respectively, the start and the end of the line.
+
+ == Actions
+ ~~~~~~~~~~
+  Upon match you may want to perform actions on the
+matching text. The following functions will give you 
+access to it:
+
+{{ C
+
+  unsigned char *YYSTART   (YYSTREAM *y, int n);
+  unsigned char *YYEND     (YYSTREAM *y, int n);
+  unsigned int   YYLEN     (YYSTREAM *y, int n);
+  char          *YYSTRCPY  (char *s, YYSTREAM *y, int n);
+   
+}}
+  
+  The following functions deal with the matching text, including
+captures specified in the regular expression.
+
+ [YYSTART(y,n)] returns a pointer to the nth capture (0 is
+                the entire match). Note that this is not a
+                null-terminated string.
+              
+ [YYEND(y,n)]   returns a pointer to the end of the nth
+                capture (0 is the entire match). 
+              
+ [YYLEN(y,n)]   the length of the nth capture (0 for the 
+                entire match.
+                Use |YYLEN(y,n)| to verify whether some text
+                has been captured.
+
+ [YYSTRCPY(s,y,n)]   copies the nth capture into |s|.
+
+  These other functions could be useful in actions:
+
+{{ C
+  const char    *YYFILENAME (YYSTREAM *y);
+  unsigned int   YYLINE     (YYSTREAM *y);
+  unsigned char *YYCURSOR   (YYSTREAM *y);
+  
+  int            YYFWRITE   (YYSTREAM *y,int n,FILE *f);
+}}          
+  
+ [YYFILENAME(y)] returns a null terminated string with the
+              name of file associated to the y stream.
+              If the stream has been created with {YYFILE()}
+              it's the same filename specified at that time.
+              If the stream is associated to stdin, returns
+              the string "|(stdin)|".
+              It the stream has been created with {YYSTRING()}
+              returns the string "|(string)|".
+  
+ [YYLINE(y)]  returns the current line number.
+ 
+ [YYCURSOR(y)] returns a pointer to the current position in
+              the line buffer.
+              
+ [YYFWRITE]   outputs the nth capture to a file.
+ 
+  
+ == The line buffer
+ ~~~~~~~~~~~~~~~~~~
+ 
+  It may be useful to have clear in mind how the line is
+stored when it's read from the imput stream.
+
+:   +---+---+---+---+-//-+---+---+---+---+---+---+
+:   |SOL|   |   |   |    |   |   |   |   |EOL| \0|
+:   +---+---+---+---+-//-+---+---+---+---+---+---+
+
+  The picture above shows that a special character 
+(|SOL|, ASCII 0x02) is used to represent the beginning of
+the line and another special character (|EOL|, ASCII 0x03)
+is used for the end of the line.
+
+  Those two special characters match, respectively, the
+"|^|" and "|$|" characters in a regular expression as well
+as the special |YYSWITCH| cases |YYSOL| and |YYEOL|.
+              
+  Note that if you match a '\0' in a |YYSWITCH| statement 
+you have gone too far!
+
+  When a new line is read, the stream cursor ({YYCURSOR(y)}
+points to the |SOL| character, every match advances the
+cursor past the matching text.              
+
+
+= YRX at work
+=============
+
+  To make yrx work you have to:
+    - Include the |yrx.h| header file
+    - Use the YYSWITCH statment in your source
+    - Use the |yrx| tool to transform your
+      source file in a plain C file
+    - Link the object files with the yrx library
+ 
+  Let's assume that the file |countdef.yc| contains the
+program described in the section <matching text>. Here
+are the steps to compile it:
+
+: $> yrx countdef.yc > countdef.c
+: $> gcc -c countdef.c
+: $> rm countdef.c
+: $> gcc -o countdef countdef.o -lyrx
+: $> countdef < countdef.yc
+
+  If you use makefiles, you could add the following rule:
+
+: .yc.c:
+:   yrx $*.yc >$*.c
+
+
+
+= Finite State Machines
+=======================
+ 
+  It is customary to formally specify lexical scanners as
+Finite State Machines (FSM). The FSM graphical notation
+is very well known, clear and unambigous. 
+
+  In C a FSM is normally translated using |while| loops
+and state variables. Somebody finds too hard to map FSM
+implemented with this technique back to the original FSM
+graph and prefer a {goto} based approach.
+
+  I saw a disciplined way of using goto to implement
+FSM in the article "Goto? Yes goto!" appeared on "Computer
+Language" in 1991 and, since then, I adopted it with
+many or few variations depending on the situation.
+
+  For YRX I decided to provide two very simple macro to
+hide goto usage:
+
+{{ C
+  YYSTATE(statename) {
+   ...
+  }
+  
+  YYGOTO(statename);
+  
+}}
+  
+  The following example should clarify how they are 
+used:
+  
+:  YYSTATE(wait) {
+:     YYSWITCH(y) {
+:       YYEOF        : YYGOTO(end_of_file);
+:       "^\Y#define" : YYGOTO(got_define);
+:       default      : YYGOTO(wait);
+:     }
+:  }
+: 
+:  YYSTATE(got_define) {
+:    ... handle #define elements ...
+:    YYGOTO(wait);
+:  }
+:
+:  YYSTATE(end_of_file) {
+:    return;
+:  }
+
+  You might not be a big fan of this technique but I'm sure
+you will agree that the underlying FSM is still recognizable.
+  
+  Anyway, since it's a debatable point, you are in no way forced
+to use those macro, they are there (in the |yrx.h| header) just
+for your convenience.
+  
+
+=  Under the hood
+=================
+
+ == Regular expressions
+ ~~~~~~~~~~~~~~~~~~~~~~
+ 
+ 
+= Examples
+==========
+
+{{ C
+
+  YYSWITCH(y) {
+    "\w+" :
+    
+  }
+
+}}
+
+
+= The yrx tool
+==============
+
+  The |yrx| tool takes a single optional argument: the
+name of the file to be transformed. If no argument is given
+stdin is used.
+
+  The output goes to stdout.
+
+= The rx tool
+  The rx utility can be used to check regular expressions:
+  
+:  rx regexp
+
+  will print on stdout 
+  
+
+  
+=  Other similar tools
+
+==  Comparison with lex
+
+==  Comparison with re2c
+
+= To do
+
+  * Speed check
+  * Documentation
+  * Test suite
+  * Correct Line numbering
+  
+  
