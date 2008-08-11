@@ -1,0 +1,193 @@
+On the usage of YXR
+A Socratic dialogue
+
+
+While I was working on yxr, my friend Querenz came to visit me and started looking at my monitor screen with curiosity. I, as the Author, felt I had to answer his questions...
+
+Querenz: What are you doing?
+
+Author: I'm programming a little tool to ease the task of writing text transformation programs. You know, lexical scanner, filters, commands driven utilities... I've always been interested in such things.
+
+Q: Nice. I'm interested too, but there are tons of tools like this. I can see you're programming in C, just recalling on top of my mind what's available for C I could name flex, re2c and many regular expressions libraries.
+
+    Also for doing the things you mentioned you could use scripting languages. Again, the first that come to my mind are Perl, AWK and Lua, but there are certainly many others!
+
+    What's more, were not you the one pushing for gema? I remember you describing it as the "ultimate text processor"!
+    
+    I guess you're wasting your time, my friend! :)
+    
+A: I would like to agree 100% with what you said (and I do for the gema part) but about the usefulness of what I'm doing, take a seat and I will bore you to death to illustrate all the marvels that this little tool is going to bring into your programming life.
+
+Q: I guess I've no escape, but I warn you: you'll have hard time convincing me to learn a new tool. I had enough!
+
+A: Let's see!  First of all let me clarify one thing. If your task is to write a self contained filter (for example a pre-processor for a programming lanuguage or something that creates a HTML file out of CSV files) you may well use a scripting language. You know my preference would go to gema but others are ok too.
+
+Q: I guessed you take another opportunity to push gema! :)
+
+A: So goes life :). Now imagine you're writing a more complex application and you want to make it able to read a text file and act according to its content. What would you use in that case?
+
+Q: Probably re2c. It's very intuitive and produce faster scanner than flex. As I said: no need for your new thing!
+
+A: Well, I've read that re2c produce faster scanner but I never properly compared the twos. I guess there are situations where flex-produced scanner are faster but this is not the point.
+    I recognize speed is important but nowadays CPU cycles are rather cheap (and we already have CPU eager monsters running in our PC that we should try to wipe out). So, unless speed is critical for some reason, I will put this argument aside for the moment.
+
+   What I would like to achieve is to reduce the number of tools your application is depending on.
+   
+Q: mmm.. and you're trying to do it introducing a new tool? You're a strange guy! 
+
+A: Consider what normally happens when you distribute your open source application.
+   You place your source files somewhere and then you have to decide if you want to also include the tools needed to compile them or not.
+   There are advantages and disadvantages both in doing it or not.
+   If you do it, you take some form of responsability for maintining the tools (thus enlarging the size of your source baseline). If you don't, you force your users to look for the tools themselves (possibly the same version you used) install (or compile) them and ensure they work correctly.
+   
+Q: Seems normal to me. What's the point?
+
+A: Flex, for example, is not as common among Windows programmers as it is in the Unix community. I've seen many discouraged by the fact of having to download and install another piece of software not counting the fact that probably they have to download some other piece of software to make it work (msys or cygwin). On the other hand, it's a too big and complex piece of software to be included in a package!
+    For sure you will distribute .c files along with the .l file but this not often results in many programmer "tweaking" the .c source file instead of the .l file ending up in a mess that you could easily imagine.
+
+Q: I do!
+
+A: Same goes for re2c, it has been neglected for long time (luckily now it has been revitalized again) and I've seen a C version packaged with YAML (a macro assembler) that is very good but looks unmaintained.
+
+   In the end, benefits from using such complex software must be levelled up with the possible increase of complexity in the building process.
+
+   Size is another concern. Flex has a rather big libraries to link to your application.
+
+Q: That's unavoidable, I think. Re2c does not have any library but I've seen the size of executables it produce and they are big too.
+   After all, if you want to do something, you need to have the code for doing it somewhere, don't you?
+
+A: Sure, but I just want to have the "supporting code" as simple and as small as I can. What would you suggest?
+
+Q: Simple: get a regular expression library and go with it! I think the most commonly used are the GNU and Henry Spencer's ones.
+
+A: Thanks, that's good advice indeed! Actually I did surf a little bit on the Net and I ended up choosing a very simple implementation: Ozan Yigit's one. It's very simple, small and it's in the public domain.
+   Oh, it also happens to be the one used in gema.
+
+Q: I should have known...
+
+A: No, seriously! I was looking for a simple, stable, public domain library and Ozan's regex matched all the criteria.
+    I started original files and added some features to it: recognizers for typical elementes (quoted strings, numbers, ...), possibility of specifing charcters through the commonly used \ooo syntax and others.
+
+Q: Ah! So your tool is an enancehed version of Ozan Yigit regualar expression package! You should have told me in advance.
+
+A: Not quite, you will see. Anyway regular expressions play a key role. As you may expect the syntax is rather standard:
+
+     1)  char    any non-special character (see below) matches itself
+     
+     2)  .       matches any character
+     
+     3)  [...]   matches one of the character in the set:
+                   [abcde]    'a' or 'b' or 'c' ... or 'e'
+                   [A-Z]      'A' or 'B' or 'C' ... or 'Z'
+                   [^ab]      any character except 'a' and 'b'
+                   []a]       ']' or 'a'
+                   [a-]       '-' or 'a'
+                   
+     4)  \       escapes next character, introduces a character class
+                 or specifies a recognizer:
+                 
+                   \l    Lower case according current locale
+                   \u    Upper case according current locale
+                   \d    [0-9]
+                   \a    [\l\u]
+                   \w    [\a\d_]
+                   \s    [\b\n\r\t\f ]
+                   \c    [\01\02\03\04\05\06\07]
+                   \h    [0-9A-Fa-f]
+                   
+                   \Q    Quoted string
+                   \N    Integer number with optional sign
+                   \H    Hexadecimal integer
+                   \F    Floating point number
+                   
+                   \C    Switch case sensitiveness
+                   \|    Right context lookup   
+                   
+                   \0    character ASCII code in octal  ('A' = \0101)
+                   \x    character ASCII code in hexadecimal ('A' = \0x41)
+                   \0x   same as above ('A' = \0x41)
+ 
+                 
+     5) ()       delimit captures
+  
+     6) * + ?    Matches multiple times what's on its left.
+     
+                  one-more   a+   "a" "aa" "aaaaaa" ...
+                  zero-more  a*   "" "a" "aa" "aaaaaa" ...
+                  one-zero   a?   "" "a"
+                             
+ 
+Q: Quite standard regular expression indeed! I understand recognizers are useful but why did you introduce them? Couldn't you express them using the standard syntax?
+   After all "\N" is equivalent to "[+-]?[0-9]+", isn't it?
+
+A: You're right, but could you suggest me somethng similar for "\Q"?
+
+Q: What does it exactly match?
+
+A: Any single or double quoted string. Quotes inside the string can be escaped with '\'. Also a quotes repeated twice are considered escaped and do not end the string. Let me give you some examples:
+
+                           "aabcde"
+                           "escaped quote: (\")"
+                           'nothing "special"'
+                           'deja\' vu'
+                           'a la'' Pascal'
+                           """Murder"", she wrote."
+                           ""
+                           ''
+                                      
+    Note that the last two examples are recognized as the empty string!
+
+Q: Well, if you put it this way, I can't easily find an equivalent regexp. At least not a simple one.
+
+A: Simplicity is the key. Floating point, for example, are not so harmless as they seem. You can have: "1.2", ".35", "-4.23E3", "-.7e+5","1e-3"
+
+Q: I also like the fact that \l is [a-z] plus whatever is considered a lower case letter in your locale!
+
+A: Yes. It has been not as straightforward as I thought.
+
+Q: But I can also see something unusual here. What '\|' is for?
+
+A: It's for lookahead. Sometimes to recognize a token you must look past it. The examples given in the Dragon Book are for the Fortran language: you can't tell if the "DO" or "FOR" string you encountered is to be consided a variable name or a statemen without looking at what follows it.
+
+   In practice, "xxx\|yyy" matches the same as "xxxyyy" but the reported match is "xxx".
+
+Q: NIce!
+   Let me see ... it looks like you missed something: what about matching things like "ab" "abab" etc? Many packages allow you to use "(ab)+" but this does not seeem the case for you!
+
+A: You're right, it's not possible. This may change in the future but for now I want to keep it that simple.
+
+Q: Back to what you can match I have a doubt on efficiency of character classes. How do you check if a character is in a class? It seems to be a costly operation!
+
+A: Ozan Yigit, the original author, has been very smart about that! A character class is represented with a set of bits. Each character is represented by a bit and checking for its inclusion in the class requires a single test (done with some shift and some bitwise operations).
+
+Q: It's rather fast but this means that each class takes 32 bytes to be represented (256/8)! Isn't this a waste of space?
+
+A: Orginally the library was limited to the standard ASCII set, requiring 16 bytes for each class. That seemed to me too restrictive so I extended it to 8 bit to allow any of encodings commonly used (e.g. ISO-8951-x).
+   To save space I made the following consideration: a character set representation has often many 0's or 1's at the beginning and/or at the end. For example: [A-Za-z] is something like:
+   
+     000000...0000001111...11110000001111...111100000000...0000
+
+     CCL 16bytes
+     Cxx Cyy nbytes
+     
+Q: Let me understand better. How would [A-Z] be represented?
+
+A: As "\210\013\376\377\377\007"
+
+Q: Six bytes, so [^A-Z] will be represented wit 26 bytes, correct?
+
+A: No, its "\250\053\001\000\000\370", six bytes again.
+   The worst case is with [\x01-\xFE], this will require all 32 bytes (plus two) but I bet on the fact that those patterns are very infrequent.
+
+
+But tell me, when dealing with analyzing text files, what do you think is the most troublesome part?
+
+Q: mhh.. well, I would say that managing 
+
+
+   I really like re2c (and indeed yrx is modeled after it) but there is one thing that sounds strange to me: it produce C code but is written in C++. 
+   
+   I hope will be
+
+thadd to it the ability of  
+    

@@ -1,0 +1,89 @@
+	STR ab
+	END
+	ANYUPR
+	ANYLWR
+	ALNUM
+	DIGIT
+	XDIGIT
+	SPACE
+	PUNCT
+	ALPHA
+	CTRL
+	WORDC
+	SPCTAB
+	ANY
+	ZERO
+	BOL
+	EOL
+	QSTR
+	GOAL
+	INTEGER
+	FLOATINGPOINT
+	HEXINTEGER
+	IDENT
+	SPACES
+	CASE
+	BOW
+	EOW
+	END
+	ESCAPE	x
+	REPEAT 0..n
+		ANY
+	REPEAT 1..n
+		ANY
+	REPEAT 0..1
+		ANY
+	REPEAT 4..5
+		ANY
+	REPEAT 4..n
+		ANY
+	REPEAT 0..4
+		ANY
+	END
+	CAPT 1
+	CAPT 2
+	CAPT 3
+	CAPT 4
+	CAPT 5
+	CAPT 6
+	CAPT 7
+	CAPT 8
+	BOC 1
+	BOC 2
+	BOC 3
+	BOC 4
+	BOC 5
+	BOC 6
+	BOC 7
+	BOC 8
+	EOC 1
+	EOC 2
+	EOC 3
+	EOC 4
+	EOC 5
+	EOC 6
+	EOC 7
+	EOC 8
+	END
+	CCL BCDE
+	NOTCLS	DIGIT
+	NOTCHR	C
+	END
+	END
+	END
+	STR ab^@^@
+	END
+	STR ^@^@^@^@
+	END
+	REPEAT 0..n
+		STR ab
+	END
+	CCL aijklmnopqrstuvwxyz{|}~€‚ƒ„…†‡‰‹‘’“”•–—™› ΅Ά£¤¥¦§¨©ª«¬­®―°±²³΄µ¶·ΈΉΊ»Ό½ΎΏΐΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡÒΣΤΥΦΧΨΩΪΫάέήίΰαβγδεζηθικλμνξοπρςστυφχψωϊϋόύώÿ
+	CCL 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+	ANYUPR
+	END
+	CCL ^A^B^C^D^E^F^I^J^K^O^P^Q^R^U^W^X^Y^^^_ #%&'()*,-.34589;<?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\^_bdhijnqrvxy}~€ƒ†‰•–΅¥©ª«¬―°³¶·»ΎΏΔΖΗΛΜΝΦΩΪέΰαγδηθμοπυχψόύώ
+	END
+	STR abc
+	STR cd
+	END
