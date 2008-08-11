@@ -7,6 +7,19 @@
 /*                                                                            */
 /* ========================================================================== */
 
+/*
+
+   RX_SWITCH(str) {
+   
+     case "^ab" : ...
+      
+     case "^c\d" : ...
+   
+   }
+
+
+*/
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,20 +62,17 @@ int main(int argc, char *argv[])
   
     STATE (code) {
       if ((s = chkln(s)) == NULL) NEXT(final);
-      
-      RX = rx_exec ("#\200\245\24\34iRX_SWITCH\34a((P\205\23()@\204P\207"
-                    "\376) $\377@\220\60a)'#\200\210\24\34b/*\34'"
-                    "#\200\206\24\34a\42'"
-                    "#\200\214\24\22\306\200\204@\201 \204 '\42",s)
-      sw
-      while (*s) {
-        RX = rx_match("^\YRX_SWITCH\Y\({(\B()|[^\)])*}\)",s,&err);
+
+      switch(s) {
+        RX_CASE(1,"^s+") :
+           NEXT(code);
         
-        if (RX) {
-          s = rx_eoc(RX,0);
-          NEXT(in_switch);
-        }
-        else if (err) return error(err); 
+        RX_CASE(2,"^RX_SWITCH\Y\({(\B()|[^)(]+)+}\)"):
+           NEXT(in_switch)
+      
+        RX_CASE(3,"^\"") : NEXT(string);
+        
+        RX_CASE(4,"^//.*")
       }
       
       fprintf(stdout,s);
