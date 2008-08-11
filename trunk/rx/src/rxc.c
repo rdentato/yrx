@@ -43,6 +43,7 @@ int main(int argc, char *argv[])
   unsigned char *nfa;
   char *s;
   char *err = NULL;
+  int n;
   
   FILE *f;
   
@@ -57,27 +58,48 @@ int main(int argc, char *argv[])
     
   s = NULL; 
   
-  
   FSM {
   
     STATE (code) {
       if ((s = chkln(s)) == NULL) NEXT(final);
 
-      switch(s) {
+      switch(rx_matched((RX = rx_exec("",s)))) {
         RX_CASE(1,"^s+") :
+           rx_write(RX,0,stdout);
+           s += rx_len(RX,0);
            NEXT(code);
         
         RX_CASE(2,"^RX_SWITCH\Y\({(\B()|[^)(]+)+}\)"):
-           NEXT(in_switch)
+           NEXT(in_switch);
       
-        RX_CASE(3,"^\"") : NEXT(string);
+        RX_CASE(3,"^\"") : 
+           fputc('"',stdout);
+           s++;
+           NEXT(string);
         
-        RX_CASE(4,"^//.*")
+        RX_CASE(4,"^//.*"): 
+           rx_write(RX,0,stdout);
+           s += rx_len(RX,0);
+           NEXT(code);
+        
+        RX_CASE(5,"^/*") : NEXT(in_comment);
+        
       }
       
-      fprintf(stdout,s);
       s = NULL;  
       NEXT(code);
+    }
+    
+    STATE(string) {
+    
+    }
+    
+    STATE(in_comment) {
+    
+    }
+    
+    STATE(in_switch) {
+    
     }
     
     STATE (final) {
