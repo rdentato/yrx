@@ -91,6 +91,8 @@ char *rx_compile_add(const unsigned char *pat, unsigned char *nfa);
 
 #define RX_CASE(n,s) case n 
 
+#define rx_write(r,n,f) fwrite(rx_start(r,n),rx_len(r,n),1,stdout)
+
 /* == Finite State Machines
 **
 **   These macros provide a simple mechanism for defining

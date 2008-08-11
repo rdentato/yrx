@@ -1,6 +1,5 @@
 [Config]
-Relative path=1
-Compilator.FileName=C:\msys\1.0\bin\edt_mk.bat
+Compilator.FileName=C:\msys\1.0\bin\edt_make.bat
 Compilator.PSPar=%Dir% %Input%
 Compilator.DefaultDir=C:\msys\1.0\bin
 Compilator.SaveAll=0
@@ -9,9 +8,11 @@ Compilator.ParsLog=%F:%L:
 Compilator.HideOutput=1
 Compilator.LogType=0
 DefaultCPIndex=0
-LogtoEnd=0
+LogtoEnd=1
 DontOpen=0
+AbsolutePath=0
 FileFormat=0
+ProjectFilesOnly=0
 [Project tree]
 rx
 	+rx
@@ -75,8 +76,8 @@ rx
 Main=
 Selected=src\rxc.c
 [src\rx_exec.c]
-TopLine=293
-Caret=53,318
+TopLine=260
+Caret=27,177
 [src\rx_comp.c]
 TopLine=373
 Caret=4,389
@@ -87,8 +88,8 @@ Caret=15,92
 TopLine=126
 Caret=38,148
 [src\rx.h]
-TopLine=65
-Caret=29,92
+TopLine=77
+Caret=1,93
 [src\x.txt]
 TopLine=1
 Caret=1,8
@@ -102,5 +103,5 @@ Caret=160,1
 TopLine=43
 Caret=16,57
 [src\rxc.c]
-TopLine=54
-Caret=27,75
+TopLine=58
+Caret=1,65
