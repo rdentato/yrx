@@ -89,6 +89,8 @@ unsigned char rx_matched(rx_result rx);
 
 char *rx_compile_add(const unsigned char *pat, unsigned char *nfa);
 
+#define RX_CASE(n,s) case n 
+
 /* == Finite State Machines
 **
 **   These macros provide a simple mechanism for defining
@@ -116,6 +118,8 @@ char *rx_compile_add(const unsigned char *pat, unsigned char *nfa);
 #define ENDFSM    
 #define STATE(x)  x##_: if (0) goto x##_;
 #define NEXT(x)   goto x##_
+
+
 
 #endif /* RX_H */
 
