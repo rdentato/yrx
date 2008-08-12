@@ -135,6 +135,7 @@ void rx_symdump(FILE *f,unsigned char * nfa)
         
         case FAIL:   fprintf(f,"\tFAIL\n");         break;
         case FAILALL:fprintf(f,"\tFAIL\tALL\n");         break;
+        case PEEKED: fprintf(f,"\tPEEKED\n");    break;
         case ONFEND: fprintf(f,"\tONFAIL\tEND\n");    break;
         
         case BKMAX : n = *(incrnfa());
