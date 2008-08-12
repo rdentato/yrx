@@ -36,8 +36,8 @@ int rx_isa(unsigned char c, unsigned char what)
     case SPACE  :  return(isspace(c));
     case PUNCT  :  return(ispunct(c));
     case WORDC  :  return(isalnum(c) || (c == '_'));
-    case ANY    :  return(1);
-    case CTRL   :  return(c && (c == (c&0x7)));
+    case ANY    :  return(c != '\0');
+    case CTRL   :  return(c && (c <= 0x07));
     case SPCTAB :  return(c == ' ' || c == '\t');
     case ZERO   :  return(c == '\0');
   }
@@ -68,7 +68,7 @@ int rx_isinccl(unsigned char n, const unsigned char *ccl)
   unsigned char  k = (ccl[0] & 0x3F);
   
   if (*ccl == NOTCHR) {
-    if (n != ccl[1]) found = 0; 
+    if (n && n != ccl[1]) found = 0; 
   } else if (*ccl == NOTCLS) {
     if (n && !rx_isa(n,ccl[1])) found = 0;
   } else if (!rx_isinccl_class(n,ccl)) { 
@@ -135,8 +135,7 @@ rx_result rx_exec(const unsigned char *nfa, unsigned char *str)
   do {
     rex.rxnum = 0;
     if ((matches = match(&rex,str,nfa)) || rex.failall) break;
-    str++;
-  } while (*str);
+  } while (*str++);
 
   if (matches) {
     rex.boc[0] = str;
@@ -175,11 +174,11 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
   unsigned short min, max, k;
   register unsigned char *s = str;
   unsigned char *start, *t, *p;
-  unsigned fail =0;
+  unsigned fail = 0;
   int back = 0;
 
   while (*nfa != END) {
-    /* fprintf(stderr,"--> %p %02x %02X\n",nfa,*nfa,optype(*nfa));fflush(stderr); */
+    fprintf(stderr,"--> %p %02x %02X\n",nfa,*nfa,optype(*nfa));fflush(stderr); 
     start = s;
     switch (optype(*nfa)) {
     
@@ -197,15 +196,15 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                    break;
       
       case SINGLE : if (iscls(*nfa)) {                     
-                      if (!rx_isa(*s++,*nfa)) FAILED();
+                      if (*s == '\0' || !rx_isa(*s++,*nfa)) FAILED();
                     }
                     else {  
                       switch (*nfa) {
                         case BOL:  if (s != r->bol) FAILED(); break;
                         case EOL:  if (*s)          FAILED(); break;
-                        
+#if 0                        
                         case GOAL: r->goal = s;              break;
-                        
+#endif                        
                         case CASE: r->casesensitive ^= 1; break;
                         
                         case QSTR: if ((s=qstr(s)) == NULL ) FAILED();
@@ -312,11 +311,11 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                          
                          case MATCH  : return s;
                                    
+                         case FAILALL: r->failall = 1;
                          case FAIL   : FAILED();
                                        break;
-                                        
-                         case FAILALL: r->failall = 1;
-                                       FAILED();
+                                       
+                         case PEEKED : of_pop(t,s);
                                        break;
                                        
                          case ONFEND : of_pop(t,t);
@@ -330,7 +329,7 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                                        of_push(nfa+1+k,  start);
                                        for (k=0; k<=RX_MAXCAPT; k++)
                                          r->boc[k] = r->eoc[k] = NULL;
-                                       nfa +=2;
+                                       nfa += 2;
                                        break;
                    
                       }
@@ -357,7 +356,7 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                     }
                     break;
                     
-      case CCL    : if (!rx_isinccl(*s++, nfa)) FAILED();
+      case CCL    : if (*s == '\0' || !rx_isinccl(*s++, nfa)) FAILED();
                     nfa += CCL_len(*nfa) +1;
                     break;
                     
@@ -365,13 +364,9 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
     }
     
     if (fail) {
-      if (!of_empty()) {
-        of_pop(nfa,s);
-        fail = 0;
-      }
-      else {
-        return NULL;
-      }
+      if (of_empty()) return NULL;
+      of_pop(nfa,s);
+      fail = 0;
     }
     nfa++;
   }

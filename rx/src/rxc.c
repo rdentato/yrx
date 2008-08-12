@@ -44,17 +44,37 @@ int main(int argc, char *argv[])
   char *s;
   char *err = NULL;
   int n;
+  int numrx = 0;
+  int state = 1;
   
-  FILE *f;
+  FILE *tmpf=NULL;
+  FILE *outf=stdout;
+  
+  FILE *inf=NULL;
   
   if (argc <2)
-    return error("Usage rxc file.rxc > file.c\n");
+    return error("Usage rxc file.rxc [file.c]\n");
     
-  f=fopen(argv[1],"r");
+  inf=fopen(argv[1],"r");
   
-  if (f == NULL)
+  if (inf == NULL)
     return error("Unable to open input file");
-    
+   
+  if (argv == 3) {
+    outf = fopen(argv[2],"w");
+    if (outf == NULL) {
+      fclose(infile);
+      return error("Unable to open output file");
+    }
+  }  
+   
+  tmpf = tmpfile();
+  
+  if (tmpf == NULL) {
+    if (outfile != stdout) fclose(outfile);
+    fclose(infile);
+    return error("Unable to open temporary file");
+  } 
     
   s = NULL; 
   
@@ -63,18 +83,22 @@ int main(int argc, char *argv[])
     STATE (code) {
       if ((s = chkln(s)) == NULL) NEXT(final);
 
-      switch(rx_matched((RX = rx_exec("",s)))) {
+      switch(rx_matched((RX = rx_exec(RX_1,s)))) {
         RX_CASE(1,"^s+") :
            rx_write(RX,0,stdout);
            s += rx_len(RX,0);
            NEXT(code);
         
         RX_CASE(2,"^RX_SWITCH\Y\({(\B()|[^)(]+)+}\)"):
+           fprintf(stdout,"switch(rx_matched((RX = rx_exec(RX_%d,",++numrx);
+           rx_write(RX,1,stdout);
+           fprintf(stdout,"))))");
            NEXT(in_switch);
       
         RX_CASE(3,"^\"") : 
            fputc('"',stdout);
            s++;
+           state = 1;
            NEXT(string);
         
         RX_CASE(4,"^//.*"): 
@@ -82,7 +106,7 @@ int main(int argc, char *argv[])
            s += rx_len(RX,0);
            NEXT(code);
         
-        RX_CASE(5,"^/*") : NEXT(in_comment);
+        RX_CASE(5,"^/*") : NEXT(code_comment);
         
       }
       
@@ -91,6 +115,20 @@ int main(int argc, char *argv[])
     }
     
     STATE(string) {
+      if ((s = chkln(s)) == NULL) NEXT(final);
+
+      switch(rx_matched((RX = rx_exec(RX_2,s)))) {
+        RX_CASE(1,"^[^\"\\]+"):
+           rx_write(RX,0,stdout);
+           s += rx_len(RX,0)
+           NEXT(code_string);
+           
+        RX_CASE(2,"^\\."):
+           rx_write(RX,0,stdout);
+           s += rx_len(RX,0)
+           NEXT(code_string);
+            
+      }
     
     }
     
@@ -107,6 +145,8 @@ int main(int argc, char *argv[])
     }
   }
   
-  fclose(f);
+  if (inf) fclose(inf);
+  if (outf && outf != stdout) fclose(outf);
+  if (tmpf) fclose(tmpf);
   return 0;
 }

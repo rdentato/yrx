@@ -94,6 +94,7 @@ typedef struct {
 #define PATTERN 0x23   /* 001 00011 */
 #define BKMAX   0x24   /* 001 00100 */
 #define EMPTY   0x25   /* 001 00101 */
+#define PEEKED  0x26   /* 001 00111 */
 #define MATCH   0x27   /* 001 00111 */
 
 #define CAPTR   0x20

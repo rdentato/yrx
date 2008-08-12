@@ -666,6 +666,21 @@ static unsigned char *endalt(rexptrs *r, unsigned char *p)
     }
     p++;
   }
+  else if (p[1] == '!') {
+    labels[top(alt_stack,1)] = r->cur;
+    storeop(r,ONFEND);  
+    storeop(r,FAIL);  
+    labels[top(alt_stack,0)] = r->cur;
+    p++; 
+  }
+  else if (p[1] == '&') {
+    storegoto(r,top(alt_stack,1));
+    labels[top(alt_stack,0)] = r->cur;
+    storeop(r,FAIL);  
+    labels[top(alt_stack,1)] = r->cur;
+    storeop(r,PEEKED); 
+    p++;
+  }
   else {
     storegoto(r,top(alt_stack,1));
     labels[top(alt_stack,0)] = r->cur;
@@ -831,7 +846,11 @@ static char *storeesc(rexptrs *r, unsigned char *p)
                break;
 
     case 'A' : storeop(r,EMPTY);   break;
+    
+#if 0    
     case ':' : storeop(r,GOAL);    break;
+#endif 
+
     case 'C' : storeop(r,CASE);
                r->casesensitive ^= 1; break;
     
