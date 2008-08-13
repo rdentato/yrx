@@ -106,7 +106,9 @@ int main(int argc, char *argv[])
            s += rx_len(RX,0);
            NEXT(code);
         
-        RX_CASE(5,"^/*") : NEXT(code_comment);
+        RX_CASE(5,"^/\*") :
+           state = 1;
+           NEXT(comment);
         
       }
       
@@ -121,12 +123,12 @@ int main(int argc, char *argv[])
         RX_CASE(1,"^[^\"\\]+"):
            rx_write(RX,0,stdout);
            s += rx_len(RX,0)
-           NEXT(code_string);
+           NEXT(string);
            
-        RX_CASE(2,"^\\."):
-           rx_write(RX,0,stdout);
-           s += rx_len(RX,0)
-           NEXT(code_string);
+        RX_CASE(2,"^\\"):
+           fputc('\\',stdout);
+           if (*++s) fputc(*s++,stdout);
+           NEXT(string);
             
       }
     
