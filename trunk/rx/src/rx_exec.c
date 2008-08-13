@@ -178,7 +178,7 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
   int back = 0;
 
   while (*nfa != END) {
-    fprintf(stderr,"--> %p %02x %02X\n",nfa,*nfa,optype(*nfa));fflush(stderr); 
+    /*fprintf(stderr,"--> %p %02x %02X\n",nfa,*nfa,optype(*nfa));fflush(stderr);*/ 
     start = s;
     switch (optype(*nfa)) {
     
@@ -202,9 +202,7 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                       switch (*nfa) {
                         case BOL:  if (s != r->bol) FAILED(); break;
                         case EOL:  if (*s)          FAILED(); break;
-#if 0                        
-                        case GOAL: r->goal = s;              break;
-#endif                        
+
                         case CASE: r->casesensitive ^= 1; break;
                         
                         case QSTR: if ((s=qstr(s)) == NULL ) FAILED();
