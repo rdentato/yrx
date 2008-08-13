@@ -644,49 +644,67 @@ static unsigned char *newalt(rexptrs *r, unsigned char *p)
 
 static unsigned char *endalt(rexptrs *r, unsigned char *p)
 {
+  unsigned char min,max;
+  
   if (alt_stack_count == 0)
     error("ERR106: Unexpected ')'");
+  min=0; max=0; 
   
-  if (p[1] == '?') {  
-    labels[top(alt_stack,1)] = r->cur;
-    storeop(r,ONFEND);  
-    labels[top(alt_stack,0)] = r->cur;
-    p++;
-  }
-  else if (p[1] == '*' || p[1] == '+') {  
-    labels[top(alt_stack,1)] = r->cur;
-    storeop(r,ONFEND);  
-    storeop(r,BKMAX);  
-    storeop(r,255);  
-    storegoto(r,top(alt_stack,2));
-    labels[top(alt_stack,0)] = r->cur;
-    if (p[1] == '+') {
-      storeop(r,MIN);
-      store(r,1);
-    }
-    p++;
-  }
-  else if (p[1] == '!') {
-    labels[top(alt_stack,1)] = r->cur;
-    storeop(r,ONFEND);  
-    storeop(r,FAIL);  
-    labels[top(alt_stack,0)] = r->cur;
-    p++; 
-  }
-  else if (p[1] == '&') {
-    storegoto(r,top(alt_stack,1));
-    labels[top(alt_stack,0)] = r->cur;
-    storeop(r,FAIL);  
-    labels[top(alt_stack,1)] = r->cur;
-    storeop(r,PEEKED); 
-    p++;
-  }
-  else {
-    storegoto(r,top(alt_stack,1));
-    labels[top(alt_stack,0)] = r->cur;
-    storeop(r,FAIL);  
-    labels[top(alt_stack,1)] = r->cur;
-    storeop(r,ONFEND);  
+  switch (p[1]) {
+    case '<' : p+=2;
+               while ('0' <= *p && *p <= '9') min = min * 10 + (*p++ - '0');
+               if (*p == ',') {
+                 p++;
+                 while ('0' <= *p && *p <= '9') max = max * 10 + (*p++ - '0');
+               }
+               else max = min; 
+      
+               if (*p != '>' || (max > 0 &&(min>max)) || (min>200) || (max>200)) {
+                 fprintf(stderr,"<> %d %d\n",min,max);
+                 error("ERR124: Bad closure limits");
+               }
+               if (max == 0) max = 255;
+               goto clo;
+               
+     case '*' : p++; min = 0; max = 255; goto clo;           
+     case '+' : p++; min = 1; max = 255; goto clo;           
+     case '?' : p++; min = 0; max = 1;   goto clo;
+     
+          clo : labels[top(alt_stack,1)] = r->cur;
+                storeop(r,ONFEND);
+                if (max > 1) {  
+                  storeop(r,BKMAX); storeop(r,max);  
+                  storegoto(r,top(alt_stack,2));
+                }
+                labels[top(alt_stack,0)] = r->cur;
+                if (min > 0) {
+                  storeop(r,MIN); store(r,min);
+                }
+                break;
+                
+     case '!' :
+                labels[top(alt_stack,1)] = r->cur;
+                storeop(r,ONFEND);  
+                storeop(r,FAIL);  
+                labels[top(alt_stack,0)] = r->cur;
+                p++; 
+                break;
+  
+     case '&' :
+                storegoto(r,top(alt_stack,1));
+                labels[top(alt_stack,0)] = r->cur;
+                storeop(r,FAIL);  
+                labels[top(alt_stack,1)] = r->cur;
+                storeop(r,PEEKED); 
+                p++;
+                break;
+                
+     default  : storegoto(r,top(alt_stack,1));
+                labels[top(alt_stack,0)] = r->cur;
+                storeop(r,FAIL);  
+                labels[top(alt_stack,1)] = r->cur;
+                storeop(r,ONFEND);
+                break;  
   }
   pop(alt_stack);
   pop(alt_stack);
