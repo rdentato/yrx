@@ -864,10 +864,6 @@ static char *storeesc(rexptrs *r, unsigned char *p)
                break;
 
     case 'A' : storeop(r,EMPTY);   break;
-    
-#if 0    
-    case ':' : storeop(r,GOAL);    break;
-#endif 
 
     case 'C' : storeop(r,CASE);
                r->casesensitive ^= 1; break;
