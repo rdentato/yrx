@@ -811,7 +811,8 @@ static char *storeesc(rexptrs *r, unsigned char *p)
     case 'r' : storech(r,'\r');    break;
     case 't' : storech(r,'\t');    break;
     case 'v' : storech(r,'\v');    break;
-    case 'e' : storech(r,'\e');    break;
+    
+    case 'e' : storeop(r,ESCANY);    break;
     
     case 'a' : storeop(r,ALPHA);   break;
     case 'd' : storeop(r,DIGIT);   break;

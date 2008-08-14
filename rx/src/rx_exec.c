@@ -127,10 +127,10 @@ rx_result rx_exec(const unsigned char *nfa, unsigned char *str)
   
   if (str == NULL) return NULL;
   
-  rex.goal = NULL;
   rex.casesensitive = 1;
   rex.bol = str;
   rex.rxnum = 0;
+  rex.escape = '\\';
     
   do {
     rex.rxnum = 0;
@@ -139,7 +139,7 @@ rx_result rx_exec(const unsigned char *nfa, unsigned char *str)
 
   if (matches) {
     rex.boc[0] = str;
-    rex.eoc[0] = rex.goal? rex.goal: matches;
+    rex.eoc[0] = matches;
     return ((rx_result *)&rex);
   }
   else
@@ -230,9 +230,13 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                                     if (k) FAILED();
                                     
                                     break;
-                                                                      
+                               
                         case IDENT: while (rx_isa(*s,WORDC)) s++;
                                     if (s == start) FAILED();
+                                    break;
+                                   
+                        case ESCANY: if (*s == r->escape && s[1]) s++;
+                                    if (*s) s++;  
                                     break;
                                    
                         case NHEX: if ((*s == '0') &&
