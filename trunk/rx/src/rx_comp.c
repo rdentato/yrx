@@ -723,7 +723,9 @@ static void fixalt(rexptrs *r)
   fflush(stderr);
   */
   r->cur = r->first;
-  
+  if (alt_stack_count > 0)
+    error("ERR116: Unclosed capture");
+
   while (*(r->cur) != END) {
     switch (optype(*(r->cur))) {
                     
