@@ -31,7 +31,6 @@ typedef struct {
   unsigned char *boc[RX_MAXCAPT+1];
   unsigned char *eoc[RX_MAXCAPT+1];
   
-  unsigned char *goal;
   unsigned char *bol;
 
   unsigned char  casesensitive;
@@ -59,12 +58,12 @@ typedef struct {
 #define ANY     0x0B   /* 000 01011 */
 #define ZERO    0x0C   /* 000 01100 */
 #define ALPHA   0x0D   /* 000 01101 */
+#define ESCANY  0x0E   /* 000 01110 */
 
-#define iscls(_x) (0x01 <= (_x) && (_x) <= 0x0D)
+#define iscls(_x) (0x01 <= (_x) && (_x) <= 0x0E)
 
-#define okforclosure(_x) (iscls(_x) || optype(n) == CCL )
+#define okforclosure(_x) (iscls(_x) || optype(_x) == CCL )
 
-#define ESCAPE  0x0E   /* 000 01110 */
 #define OPT     0x0F   /* 000 01111 */  /* ? */
 #define REPT    0x10   /* 000 10000 */  /* < */
 #define REPT0   0x11   /* 000 10001 */  /* * */
@@ -72,7 +71,7 @@ typedef struct {
 #define BRACED  0x13   /* 000 10011 */  
 #define BOL     0x14   /* 000 10100 */
 #define EOL     0x15   /* 000 10101 */
-#define XXXX    0x16   /* 000 10111 */
+#define ESCAPE  0x16   /* 000 10111 */
 #define QSTR    0x17   /* 000 10111 */
 #define NINT    0x18   /* 000 11000 */
 #define NFLOAT  0x19   /* 000 11001 */

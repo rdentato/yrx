@@ -131,6 +131,7 @@ void rx_symdump(FILE *f,unsigned char * nfa)
                      putc('\n',f);
                      break;
         case CASE  : fprintf(f,"\tCASE\n");           break;
+        case ESCANY: fprintf(f,"\tESCANY\n");           break;
         
         case FAIL:   fprintf(f,"\tFAIL\n");         break;
         case FAILALL:fprintf(f,"\tFAIL\tALL\n");         break;
