@@ -648,6 +648,7 @@ static unsigned char *endalt(rexptrs *r, unsigned char *p)
   
   if (alt_stack_count == 0)
     error("ERR106: Unexpected ')'");
+    
   min=0; max=0; 
   
   switch (p[1]) {
@@ -659,8 +660,9 @@ static unsigned char *endalt(rexptrs *r, unsigned char *p)
                }
                else max = min; 
       
-               if (*p != '>' || (max > 0 &&(min>max)) || (min>200) || (max>200)) {
-                 fprintf(stderr,"<> %d %d\n",min,max);
+               if (*p != '>' || ((max > 0) && (min > max)) ||
+                   (min > 200) || (max > 200)) {
+                 /*fprintf(stderr,"<> %d %d\n",min,max);*/
                  error("ERR124: Bad closure limits");
                }
                if (max == 0) max = 255;
@@ -976,6 +978,9 @@ static char *compile(const unsigned char *pat, unsigned char *nfa,
   *(r->cur++) = MATCH;
   *(r->cur++) = bol ? FAILALL :FAIL;
   *(r->cur)   = END;
+  
+  if (capt_stack_count > 0) 
+    error("ERR117: Unclosed capture"); 
   
   if (alt_cur_label > 0) {
     fixalt(r);
