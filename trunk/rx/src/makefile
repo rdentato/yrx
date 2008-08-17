@@ -56,12 +56,13 @@ librx.a: $(RX_OBJS)
 rxc.c : rxc_boot$(_EXE) rxc.rxc
 	rxc_boot <rxc.rxc >rxc.c
          
-rxc$(_EXE): librx.a rxc.rxc
-	rxc_boot <rxc.rxc >rxc.c
+rxc_rxc: librx.a rxc.o
 	$(LN)rxc$(_EXE) rxc.o -lrx
-	rxc <rxc.rxc >rxc.c
+	./rxc rxc.rxc > rxc.c
+	gcc $(CFLAGS) -c rxc.c
 	$(LN)rxc$(_EXE) rxc.o -lrx
-	rxc <rxc.rxc >rxc.c
+
+rxc$(_EXE): librx.a rxc.o
 	$(LN)rxc$(_EXE) rxc.o -lrx
 
 rxc_boot$(_EXE): librx.a rxc_boot.o 
