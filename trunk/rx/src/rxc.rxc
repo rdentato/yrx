@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
       switch(state) {
       
         case IN_CODE :
-          RX_SWITCH(r,s) {
+          RX_SWITCH(r,s) { 
             case "^\/\*"    : state = IN_COMMENT;
             case "^\s+"     : 
             case "^\Q"      : 
@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
             case "^RX_SWITCH\Y\({\W},{(\B()|[^)(]+)+}\)" :
                               s = rx_end(r,0);
                               if (*nfa) {
-                                fprintf(outf,"static unsigned char RX_%d[]= {\n",swnum);
+                                fprintf(outf,"static unsigned char RX_%d[]= { /* %d */\n",swnum,strlen(nfa)+1);
                                 rx_dump_num(outf,nfa);
                                 fprintf(outf,"\n};\n");
                               }
@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
   }
   
   if (*nfa) {
-    fprintf(outf,"static unsigned char RX_%d[]= {\n",swnum);
+    fprintf(outf,"static unsigned char RX_%d[]= { /* %d */\n",swnum,strlen(nfa)+1);
     rx_dump_num(outf,nfa);
     fprintf(outf,"\n};\n");
   }
