@@ -12,7 +12,7 @@ static unsigned char RX_2[]= {
  35,128,134, 20, 98, 42, 47, 39, 35,128,134, 20, 18,254, 42, 39,
  34,  0,
 };
-#line 1
+#line 1 "rxc.rxc"
 /* 
 **  (C) 2006 by Remo Dentato (rdentato@users.sourceforge.net)
 **
@@ -55,24 +55,31 @@ int error(char *errmsg)
   exit(1);
 }
 
-#define chk(x,e) if x error(e)
-
 #define IN_CODE    1
 #define IN_COMMENT 2
 
 int main(int argc, char *argv[])
 {
-  char *s, *p;
+  char *s;
   char *err;
   int c;
-  int state = IN_CODE;
+  int state = IN_CODE;  
   rx_result r;
+  
+  char *fname = "(stdin)";
     
-  tmpf = tmpfile();
+  *nfa = '\0';
   inf  = stdin;
   outf = stdout;
   
-  *nfa = '\0';
+  tmpf = tmpfile();
+  if (tmpf == NULL) error("ERR202: Unable to open temp file");
+  
+  if (argc > 1) {
+    fname = argv[1];
+    inf = fopen(fname,"r");
+    if (inf == NULL) error("ERR203: Unable to open input file");
+  }
   
   while ((s = fgets(ln,ln_len,inf))) {
     ++lnnum;
@@ -147,7 +154,8 @@ int main(int argc, char *argv[])
     rx_dump_num(outf,nfa);
     fprintf(outf,"\n};\n");
   }
-  fputs("#line 1\n",outf);
+  
+  fprintf(outf,"#line 1 \"%s\"\n",fname);
   
   fseek(tmpf,SEEK_SET,0);
   
