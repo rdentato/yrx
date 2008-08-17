@@ -65,16 +65,15 @@ int main (int argc, char **argv)
        argn++;
      }
      
-     
      if (err == NULL) {
        if (!binonly)
          fprintf(stdout,"nfa: (%d)\n\t",strlen(nfa));
        fputs("\"",stdout);
-       rx_hexdump(stdout,nfa);
+       rx_dump_str(stdout,nfa);
        fputs("\"",stdout);
        if (binonly) exit(0);
        fputs("\n\n",stdout);
-       rx_symdump(stdout,nfa);
+       rx_dump_asm(stdout,nfa);
        
        for (argn++ ;argn < argc; argn++) {
          printf("%s -> ",argv[argn]);

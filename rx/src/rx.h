@@ -42,8 +42,9 @@ typedef void *rx_result;
 
 /*   Should you need a readable dump of the nfa, use these to functions.
 */
-void       rx_hexdump (FILE *f,unsigned char * nfa);
-void       rx_symdump (FILE *f,unsigned char * nfa);
+void       rx_dump_str (FILE *f,unsigned char * nfa);
+void       rx_dump_asm (FILE *f,unsigned char * nfa);
+void       rx_dump_num (FILE *f,unsigned char * nfa);
 
 /*   Create a NFA from a regular expression. Note that nfa must be at 
 ** least {RX_MAXNFA} characters long.
@@ -91,7 +92,7 @@ char *rx_compile_add(const unsigned char *pat, unsigned char *nfa);
 
 #define RX_CASE(n,s) case n 
 
-#define rx_write(r,n,f) fwrite(rx_start(r,n),rx_len(r,n),1,stdout)
+#define rx_write(r,n,f) fwrite(rx_start(r,n),rx_len(r,n),1,f)
 
 /* == Finite State Machines
 **
