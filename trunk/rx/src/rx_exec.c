@@ -11,9 +11,6 @@
 ** of this software for any purpose. It is provided "as is" without
 ** express or implied warranty.
 **
-** This code is a derivative work of the PUBLIC DOMAIN regex routines
-** by Ozan Yigit: http://www.cs.yorku.ca/~oz/
-**
 */
 
 #include "rx_.h"
@@ -173,14 +170,152 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
   unsigned char n, c;
   unsigned short min, max, k;
   register unsigned char *s = str;
-  unsigned char *start, *t, *p;
+  unsigned char *start, *t;
   unsigned fail = 0;
   int back = 0;
 
   while (*nfa != END) {
     /*fprintf(stderr,"--> %p %02x %02X\n",nfa,*nfa,optype(*nfa));fflush(stderr);*/ 
     start = s;
-    switch (optype(*nfa)) {
+   switch (*nfa) {
+     case BOL:  if (s != r->bol) FAILED(); break;
+     case EOL:  if (*s)          FAILED(); break;
+
+     case CASE: r->casesensitive ^= 1; break;
+     
+     case QSTR: if ((s=qstr(s)) == NULL ) FAILED();
+                 break;
+                 
+     case NINT: if ((*s == '+' || *s == '-') && isdigit(s[1])) s+=2;
+                while (isdigit(*s)) s++;
+                if (s == start) FAILED();
+                break;
+         
+     case ESCAPE: r->escape = *s;
+                  if (r->escape == ' ') r->escape = '\0';
+                  break;
+                
+     case SPCS: while (isspace(*s)) s++;
+                break;
+
+     case BRACED: k=0; c = *++nfa; n = *++nfa;
+                 if (*s != c) FAILED();
+                 k++;
+                 while (*++s && k > 0) {
+                   if (*s == c) k++;
+                   else if (*s == n) k--;
+                 }
+                 if (k) FAILED();
+                 
+                 break;
+            
+     case IDENT: while (rx_isa(*s,WORDC)) s++;
+                 if (s == start) FAILED();
+                 break;
+                
+     case ESCANY: if (*s == r->escape && s[1]) s++;
+                  if (*s) s++;  
+                  break;
+                
+     case NHEX: if ((*s == '0') &&
+                    (s[1] == 'x' || s[1] == 'X') &&
+                     isxdigit(s[2]))
+                   s += 3;
+                while (isxdigit(*s)) s++;
+                if (s == start) FAILED();
+                break;
+        
+     case NFLOAT: 
+                if ((*s == '+' || *s == '-') && isdigit(s[1])) s+=2;
+                while (isdigit(*s)) s++;
+                if (*s == '.') { 
+                  s++;
+                  while (isdigit(*s)) s++;
+                }
+                if (s == start) FAILED();
+                break;
+        
+      case REPT:  min = *++nfa;
+                  max = *++nfa;
+                  if (min == 255) min = 0;
+                  if (max == 255) max = 65535;
+                  goto clo;
+      case OPT:   min = 0; max = 1    ; goto clo;
+      case REPT0: min = 0; max = 65535; goto clo;
+      case REPT1: min = 1; max = 65535; goto clo;
+             clo:
+                k = 0;
+                t = s;
+                n = optype(nfa[1]);
+                c = *s; 
+                while (c && k<max) {
+                  if (nfa[1] == ESCANY) {
+                    if (s[k++] == r->escape) 
+                      if (s[k]) k++; 
+                  } else if (n == STR) {
+                    if (r->casesensitive == 0) c=tolower(c);
+                    if (c != nfa[2])  break;
+                  }
+                  else if (n == SINGLE) {
+                    if (!rx_isa(c,nfa[1])) break;
+                  }
+                  else if (n == CCL) {
+                    if (!rx_isinccl(c,nfa+1)) break;
+                  }
+                  else FAILED();
+                  c=s[++k]; 
+                }
+                s += k;
+                n=*nfa;
+                nfa += skip(nfa+1);
+                #if 0
+                while (k>=min && s >=t) {
+                  /* TODO: REMOVE RECURSION TO OPTIMIZE */
+                  if ((p=match(r,s,nfa+1))) return p;
+                  s--; k--;
+                }        
+                #else
+                  if (min <= k && k <= max) break;
+                #endif                           
+                FAILED();
+                break;
+                
+      case EMPTY : break;
+      
+      case BKMAX:  if (of_inc_loop() < *++nfa)
+                     back = 1;  /* enable back goto */
+                   else
+                     nfa += 2; /* skip GOTO */
+                   /*fprintf(stderr,"<< %d\n",of_num_loop());*/
+                    break;
+      case MIN   :  if (of_num_loop() >= *++nfa) break;
+                    FAILED();
+                    break; 
+      
+      case MATCH  : return s;
+                
+      case FAILALL: r->failall = 1;
+      case FAIL   : FAILED();
+                    break;
+                    
+      case PEEKED : of_pop(t,s);
+                    break;
+                    
+      case ONFEND : of_pop(t,t);
+                    break;
+                    
+      case PATTERN: r->rxnum++;
+                    r->failall = 0;
+                    k = (nfa[1] & 0x7F) << 7 | (nfa[2] & 0x7F);
+                    /*fprintf(stderr,"RX: %d %d\n",r->rxnum, k);*/
+                    of_reset();
+                    of_push(nfa+1+k,  start);
+                    for (k=0; k<=RX_MAXCAPT; k++)
+                      r->boc[k] = r->eoc[k] = NULL;
+                    nfa += 2;
+                    break;
+                    
+      default :  switch (optype(*nfa)) {
     
       case GOTO  : if ((*nfa & 0xF0) == ONFAIL) {
                      of_push(nfa+1+jmparg(nfa), start);
@@ -195,146 +330,8 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                    nfa++;
                    break;
       
-      case SINGLE : if (iscls(*nfa)) {                     
+      case SINGLE : if (iscls(*nfa)) {  
                       if (*s == '\0' || !rx_isa(*s++,*nfa)) FAILED();
-                    }
-                    else {  
-                      switch (*nfa) {
-                        case BOL:  if (s != r->bol) FAILED(); break;
-                        case EOL:  if (*s)          FAILED(); break;
-
-                        case CASE: r->casesensitive ^= 1; break;
-                        
-                        case QSTR: if ((s=qstr(s)) == NULL ) FAILED();
-                                    break;
-                                    
-                        case NINT: if ((*s == '+' || *s == '-') && isdigit(s[1])) s+=2;
-                                   while (isdigit(*s)) s++;
-                                   if (s == start) FAILED();
-                                   break;
-                            
-                        case ESCAPE: r->escape = *s;
-                                     if (r->escape == ' ') r->escape = '\0';
-                                     break;
-                                   
-                        case SPCS: while (isspace(*s)) s++;
-                                   break;
-
-                        case BRACED: k=0; c = *++nfa; n = *++nfa;
-                                    if (*s != c) FAILED();
-                                    k++;
-                                    while (*++s && k > 0) {
-                                      if (*s == c) k++;
-                                      else if (*s == n) k--;
-                                    }
-                                    if (k) FAILED();
-                                    
-                                    break;
-                               
-                        case IDENT: while (rx_isa(*s,WORDC)) s++;
-                                    if (s == start) FAILED();
-                                    break;
-                                   
-                        case ESCANY: if (*s == r->escape && s[1]) s++;
-                                    if (*s) s++;  
-                                    break;
-                                   
-                        case NHEX: if ((*s == '0') &&
-                                       (s[1] == 'x' || s[1] == 'X') &&
-                                        isxdigit(s[2]))
-                                      s += 3;
-                                   while (isxdigit(*s)) s++;
-                                   if (s == start) FAILED();
-                                   break;
-                           
-                        case NFLOAT: 
-                                   if ((*s == '+' || *s == '-') && isdigit(s[1])) s+=2;
-                                   while (isdigit(*s)) s++;
-                                   if (*s == '.') { 
-                                     s++;
-                                     while (isdigit(*s)) s++;
-                                   }
-                                   if (s == start) FAILED();
-                                   break;
-                           
-                         case REPT:  min = *++nfa;
-                                     max = *++nfa;
-                                     if (min == 255) min = 0;
-                                     if (max == 255) max = 65535;
-                                     goto clo;
-                         case OPT:   min = 0; max = 1    ; goto clo;
-                         case REPT0: min = 0; max = 65535; goto clo;
-                         case REPT1: min = 1; max = 65535; goto clo;
-                                clo:
-                                   k = 0;
-                                   t = s;
-                                   n = optype(nfa[1]);
-                                   c = *s; 
-                                   while (c && k<max) {
-                                     if (n == STR) {
-                                       if (r->casesensitive == 0) c=tolower(c);
-                                       if (c != nfa[2])  break;
-                                     }
-                                     else if (n == SINGLE) {
-                                       if (!rx_isa(c,nfa[1])) break;
-                                     }
-                                     else if (n == CCL) {
-                                       if (!rx_isinccl(c,nfa+1)) break;
-                                     }
-                                     else FAILED();
-                                     c=s[++k]; 
-                                   }
-                                   s += k;
-                                   n=*nfa;
-                                   nfa += skip(nfa+1);
-                                   #if 0
-                                   while (k>=min && s >=t) {
-                                     /* TODO: REMOVE RECURSION TO OPTIMIZE */
-                                     if ((p=match(r,s,nfa+1))) return p;
-                                     s--; k--;
-                                   }        
-                                   #else
-                                     if (min <= k && k <= max) break;
-                                   #endif                           
-                                   FAILED();
-                                   break;
-                                   
-                         case EMPTY : break;
-                         
-                         case BKMAX:  if (of_inc_loop() < *++nfa)
-                                        back = 1;  /* enable back goto */
-                                      else
-                                        nfa += 2; /* skip GOTO */
-                                      /*fprintf(stderr,"<< %d\n",of_num_loop());*/
-                                       break;
-                         case MIN   :  if (of_num_loop() >= *++nfa) break;
-                                       FAILED();
-                                       break; 
-                         
-                         case MATCH  : return s;
-                                   
-                         case FAILALL: r->failall = 1;
-                         case FAIL   : FAILED();
-                                       break;
-                                       
-                         case PEEKED : of_pop(t,s);
-                                       break;
-                                       
-                         case ONFEND : of_pop(t,t);
-                                       break;
-                                       
-                         case PATTERN: r->rxnum++;
-                                       r->failall = 0;
-                                       k = (nfa[1] & 0x7F) << 7 | (nfa[2] & 0x7F);
-                                       /*fprintf(stderr,"RX: %d %d\n",r->rxnum, k);*/
-                                       of_reset();
-                                       of_push(nfa+1+k,  start);
-                                       for (k=0; k<=RX_MAXCAPT; k++)
-                                         r->boc[k] = r->eoc[k] = NULL;
-                                       nfa += 2;
-                                       break;
-                   
-                      }
                     }
                     break;
       
@@ -364,7 +361,7 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                     
       default     : FAILED();
     }
-    
+    }
     if (fail) {
       if (of_empty()) return NULL;
       of_pop(nfa,s);

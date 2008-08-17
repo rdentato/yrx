@@ -53,8 +53,20 @@ librx.a: $(RX_OBJS)
 
 # rxc preprocessor
 
-rxc$(_EXE): rxc.o librx.a
+rxc.c : rxc_boot$(_EXE) rxc.rxc
+	rxc_boot <rxc.rxc >rxc.c
+         
+rxc$(_EXE): librx.a rxc.rxc
+	rxc_boot <rxc.rxc >rxc.c
 	$(LN)rxc$(_EXE) rxc.o -lrx
+	rxc <rxc.rxc >rxc.c
+	$(LN)rxc$(_EXE) rxc.o -lrx
+	rxc <rxc.rxc >rxc.c
+	$(LN)rxc$(_EXE) rxc.o -lrx
+
+rxc_boot$(_EXE): librx.a rxc_boot.o 
+	$(LN)rxc_boot$(_EXE) rxc_boot.o -lrx
+
 
 # = Profiling
 

@@ -11,9 +11,6 @@
 ** of this software for any purpose. It is provided "as is" without
 ** express or implied warranty.
 **
-** This code is a derivative work of the PUBLIC DOMAIN regex routines
-** by Ozan Yigit: http://www.cs.yorku.ca/~oz/
-**
 */
 #ifdef UTEST
 #define RX_MAXNFA 40

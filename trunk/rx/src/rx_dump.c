@@ -65,7 +65,7 @@ static void outsymc(FILE *f,int c)
 #define incrnfa()  ((*nfa)? ++nfa : nfa)
 #define addnfa(_x) do { int _y=_x; if ((nfa+_y) <maxnfa) nfa+=_y; } while (0)
 
-void rx_symdump(FILE *f,unsigned char * nfa)
+void rx_dump_asm(FILE *f,unsigned char * nfa)
 {
   int n;
   int back = 0;
@@ -217,11 +217,20 @@ void rx_symdump(FILE *f,unsigned char * nfa)
 ** Nonetheless they have to be printed char by char to correctly handle
 ** control and non-ascii characters (as well as quotes and backslash!).
 */
-void rx_hexdump(FILE *f, unsigned char * nfa)
+void rx_dump_str(FILE *f, unsigned char * nfa)
 {
   while (*nfa != END) {
     outc(f,*nfa++);
   }
+}
+
+void rx_dump_num(FILE *f, unsigned char * nfa)
+{
+  int cnt = 0;
+  do {
+    fprintf(f,"%3d,",*nfa);
+    if ((++cnt & 0x0F) == 0) fputc('\n',f);
+  } while (*nfa++ != END) ;
 }
 
 
