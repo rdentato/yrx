@@ -1,0 +1,177 @@
+/* ========================================================================== */
+/*                                                                            */
+/*   Filename.c                                                               */
+/*   (c) 2001 Author                                                          */
+/*                                                                            */
+/*   Description                                                              */
+/*                                                                            */
+/* ========================================================================== */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include "rx.h"
+
+typedef struct {
+  unsigned short num;
+  unsigned char *ptr;
+} part; 
+
+unsigned char *buf = NULL;
+size_t buf_sz = 0;
+
+unsigned char curtrk = 0;
+
+int parts_cnt = 0;
+int parts_max = 0;
+part *parts = NULL;
+
+unsigned char *mptext = NULL;
+  
+void cleanexit(int code)
+{
+  free(parts);
+  free(mptext);
+  free(buf);
+  
+  exit(code);
+}
+
+int cmp_part(part *a, part *b)
+{
+  if (a->num == b->num) return a->ptr - b->ptr;
+  return (a->num - b->num); 
+}
+
+int add_part(unsigned char n, unsigned char *p)
+{
+  if (parts_cnt >= parts_max) {
+    parts_max += 128;
+    parts = realloc(parts, parts_max * sizeof(part));
+    if (parts == NULL) {
+       fprintf(stderr,"Out of Memory\n");
+       cleanexit(1);
+    }
+    
+    parts[parts_cnt].num = n;
+    parts[parts_cnt].ptr = p;
+    parts_cnt++;
+  }
+
+}
+
+unsigned char *mp_read(char *fname)
+{
+  FILE *f;
+  size_t len,k;
+  
+  f = fopen(fname,"rb");
+  if (f == NULL) return NULL; 
+
+  /* try guessing needed buffer size */
+  buf_sz = fseek(f,0,SEEK_END);
+  buf_sz = ftell(f); 
+  
+  fseek(f,0,SEEK_SET); /* back to the file start */
+  
+  free(buf);
+  buf = malloc(buf_sz+16);/* will need to add '\n\0' at least */
+  
+  if (buf) {
+    buf[0] = '|'; buf[1] = '0'; buf[2] = ' ';
+    len = fread(buf+3, 1,buf_sz+1, f);
+    if (len != buf_sz) {
+      /* TODO: Instead of failing, let's continue reading if needed */
+      fprintf(stderr,"Cannot trust ftell() (%d!=%d)\n",len,buf_sz);
+      free(buf);
+      buf=NULL;
+    }
+    else {
+      buf[3 + buf_sz++] = '\n';
+      buf[3 + buf_sz] = '\0';
+    }
+  }
+  fclose(f);
+  return buf;
+}
+
+int usage()
+{
+  fprintf(stderr,"Usage: mpad file");
+  return (1);
+}
+
+
+void setblank(rx_result rr)
+{
+  unsigned char *p = rx_start(rr,0);
+  unsigned char *q = rx_end(rr,0);
+/*
+  fprintf(stderr,">>");rx_write(rr,0,stderr);
+  fprintf(stderr,"<<\n");
+*/
+  while (p<q) *p++ = ' ';
+}
+
+int setglobals(unsigned char *mptext)
+{
+  unsigned char *s;
+  rx_result rr;
+  
+  s = mptext;
+  
+  while (*s) {
+    RX_SWITCH(rr,s) {
+      case "^\C[A-G][#b]?" : break;
+                          
+      case "^#[^\n]*\n" :
+                           setblank(rr);
+                           break;
+                           
+      case "^tempo\Y{\N}" :
+                           setblank(rr);
+                           break;
+                           
+      case "^meter\Y({\N\/\N}|none)" :
+                           setblank(rr);
+                           break;
+                           
+      case "^ppqn\Y{\N}" :
+                           setblank(rr);
+                           break;
+      
+      case "^globaloose\Y{\N},{(g|\N)}" :
+                           setblank(rr);
+                           break;
+      
+      case "^globalvelvar\Y{\N},{(g|\N)}" :
+                           setblank(rr);
+                           break;   
+                           
+      case "^\|{\d*}":      if (rx_len(rr,1) > 0)
+                             curtrk = atoi(rx_start(rr,1));
+                           else curtrk++;
+                           
+                           add_part(curtrk,rx_end(rr,0));
+                           break;
+                         
+                           
+    }
+    if (rx_matched(rr) > 0) s = rx_end(rr,0);
+    else s++;
+  }
+  
+  return 0;
+}
+
+int main(int argc, char *argv[])
+{
+  if (argc < 2) return usage();
+  
+  mptext = mp_read(argv[1]);
+  if (mptext) {
+    fprintf(stderr,"%s",mptext);
+    setglobals(mptext);
+    fprintf(stderr,"%s",mptext);
+  }
+  cleanexit(0);
+}

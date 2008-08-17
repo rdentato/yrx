@@ -53,17 +53,16 @@ librx.a: $(RX_OBJS)
 
 # rxc preprocessor
 
-rxc.c : rxc_boot$(_EXE) rxc.rxc
-	rxc_boot <rxc.rxc >rxc.c
-         
-rxc_rxc: librx.a rxc.o
-	$(LN)rxc$(_EXE) rxc.o -lrx
-	./rxc rxc.rxc > rxc.c
-	gcc $(CFLAGS) -c rxc.c
+rxc$(_EXE): librx.a rxc_b.o rxc.o
 	$(LN)rxc$(_EXE) rxc.o -lrx
 
-rxc$(_EXE): librx.a rxc.o
-	$(LN)rxc$(_EXE) rxc.o -lrx
+rxc.c : rxc_boot$(_EXE) rxc.rxc
+	rxc <rxc.rxc >rxc.c
+         
+rxc_b.o: rxc_boot$(_EXE)
+	./rxc_boot <rxc.rxc >rxc_b.c
+	gcc $(CFLAGS) -c rxc_b.c
+	$(LN)rxc$(_EXE) rxc_b.o -lrx
 
 rxc_boot$(_EXE): librx.a rxc_boot.o 
 	$(LN)rxc_boot$(_EXE) rxc_boot.o -lrx
@@ -95,6 +94,7 @@ clean: FORCE
 	$(RM) rxc_boot$(_EXE)
 	$(RM) rx_test$(_EXE)
 	$(RM) rxc.c
+	$(RM) rxc_b.c
 	$(RM) *.tmp
 	$(RM) gmon.out
 	$(RM) *.gc??
