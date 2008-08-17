@@ -91,7 +91,10 @@ clean: FORCE
 	$(RM) *.o
 	$(RM) librx.a
 	$(RM) rx$(_EXE)
+	$(RM) rxc$(_EXE)
+	$(RM) rxc_boot$(_EXE)
 	$(RM) rx_test$(_EXE)
+	$(RM) rxc.c
 	$(RM) *.tmp
 	$(RM) gmon.out
 	$(RM) *.gc??
