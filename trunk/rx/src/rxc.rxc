@@ -40,6 +40,20 @@ int error(char *errmsg)
   exit(1);
 }
 
+void outrx(int sym)
+{
+  if (*nfa) {
+    fprintf(outf,"static unsigned char RX_%d[]= { /* %d */\n",swnum,strlen(nfa)+1);
+    rx_dump_num(outf,nfa);
+    fprintf(outf,"\n};\n");
+    if (sym) {
+      fprintf(outf,"\n/*\n");
+      rx_dump_asm(outf,nfa);
+      fprintf(outf,"\n*/\n");
+    }
+  }
+}
+
 #define IN_CODE    1
 #define IN_COMMENT 2
 
@@ -48,7 +62,9 @@ int main(int argc, char *argv[])
   char *s;
   char *err;
   int c;
-  int state = IN_CODE;  
+  int state = IN_CODE;
+  int argn = 1;  
+  int sym = 0;
   rx_result r;
   
   char *fname = "(stdin)";
@@ -60,8 +76,13 @@ int main(int argc, char *argv[])
   tmpf = tmpfile();
   if (tmpf == NULL) error("ERR202: Unable to open temp file");
   
-  if (argc > 1) {
-    fname = argv[1];
+  while ((argn < argc) && (argv[argn][0] == '-')) {
+    if (argv[argn][1] == 's') sym = 1;
+    argn++;
+  }
+    
+  if (argn < argc) {
+    fname = argv[argn];
     inf = fopen(fname,"r");
     if (inf == NULL) error("ERR203: Unable to open input file");
   }
@@ -94,11 +115,7 @@ int main(int argc, char *argv[])
 
             case "^RX_SWITCH\Y\({\W},{(\B()|[^)(]+)+}\)" :
                               s = rx_end(r,0);
-                              if (*nfa) {
-                                fprintf(outf,"static unsigned char RX_%d[]= { /* %d */\n",swnum,strlen(nfa)+1);
-                                rx_dump_num(outf,nfa);
-                                fprintf(outf,"\n};\n");
-                              }
+                              outrx(sym);
                               fprintf(tmpf,"switch(rx_matched((");
                               rx_write(r,1,tmpf);
                               fprintf(tmpf," = rx_exec(RX_%d,", ++swnum);
@@ -134,11 +151,7 @@ int main(int argc, char *argv[])
     }
   }
   
-  if (*nfa) {
-    fprintf(outf,"static unsigned char RX_%d[]= { /* %d */\n",swnum,strlen(nfa)+1);
-    rx_dump_num(outf,nfa);
-    fprintf(outf,"\n};\n");
-  }
+  outrx(sym);
   
   fprintf(outf,"#line 1 \"%s\"\n",fname);
   

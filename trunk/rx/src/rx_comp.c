@@ -214,9 +214,10 @@ static short setbit(unsigned short num, unsigned char *bits)
 }
 
 static short setcls(unsigned short num, unsigned char *cls)
-{ static unsigned char numcls;
+{ 
+  static unsigned char numcls;
   if (cls) {
-    *cls |= (1<< ((num -1) & 0x07));
+    *cls |= (1<< ((num) & 0x07));
     num = ++numcls;
   }
   else {
@@ -914,7 +915,7 @@ static char *compile(const unsigned char *pat, unsigned char *nfa,
   while (*p) {
     c=0;
     switch (*p) {
-      case '.' : storeop(&rex,ANY) ; break;
+      case '.' : storeop(r,ANY) ; break;
       
       case '^':  if (p == pat) {
                    storeop(r,BOL) ;
@@ -980,10 +981,9 @@ static char *compile(const unsigned char *pat, unsigned char *nfa,
   if (capt_stack_count > 0) 
     error("ERR117: Unclosed capture"); 
   
-  if (alt_cur_label > 0) {
+  if (alt_cur_label > 1) {
     fixalt(r);
   }
-  
   l = (r->cur - r->first)-3;
   
   p = r->first;

@@ -44,25 +44,25 @@ typedef struct {
 #define END     0x00
 #define SINGLE  0x00
 
-#define ANYUPR  0x01   /* 000 00001 */
-#define ANYLWR  0x02   /* 000 00010 */
-#define ALNUM   0x03   /* 000 00011 */
-#define DIGIT   0x04   /* 000 00100 */
-#define XDIGIT  0x05   /* 000 00101 */
-#define SPACE   0x06   /* 000 00110 */
-#define PUNCT   0x07   /* 000 00111 */
+#define ANYUPR  0xB0   /* 101 10001 */
+#define ANYLWR  0xB1   /* 101 10010 */
+#define ALNUM   0xB2   /* 101 10011 */
+#define DIGIT   0xB3   /* 101 10100 */
+#define XDIGIT  0xB4   /* 101 10101 */
+#define SPACE   0xB5   /* 101 10110 */
+#define PUNCT   0xB6   /* 101 10111 */
+                   
+#define CTRL    0xB7   /* 101 11000 */
+#define WORDC   0xB8   /* 101 11001 */
+#define SPCTAB  0xB9   /* 101 11010 */
+#define ANY     0xBA   /* 101 11011 */
+#define ZERO    0xBB   /* 101 11100 */
+#define ALPHA   0xBC   /* 101 11101 */
+#define ESCANY  0xBD   /* 101 11110 */
 
-#define CTRL    0x08   /* 000 01000 */
-#define WORDC   0x09   /* 000 01001 */
-#define SPCTAB  0x0A   /* 000 01010 */
-#define ANY     0x0B   /* 000 01011 */
-#define ZERO    0x0C   /* 000 01100 */
-#define ALPHA   0x0D   /* 000 01101 */
-#define ESCANY  0x0E   /* 000 01110 */
+#define iscls(_x) (0xB0 <= (_x) && (_x) <= 0xBD)
 
-#define iscls(_x) (0x01 <= (_x) && (_x) <= 0x0E)
-
-#define okforclosure(_x) (iscls(_x) || optype(_x) == CCL )
+#define okforclosure(_x) (optype(_x) == CCL)
 
 #define OPT     0x0F   /* 000 01111 */  /* ? */
 #define REPT    0x10   /* 000 10000 */  /* < */
@@ -113,11 +113,11 @@ typedef struct {
 #define NOTCHR  0xFE   /* 111 11110 */
 #define NOTCLS  0xFF   /* 111 11111 */
 
-static unsigned char opt_;
+static unsigned short opt_;
 #define optype(_n) (opt_=_n , ((opt_ < 0x28) ? SINGLE : (opt_ & CCL)? CCL : (opt_ & 0xE0)))
 
 #define STR_len(_n) ((_n) & 0x1F)
-#define CCL_len(_n) (((_n)>=0xFE)? 0 : (_n) & 0x3F)
+#define CCL_len(_n) (opt_=_n & 0x3F, (opt_ > 37? 0 : opt_))
 
 #define CAPT_num(_n)  (((_n) & 0x07)+1)
 #define CAPT_type(_n) ((_n) & 0xF8)
