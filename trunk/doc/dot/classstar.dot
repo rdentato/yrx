@@ -1,9 +1,0 @@
-digraph finite_state_machine {
-        rankdir=LR;
-        node [shape = circle];
-        0 [  style= filled, label = "0"] ;
-        1 -> 1 [ label = "a" ] ;
-        1 -> 2 [ label = "&epsilon;" ] ;
-        2 -> 0 [ label = "&epsilon;/$" ] ;
-}
-

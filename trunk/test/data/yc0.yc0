@@ -1,9 +1,0 @@
-  "\s*(\Q)\s*:\s*"  : addregex
-  "\s*EOF\s*:\s*"   : oneof  
-  "\s*ELSE\s*:\s*"  : onnone 
-  "#.-\n?"          :
-  "\s*\n?"          :
-  "\s*<\s*(\w*)\*>" :
-  ELSE              : error
-  EOF               : exit
-  
