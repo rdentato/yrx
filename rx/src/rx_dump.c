@@ -51,6 +51,8 @@ static void outsymc(FILE *f,int c)
 {
     if ((c < ' ')) 
       fprintf(f,"^%c",0x40+c); /* control character */
+    else if ((c == '*')) 
+      fprintf(f,"\\%03o",c); /* control character */
     else 
       fprintf(f,"%c",c);
 }
@@ -62,19 +64,20 @@ static void outsymc(FILE *f,int c)
 ** expression.
 */
 
-#define incrnfa()  ((*nfa)? ++nfa : nfa)
+#define incrnfa()  (cnt++,((*nfa)? ++nfa : nfa))
 #define addnfa(_x) do { int _y=_x; if ((nfa+_y) <maxnfa) nfa+=_y; } while (0)
 
 void rx_dump_asm(FILE *f,unsigned char * nfa)
 {
   int n;
   int back = 0;
+  unsigned int cnt = 0;
   unsigned char *maxnfa;
   
   if (nfa != NULL) {
     maxnfa = nfa+strlen(nfa);
     while (*nfa != END) {
-      fprintf(f,"%p",nfa);
+      fprintf(f,"%04X",cnt);
       
       switch (*nfa) {
         case ANY   : fprintf(f,"\tANY\n");            break;
@@ -151,7 +154,7 @@ void rx_dump_asm(FILE *f,unsigned char * nfa)
                      
         case MATCH:  fprintf(f,"\tMATCH\n");           break;
         case PATTERN: n=((nfa[1] & 0x7F) << 7) + (nfa[2] & 0x7F); 
-                     fprintf(f,"\tPATTERN\t%p\t;+%d\n",nfa+2+n,n);
+                     fprintf(f,"\tPATTERN\t%04X\t;+%d\n",cnt+2+n,n);
                      incrnfa();incrnfa();
                      break;
                      
@@ -173,7 +176,7 @@ void rx_dump_asm(FILE *f,unsigned char * nfa)
                                else 
                                  fprintf(f,"\tGOTO");
                                n = jmparg(nfa);
-                               fprintf(f,"\t%p",(back)?nfa - n +2 : nfa + n+2);
+                               fprintf(f,"\t%04X",(back)?cnt - n +2 : cnt + n+2);
                                fprintf(f,"\t;%c%d\n",(back? '-': '+'),n); 
                                back = 0;
                                incrnfa();
@@ -209,7 +212,7 @@ void rx_dump_asm(FILE *f,unsigned char * nfa)
       incrnfa();
     }
   }
-  fprintf(f,"%p\tEND\n",nfa);
+  fprintf(f,"%04X\tEND\n",cnt);
 }
 
 /* Since NFAs do not contain embedded zeros, they could be treated as
