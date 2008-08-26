@@ -111,7 +111,7 @@ static int skip(const unsigned char *nfa)
 {
   switch (optype(*nfa)) {
     case STR    : return (STR_len(*nfa)+1);
-    case CCL    : return (CCL_len(*nfa)+2);
+    case CCL    : return (CCL_len(*nfa)+1);
   } 
   return 1;
 }
@@ -175,7 +175,7 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
   int back = 0;
 
   while (*nfa != END) {
-    /*fprintf(stderr,"--> %p %02x %02X\n",nfa,*nfa,optype(*nfa));fflush(stderr);*/ 
+    fprintf(stderr,"--> %p %02x %02X\n",nfa,*nfa,optype(*nfa));fflush(stderr); 
     start = s;
    switch (*nfa) {
      case BOL:  if (s != r->bol) FAILED(); break;
@@ -356,7 +356,7 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                     break;
                     
       case CCL    : if (*s == '\0' || !rx_isinccl(*s++, nfa)) FAILED();
-                    nfa += CCL_len(*nfa) +1;
+                    nfa += CCL_len(*nfa) ;
                     break;
                     
       default     : FAILED();
