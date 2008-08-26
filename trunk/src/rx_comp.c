@@ -417,12 +417,12 @@ static int storeccl(rexptrs *r,unsigned char *str)
     if (numcls == 1) {
       chr = 0;
       while ((chr < 8) && ((ccl[1] & (1<<chr)) == 0)) chr++;
-      
+      chr += 0xB0;
       if (*ccl & 0x40) {
         storeop(r,NOTCLS); /* everything but that class */
-        store(r,chr+1);
+        store(r,chr);
       } else {
-        storeop(r,chr+1); /* it's a single class! */
+        storeop(r,chr); /* it's a single class! */
       }
       numcls = 0;
     }
@@ -673,7 +673,7 @@ static unsigned char *endalt(rexptrs *r, unsigned char *p)
           clo : labels[top(alt_stack,1)] = r->cur;
                 storeop(r,ONFEND);
                 if (max > 1) {  
-                  storeop(r,BKMAX); storeop(r,max);  
+                  storeop(r,BKMAX); store(r,max);  
                   storegoto(r,top(alt_stack,2));
                 }
                 labels[top(alt_stack,0)] = r->cur;
@@ -720,20 +720,23 @@ static void fixalt(rexptrs *r)
   for (n=0; n<alt_cur_label;n++) {
    fprintf(stderr,"[%d]\t%p\n",n,labels[n]);
   }
-  fflush(stderr);
   */
+  fflush(stderr);
+  
   r->cur = r->first;
   if (alt_stack_count > 0)
     error("ERR116: Unclosed capture");
 
   while (*(r->cur) != END) {
+   /* fprintf(stderr,"+> OP %p %02X\n",r->cur,*(r->cur)); */ 
     switch (optype(*(r->cur))) {
-                    
       case GOTO    : if (*(r->cur) == ONFEND) break;
                      n = jmparg(r->cur);
-                     /*fprintf(stderr,"++ %p %p\n",r->cur,labels[n]);*/ 
-                     n  = labels[n] - (r->cur + 2);
-                     if (n < 0) n = -n;
+                     /* fprintf(stderr,"++ %p %p %d\n",r->cur,labels[n],labels[n] - r->cur);*/
+                      
+                     n  = labels[n] - r->cur;
+                     if (n < 0) n = 2-n;
+                     else n = n-2;
                      if (n > 0x07FF) {
                        error("ERR112: JMP argument out of range");
                      }
@@ -744,6 +747,7 @@ static void fixalt(rexptrs *r)
                     
       case SINGLE : switch (*(r->cur)) {
                      /* arg is 2 bytes */
+                     case PATTERN:
                      case BRACED:
                      case REPT  : (r->cur) ++;
                      
@@ -757,9 +761,7 @@ static void fixalt(rexptrs *r)
       case STR :  (r->cur) += STR_len(*(r->cur));
                   break;
                   
-      case CCL  : if (*(r->cur) != NOTCLS) {
-                    (r->cur) += CCL_len(*(r->cur))+1;
-                  }
+      case CCL  : (r->cur) += CCL_len(*(r->cur));
                   break;
     }
     (r->cur)++;
