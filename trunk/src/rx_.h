@@ -29,6 +29,7 @@
 
 typedef struct {
   unsigned char *boc[RX_MAXCAPT+1];
+  unsigned char *bot[RX_MAXCAPT+1];
   unsigned char *eoc[RX_MAXCAPT+1];
   
   unsigned char *bol;
@@ -44,14 +45,17 @@ typedef struct {
 #define END     0x00
 #define SINGLE  0x00
 
-#define LOOPmn  0x01   /* 000 0001 */
-#define LOOP00  0x02   /* 000 0010 */
-#define LOOP01  0x03   /* 000 0011 */
-#define LOOP10  0x04   /* 000 0100 */
-#define LOOP11  0x05   /* 000 0101 */
-#define LOOPng  0x06   /* 000 0110 */
-#define LOOPbk  0x07   /* 000 0111 */
+#define MATCH   0x01   /* 000 00001 */
+#define FAIL    0x02   /* 000 00010 */
+#define FAILALL 0x03   /* 000 00011 */
 
+#define BKMAX   0x08   /* 000 01000 xxxxxxxx */
+#define BACK    0x09   /* 000 01001 */
+
+#define MINANY  0x0A   /* 000 11110 */
+#define MIN     0x0B   /* 000 11111 */
+
+#define ESCANY  0x0E   /* 000 01110 */
 #define OPT     0x0F   /* 000 01111 */  /* ? */
 #define REPT    0x10   /* 000 10000 */  /* < */
 #define REPT0   0x11   /* 000 10001 */  /* * */
@@ -59,7 +63,7 @@ typedef struct {
 #define BRACED  0x13   /* 000 10011 */  
 #define BOL     0x14   /* 000 10100 */
 #define EOL     0x15   /* 000 10101 */
-#define ESCAPE  0x16   /* 000 10111 */
+#define ESCAPE  0x16   /* 000 10111 xxxxxxxx */
 #define QSTR    0x17   /* 000 10111 */
 #define NINT    0x18   /* 000 11000 */
 #define NFLOAT  0x19   /* 000 11001 */
@@ -67,22 +71,17 @@ typedef struct {
 #define IDENT   0x1B   /* 000 11011 */
 #define SPCS    0x1C   /* 000 11100 */
 #define CASE    0x1D   /* 000 11101 */
+
 #if 0
 #define BOW     0x1E   /* 000 11110 */
 #define EOW     0x1F   /* 000 11111 */
 #else
-#define MAX     0x1E   /* 000 11110 */
-#define MIN     0x1F   /* 000 11111 */
 #endif 
 
 #define ONFEND  0x20   /* 001 00000 */
-#define FAIL    0x21   /* 001 00001 */
-#define FAILALL 0x22   /* 001 00010 */
-#define PATTERN 0x23   /* 001 00011 */
-#define BKMAX   0x24   /* 001 00100 */
+#define PATTERN 0x23   /* 001 00011 1xxxxxxx 1xxxxxxx*/
 #define EMPTY   0x25   /* 001 00101 */
 #define PEEKED  0x26   /* 001 00111 */
-#define MATCH   0x27   /* 001 00111 */
 
 #define CAPTR   0x20
 #define BOC     0x28   /* 001 01xxx */
@@ -94,6 +93,7 @@ typedef struct {
 
 #define jmparg(p) (((((int)(p)[0]) & 0x0F) << 7) | (((int)(p)[1]) & 0x7F))
 
+#define NOTCHR  0x60   /* 011 00000 */
 #define STR     0x60   /* 011 xxxxx */ /* 0x60 - 0x7F*/
 
 #define CCL     0x80   /* 1yx xxxxx */
@@ -110,21 +110,18 @@ typedef struct {
 #define WORDC   0xB8   /* 101 11001 */
 #define SPCTAB  0xB9   /* 101 11010 */
 #define ANY     0xBA   /* 101 11011 */
-#define ZERO    0xBB   /* 101 11100 */
-#define ALPHA   0xBC   /* 101 11101 */
-#define ESCANY  0xBD   /* 101 11110 */
+#define ALPHA   0xBB   /* 101 11101 */
 
-#define iscls(_x) (0xB0 <= (_x) && (_x) <= 0xBD)
-#define okforclosure(_x) (optype(_x) == CCL)
-
-#define NOTCHR  0xFE   /* 111 11110 */
-#define NOTCLS  0xFF   /* 111 11111 */
+#define ZERO    0xFA   /* 111 11100 */
 
 static unsigned short opt_;
+#define iscls(_x) (opt_=_x & 0xB0,(0xB0 <= (opt_) && (opt_) <= 0xBB))
+#define okforclosure(_x) (optype(_x) == CCL)
+
 #define optype(_n) (opt_=_n , ((opt_ < 0x28) ? SINGLE : (opt_ & CCL)? CCL : (opt_ & 0xE0)))
 
 #define STR_len(_n) ((_n) & 0x1F)
-#define CCL_len(_n) (opt_=_n & 0x3F, (opt_ > 37? 0 : opt_+1))
+#define CCL_len(_n) ((opt_=_n & 0x3F) > 37? 0 : opt_+1 )
 
 #define CAPT_num(_n)  (((_n) & 0x07)+1)
 #define CAPT_type(_n) ((_n) & 0xF8)

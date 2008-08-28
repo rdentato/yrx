@@ -23,7 +23,7 @@ int rx_isa(unsigned char c, unsigned char what)
   ** locale will be used.
   */
   
-  switch (what) {
+  switch (what & 0xBF) {
     case ALPHA  :  return(isalpha(c));
     case ANYUPR :  return(isupper(c));
     case ANYLWR :  return(islower(c));
@@ -64,11 +64,12 @@ int rx_isinccl(unsigned char n, const unsigned char *ccl)
   const unsigned char *cb = ccl+2;
   unsigned char  k = (ccl[0] & 0x3F);
   
-  if (*ccl == NOTCHR) {
-    if (n && n != ccl[1]) found = 0; 
-  } else if (*ccl == NOTCLS) {
-    if (n && !rx_isa(n,ccl[1])) found = 0;
-  } else if (!rx_isinccl_class(n,ccl)) { 
+  if (n == 0) return (*ccl == ZERO);
+   
+  if (iscls(*ccl)) {
+    if (!rx_isa(n,*ccl)) found = 0;
+  }
+  else if (!rx_isinccl_class(n,ccl)) { 
     while (k-- > 0) {
       b += (*cb & 0x80) ? (*cb & 0x3F) * 7:  7;
       if (b > n) break;
@@ -132,7 +133,7 @@ rx_result rx_exec(const unsigned char *nfa, unsigned char *str)
   do {
     rex.rxnum = 0;
     if ((matches = match(&rex,str,nfa)) || rex.failall) break;
-  } while (*str++);
+  } while (*str++)  ;
 
   if (matches) {
     rex.boc[0] = str;
@@ -151,32 +152,36 @@ static unsigned char *of_stack[MAX_OFSTACK];
 static unsigned char  of_loop[MAX_OFSTACK/2];
 static unsigned char  of_cnt = 0;
 
-#define of_pop_()   (of_cnt > 0? of_stack[--of_cnt] : 0)
+#define of_pop_()   (of_cnt > 0? of_stack[--of_cnt] : NULL)
 #define of_pop(n,s) (s=of_pop_(),n=of_pop_())
 
 #define of_empty()  (of_cnt == 0)
-#define of_reset()  (of_cnt = 0)
+#define of_reset()  (of_cnt = 0,of_loop[0]=0)
 
 #define of_push(n,s) (of_cnt < MAX_OFSTACK+1 ? \
-                        (of_loop[of_cnt / 2] = 0, \
-                         of_stack[of_cnt++] = (unsigned char *)(n), \
-                         of_stack[of_cnt++] = (unsigned char *)(s)) : 0)   
+                        (of_stack[of_cnt++] = (unsigned char *)(n), \
+                         of_stack[of_cnt++] = (unsigned char *)(s)) : 0, \
+                         of_loop[of_cnt>>1] = 0 )   
 
-#define of_inc_loop()  (of_cnt > 0? ++of_loop[(of_cnt>>1)-1] : 0)
-#define of_num_loop()  (of_cnt > 0? of_loop[(of_cnt>>1)-1] : 254)
+#define of_inc_loop()  (fprintf(stderr,"LL %d %d\n",of_cnt,of_loop[(of_cnt>>1)-1]),++of_loop[(of_cnt>>1)-1])
+#define of_num_loop()  (of_loop[(of_cnt>>1)-1])
+#define of_zro_loop()  (fprintf(stderr,"KK %d %d\n",of_cnt,of_loop[(of_cnt>>1)-1]),of_loop[(of_cnt>>1)-1] = 0)
 
 static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned char *nfa)
 {
   unsigned char n, c;
   unsigned short min, max, k;
-  register unsigned char *s = str;
-  unsigned char *start, *t;
+  unsigned char *s = str;
+  unsigned char *start = NULL;
+  unsigned char *t,*p;
   unsigned fail = 0;
   int back = 0;
 
-  while (*nfa != END) {
-    fprintf(stderr,"--> %p %02x %02X\n",nfa,*nfa,optype(*nfa));fflush(stderr); 
+  while (*nfa > MATCH) {
+    fprintf(stderr,"--> %p %02X %02X %02X\n",nfa,*nfa,optype(*nfa),*s);fflush(stderr);
+    
     start = s;
+     
    switch (*nfa) {
      case BOL:  if (s != r->bol) FAILED(); break;
      case EOL:  if (*s)          FAILED(); break;
@@ -216,7 +221,13 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
      case ESCANY: if (*s == r->escape && s[1]) s++;
                   if (*s) s++;  
                   break;
-                
+                  
+     case NOTCHR: if (*s == '\0') FAILED();
+                  c=*s++;
+                  if (r->casesensitive == 0) c = tolower(c);
+                  if (c == *++nfa) FAILED();
+                  break;
+                  
      case NHEX: if ((*s == '0') &&
                     (s[1] == 'x' || s[1] == 'X') &&
                      isxdigit(s[2]))
@@ -268,27 +279,30 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                 s += k;
                 n=*nfa;
                 nfa += skip(nfa+1);
-                #if 0
-                while (k>=min && s >=t) {
-                  /* TODO: REMOVE RECURSION TO OPTIMIZE */
-                  if ((p=match(r,s,nfa+1))) return p;
-                  s--; k--;
-                }        
-                #else
-                  if (min <= k && k <= max) break;
-                #endif                           
+                if (min <= k && k <= max) break;
                 FAILED();
                 break;
                 
       case EMPTY : break;
       
-      case BKMAX:  if (of_inc_loop() < *++nfa)
-                     back = 1;  /* enable back goto */
-                   else
-                     nfa += 2; /* skip GOTO */
-                   /*fprintf(stderr,"<< %d\n",of_num_loop());*/
+      case BKMAX:
+      case BACK : of_pop(p,t);
+                  n = of_inc_loop();
+                  back = 1;
+                  /* s == t reveals an endless loop */
+                  if ((s == t) || (*nfa == BKMAX && n >= *++nfa)) {
+                    back = 0;
+                    nfa += 2; /* skip GOTO */
+                  }
+                  /*fprintf(stderr,"<< %d\n",of_num_loop());*/
+                  break;
+                    
+      case MINANY:  of_zro_loop();
                     break;
-      case MIN   :  if (of_num_loop() >= *++nfa) break;
+                    
+      case MIN   :  n = of_num_loop();
+                    of_zro_loop();
+                    if (n >= *++nfa) break;
                     FAILED();
                     break; 
       
@@ -299,9 +313,11 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                     break;
                     
       case PEEKED : of_pop(t,s);
+                    of_zro_loop();
                     break;
                     
       case ONFEND : of_pop(t,t);
+                    of_zro_loop();
                     break;
                     
       case PATTERN: r->rxnum++;
@@ -311,7 +327,7 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                     of_reset();
                     of_push(nfa+1+k,  start);
                     for (k=0; k<=RX_MAXCAPT; k++)
-                      r->boc[k] = r->eoc[k] = NULL;
+                      r->boc[k] = r->bot[k] = r->eoc[k] = NULL;
                     nfa += 2;
                     break;
                     
@@ -323,17 +339,14 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                    else {
                      k = jmparg(nfa);
                      /* fprintf(stderr,">>> %d %d %p ->",k,back,nfa);*/
-                     nfa = nfa +  (back ? -k : k);
+                     nfa += (back ? -k : k);
                      /* fprintf(stderr," %p\n",nfa); fflush(stderr); */
                    }
                    back = 0;
                    nfa++;
                    break;
       
-      case SINGLE : if (iscls(*nfa)) {  
-                      if (*s == '\0' || !rx_isa(*s++,*nfa)) FAILED();
-                    }
-                    break;
+      case SINGLE : break;
       
       case STR    : for (n= STR_len(*nfa); *s && (n > 0); n--) {
                       c=*s++;
@@ -345,17 +358,24 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                     
       case CAPTR  : n=CAPT_num(*nfa);
                     switch (CAPT_type(*nfa)) {
-                      case BOC:  r->boc[n] = s; /* Ensure capture is empty */
-                      case EOC:  r->eoc[n] = s; break;
-                      case CAPT: t = r->boc[n];
-                                 while (*s && t < r->eoc[n]) {
-                                   if (*s++ != *t++) FAILED();
+                      case BOC:  r->bot[n] = s; /* Ensure capture is empty */
+                                 break;
+                      case EOC:  if (r->bot[n]) {
+                                   r->boc[n] = r->bot[n];
+                                   r->eoc[n] = s;
+                                 }
+                                 break;
+                      case CAPT: if ((t = r->boc[n])) {
+                                   while (*s && t < r->eoc[n]) {
+                                     if (*s++ != *t++) FAILED();
+                                   }
                                  }
                                  break;
                     }
                     break;
                     
-      case CCL    : if (*s == '\0' || !rx_isinccl(*s++, nfa)) FAILED();
+      case CCL    : /*fprintf(stderr,">>- %02X %02X %d\n", *s, *nfa, rx_isinccl(*s, nfa));*/
+                    if (!rx_isinccl(*s++, nfa)) FAILED();
                     nfa += CCL_len(*nfa) ;
                     break;
                     
