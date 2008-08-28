@@ -418,12 +418,8 @@ static int storeccl(rexptrs *r,unsigned char *str)
       chr = 0;
       while ((chr < 8) && ((ccl[1] & (1<<chr)) == 0)) chr++;
       chr += 0xB0;
-      if (*ccl & 0x40) {
-        storeop(r,NOTCLS); /* everything but that class */
-        store(r,chr);
-      } else {
-        storeop(r,chr); /* it's a single class! */
-      }
+      if (*ccl & 0x40) chr |= 0x40;
+      storeop(r,chr); /* it's a single class! */
       numcls = 0;
     }
   }
@@ -663,22 +659,30 @@ static unsigned char *endalt(rexptrs *r, unsigned char *p)
                  /*fprintf(stderr,"<> %d %d\n",min,max);*/
                  error("ERR124: Bad closure limits");
                }
-               if (max == 0) max = 255;
                goto clo;
                
-     case '*' : p++; min = 0; max = 255; goto clo;           
-     case '+' : p++; min = 1; max = 255; goto clo;           
-     case '?' : p++; min = 0; max = 1;   goto clo;
+     case '*' : p++; min = 0; goto clo;           
+     case '+' : p++; min = 1; goto clo;           
+     case '?' : p++; max = 1; goto clo;
      
           clo : labels[top(alt_stack,1)] = r->cur;
-                storeop(r,ONFEND);
-                if (max > 1) {  
-                  storeop(r,BKMAX); store(r,max);  
+                /*storeop(r,ONFEND);*/
+                if (max != 1) { 
+                  if (max > 0) { 
+                    storeop(r,BKMAX);
+                    store(r,max);
+                  } 
+                  else {
+                    storeop(r,BACK);
+                  }
                   storegoto(r,top(alt_stack,2));
                 }
                 labels[top(alt_stack,0)] = r->cur;
                 if (min > 0) {
                   storeop(r,MIN); store(r,min);
+                }
+                else {
+                  storeop(r,MINANY);
                 }
                 break;
                 
@@ -830,6 +834,7 @@ static char *storeesc(rexptrs *r, unsigned char *p)
     case 'Q' : op = QSTR;   goto rec;
     case 'H' : op = NHEX;   goto rec;
     case 'F' : op = NFLOAT; goto rec;
+    case 'X' : op = FAIL; goto rec;
     case 'W' : op = IDENT;  goto rec;
     case 'N' : op = NINT;   goto rec;
          rec : if (p[1] == '?') {

@@ -80,7 +80,6 @@ void rx_dump_asm(FILE *f,unsigned char * nfa)
       fprintf(f,"%04X\t%02X",cnt,*nfa);
       
       switch (*nfa) {
-        case ANY   : fprintf(f,"\tANY\n");            break;
         case REPT0 : fprintf(f,"\tRPT\t0,n\n");  break;
         case REPT1 : fprintf(f,"\tRPT\t1,n\n");  break;
         case OPT   : fprintf(f,"\tRPT\t0,1\n");     break;
@@ -101,19 +100,9 @@ void rx_dump_asm(FILE *f,unsigned char * nfa)
 
         case BOL   : fprintf(f,"\tBOL\n");            break;
         case EOL   : fprintf(f,"\tEOL\n");            break;
-        case WORDC : fprintf(f,"\tWRD\n");          break;
-        case SPACE : fprintf(f,"\tSPC\n");          break;
+        
         case SPCS  : fprintf(f,"\tSPS\n");         break;
         case IDENT : fprintf(f,"\tIDN\n");          break;
-        case DIGIT : fprintf(f,"\tDGT\n");          break;
-        case XDIGIT: fprintf(f,"\tHDG\n");         break;
-        case ALNUM : fprintf(f,"\tALN\n");          break;
-        case ALPHA : fprintf(f,"\tALP\n");          break;
-        case ANYUPR: fprintf(f,"\tUPR\n");         break;
-        case ANYLWR: fprintf(f,"\tLWR\n");         break;
-        case CTRL  : fprintf(f,"\tCTL\n");           break;
-        case PUNCT : fprintf(f,"\tPNC\n");          break;
-        case SPCTAB: fprintf(f,"\tSTB\n");         break;
         case ZERO  : fprintf(f,"\tZRO\n");           break;
         case QSTR  : fprintf(f,"\tQST\n");           break;
         case EMPTY : fprintf(f,"\tEMP\n");          break;
@@ -134,41 +123,47 @@ void rx_dump_asm(FILE *f,unsigned char * nfa)
         case ESCANY: fprintf(f,"\tANE\n");           break;
         
         case FAIL:   fprintf(f,"\tFAI\n");         break;
-        case FAILALL:fprintf(f,"\tFAI\tALL\n");         break;
+        case FAILALL:fprintf(f,"\tFAA\n");         break;
         case PEEKED: fprintf(f,"\tRST\n");    break;
-        case ONFEND: fprintf(f,"\tOFJ\tEND\n");    break;
+        case ONFEND: fprintf(f,"\tOFF\n");    break;
         
+        case BACK  : n = 256; goto bk;
         case BKMAX : n = *(incrnfa());
-                     if (n == 255)
-                        fprintf(f,"\tBKW\n");
+                     fprintf(f,"%02X",n);                     
+                bk : if (n >= 255)
+                        fprintf(f,"\tJFO\t0,");
                      else
-                        fprintf(f,"\tBKM\t%d\n",n);
-                     back = 1;
+                        fprintf(f,"\tJFO\t%d,",n);
+                     incrnfa();
+                     n = jmparg(nfa);
+                     fprintf(f,"%04X",cnt - n +2);
+                     fprintf(f,"\t;-%d\n",n); 
+                     incrnfa();
                      break;
 
         case MIN   : fprintf(f,"\tMIN\t%d\n",*(incrnfa()));
                      break;
                      
+        case MINANY: fprintf(f,"\tMIN\t0\n");
+                     break;
+                     
         case MATCH:  fprintf(f,"\tMTC\n");           break;
         case PATTERN: n=((nfa[1] & 0x7F) << 7) + (nfa[2] & 0x7F); 
-                     fprintf(f,"\tNXT\t%04X\t;+%d\n",cnt+2+n,n);
+                     fprintf(f,"%02X%02X\tNXT\t%04X\t;+%d\n",nfa[1],nfa[2],cnt+2+n,n);
                      incrnfa();incrnfa();
                      break;
                      
         case NOTCHR :
                   fprintf(f,"\tNCH\t");
                   outsymc(f,nfa[1]);
-                  addnfa(CCL_len(*nfa)+1);
+                  incrnfa();
                   fprintf(f,"\n");
                   break;
                   
-        case NOTCLS :
-                  fprintf(f,"\tNCL\n");
-                  break;
-
          default: switch (optype(*nfa)) {
                                              
-                case GOTO    : if ((*nfa & 0xF0) == ONFAIL)
+                case GOTO    : fprintf(f,"%02X",nfa[1]);
+                               if ((*nfa & 0xF0) == ONFAIL)
                                  fprintf(f,"\tOFJ");
                                else 
                                  fprintf(f,"\tJMP");
@@ -196,13 +191,34 @@ void rx_dump_asm(FILE *f,unsigned char * nfa)
                             fprintf(f," %d\n",CAPT_num(*nfa));
                             break;
             
-                case CCL  :  fprintf(f,"\tCCL ");
-                             for (n=0;n<256;n++) {
-                               if (rx_isinccl(n,nfa)) outsymc(f,n);
-                             }
-                             addnfa(CCL_len(*nfa)+1);
-                             fprintf(f,"\n");
-                             break;
+                case CCL  : fprintf(f,"\t");
+                            if (iscls(*nfa)) {
+                              if (*nfa & 0x40) fprintf(f,"NOT ");
+                              switch((*nfa & 0xBF)) {  
+                                case ANY   : fprintf(f,"ANY"); break;
+                                case WORDC : fprintf(f,"WRD"); break;
+                                case SPACE : fprintf(f,"SPC"); break;
+                                case DIGIT : fprintf(f,"DGT"); break;
+                                case XDIGIT: fprintf(f,"HDG"); break;
+                                case ANYUPR: fprintf(f,"UPR"); break;
+                                case ANYLWR: fprintf(f,"LWR"); break;
+                                case ALNUM : fprintf(f,"ALN"); break;
+                                case ALPHA : fprintf(f,"ALP"); break;
+                                case CTRL  : fprintf(f,"CTL"); break;
+                                case PUNCT : fprintf(f,"PNC"); break;
+                                case SPCTAB: fprintf(f,"STB"); break;
+                                case ZERO  : fprintf(f,"ZRO"); break;
+                              }
+                            }
+                            else {
+                              fprintf(f,"CCL ");
+                              for (n=0;n<256;n++) {
+                                if (rx_isinccl(n,nfa)) outsymc(f,n);
+                              }
+                              addnfa(CCL_len(*nfa)+1);
+                            }
+                            fprintf(f,"\n");
+                            break;
                              
                 default: fprintf(f,"0x%02X\n",*nfa);
                          break; 
@@ -212,7 +228,7 @@ void rx_dump_asm(FILE *f,unsigned char * nfa)
       incrnfa();
     }
   }
-  fprintf(f,"%04X\tEND\n",cnt);
+  fprintf(f,"%04X\t00\tEND\n",cnt);
 }
 
 /* Since NFAs do not contain embedded zeros, they could be treated as
