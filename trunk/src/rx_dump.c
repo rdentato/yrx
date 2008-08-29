@@ -80,23 +80,6 @@ void rx_dump_asm(FILE *f,unsigned char * nfa)
       fprintf(f,"%04X\t%02X",cnt,*nfa);
       
       switch (*nfa) {
-        case REPT0 : fprintf(f,"\tRPT\t0,n\n");  break;
-        case REPT1 : fprintf(f,"\tRPT\t1,n\n");  break;
-        case OPT   : fprintf(f,"\tRPT\t0,1\n");     break;
-        case REPT  : incrnfa();
-                     n=*nfa;
-                     if (n>200)
-                       n=0;
-                     fprintf(f,"\tRPT\t%d,",n);
-                     n=*(incrnfa());
-                     if (n>200)
-                       n=0;
-                     if (n>0)
-                       fprintf(f,"%d", n);
-                     else
-                       fprintf(f,"n");
-                     fprintf(f,"\n");
-                     break;
 
         case BOL   : fprintf(f,"\tBOL\n");            break;
         case EOL   : fprintf(f,"\tEOL\n");            break;
@@ -105,7 +88,6 @@ void rx_dump_asm(FILE *f,unsigned char * nfa)
         case IDENT : fprintf(f,"\tIDN\n");          break;
         case ZERO  : fprintf(f,"\tZRO\n");           break;
         case QSTR  : fprintf(f,"\tQST\n");           break;
-        case EMPTY : fprintf(f,"\tEMP\n");          break;
         case NINT  : fprintf(f,"\tINT\n");        break;
         case NHEX  : fprintf(f,"\tHEX\n");     break;
         case NFLOAT: fprintf(f,"\tFLT\n");  break;

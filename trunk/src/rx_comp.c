@@ -529,79 +529,6 @@ static int storeccl(rexptrs *r,unsigned char *str)
   return (str-s);    /* return the amount of input consumed */
 }
 
-
-/* = Closures
-**   ~~~~~~~~
-**   Rx is not able to handle closures of regular expressions but
-** only repetitions of characters.
-*/
-
-static unsigned char *storeclo_(rexptrs *r,unsigned char clo,unsigned char *p)
-{
-  unsigned char *t;
-  unsigned short n;
-  unsigned short min=256,max=256;
-  
-  /* The opcode for the closure is to be inserted
-  ** before last opcode.
-  */
-  n=*(r->lastop);
-  if (optype(n) == STR) {
-    /* take latest character of the string */
-    if (STR_len(n) > 1) {
-      *(r->lastop) = n-1;
-      storeop(r,END);
-      *(r->lastop) = *(r->lastop-1);
-      r->lastop--;
-      *(r->lastop) = STR | 1;
-    }
-  }
-  else if (!okforclosure(*r->lastop)) {
-    error("ERR103: Bad closure");
-  }
-  
-  if (clo == REPT) {
-    min=0;p++;
-    while (min < 200 && isdigit(*p)) min=min*10 + (*p++ - '0');
-    if (*p == ',') {
-      max=0; p++;
-      while (max < 200 && isdigit(*p)) max=max*10 + (*p++ - '0');  
-    }
-    if (max==256) max=min;
-    if (max==0) {
-      if (min==0) clo = REPT0;
-      else if (min==1) clo = REPT1;
-    }
-    if ((min == 0) && (max == 1)) clo = OPT;
-  }
-  
-  if (clo == REPT) {
-    if (*p != '>' || (max > 0 && (min>max)) || (min>200) || (max>200)) {
-      error("ERR104: Bad closure limits");
-    }
-    if (min == 0) min = 255;
-    if (max == 0) max = 255;
-    store(r,END); /* make some room */
-    store(r,END); /* make some room */
-    n = 3;
-  }  
-  else
-    n = 1;
-  
-  store(r,END); /* make some room */
-  t=r->cur;
-  while (--t > r->lastop) {
-    *t = *(t-n);
-  }
-  *t=clo;
-  if (clo == REPT) {
-    t[1]=min;
-    t[2]=max;
-  }
-  return p;
-}               
-
-
 static void storejmp(rexptrs *r, unsigned char op, int offset)
 {
   offset &= 0x07FF;
@@ -751,8 +678,7 @@ static void fixalt(rexptrs *r)
       case SINGLE : switch (*(r->cur)) {
                      /* arg is 2 bytes */
                      case PATTERN:
-                     case BRACED:
-                     case REPT  : (r->cur) ++;
+                     case BRACED:(r->cur) ++;
                      
                      /* arg is 1 byte */
                      case BKMAX :
@@ -847,6 +773,13 @@ static unsigned char *storeclo(rexptrs *r,unsigned char clo,unsigned char *p)
                 break;
                 
     case '!' :  storeop(r,ONFEND);  
+                storeop(r,FAIL);  
+                labels[alt_cur_label-1] = r->cur;
+                break;
+                
+    case '&' :  storeop(r,PEEKED); 
+                storegoto(r,alt_cur_label++);
+                labels[alt_cur_label-2] = r->cur;
                 storeop(r,FAIL);  
                 labels[alt_cur_label-1] = r->cur;
                 break;
@@ -954,8 +887,6 @@ static char *storeesc(rexptrs *r, unsigned char *p)
                }
                else  error("ERR108: Invalid braced pattern");
                break;
-
-    case 'A' : storeop(r,EMPTY);   break;
 
     case 'C' : storeop(r,CASE);
                r->casesensitive ^= 1; break;

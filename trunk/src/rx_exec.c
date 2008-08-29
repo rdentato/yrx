@@ -108,15 +108,6 @@ static char *qstr(unsigned char *e)
   return (e+1);
 }
 
-static int skip(const unsigned char *nfa) 
-{
-  switch (optype(*nfa)) {
-    case STR    : return (STR_len(*nfa)+1);
-    case CCL    : return (CCL_len(*nfa)+1);
-  } 
-  return 1;
-}
-
 rx_result rx_exec(const unsigned char *nfa, unsigned char *str)
 {
   unsigned char *matches=NULL;
@@ -170,7 +161,7 @@ static unsigned char  of_cnt = 0;
 static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned char *nfa)
 {
   unsigned char n, c;
-  unsigned short min, max, k;
+  unsigned short k;
   unsigned char *s = str;
   unsigned char *start = NULL;
   unsigned char *t,*p;
@@ -178,7 +169,7 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
   int back = 0;
 
   while (*nfa > MATCH) {
-    /*
+    /** /
     fprintf(stderr,"--> %p %02X %02X %02X\n",nfa,*nfa,optype(*nfa),*s);fflush(stderr);
     / **/
     start = s;
@@ -246,46 +237,7 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                 }
                 if (s == start) FAILED();
                 break;
-        
-      case REPT:  min = *++nfa;
-                  max = *++nfa;
-                  if (min == 255) min = 0;
-                  if (max == 255) max = 65535;
-                  goto clo;
-      case OPT:   min = 0; max = 1    ; goto clo;
-      case REPT0: min = 0; max = 65535; goto clo;
-      case REPT1: min = 1; max = 65535; goto clo;
-             clo:
-                k = 0;
-                t = s;
-                n = optype(nfa[1]);
-                c = *s; 
-                while (c && k<max) {
-                  if (nfa[1] == ESCANY) {
-                    if (s[k++] == r->escape) 
-                      if (s[k]) k++; 
-                  } else if (n == STR) {
-                    if (r->casesensitive == 0) c=tolower(c);
-                    if (c != nfa[2])  break;
-                  }
-                  else if (n == SINGLE) {
-                    if (!rx_isa(c,nfa[1])) break;
-                  }
-                  else if (n == CCL) {
-                    if (!rx_isinccl(c,nfa+1)) break;
-                  }
-                  else FAILED();
-                  c=s[++k]; 
-                }
-                s += k;
-                n=*nfa;
-                nfa += skip(nfa+1);
-                if (min <= k && k <= max) break;
-                FAILED();
-                break;
-                
-      case EMPTY : break;
-      
+     
       case BKMAX:
       case BACK : of_pop(p,t);
                   n = of_inc_loop();
