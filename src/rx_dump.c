@@ -65,7 +65,7 @@ static void outsymc(FILE *f,int c)
 */
 
 #define incrnfa()  (cnt++,((*nfa)? ++nfa : nfa))
-#define addnfa(_x) do { int _y=_x; if ((nfa+_y) <maxnfa) nfa+=_y; } while (0)
+#define addnfa(_x) do { int _y=_x; if ((nfa+_y) <maxnfa) {nfa+=_y; cnt+=_y;} } while (0)
 
 void rx_dump_asm(FILE *f,unsigned char * nfa)
 {
@@ -215,7 +215,7 @@ void rx_dump_asm(FILE *f,unsigned char * nfa)
                               for (n=0;n<256;n++) {
                                 if (rx_isinccl(n,nfa)) outsymc(f,n);
                               }
-                              addnfa(CCL_len(*nfa)+1);
+                              addnfa(CCL_len(*nfa));
                             }
                             fprintf(f,"\n");
                             break;
