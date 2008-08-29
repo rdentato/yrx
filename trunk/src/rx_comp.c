@@ -536,7 +536,7 @@ static int storeccl(rexptrs *r,unsigned char *str)
 ** only repetitions of characters.
 */
 
-static unsigned char *storeclo(rexptrs *r,unsigned char clo,unsigned char *p)
+static unsigned char *storeclo_(rexptrs *r,unsigned char clo,unsigned char *p)
 {
   unsigned char *t;
   unsigned short n;
@@ -600,6 +600,7 @@ static unsigned char *storeclo(rexptrs *r,unsigned char clo,unsigned char *p)
   }
   return p;
 }               
+
 
 static void storejmp(rexptrs *r, unsigned char op, int offset)
 {
@@ -666,7 +667,6 @@ static unsigned char *endalt(rexptrs *r, unsigned char *p)
      case '?' : p++; max = 1; goto clo;
      
           clo : labels[top(alt_stack,1)] = r->cur;
-                /*storeop(r,ONFEND);*/
                 if (max != 1) { 
                   if (max > 0) { 
                     storeop(r,BKMAX);
@@ -677,6 +677,7 @@ static unsigned char *endalt(rexptrs *r, unsigned char *p)
                   }
                   storegoto(r,top(alt_stack,2));
                 }
+                else storeop(r,ONFEND);
                 labels[top(alt_stack,0)] = r->cur;
                 if (min > 0) {
                   storeop(r,MIN); store(r,min);
@@ -686,20 +687,18 @@ static unsigned char *endalt(rexptrs *r, unsigned char *p)
                 }
                 break;
                 
-     case '!' :
-                labels[top(alt_stack,1)] = r->cur;
+     case '!' : labels[top(alt_stack,1)] = r->cur;
                 storeop(r,ONFEND);  
                 storeop(r,FAIL);  
                 labels[top(alt_stack,0)] = r->cur;
                 p++; 
                 break;
   
-     case '&' :
+     case '&' : storeop(r,PEEKED); 
                 storegoto(r,top(alt_stack,1));
                 labels[top(alt_stack,0)] = r->cur;
                 storeop(r,FAIL);  
                 labels[top(alt_stack,1)] = r->cur;
-                storeop(r,PEEKED); 
                 p++;
                 break;
                 
@@ -772,6 +771,89 @@ static void fixalt(rexptrs *r)
   }
   
 }
+
+static unsigned char *storeclo(rexptrs *r,unsigned char clo,unsigned char *p)
+{
+  unsigned char *t,*q;
+  unsigned short n;
+  unsigned short min=0,max=0;
+  
+  /* The opcode for the closure is to be inserted
+  ** before last opcode.
+  */
+  n=*(r->lastop);
+  if (optype(n) == STR) {
+    /* take latest character of the string */
+    if (STR_len(n) > 1) {
+     *(r->lastop) = n-1;
+      storeop(r,END);               /* make room */
+     *(r->lastop) = *(r->lastop-1); /* move last letter of the string */
+      r->lastop--;                  /* the actual op is a ... */
+     *(r->lastop) = STR | 1;        /* string of lenght 1 */ 
+    }
+  }
+  
+  q = r->lastop;
+  labels[alt_cur_label++] = r->lastop;
+  
+  storeonfail(r,alt_cur_label++);
+
+  min = (r->lastop)[0]; max = (r->lastop)[1];
+
+  t = r->cur;
+  while (--t > q) {
+    *t = *(t-2);
+  }
+  *t++ = min;
+  *t++ = max;
+  
+  min=0,max=0;
+  switch (*p) {
+    case '<' :
+               min=0;p++;
+               while (min < 200 && isdigit(*p)) min=min*10 + (*p++ - '0');
+               if (*p == ',') {
+                 max=0; p++;
+                 while (max < 200 && isdigit(*p)) max=max*10 + (*p++ - '0');  
+               }
+               else max = min;
+               if (*p != '>' || (max > 0 && (min>max)) || (min>200) || (max>200)) {
+                 error("ERR104: Bad closure limits");
+               }
+               goto clo;
+               
+    case '*' : min = 0; goto clo;
+    case '+' : min = 1; goto clo;
+    case '?' : max = 1; goto clo;
+    
+         clo : if (max != 1) { 
+                  if (max > 0) { 
+                    storeop(r,BKMAX);
+                    store(r,max);
+                  } 
+                  else {
+                    storeop(r,BACK);
+                  }
+                  storegoto(r,alt_cur_label-2);
+                }
+                if (max == 1)  storeop(r,ONFEND);
+                labels[alt_cur_label-1] = r->cur;
+                if (min > 0) {
+                  storeop(r,MIN); store(r,min);
+                }
+                else {
+                  storeop(r,MINANY);
+                }
+                break;
+                
+    case '!' :  storeop(r,ONFEND);  
+                storeop(r,FAIL);  
+                labels[alt_cur_label-1] = r->cur;
+                break;
+
+  }
+  return p;
+}               
 
 static char *storeesc(rexptrs *r, unsigned char *p)
 {
@@ -949,11 +1031,13 @@ static char *compile(const unsigned char *pat, unsigned char *nfa,
                  def_capt++;
                  break;    
                  
-      case '+':  c++;
-      case '*':  c++;
-      case '<':  c++;
-      case '?':  c += OPT;
-                 p = storeclo(r,c,p);
+      case '+':  
+      case '*':  
+      case '<':  
+      case '?':  
+      case '!':  
+      case '&':  
+                 p = storeclo(r,*p,p);
                  break;
                  
       case '[' : if (p[1] == '\0')

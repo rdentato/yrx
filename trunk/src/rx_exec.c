@@ -163,9 +163,9 @@ static unsigned char  of_cnt = 0;
                          of_stack[of_cnt++] = (unsigned char *)(s)) : 0, \
                          of_loop[of_cnt>>1] = 0 )   
 
-#define of_inc_loop()  (fprintf(stderr,"LL %d %d\n",of_cnt,of_loop[(of_cnt>>1)-1]),++of_loop[(of_cnt>>1)-1])
+#define of_inc_loop()  (++of_loop[(of_cnt>>1)-1])
 #define of_num_loop()  (of_loop[(of_cnt>>1)-1])
-#define of_zro_loop()  (fprintf(stderr,"KK %d %d\n",of_cnt,of_loop[(of_cnt>>1)-1]),of_loop[(of_cnt>>1)-1] = 0)
+#define of_zro_loop()  (of_loop[(of_cnt>>1)-1] = 0)
 
 static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned char *nfa)
 {
@@ -178,8 +178,9 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
   int back = 0;
 
   while (*nfa > MATCH) {
+    /*
     fprintf(stderr,"--> %p %02X %02X %02X\n",nfa,*nfa,optype(*nfa),*s);fflush(stderr);
-    
+    / **/
     start = s;
      
    switch (*nfa) {
