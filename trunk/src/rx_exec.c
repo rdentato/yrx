@@ -168,15 +168,16 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
   unsigned fail = 0;
   int back = 0;
 
-  while (*nfa > MATCH) {
-    /** /
+  while (*nfa != END && *nfa != MATCH) {
+    /**/
     fprintf(stderr,"--> %p %02X %02X %02X\n",nfa,*nfa,optype(*nfa),*s);fflush(stderr);
-    / **/
+    /**/
     start = s;
      
    switch (*nfa) {
-     case BOL:  if (s != r->bol) FAILED(); break;
-     case EOL:  if (*s)          FAILED(); break;
+                
+     case BOL : if (s != r->bol) FAILED(); break;
+     case EOL : if (*s)          FAILED(); break;
 
      case CASE: r->casesensitive ^= 1; break;
      
@@ -259,8 +260,6 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                     FAILED();
                     break; 
       
-      case MATCH  : return s;
-                
       case FAILALL: r->failall = 1;
       case FAIL   : FAILED();
                     break;

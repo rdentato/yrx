@@ -170,7 +170,7 @@ void rx_dump_asm(FILE *f,unsigned char * nfa)
                               case BOC : fprintf(f,"\tBOC"); break;
                               case EOC : fprintf(f,"\tEOC"); break;
                             }
-                            fprintf(f," %d\n",CAPT_num(*nfa));
+                            fprintf(f,"\t%d\n",CAPT_num(*nfa));
                             break;
             
                 case CCL  : fprintf(f,"\t");

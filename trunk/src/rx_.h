@@ -43,38 +43,39 @@ typedef struct {
 
 
 #define END     0x00
-#define SINGLE  0x00
 
-#define MATCH   0x01   /* 000 00001 */
-#define FAIL    0x02   /* 000 00010 */
-#define FAILALL 0x03   /* 000 00011 */
-#define PATTERN 0x04   /* 000 00100 1xxxxxxx 1xxxxxxx */
-#define ONFEND  0x05   /* 000 00101 */
-#define PEEKED  0x06   /* 000 00110 */
+#define CAPTR   0x00
+#define BOC     0x08   /* 000 01xxx */
+#define EOC     0x10   /* 000 10xxx */
+#define CAPT    0x18   /* 000 11xxx */
 
-#define BKMAX   0x08   /* 000 01000 xxxxxxxx */
-#define BACK    0x09   /* 000 01001 */
+#define SINGLE  0x20
 
-#define MINANY  0x0A   /* 000 01010 */
-#define MIN     0x0B   /* 000 01011 */
-#define BOL     0x0C   /* 000 01100 */
-#define EOL     0x0D   /* 000 01101 */
-#define CASE    0x0E   /* 000 01110 */
-#define ESCAPE  0x0F   /* 000 01111 xxxxxxxx */
+#define MATCH   0x21   /* 001 00001 */
+#define FAIL    0x22   /* 001 00010 */
+#define FAILALL 0x23   /* 001 00011 */
+#define PATTERN 0x24   /* 001 00100 1xxxxxxx 1xxxxxxx */
+#define ONFEND  0x25   /* 001 00101 */
+#define PEEKED  0x26   /* 001 00110 */
 
-#define ESCANY  0x12   /* 000 10010 */
-#define BRACED  0x13   /* 000 10011 */  
-#define QSTR    0x17   /* 000 10111 */
-#define NINT    0x18   /* 000 11000 */
-#define NFLOAT  0x19   /* 000 11001 */
-#define NHEX    0x1A   /* 000 11010 */
-#define IDENT   0x1B   /* 000 11011 */
-#define SPCS    0x1C   /* 000 11100 */
+#define BKMAX   0x28   /* 001 01000 xxxxxxxx */
+#define BACK    0x29   /* 001 01001 */
 
-#define CAPTR   0x20
-#define BOC     0x28   /* 001 01xxx */
-#define EOC     0x30   /* 001 10xxx */
-#define CAPT    0x38   /* 001 11xxx */
+#define MINANY  0x2A   /* 001 01010 */
+#define MIN     0x2B   /* 001 01011 */
+#define BOL     0x2C   /* 001 01100 */
+#define EOL     0x2D   /* 001 01101 */
+#define CASE    0x2E   /* 001 01110 */
+#define ESCAPE  0x2F   /* 001 01111 xxxxxxxx */
+
+#define ESCANY  0x32   /* 001 10010 */
+#define BRACED  0x33   /* 001 10011 */  
+#define QSTR    0x37   /* 001 10111 */
+#define NINT    0x38   /* 001 11000 */
+#define NFLOAT  0x39   /* 001 11001 */
+#define NHEX    0x3A   /* 001 11010 */
+#define IDENT   0x3B   /* 001 11011 */
+#define SPCS    0x3C   /* 001 11100 */
 
 #define GOTO    0x40   /* 010 0xxxx 1xxxxxxx */
 #define ONFAIL  0x50   /* 010 1xxxx 1xxxxxxx */
@@ -106,7 +107,7 @@ static unsigned short opt_;
 #define iscls(_x) (opt_=_x & 0xB0,(0xB0 <= (opt_) && (opt_) <= 0xBB))
 #define okforclosure(_x) (optype(_x) == CCL)
 
-#define optype(_n) (opt_=_n , ((opt_ < 0x28) ? SINGLE : (opt_ & CCL)? CCL : (opt_ & 0xE0)))
+#define optype(_n) (opt_=_n , (opt_ & CCL)? CCL : (opt_ & 0xE0))
 
 #define STR_len(_n) ((_n) & 0x1F)
 #define CCL_len(_n) ((opt_=_n & 0x3F) > 37? 0 : opt_+1 )
