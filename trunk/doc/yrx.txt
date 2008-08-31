@@ -86,6 +86,11 @@ YRX is no way different and here is the flavour of regular
 expressions it handles, I hope you find it intuitive enough.
 Prior knowledge of general expressions concepts is assumed.
 
+ == Expressions
+ ~~~~~~~~~~~~~
+
+  An expression is 
+
 
  == Characters
  ~~~~~~~~~~~~~
@@ -95,23 +100,22 @@ Prior knowledge of general expressions concepts is assumed.
   [\]      escape next character. If there's no special meaning associated
            with that escaped sequence, the regular character is matched.
   [[`]]    delimit character class
-  [^]      Beginning of the line (only if placed at the
-           beginning of pattern)
-  [$]      End of line (only if placed at the end of
-           pattern)
-  [*]      Matches preceding character or character class
-           repeated zero or more times.
+  [^]      Beginning of the line (only if placed at the beginning of pattern)
+  [$]      End of line (only if placed at the end of pattern)
+  [*]      Matches preceding expression repeated zero or more times.
   [+]      As above but matches one or more repetitions.
   [?]      As above but matches only zero or one repetitions. It can also be
            applied to the recognizers '\N', '\Q', '\B', ...
+  [!]      Matches a 0-length string assuming it doesn't match the specified
+           expression. (See section "Context")
+  [&]      Matches a 0-length string assuming it does match the specified
+           expression. (See section "Context")
   [<>]     Set limits for matching repetitions. For example the regex "X<1,3>"
            matches a string of 1 to 3 'X'.
   [(|)]    grouping and alternate. The regex "(ab|cd)" will match the string
-           "ab" or the string "cd". Group cannot be iterated with the '*' or
-           the '+' operator, however they can be made optional if followe by
-           the '?' operator. The regex "(max|min)(imum)?" will match the
-           strings: "min", "max", "minimum" and "maximum".
-  [{}]     delimit captures. Up to eight captures can be defined.
+           "ab" or the string "cd". 
+  [{}]     delimit captures. Up to eight captures can be defined. (See section
+           "Captures")
  
   Characters may also be specified through their code in hexadecimal form:
 
