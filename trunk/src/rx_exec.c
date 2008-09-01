@@ -167,13 +167,13 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
   unsigned char *t,*p;
   unsigned fail = 0;
   int back = 0;
+  unsigned char *q = (unsigned char *)nfa;
 
   while (*nfa != END && *nfa != MATCH) {
     /**/
-    fprintf(stderr,"--> %p %02X %02X %02X\n",nfa,*nfa,optype(*nfa),*s);fflush(stderr);
+    fprintf(stderr,"--> %05X %02X %02X %s\n",nfa-q,*nfa,optype(*nfa),s);fflush(stderr);
     /**/
     start = s;
-     
    switch (*nfa) {
                 
      case BOL : if (s != r->bol) FAILED(); break;
@@ -207,7 +207,10 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                  
                  break;
             
-     case IDENT: while (rx_isa(*s,WORDC)) s++;
+     case IDENT: if (rx_isa(*s,ALPHA) || (*s == '_')) {
+                   s++; 
+                   while (rx_isa(*s,WORDC)) s++;
+                 }
                  if (s == start) FAILED();
                  break;
                 
@@ -248,7 +251,7 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                     back = 0;
                     nfa += 2; /* skip GOTO */
                   }
-                  /*fprintf(stderr,"<< %d\n",of_num_loop());*/
+                  fprintf(stderr,"<< %d %d\n",of_cnt, of_num_loop());
                   break;
                     
       case MINANY:  of_zro_loop();
@@ -310,13 +313,18 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                     
       case CAPTR  : n=CAPT_num(*nfa);
                     switch (CAPT_type(*nfa)) {
-                      case BOC:  r->bot[n] = s; /* Ensure capture is empty */
+                      case BOC:  if (*s) {
+                                   r->bot[n] = s;
+                                 }
                                  break;
+                                 
                       case EOC:  if (r->bot[n]) {
                                    r->boc[n] = r->bot[n];
                                    r->eoc[n] = s;
+                                   r->bot[n] = NULL;
                                  }
                                  break;
+                                 
                       case CAPT: if ((t = r->boc[n])) {
                                    while (*s && t < r->eoc[n]) {
                                      if (*s++ != *t++) FAILED();

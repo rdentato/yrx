@@ -52,10 +52,10 @@ typedef struct {
 #define SINGLE  0x20
 
 #define MATCH   0x21   /* 001 00001 */
-#define FAIL    0x22   /* 001 00010 */
-#define FAILALL 0x23   /* 001 00011 */
+#define ONFEND  0x22   /* 001 00010 */
+#define FAIL    0x23   /* 001 00011 */
 #define PATTERN 0x24   /* 001 00100 1xxxxxxx 1xxxxxxx */
-#define ONFEND  0x25   /* 001 00101 */
+#define FAILALL 0x25   /* 001 00101 */
 #define PEEKED  0x26   /* 001 00110 */
 
 #define BKMAX   0x28   /* 001 01000 xxxxxxxx */
