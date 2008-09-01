@@ -1,4 +1,4 @@
-/*  YRX - rx_dump.c
+/*
 **  (C) 2006 by Remo Dentato (rdentato@users.sourceforge.net)
 **
 ** Permission to use, copy, modify and distribute this code and
@@ -10,9 +10,6 @@
 ** Copyright holder makes no representations about the suitability
 ** of this software for any purpose. It is provided "as is" without
 ** express or implied warranty.
-**
-** This code is a derivative work of the PUBLIC DOMAIN regex routines
-** by Ozan Yigit: http://www.cs.yorku.ca/~oz/
 **
 */
 

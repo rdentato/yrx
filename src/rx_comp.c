@@ -1,4 +1,4 @@
-/*  YRX - rx_comp.c
+/* 
 **  (C) 2006 by Remo Dentato (rdentato@users.sourceforge.net)
 **
 ** Permission to use, copy, modify and distribute this code and
@@ -155,6 +155,7 @@ static rexptrs *store(rexptrs *r, unsigned char c)
 
 static rexptrs *storech(rexptrs *r, unsigned char c)
 {
+  unsigned char op;
   
   if (c == 0) return storeop(r,ZERO);
   
@@ -163,8 +164,8 @@ static rexptrs *storech(rexptrs *r, unsigned char c)
   **  We are limited to 31 char since the opcode for STR is:
   ** |010 xxxxx| i.e. we only have 5 bits to store the string length.
   */
-  if (( optype(*(r->lastop)) != STR) ||
-      ( STR_len(*(r->lastop)) > 30))  {
+  op = *(r->lastop);
+  if (( optype(op) != STR) || ( op == NOTCHR) || ( STR_len(op) > 30))  {
     storeop(r,STR);
   }
   
@@ -614,19 +615,30 @@ static unsigned char *endalt(rexptrs *r, unsigned char *p)
                 }
                 break;
                 
-     case '!' : labels[top(alt_stack,1)] = r->cur;
+     case '!' : p++; 
+                labels[top(alt_stack,1)] = r->cur;
                 storeop(r,ONFEND);  
                 storeop(r,FAIL);  
                 labels[top(alt_stack,0)] = r->cur;
-                p++; 
                 break;
   
-     case '&' : storeop(r,PEEKED); 
+     case '#' : p++; 
+                storeop(r,ONFEND);  
+                storegoto(r,top(alt_stack,1));
+                labels[top(alt_stack,0)] = r->cur;
+                storeop(r,ANY);  
+                storeop(r,BACK);
+                storegoto(r,top(alt_stack,2));
+                labels[top(alt_stack,1)] = r->cur;
+                storeop(r,MINANY);
+                break;
+  
+     case '&' : p++;
+                storeop(r,PEEKED); 
                 storegoto(r,top(alt_stack,1));
                 labels[top(alt_stack,0)] = r->cur;
                 storeop(r,FAIL);  
                 labels[top(alt_stack,1)] = r->cur;
-                p++;
                 break;
                 
      default  : storegoto(r,top(alt_stack,1));
@@ -646,6 +658,7 @@ static unsigned char *endalt(rexptrs *r, unsigned char *p)
 static void fixalt(rexptrs *r)
 {
    int   n;
+   unsigned char op;
   /*
   for (n=0; n<alt_cur_label;n++) {
    fprintf(stderr,"[%d]\t%p\n",n,labels[n]);
@@ -655,11 +668,11 @@ static void fixalt(rexptrs *r)
   
   r->cur = r->first;
   if (alt_stack_count > 0)
-    error("ERR116: Unclosed capture");
-
-  while (*(r->cur) != END) {
+    error("ERR116: Unclosed parenthesis");
+  op = *(r->cur);
+  while ( op != END) {
    /* fprintf(stderr,"+> OP %p %02X\n",r->cur,*(r->cur)); */ 
-    switch (optype(*(r->cur))) {
+    switch (optype(op)) {
       case GOTO    : if (*(r->cur) == ONFEND) break;
                      n = jmparg(r->cur);
                      /* fprintf(stderr,"++ %p %p %d\n",r->cur,labels[n],labels[n] - r->cur);*/
@@ -675,7 +688,7 @@ static void fixalt(rexptrs *r)
                      (r->cur)++;
                      break; 
                     
-      case SINGLE : switch (*(r->cur)) {
+      case SINGLE : switch (op) {
                      /* arg is 2 bytes */
                      case PATTERN:
                      case BRACED:(r->cur) ++;
@@ -687,13 +700,14 @@ static void fixalt(rexptrs *r)
                   }
                   break;
                   
-      case STR :  (r->cur) += STR_len(*(r->cur));
+      case STR :  (r->cur) += (op == NOTCHR)? 1 : STR_len(op);
                   break;
                   
-      case CCL  : (r->cur) += CCL_len(*(r->cur));
+      case CCL  : (r->cur) += CCL_len(op);
                   break;
     }
     (r->cur)++;
+    op = *(r->cur);
   }
   
 }
@@ -708,7 +722,7 @@ static unsigned char *storeclo(rexptrs *r,unsigned char clo,unsigned char *p)
   ** before last opcode.
   */
   n=*(r->lastop);
-  if (optype(n) == STR) {
+  if (optype(n) == STR && n != NOTCHR) {
     /* take latest character of the string */
     if (STR_len(n) > 1) {
      *(r->lastop) = n-1;
@@ -775,6 +789,18 @@ static unsigned char *storeclo(rexptrs *r,unsigned char clo,unsigned char *p)
     case '!' :  storeop(r,ONFEND);  
                 storeop(r,FAIL);  
                 labels[alt_cur_label-1] = r->cur;
+                break;
+                
+    case '#' :  storeop(r,ONFEND);  
+                storegoto(r,alt_cur_label);
+                labels[alt_cur_label-1] = r->cur;
+                storeop(r,ANY);  
+                storeop(r,BACK);
+                storegoto(r,alt_cur_label-2);
+                labels[alt_cur_label++] = r->cur;
+                storeop(r,MINANY);
+                break;                
+
                 break;
                 
     case '&' :  storeop(r,PEEKED); 
@@ -967,6 +993,7 @@ static char *compile(const unsigned char *pat, unsigned char *nfa,
       case '<':  
       case '?':  
       case '!':  
+      case '#':  
       case '&':  
                  p = storeclo(r,*p,p);
                  break;
