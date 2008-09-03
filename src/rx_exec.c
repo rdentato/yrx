@@ -194,10 +194,12 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                 if (s == start) FAILED();
                 break;
          
-     case ESCAPE: r->escape = *s;
-                  if (r->escape == ' ') r->escape = '\0';
+     case ESCAPE: r->escape = *++nfa;
                   break;
                 
+     case ESCOFF: r->escape = '\0';
+                  break;
+
      case SPCS: while (isspace(*s)) s++;
                 break;
 
@@ -219,16 +221,29 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                  if (s == start) FAILED();
                  break;
                 
-     case ESCANY: if (*s == r->escape && s[1]) s++;
-                  if (*s) s++;  
-                  break;
+     case   ANY: if (*s == '\0') FAILED();
+                 if (*s == r->escape && s[1]) s++;
+                 s++;
+                 if (s == start) FAILED();
+                 break;
                   
      case NOTCHR: if (*s == '\0') FAILED();
-                  c=*s++;
-                  if (r->casesensitive == 0) c = tolower(c);
-                  if (c == *++nfa) FAILED();
+                  if (*s == r->escape && s[1]) { 
+                    s+=2;
+                  }
+                  else {
+                    c=*s++;
+                    if (r->casesensitive == 0) c = tolower(c);
+                    if (c == nfa[1]) FAILED();
+                  }
+                  nfa++;
                   break;
                   
+     case NEWLN: if (*s == '\r') s++;
+                 if (*s == '\n') s++;
+                 if (s == start) FAILED();
+                 break;
+        
      case NHEX: if ((*s == '0') &&
                     (s[1] == 'x' || s[1] == 'X') &&
                      isxdigit(s[2]))
@@ -243,6 +258,14 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                 if (*s == '.') { 
                   s++;
                   while (isdigit(*s)) s++;
+                }
+                if ((*s == 'e' || *s == 'E') && isdigit(s[1])) {
+                  s+=2;
+                  while (isdigit(*s)) s++;
+                  if (*s == '.') { 
+                    s++;
+                    while (isdigit(*s)) s++;
+                  }
                 }
                 if (s == start) FAILED();
                 break;
@@ -288,6 +311,7 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                     s = str;
                     for (k=0; k<=RX_MAXCAPT; k++)
                       r->boc[k] = r->bot[k] = r->eoc[k] = NULL;
+                    r->escape = '\0';
                     nfa += 2;
                     break;
                     
@@ -334,6 +358,7 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                                    while (*s && t < r->eoc[n]) {
                                      if (*s++ != *t++) FAILED();
                                    }
+                                   if (s == start) FAILED();
                                  }
                                  break;
                     }

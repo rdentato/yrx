@@ -9,7 +9,7 @@
 # of this software for any purpose. It is provided "as is" without
 # express or implied warranty.
 
-# * Showcase
+# * Introduction
 #   This file is both a testsuite and part of the manual for yrx.
 #   Every single matching operator is shown with examples. 
 #   Group of patterns are defined with a number and the pattern enclosed
@@ -23,13 +23,12 @@
 
 1/I'm a plain string/
 "I'm a plain string" 1
-"me too" 0
+"Me too!" 0
 
 # * Character class
-# A character class is way to specify a set of characters at once.
-# Pattern 1 defines the set of wovels, pattern 2 the set of consonants.
-1/[aeiou]/
-2/[bcdfghjklmnpqrstvwxyz]/
+# A character set is way to specify a set of characters at once.
+1/[aeiou]/                 # wovels
+2/[bcdfghjklmnpqrstvwxyz]/ # consonants
 "u" 1
 "x" 2
 "3" 0
@@ -42,61 +41,169 @@
 
 # To specify characters that do not belong to a given set, the '^' symbol
 # is used: 
-1/[^A-Z]/ # matches any character that is not an uppercase letter
+1/[^A-Z]/ # any character that is not an uppercase letter
 "u" 1
 "X" 0
 "3" 1
 
 # Also there are predefined classes:
-#  \a  alphabetic character
-#  \l  lowercase  character
-#  \u  uppercase  character
-#  \d  decimal digit
-#  \q  alphanumeric (a letter or a digit)
-#  \s  a spacing character (includes newlines, tabs, etc.) 
-#  \p  a punctuation character
-#  \h  an hexadecimal digit ([0-9A-Za-z])
-#  \w  a "word" character ([\q_])
-#  \c  a "control" character (ASCII 1 to ASCII 7)
-#  \y  space or tab (ASCII 32 or ASCII 9)
+#  \a    alphabetic character
+#  \b    backspace character (ASCII 8)
+#  \c    a "control" character (ASCII 1 to ASCII 7)
+#  \d    decimal digit
+#  \f    form feed character (ASCII 10)
+#  \h    an hexadecimal digit ([0-9A-Za-z])
+#  \l    lowercase  character
+#  \n    newline character (ASCII 10)
+#  \p    a punctuation character
+#  \q    alphanumeric (a letter or a digit)
+#  \r    carriage return character (ASCII 13)
+#  \s    a spacing character (includes newlines, tabs, etc.) 
+#  \t    tab character (ASCII 8)
+#  \u    uppercase  character
+#  \v    vertical tab character (ASCII 10)
+#  \w    a "word" character ([\q_])
+#  \xhh  the character whose code is hh (in hex)
+#  \y    space or tab (ASCII 32 or ASCII 9)
 
 1/\a\l\u\d\q\s\p\h\w\y/
 "PaR1S :F_ " 1
 "1Ag" 0
 
-# Note that the predefined classes are influenced by the current locale
+# Note that the predefined sets are influenced by the current locale
 # settings. This means that "\l" may be different from "[a-z]", for example
 # the accented e "è" is considered a lowercase letter if locale is set to "It".
 
+#  Predefined sets can be used within character set definitions.
+1/[\d,]+/
+2/[^\a\d]+/  # Anything but a letter or a digit
+"543,21" 1
+">>>@" 2
+
+# * Recognizers
+#   Some commonly used patterns have been predefined:
+#      .    any character (except '\0'). Depending on the switch \E it
+#           can also match an escaped character.
+#     \Q    quoted string. Equivalent to:
+#            ("(\\.|[^"])*"|'(\\.|[^'])*')
+#     \N    decimal integer number. Equivalent to:
+#            [+-]?\d+
+#     \H    hex integer number. Equivalent to:
+#            (0x)?\h+
+#     \F    floating point number. Equivalent to:
+#            [+-]?\d*(.\d*)?([eE][+-]?\d*(.\d*))?
+#           but doesn't match the empty string
+#     \L    generalized newline. Equivalent to:
+#            (\r\n?|\n) 
+#     \I    identifier. Equivalent to:
+#            [\a_]\w+
+#     \Bxy  balanced braces. The character x and y must be
+#           different. For example %B() matches "(f(g(x))".
+#     \W    white space. Equivalent to:
+#            [ \t]*
+#
+#     \A
+#     \Z
+            
+      
 # * Grouping
 #   Expressions can be grouped by parenthesis. If "X" is an expression, "(X)"
-# is an expression that defines the same set of strings as "X".
+# is a pattern that defines the same set of strings as "X".
 1/(a[bc])/
 "ab" 1
 "ac" 1
 "bc" 0
 
-#   Within a group it is possible to define alternative expressions. 
-# If "X" and "Y" are expressions, "(X|Y)" is an expression that defines
+#   Within a group it is possible to define alternative patterns. 
+# If "X" and "Y" are patterns, "(X|Y)" is a pattern that defines
 # the set of strings that match "X" or "Y".
 1/(ab|ac)/
 "ab" 1
 "ac" 1
 "bc" 0
 
-# Special Characters
-# If a special character is to be matched literally, it must be 
-# escaped with a backslash.
-1/\*\)+\(+
-[|*#^$&!()?+{}<>\\]+/
-2/
-"*))((*" 1
+# * Operators
+#   The following operators can be applied to a pattern X:
+#   ^X       matches X at the beginning of the input string
+#    X$      matches X at the end of the input string
+#    X*      matches 0 or more repetition of X
+#    X+      matches 1 or more repetition of X
+#    X?      matches X or the empty string
+#    X<m,n>  matches m to n repetition of X
+#    X<m>    matches m repetition of X
+#    X<m,>   matches m or more repetition of X
+#    X<,n>   matches 0 to n repetition of X
+#    X!      matches the empty string if X doesn't match
+#    X&      matches the empty string if X matches
+#    X#      matches any string whose end matches X
 
-# Case insensitive match
-# Matching can be made made case-insensitive with the '\C' operator. It
-# operates as a switch turning case-sensitiveness on and off
+1/^\l\l/   # two lowercase letters at the beginning of the string
+2/\l\l$/   # two lowercase letters at the end of the string
+3/\l\l/    # two lowercase letters anywhere in the string 
+"xx<<" 1
+">>zy" 2
+">zy<" 3
+"q11p" 0
+"db"   1
+
+
+1/,\d!/   # a comma not followed by a digit
+2/\a:&/   # a letter followed by a colon
+",x" 1
+",3" 0
+"x:" 2
+"9:" 0
+
+# * Special Characters
+# If a special character is to be matched literally, it must be 
+# escaped with a backslash. Except if they are inside a character set.
+1/\[.[|*#^$&!()?+{}<>\\]+\]/
+"[*))((*]" 1
+
+# * Captures
+#   Part of the matching string can be captured and returned among results.
+# There can be up to 8 captures.
+#    {   begin capture
+#    }   end capture
+#    \1  reference 1st capture
+#    \2  reference 2nd capture
+#    ...  
+#    \8  reference 8th capture
+1/{\a}\1/    # twice the same letter
+2/{\a\a}\1/  # twice the same couple of letters
+"xaax" 1
+"xaxa" 2
+"abcd" 0 
+
+1/{.}\1#/   # a string delimited by its first character
+"'abcd'" 1
+"<abcd>" 0
+"$$"     1
+
+
+1/\W{\l+}\({[?\)]*}\)/
+
+
+# * Switch
+#   A switch turns on and off a specific feature of the pattern matchin
+# engine.
+#    \C    case sensitive match on/off
+#    \Ex   turns on escaped match for the "." recognizer   
+#    \e    turns off escaped match
 
 1/Case is \Cimportant\C but not always/
 "Case is IMPORTANT but not always"  1
 "Case is important but not ALWAYS"  0
+
+1/\E\\''#/     # Remember that X# = (X!.)*X
+2/\E`{.}\1#/
+"'abcde'" 1
+"$xyz$" 2
+"$xyz`$abc$" 2
+"abcd" 0
+
+1/\E$'{[^']*}'\e{[^']*}'/
+"'ab'cd'"        1
+"'ab$'cd'ef"     1
+"'ab$'cd'ef$'gh" 1
 
