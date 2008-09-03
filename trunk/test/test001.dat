@@ -1,0 +1,102 @@
+#  (C) 2006 by Remo Dentato (rdentato@users.sourceforge.net)
+#
+#  Permission to use, copy, modify and distribute this code and
+# its documentation for any purpose is hereby granted without fee,
+# provided that the above copyright notice, or equivalent attribution
+# acknowledgement, appears in all copies and supporting documentation.
+#  
+#   Copyright holder makes no representations about the suitability
+# of this software for any purpose. It is provided "as is" without
+# express or implied warranty.
+
+# * Showcase
+#   This file is both a testsuite and part of the manual for yrx.
+#   Every single matching operator is shown with examples. 
+#   Group of patterns are defined with a number and the pattern enclosed
+# in between two slashes ('/').
+#   Following strings (enclosed in double quotes) are to be matched against
+# the group of patterns. The number following the string indicates which
+# pattern the string matches (0 if none).
+
+# * Characters
+# Usually characters in a pattern match themselves. 
+
+1/I'm a plain string/
+"I'm a plain string" 1
+"me too" 0
+
+# * Character class
+# A character class is way to specify a set of characters at once.
+# Pattern 1 defines the set of wovels, pattern 2 the set of consonants.
+1/[aeiou]/
+2/[bcdfghjklmnpqrstvwxyz]/
+"u" 1
+"x" 2
+"3" 0
+
+# A set may be specified with a range
+1/[A-Ga-g]/  # Notes pitch
+"A" 1
+"b" 1
+"K" 0
+
+# To specify characters that do not belong to a given set, the '^' symbol
+# is used: 
+1/[^A-Z]/ # matches any character that is not an uppercase letter
+"u" 1
+"X" 0
+"3" 1
+
+# Also there are predefined classes:
+#  \a  alphabetic character
+#  \l  lowercase  character
+#  \u  uppercase  character
+#  \d  decimal digit
+#  \q  alphanumeric (a letter or a digit)
+#  \s  a spacing character (includes newlines, tabs, etc.) 
+#  \p  a punctuation character
+#  \h  an hexadecimal digit ([0-9A-Za-z])
+#  \w  a "word" character ([\q_])
+#  \c  a "control" character (ASCII 1 to ASCII 7)
+#  \y  space or tab (ASCII 32 or ASCII 9)
+
+1/\a\l\u\d\q\s\p\h\w\y/
+"PaR1S :F_ " 1
+"1Ag" 0
+
+# Note that the predefined classes are influenced by the current locale
+# settings. This means that "\l" may be different from "[a-z]", for example
+# the accented e "è" is considered a lowercase letter if locale is set to "It".
+
+# * Grouping
+#   Expressions can be grouped by parenthesis. If "X" is an expression, "(X)"
+# is an expression that defines the same set of strings as "X".
+1/(a[bc])/
+"ab" 1
+"ac" 1
+"bc" 0
+
+#   Within a group it is possible to define alternative expressions. 
+# If "X" and "Y" are expressions, "(X|Y)" is an expression that defines
+# the set of strings that match "X" or "Y".
+1/(ab|ac)/
+"ab" 1
+"ac" 1
+"bc" 0
+
+# Special Characters
+# If a special character is to be matched literally, it must be 
+# escaped with a backslash.
+1/\*\)+\(+
+[|*#^$&!()?+{}<>\\]+/
+2/
+"*))((*" 1
+
+# Case insensitive match
+# Matching can be made made case-insensitive with the '\C' operator. It
+# operates as a switch turning case-sensitiveness on and off
+
+1/Case is \Cimportant\C but not always/
+"Case is IMPORTANT but not always"  1
+"Case is important but not ALWAYS"  0
+

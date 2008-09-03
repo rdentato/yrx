@@ -106,11 +106,14 @@ void rx_dump_asm(FILE *f,unsigned char * nfa)
         case PEEKED: fprintf(f,"\tRST\n");    break;
         case ONFEND: fprintf(f,"\tOFF\n");    break;
         
+        case BKABS : n = 257; goto bk;
         case BACK  : n = 256; goto bk;
         case BKMAX : n = *(incrnfa());
                      fprintf(f,"%02X",n);                     
-                bk : if (n >= 255)
+                bk : if (n == 256)
                         fprintf(f,"\tJFO\t0,");
+                     else if (n == 257)
+                        fprintf(f,"\tJMP\t");
                      else
                         fprintf(f,"\tJFO\t%d,",n);
                      incrnfa();
