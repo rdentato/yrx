@@ -67,8 +67,8 @@
 #  \y    space or tab (ASCII 32 or ASCII 9)
 
 1/\a\l\u\d\q\s\p\h\w\y/
-"PaR1S :F_ " 1
-"1Ag" 0
+"PaR1S :F_ "  1
+"1Ag"         0
 
 # Note that the predefined sets are influenced by the current locale
 # settings. This means that "\l" may be different from "[a-z]", for example
@@ -77,8 +77,8 @@
 #  Predefined sets can be used within character set definitions.
 1/[\d,]+/
 2/[^\a\d]+/  # Anything but a letter or a digit
-"543,21" 1
-">>>@" 2
+"543,21"   1
+">>>@"     2
 
 # * Recognizers
 #   Some commonly used patterns have been predefined:
@@ -151,8 +151,10 @@
 2/\a:&/   # a letter followed by a colon
 ",x" 1
 ",3" 0
+".3" 0
 "x:" 2
 "9:" 0
+"x." 2
 
 # * Special Characters
 # If a special character is to be matched literally, it must be 
@@ -177,12 +179,12 @@
 
 1/{.}\1#/   # a string delimited by its first character
 "'abcd'" 1
-"<abcd>" 0
+"<abcd>"0
 "$$"     1
 
 
 1/\W{\l+}\({[?\)]*}\)/
-
+"xx"
 
 # * Switch
 #   A switch turns on and off a specific feature of the pattern matchin
@@ -197,13 +199,13 @@
 
 1/\E\\''#/     # Remember that X# = (X!.)*X
 2/\E`{.}\1#/
-"'abcde'" 1
-"$xyz$" 2
-"$xyz`$abc$" 2
-"abcd" 0
+"'abcde'"     1
+"$xyz$"       2
+"$xyz`$abc$"  2
+"abcd"        0
 
 1/\E$'{[^']*}'\e{[^']*}'/
-"'ab'cd'"        1
-"'ab$'cd'ef"     1
-"'ab$'cd'ef$'gh" 1
+"'ab'cd'"         1
+"'ab$'cd'ef'"     1
+"'ab$'cd'ef$'gh'" 1
 

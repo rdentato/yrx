@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
                               rx_write(r,0,tmpf);
                               break;
                
-            case "^case\Y{\Q}\Y:" :
+            case "^case\W{\Q}\W:" :
                               s = rx_end(r,0);
                               fprintf(tmpf,"case %d :",++rxnum);
                               rx_end(r,1)[-1] = '\0';
@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
                               }
                               break;
 
-            case "^RX_SWITCH\Y\({\W},{(\B()|[^)(]+)+}\)" :
+            case "^RX_SWITCH\W\({\I},{(\B()|[^)(]+)+}\)" :
                               s = rx_end(r,0);
                               outrx(sym);
                               fprintf(tmpf,"switch(rx_matched((");

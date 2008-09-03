@@ -23,7 +23,7 @@ endif
 
 # = Build all
 # 
-all: rx$(_EXE) rxc$(_EXE)
+all: rx$(_EXE) rxc$(_EXE) rx_test$(_EXE)
 
 # = The RX Utility
 # 
@@ -67,6 +67,12 @@ rxc_b.o: rxc_boot$(_EXE)
 rxc_boot$(_EXE): librx.a rxc_boot.o 
 	$(LN)rxc_boot$(_EXE) rxc_boot.o -lrx
 
+rx_test.o : rx_test.rxc
+	rxc rx_test.rxc >rx_test.c
+	gcc $(CFLAGS) -c rx_test.c
+
+rx_test$(_EXE): rxc$(_EXE) rx_test.o 
+	$(LN)rx_test$(_EXE) rx_test.o -lrx
 
 # = Profiling
 

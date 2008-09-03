@@ -1,0 +1,128 @@
+/* 
+**  (C) 2006 by Remo Dentato (rdentato@users.sourceforge.net)
+**
+** Permission to use, copy, modify and distribute this code and
+** its documentation for any purpose is hereby granted without
+** fee, provided that the above copyright notice, or equivalent
+** attribution acknowledgement, appears in all copies and
+** supporting documentation.
+** 
+** Copyright holder makes no representations about the suitability
+** of this software for any purpose. It is provided "as is" without
+** express or implied warranty.
+**
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <strings.h>
+#include <ctype.h>
+
+#define RX_MAXNFA 4096
+#include "rx.h"
+
+unsigned char nfa[RX_MAXNFA];
+
+#define ln_len 2048
+char ln[ln_len];
+
+FILE *inf;
+FILE *outf;
+
+int swnum = 0;
+int rxnum = 0;
+int lnnum = 0;
+
+int error(char *errmsg)
+{
+  fprintf(stderr,errmsg);  
+  exit(1);
+}
+
+#define READING  1
+#define MATCHING 2
+
+int main(int argc, char *argv[])
+{
+  char *s;
+  char *err;
+  int c;
+  int state = READING;
+  int argn = 1;  
+  int sym = 0;
+  int xprn = 1;
+  rx_result r;
+  
+  char *fname = "(stdin)";
+    
+  *nfa = '\0';
+  inf  = stdin;
+  outf = stdout;
+
+  while ((argn < argc) && (argv[argn][0] == '-')) {
+    if (argv[argn][1] == 's') sym = 1;
+    argn++;
+  }
+    
+  if (argn < argc) {
+    fname = argv[argn];
+    inf = fopen(fname,"r");
+    if (inf == NULL) error("ERR203: Unable to open input file");
+  }
+  
+  while ((s = fgets(ln,ln_len,inf))) {
+    while (*s) {
+      RX_SWITCH(r,s) { 
+        case "^\#.*" :
+        case "^\s+"     : s = rx_end(r,0);
+                          rx_write(r,0,outf);
+                          break;
+           
+        case "^\W\d*{//#}" :
+                          if (state == MATCHING) {
+                            *nfa = '\0';
+                            xprn = 1;      
+                            state = READING;                      
+                          }
+                          s = rx_end(r,0);
+                          fprintf(outf,"%d/",xprn++);
+                          rx_end(r,1)[-1] = '\0';
+                          fwrite(rx_start(r,1)+1,rx_len(r,1)-2,1,outf);
+                          err = rx_compile_add(rx_start(r,1)+1,nfa);
+                          fputc('/',outf);
+                          if (err) {
+                            fprintf(stderr,"%d:ERR205: %s\n",lnnum,err);
+                            exit(1);
+                          }
+                          break;
+
+        case "^{\Q}{\W}{\d*}\W(\(\d+\))?(\W\B{})*" :
+                          state = MATCHING;
+                          s = rx_end(r,0);
+                          rx_write(r,1,outf);
+                          rx_write(r,2,outf);
+                          c = atoi(rx_start(r,3));
+                          rx_end(r,1)[-1] = '\0';
+                          r = rx_exec(nfa,rx_start(r,1)+1);
+                          fprintf(outf,"%d (%d)",rx_matched(r),c);
+                          for (c=0; c <= RX_MAXCAPT ; c++) { 
+                            fputs("  {",outf);
+                            rx_write(r,c,outf);
+                            fputs("}",outf);
+                          }
+                          break;
+                          
+        default :         if (*s) {
+                             fputc(*s++,outf);
+                             fputc('.',outf);
+                             }
+                          break;                        
+      }            
+    }
+  }
+  
+ 
+  if (outf != stdout) fclose(outf);
+  if (inf  != stdin)  fclose(inf);
+  exit(0);
+}
