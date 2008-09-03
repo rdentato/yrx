@@ -200,7 +200,7 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
      case ESCOFF: r->escape = '\0';
                   break;
 
-     case SPCS: while (isspace(*s)) s++;
+     case SPCS: while (*s == ' ' || *s == '\t') s++;
                 break;
 
      case BRACED: k=0; c = *++nfa; n = *++nfa;

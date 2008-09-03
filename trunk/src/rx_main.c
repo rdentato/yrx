@@ -79,7 +79,7 @@ int main (int argc, char **argv)
          printf("%s -> ",argv[argn]);
          if ((rx=rx_exec(nfa,argv[argn]))) {
            printf("[%d]",rx_matched(rx));
-           for (j=0; j <=8 ; j++) { 
+           for (j=0; j <= RX_MAXCAPT ; j++) { 
              fputs("  (",stdout);
              fwrite(rx_start(rx,j),rx_len(rx,j),sizeof(unsigned char),stdout);
              fputs(")",stdout);

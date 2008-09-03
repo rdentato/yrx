@@ -34,6 +34,8 @@
 #define RX_MAXNFA 1024
 #endif
 
+#define RX_MAXCAPT 8
+
 /*   You don't really need to know {rx_result} internals. You will
 ** receive it from the {rx_exec} function if a match is successful
 ** and you will pass it to the other functions to get more information.

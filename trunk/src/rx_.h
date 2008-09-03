@@ -25,8 +25,6 @@
 
 #include "rx.h"
 
-#define RX_MAXCAPT 8
-
 typedef struct {
   unsigned char *boc[RX_MAXCAPT+1];
   unsigned char *bot[RX_MAXCAPT+1];
