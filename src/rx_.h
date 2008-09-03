@@ -58,6 +58,7 @@ typedef struct {
 #define FAILALL 0x25   /* 001 00101 */
 #define PEEKED  0x26   /* 001 00110 */
 
+#define BKABS   0x27   /* 001 01001 */
 #define BKMAX   0x28   /* 001 01000 xxxxxxxx */
 #define BACK    0x29   /* 001 01001 */
 

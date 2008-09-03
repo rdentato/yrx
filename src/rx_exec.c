@@ -154,10 +154,15 @@ static unsigned char  of_cnt = 0;
                          of_stack[of_cnt++] = (unsigned char *)(s)) : 0, \
                          of_loop[of_cnt>>1] = 0 )   
 
-#define of_inc_loop()  (++of_loop[(of_cnt>>1)-1])
-#define of_num_loop()  (of_loop[(of_cnt>>1)-1])
+#if 0
+#define of_inc_loop() (fprintf(stderr,"II %d %d\n",of_cnt,of_loop[(of_cnt>>1)-1]+1),(++of_loop[(of_cnt>>1)-1]))
+#define of_num_loop() (fprintf(stderr,"NN %d %d\n",of_cnt,of_loop[(of_cnt>>1)-1]+1),(of_loop[(of_cnt>>1)-1]))
 #define of_zro_loop()  (of_loop[(of_cnt>>1)-1] = 0)
-
+#else
+#define of_inc_loop() ((++of_loop[(of_cnt>>1)-1]))
+#define of_num_loop() ((of_loop[(of_cnt>>1)-1]))
+#define of_zro_loop()  (of_loop[(of_cnt>>1)-1] = 0)
+#endif
 static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned char *nfa)
 {
   unsigned char n, c;
@@ -170,10 +175,10 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
   unsigned char *q = (unsigned char *)nfa;
 
   while (*nfa != END && *nfa != MATCH) {
-    /**/
-    fprintf(stderr,"--> %05X %02X %02X %s\n",nfa-q,*nfa,optype(*nfa),s);fflush(stderr);
-    /**/
     start = s;
+    /** /
+    fprintf(stderr,"--> %05X %02X %02X %s\n",nfa-q,*nfa,optype(*nfa),s);fflush(stderr);
+    / **/
    switch (*nfa) {
                 
      case BOL : if (s != r->bol) FAILED(); break;
@@ -241,17 +246,16 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                 }
                 if (s == start) FAILED();
                 break;
-     
+      case BKABS: t = NULL; goto bk;
       case BKMAX:
       case BACK : of_pop(p,t);
-                  n = of_inc_loop();
+             bk : n = of_inc_loop();
                   back = 1;
                   /* s == t reveals an endless loop */
                   if ((s == t) || (*nfa == BKMAX && n >= *++nfa)) {
                     back = 0;
                     nfa += 2; /* skip GOTO */
                   }
-                  fprintf(stderr,"<< %d %d\n",of_cnt, of_num_loop());
                   break;
                     
       case MINANY:  of_zro_loop();
@@ -280,7 +284,8 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                     k = (nfa[1] & 0x7F) << 7 | (nfa[2] & 0x7F);
                     /*fprintf(stderr,"RX: %d %d\n",r->rxnum, k);*/
                     of_reset();
-                    of_push(nfa+1+k,  start);
+                    of_push(nfa+1+k,  str);
+                    s = str;
                     for (k=0; k<=RX_MAXCAPT; k++)
                       r->boc[k] = r->bot[k] = r->eoc[k] = NULL;
                     nfa += 2;

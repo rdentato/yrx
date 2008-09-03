@@ -7,8 +7,8 @@
 :                        /_// /   \__//_/ \ \ 
 :                           \/             \/  
                            
-         -=  YRX - A Regular Expression extension for C  =-
-       (C) 2006 Remo Dentato (rdentato@users.sourceforge.net)
+         -=  YRX - A pattern matching extension for C  =-
+       (C) 2008 Remo Dentato (rdentato@users.sourceforge.net)
 
 = License
 =========
@@ -26,73 +26,36 @@ express or implied warranty.
 = Introduction
 ==============
 
-  While YRX is basically an extension to conveniently add regular
-expressions to C its main use is to create lexical scanners. In that
-it is much similar to <re2c:http://re2c.sourceforge.net> than |lex|.
+  YRX is an extension to add pattern matching capability to C, its
+main use is to create lexical scanners.
 
-  It consists of a regular expression library (|rx|) and a
-preprocessor (|yrx|).
+  Its mode of operation is much much more similar to
+<re2c:http://re2c.sourceforge.net> than |lex|.
 
-  The regular expression library is a complete rewrite of the public
-domain regular expressions package release in the public domain by
-<Ozan Yigit:http://www.cs.yorku.ca/~oz/>. Even if I completely
-rewrote it and added many features and optimizations, the basic
-structure remains the same of his package.
+  It consists of a pattern matching library (|rx|) and many 
+utilities developed on top of that.
 
-  Note that the |rx| library can be used indepedently from the yrx
-preprocessor, it has no dependency.
 
+= Patterns 
+===========
+
+  RX patterns are similar to regular expressions but not quite the same. 
+They are also inspired to PEG (Parsing Expressions Grammars)
+
+  The main differences with regular expressions are:
+
+  [] RX expression can define non-regular languages
+  [] RX matching operators are always greedy
+  [] Negative matching can be specified 
   
-= General concepts
-==================
-
- == Input model
- ^^^^^^^^^^^^^^
- 
-  YRX tries to match a text stream against a list of regular
-expressions starting from a "current position" in the stream.
-This is very close to the |AWK| model.
-
-  Upon match, the matching portion is returned and the current
-position is advanced past the match.
-
-  An example should clarify things. Assume you have a
-text stream:
-
-     :   xxxxxx ABCDEFGzzzzzzzzzzzzzzzzzz
-     :        | |  
-     :        | `-- Current position
-     :        `-- Already matched text
-             
-  Upon match with the regular expression |"ABC"| the new
-situation will be:
-        
-     :    xxxxxxABC DEFGzzzzzzzzzzzzzzzzzz
-     :            | |  
-     :            | `-- Current position
-     :            `-- Already matched text
-        
-  Streams are read one line at the time. If a line ends with a
-backslash (possibly followed by blanks) the next line is read as
-continuation and the backslash is replaced by a newline (\n).
-      
-
-= Regular expressions  <:regex>
-=====================
-
-  Regular expressions nowdays are widespread but, unfortunately,
-every package has its own extensions and syntax incompatibilities.
-YRX is no way different and here is the flavour of regular
-expressions it handles, I hope you find it intuitive enough.
-Prior knowledge of general expressions concepts is assumed.
 
  == Expressions
  ~~~~~~~~~~~~~
 
-  An expression is 
+  An expression is made of term 
 
 
- == Characters
+ == Atoms
  ~~~~~~~~~~~~~
   Each character matches itself except:
   
@@ -104,12 +67,13 @@ Prior knowledge of general expressions concepts is assumed.
   [$]      End of line (only if placed at the end of pattern)
   [*]      Matches preceding expression repeated zero or more times.
   [+]      As above but matches one or more repetitions.
-  [?]      As above but matches only zero or one repetitions. It can also be
-           applied to the recognizers '\N', '\Q', '\B', ...
+  [?]      As above but matches only zero or one repetitions. 
   [!]      Matches a 0-length string assuming it doesn't match the specified
            expression. (See section "Context")
   [&]      Matches a 0-length string assuming it does match the specified
            expression. (See section "Context")
+  [#]      Matches the specified expression preceeded by any string.
+            "X#" is equivalent to "(X!.)*X"        
   [<>]     Set limits for matching repetitions. For example the regex "X<1,3>"
            matches a string of 1 to 3 'X'.
   [(|)]    grouping and alternate. The regex "(ab|cd)" will match the string
@@ -255,7 +219,7 @@ that matches a part of the pattern for a future used.
  There may be up to eight captures and they may be nested:
  
 : rx '([\a]+)(\s+([^\s]*))' 'STA $FFE0'
-:    (STA $FFE0) (STA) ( $FF00) ( $FF00)
+:    (STA $FFE0) (STA) ( $FF00) ($FF00)
 
  Captures may be referenced within the regex:
  

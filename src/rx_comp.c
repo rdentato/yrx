@@ -621,13 +621,13 @@ static unsigned char *endalt(rexptrs *r, unsigned char *p)
                 storeop(r,FAIL);  
                 labels[top(alt_stack,0)] = r->cur;
                 break;
-  
+
      case '#' : p++; 
                 storeop(r,ONFEND);  
                 storegoto(r,top(alt_stack,1));
                 labels[top(alt_stack,0)] = r->cur;
                 storeop(r,ANY);  
-                storeop(r,BACK);
+                storeop(r,BKABS);
                 storegoto(r,top(alt_stack,2));
                 labels[top(alt_stack,1)] = r->cur;
                 storeop(r,MINANY);
@@ -795,13 +795,11 @@ static unsigned char *storeclo(rexptrs *r,unsigned char clo,unsigned char *p)
                 storegoto(r,alt_cur_label);
                 labels[alt_cur_label-1] = r->cur;
                 storeop(r,ANY);  
-                storeop(r,BACK);
+                storeop(r,BKABS);
                 storegoto(r,alt_cur_label-2);
                 labels[alt_cur_label++] = r->cur;
                 storeop(r,MINANY);
                 break;                
-
-                break;
                 
     case '&' :  storeop(r,PEEKED); 
                 storegoto(r,alt_cur_label++);
