@@ -50,7 +50,7 @@ static unsigned char hex(int n) {
      ~~~~~~~~
 */
 
-static unsigned char def_capt=0;   /* last defined capture */
+static unsigned char def_capt=0;   /* defined captures */
 static unsigned char num_capt=0;  
 
 /* == Nested Captures
@@ -671,8 +671,11 @@ static void fixalt(rexptrs *r)
     error("ERR116: Unclosed parenthesis");
   op = *(r->cur);
   while ( op != END) {
-   /* fprintf(stderr,"+> OP %p %02X\n",r->cur,*(r->cur)); */ 
+   /* fprintf(stderr,"+> OP %p %02X\n",r->cur,*(r->cur)); */
+    
     switch (optype(op)) {
+      case CAPTR   : if (op == ESCAPE) (r->cur)++;
+                     break;
       case GOTO    : if (*(r->cur) == ONFEND) break;
                      n = jmparg(r->cur);
                      /* fprintf(stderr,"++ %p %p %d\n",r->cur,labels[n],labels[n] - r->cur);*/
@@ -691,11 +694,10 @@ static void fixalt(rexptrs *r)
       case SINGLE : switch (op) {
                      /* arg is 2 bytes */
                      case PATTERN:
-                     case BRACED:(r->cur) ++;
+                     case BRACED: (r->cur)++;
                      
                      /* arg is 1 byte */
-                     case BKMAX :
-                     case ESCAPE: (r->cur)++;
+                     case BKMAX : (r->cur)++;
                                   break;
                   }
                   break;
@@ -842,7 +844,7 @@ static char *storeesc(rexptrs *r, unsigned char *p)
     case '1' : case '2' : case '3' : case '4' :
     case '5' : case '6' : case '7' : case '8' :
                chr -= '1';
-               if (chr >= def_capt)  {
+               if (!(def_capt & (1 << chr)))  {
                  error("ERR107: Reference to an undefined capture");
                }
                storeop(r,CAPT | chr);
@@ -854,9 +856,7 @@ static char *storeesc(rexptrs *r, unsigned char *p)
     case 'r' : storech(r,'\r');    break;
     case 't' : storech(r,'\t');    break;
     case 'v' : storech(r,'\v');    break;
-    
-    case 'e' : storeop(r,ESCANY);    break;
-    
+        
     case 'a' : storeop(r,ALPHA);   break;
     case 'd' : storeop(r,DIGIT);   break;
     case 'u' : storeop(r,ANYUPR);  break;
@@ -870,30 +870,25 @@ static char *storeesc(rexptrs *r, unsigned char *p)
     case 'y' : storeop(r,SPCTAB);  break;
     case 'z' : storeop(r,ZERO);    break;
     
+    case 'L' : op = NEWLN;   goto rec;
     case 'Q' : op = QSTR;   goto rec;
     case 'H' : op = NHEX;   goto rec;
     case 'F' : op = NFLOAT; goto rec;
-    case 'X' : op = FAIL; goto rec;
-    case 'W' : op = IDENT;  goto rec;
+    case 'X' : op = FAIL;   goto rec;
+    case 'I' : op = IDENT;  goto rec;
     case 'N' : op = NINT;   goto rec;
-         rec : if (p[1] == '?') {
-                 storeonfail(r,alt_cur_label);
-               }
-               storeop(r,op);
-               if (p[1] == '?') {
-                 labels[alt_cur_label++] = r->cur;
-                 storeop(r,ONFEND);
-                 p++;
-               }
+         rec : storeop(r,op);
                break;
                
-    case 'Y' : storeop(r,SPCS);    break;
+    case 'W' : storeop(r,SPCS);    break;
     
-    case 'E' : if (p[1] != '\0') {
+    case 'e' : storeop(r,ESCOFF);    break;
+
+    case 'E' : if (p[1] == '\\') p++; 
+               if (p[1] != '\0') {
                  storeop(r,ESCAPE);
                  store(r,*++p);
                }
-               else storech(r,*p);
                break;
 
     case 'B' : if (p[1] != '\0' && p[2] != '\0' && p[1] != p[2]) {
@@ -983,7 +978,7 @@ static char *compile(const unsigned char *pat, unsigned char *nfa,
                    error("ERR110: No capture to close");
                  n=pop(capt_stack);
                  storeop(r, EOC | n);
-                 def_capt++;
+                 def_capt |= (1 << n);
                  break;    
                  
       case '+':  
@@ -1027,7 +1022,7 @@ static char *compile(const unsigned char *pat, unsigned char *nfa,
   
   if (capt_stack_count > 0) 
     error("ERR117: Unclosed capture"); 
-  
+    
   if (alt_cur_label > 1) {
     fixalt(r);
   }

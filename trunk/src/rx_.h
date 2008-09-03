@@ -44,6 +44,9 @@ typedef struct {
 
 #define END     0x00
 
+#define ESCOFF  0x01   /* 000 000001 */
+#define ESCAPE  0x02   /* 000 00010 xxxxxxxx */
+
 #define CAPTR   0x00
 #define BOC     0x08   /* 000 01xxx */
 #define EOC     0x10   /* 000 10xxx */
@@ -67,7 +70,6 @@ typedef struct {
 #define BOL     0x2C   /* 001 01100 */
 #define EOL     0x2D   /* 001 01101 */
 #define CASE    0x2E   /* 001 01110 */
-#define ESCAPE  0x2F   /* 001 01111 xxxxxxxx */
 
 #define ESCANY  0x32   /* 001 10010 */
 #define BRACED  0x33   /* 001 10011 */  
@@ -77,6 +79,7 @@ typedef struct {
 #define NHEX    0x3A   /* 001 11010 */
 #define IDENT   0x3B   /* 001 11011 */
 #define SPCS    0x3C   /* 001 11100 */
+#define NEWLN   0x3D   /* 001 11101 */
 
 #define GOTO    0x40   /* 010 0xxxx 1xxxxxxx */
 #define ONFAIL  0x50   /* 010 1xxxx 1xxxxxxx */

@@ -78,19 +78,19 @@ void rx_dump_asm(FILE *f,unsigned char * nfa)
       
       switch (*nfa) {
 
-        case BOL   : fprintf(f,"\tBOL\n");            break;
-        case EOL   : fprintf(f,"\tEOL\n");            break;
+        case BOL   : fprintf(f,"\tBOL\n");     break;
+        case EOL   : fprintf(f,"\tEOL\n");     break;
         
-        case SPCS  : fprintf(f,"\tSPS\n");         break;
-        case IDENT : fprintf(f,"\tIDN\n");          break;
-        case ZERO  : fprintf(f,"\tZRO\n");           break;
-        case QSTR  : fprintf(f,"\tQST\n");           break;
-        case NINT  : fprintf(f,"\tINT\n");        break;
+        case SPCS  : fprintf(f,"\tWSP\n");     break;
+        case IDENT : fprintf(f,"\tIDN\n");     break;
+        case ZERO  : fprintf(f,"\tZRO\n");     break;
+        case QSTR  : fprintf(f,"\tQST\n");     break;
+        case NINT  : fprintf(f,"\tINT\n");     break;
         case NHEX  : fprintf(f,"\tHEX\n");     break;
-        case NFLOAT: fprintf(f,"\tFLT\n");  break;
+        case NFLOAT: fprintf(f,"\tFLT\n");     break;
+        case ESCOFF: fprintf(f,"\tESC\tOFF\n");     break;
         case ESCAPE: fprintf(f,"\tESC\t");
-                     if (*(incrnfa()) == ' ') fprintf(f,"OFF");
-                     else outsymc(f,*nfa);
+                     outsymc(f,*(incrnfa()));
                      putc('\n',f);
                      break;
         case BRACED: fprintf(f,"\tBRC\t");
@@ -99,6 +99,7 @@ void rx_dump_asm(FILE *f,unsigned char * nfa)
                      putc('\n',f);
                      break;
         case CASE  : fprintf(f,"\tCSE\n");           break;
+        case NEWLN : fprintf(f,"\tNLN\n");           break;
         case ESCANY: fprintf(f,"\tANE\n");           break;
         
         case FAIL:   fprintf(f,"\tFAI\n");         break;
