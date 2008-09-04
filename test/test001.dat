@@ -154,6 +154,23 @@
 "q11p" 0 {} {} {} {} {} {} {} {} {}
 "db"   1 {db} {} {} {} {} {} {} {} {}
 
+1/.<2,3>/
+"a"     0 {} {} {} {} {} {} {} {} {}
+"ab"    1 {ab} {} {} {} {} {} {} {} {}
+"abc"   1 {abc} {} {} {} {} {} {} {} {}
+"abcd"  1 {abc} {} {} {} {} {} {} {} {}
+
+1/.<0,3>/
+"a"     1 {a} {} {} {} {} {} {} {} {}
+"ab"    1 {ab} {} {} {} {} {} {} {} {}
+"abc"   1 {abc} {} {} {} {} {} {} {} {}
+"abcd"  1 {abc} {} {} {} {} {} {} {} {}
+
+1/.<2,0>/
+"a"     0 {} {} {} {} {} {} {} {} {}
+"ab"    1 {ab} {} {} {} {} {} {} {} {}
+"abc"   1 {abc} {} {} {} {} {} {} {} {}
+"abcd"  1 {abcd} {} {} {} {} {} {} {} {}
 
 1/,\d!/   # a comma not followed by a digit
 2/\a:&/   # a letter followed by a colon
@@ -163,6 +180,11 @@
 "x:" 2 {x} {} {} {} {} {} {} {} {}
 "9:" 0 {} {} {} {} {} {} {} {} {}
 "x." 0 {} {} {} {} {} {} {} {} {}
+
+1/''#/  # string delimited by a single quote
+"''"          1 {''} {} {} {} {} {} {} {} {}
+"'aaa'"       1 {'aaa'} {} {} {} {} {} {} {} {}
+"'aaa'bbb'"   1 {'aaa'} {} {} {} {} {} {} {} {}
 
 # * Special Characters
 # If a special character is to be matched literally, it must be 
@@ -179,6 +201,7 @@
 #    \2  reference 2nd capture
 #    ...  
 #    \8  reference 8th capture
+
 1/{\a}\1/    # twice the same letter
 2/{\a\a}\1/  # twice the same couple of letters
 "xaax" 1 {aa} {a} {} {} {} {} {} {} {}
@@ -190,8 +213,16 @@
 "<abcd>" 0 {} {} {} {} {} {} {} {} {}
 "$$"     1 {$$} {$} {} {} {} {} {} {} {}
 
+1/:{\l{\d+}}:/ # nested captures
+":a123:" 1 {:a123:} {a123} {123} {} {} {} {} {} {}
 
-1/\W{\l+}\({[?\)]*}\)/
+1/a{({bc}|{bd})}/
+"abc"  1
+"abd"  1
+"xbd"  0
+"abe"  0
+
+1/\y*{\l+}\({[?\)]*}\)/
 "xx"0 {} {} {} {} {} {} {} {} {}
 
 # * Switch
@@ -201,11 +232,13 @@
 #    \Ex   turns on escaped match for the "." recognizer   
 #    \e    turns off escaped match
 
-1/Case is \Cimportant\C but not always/
-"Case is IMPORTANT but not always"  1 {Case is IMPORTANT but not always} {} {} {} {} {} {} {} {}
-"Case is important but not ALWAYS"  0 {} {} {} {} {} {} {} {} {}
+1/abcd/
+2/ab\Ccd/
+"abcd" 1 {abcd} {} {} {} {} {} {} {} {}
+"abCd" 2 {abCd} {} {} {} {} {} {} {} {}
+"ABcd" 0 {} {} {} {} {} {} {} {} {}
 
-1/\E\\''#/     # Remember that X# = (X!.)*X
+1/\E\\''#/     # Remember that "X#"" is equivalente to "(X!.)*X"
 2/\E`{.}\1#/
 "'abcde'"     1 {'abcde'} {} {} {} {} {} {} {} {}
 "$xyz$"       2 {$xyz$} {$} {} {} {} {} {} {} {}
@@ -217,3 +250,54 @@
 "'ab$'cd'ef'"     1 {'ab$'cd'ef'} {ab$'cd} {ef} {} {} {} {} {} {}
 "'ab$'cd'ef$'gh'" 1 {'ab$'cd'ef$'} {ab$'cd} {ef$} {} {} {} {} {} {}
 
+# * Unit tests
+
+1/the quick brown fox/
+2/\Cthe quick brown fox/
+"the quick brown fox" 1
+"The quick brown FOX" 2
+"What do you know about the quick brown fox?" 1
+"What do you know about THE QUICK BROWN FOX?" 2
+
+/abcd\t\n\r\f\a\x1B\071\x3b\$\\\?caxyz/
+"abcd\t\n\r\f\a\x1B9;\$\\?caxyz"
+
+#1/a*bc?xyz+pqr<3>ab<2,>xy<4,5>pq<0,6>AB<0,>zz/
+1/a*bc?xyz+pqr<3>ab<2,>xy/
+"abxyzpqrrrabbxyyyypqAzz"           1
+
+"abxyzpqrrrabbxyyyypqAzz"           1
+"aabxyzpqrrrabbxyyyypqAzz"          1
+"aaabxyzpqrrrabbxyyyypqAzz"         1
+"aaaabxyzpqrrrabbxyyyypqAzz"        1
+"abcxyzpqrrrabbxyyyypqAzz"          1
+"aabcxyzpqrrrabbxyyyypqAzz"         1
+"aaabcxyzpqrrrabbxyyyypAzz"         1
+"aaabcxyzpqrrrabbxyyyypqAzz"        1
+"aaabcxyzpqrrrabbxyyyypqqAzz"       1
+"aaabcxyzpqrrrabbxyyyypqqqAzz"      1
+"aaabcxyzpqrrrabbxyyyypqqqqAzz"     1
+"aaabcxyzpqrrrabbxyyyypqqqqqAzz"    1
+"aaabcxyzpqrrrabbxyyyypqqqqqqAzz"   1
+"aaaabcxyzpqrrrabbxyyyypqAzz"       1
+"abxyzzpqrrrabbxyyyypqAzz"          1
+"aabxyzzzpqrrrabbxyyyypqAzz"        1
+"aaabxyzzzzpqrrrabbxyyyypqAzz"      1
+"aaaabxyzzzzpqrrrabbxyyyypqAzz"     1
+"abcxyzzpqrrrabbxyyyypqAzz"         1
+"aabcxyzzzpqrrrabbxyyyypqAzz"       1
+"aaabcxyzzzzpqrrrabbxyyyypqAzz"     1
+"aaaabcxyzzzzpqrrrabbxyyyypqAzz"    1
+"aaaabcxyzzzzpqrrrabbbxyyyypqAzz"   1
+"aaaabcxyzzzzpqrrrabbbxyyyyypqAzz"  1
+"aaabcxyzpqrrrabbxyyyypABzz"        1
+"aaabcxyzpqrrrabbxyyyypABBzz"       1
+">>>aaabxyzpqrrrabbxyyyypqAzz"      1
+">aaaabxyzpqrrrabbxyyyypqAzz"       1
+">>>>abcxyzpqrrrabbxyyyypqAzz"      1
+"abxyzpqrrabbxyyyypqAzz"            1
+"abxyzpqrrrrabbxyyyypqAzz"          1
+"abxyzpqrrrabxyyyypqAzz"            1
+"aaaabcxyzzzzpqrrrabbbxyyyyyypqAzz" 1
+"aaaabcxyzzzzpqrrrabbbxyyypqAzz"    1
+"aaabcxyzpqrrrabbxyyyypqqqqqqqAzz"  1

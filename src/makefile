@@ -19,7 +19,21 @@ PROFILE = -fprofile-arcs -ftest-coverage
 CFL = -DUTEST  -I. -I../test
 endif
 
-.SUFFIXES:  .c .o
+.SUFFIXES:
+.SUFFIXES: .rxc .po .c .o
+
+.c.po:
+	gcc $(CFLAGS) -pg -c -o $*.po $*.c
+
+.rxc.po:
+	rxc $*.rxc >$*.c
+	gcc $(CFLAGS) -pg -c -o $*.po $*.c 
+	$(RM) $*.c
+	
+.rxc.o:
+	rxc $*.rxc >$*.c
+	gcc $(CFLAGS) -c $*.c 
+	$(RM) $*.c
 
 # = Build all
 # 
@@ -44,8 +58,9 @@ rx$(_EXE): rx_main.o librx.a
 # rx_.h            *not* to be included! It's for internal
 #                  use only!
 
-RX_SRC  =rx_comp.c rx_exec.c rx_dump.c 
-RX_OBJS =rx_comp.o rx_exec.o rx_dump.o
+RX_SRC   =rx_comp.c rx_exec.c rx_dump.c 
+RX_OBJS  =rx_comp.o rx_exec.o rx_dump.o
+RX_POBJS =rx_comp.po rx_exec.po rx_dump.po
 
 librx.a: $(RX_OBJS)
 	$(AR)librx.a $(RX_OBJS)
@@ -53,12 +68,9 @@ librx.a: $(RX_OBJS)
 
 # rxc preprocessor
 
-rxc$(_EXE): librx.a rxc_b.o rxc.o
+rxc$(_EXE): rxc_boot$(_EXE) librx.a rxc_b.o rxc.o
 	$(LN)rxc$(_EXE) rxc.o -lrx
 
-rxc.c : rxc_boot$(_EXE) rxc.rxc
-	rxc rxc.rxc >rxc.c
-         
 rxc_b.o: rxc_boot$(_EXE)
 	./rxc_boot <rxc.rxc >rxc_b.c
 	gcc $(CFLAGS) -c rxc_b.c
@@ -67,15 +79,14 @@ rxc_b.o: rxc_boot$(_EXE)
 rxc_boot$(_EXE): librx.a rxc_boot.o 
 	$(LN)rxc_boot$(_EXE) rxc_boot.o -lrx
 
-rx_test.o : rx_test.rxc
-	rxc rx_test.rxc >rx_test.c
-	gcc $(CFLAGS) -c rx_test.c
-
-rx_test$(_EXE): rxc$(_EXE) rx_test.o 
+rx_test$(_EXE): librx.a rxc$(_EXE) rx_test.o 
 	$(LN)rx_test$(_EXE) rx_test.o -lrx
 
 # = Profiling
 
+rx_prof$(_EXE): rx_test.rxc rx_test.po $(RX_POBJS)
+	$(LN)rx_prof$(_EXE) $(RX_POBJS) rx_test.po -pg  
+        
 # = Unit testing
 rx_test: FORCE 
 	$(RM) *.o
@@ -94,13 +105,16 @@ gcov: FORCE
 
 clean: FORCE
 	$(RM) *.o
+	$(RM) *.po
 	$(RM) librx.a
 	$(RM) rx$(_EXE)
 	$(RM) rxc$(_EXE)
 	$(RM) rxc_boot$(_EXE)
 	$(RM) rx_test$(_EXE)
+	$(RM) rx_prof$(_EXE)
 	$(RM) rxc.c
 	$(RM) rxc_b.c
+	$(RM) rx_test.c
 	$(RM) *.tmp
 	$(RM) gmon.out
 	$(RM) *.gc??
