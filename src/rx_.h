@@ -69,7 +69,6 @@ typedef struct {
 #define EOL     0x2D   /* 001 01101 */
 #define CASE    0x2E   /* 001 01110 */
 
-#define ESCANY  0x32   /* 001 10010 */
 #define BRACED  0x33   /* 001 10011 */  
 #define QSTR    0x37   /* 001 10111 */
 #define NINT    0x38   /* 001 11000 */
