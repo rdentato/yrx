@@ -13,7 +13,7 @@
 /abcd\t\n\r\f\a\x1B\071\x3b\$\\\?caxyz/
 "abcd\t\n\r\f\a\x1B9;\$\\?caxyz"
 
-/a*abc?xyz+pqr{3}ab{2,}xy{4,5}pq{0,6}AB{0,}zz/
+/a*bc?xyz+pqr<3>ab<2,>xy<4,5>pq<0,6>AB<0,>zz/
 "abxyzpqrrrabbxyyyypqAzz"
 "abxyzpqrrrabbxyyyypqAzz"
 "aabxyzpqrrrabbxyyyypqAzz"
@@ -51,14 +51,14 @@
 "aaaabcxyzzzzpqrrrabbbxyyypqAzz"
 "aaabcxyzpqrrrabbxyyyypqqqqqqqAzz"
 
-/^(abc){1,2}zz/
+/^(abc)<1,2>zz/
 "abczz"
 "abcabczz"
 "zz"
 "abcabcabczz"
 ">>abczz"
 
-/^(b+?|a){1,2}?c/
+/^(b+?|a)<1,2>?c/
 "bc"
 "bbc"
 "bbbc"
@@ -70,7 +70,7 @@
 "aaac"
 "abbbbbbbbbbbac"
 
-/^(b+|a){1,2}c/
+/^(b+|a)<1,2>c/
 "bc"
 "bbc"
 "bbbc"
@@ -82,24 +82,24 @@
 "aaac"
 "abbbbbbbbbbbac"
 
-/^(b+|a){1,2}?bc/
+/^(b+|a)<1,2>?bc/
 "bbc"
 
-/^(b*|ba){1,2}?bc/
+/^(b*|ba)<1,2>?bc/
 "babc"
 "bbabc"
 "bababc"
 "bababbc"
 "babababc"
 
-/^(ba|b*){1,2}?bc/
+/^(ba|b*)<1,2>?bc/
 "babc"
 "bbabc"
 "bababc"
 "bababbc"
 "babababc"
 
-/^\ca\cA\c[\c{\c:/
+/^\ca\cA\c[\c<\c:/
 "\x01\x01\x1B;z"
 
 /^[ab\]cde]/
@@ -210,7 +210,7 @@
 "fed\x20"
 "Any old rubbish"
 
-/^.*\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/
+/^.*\.(\d<1,3>)\.(\d<1,3>)\.(\d<1,3>)$/
 ".1.2.3"
 "A.12.123.0"
 ".1.2.3333"
@@ -289,8 +289,8 @@
 /^[\w][\W][\s][\S][\d][\D][\b][\n][\c]][\022]/
 "a+ Z0+\x08\n\x1d\x12"
 
-/^[.^$|()*+?{,}]+/
-".^\$(*+)|{?,?}"
+/^[.^$|()*+?<,>]+/
+".^\$(*+)|<?,?>"
 
 /^a*\w/
 "z"
@@ -326,27 +326,27 @@
 "aaaa"
 "aa+"
 
-/^\d{8}\w{2,}/
+/^\d<8>\w<2,>/
 "1234567890"
 "12345678ab"
 "12345678__"
 "1234567"
 
-/^[aeiou\d]{4,5}$/
+/^[aeiou\d]<4,5>$/
 "uoie"
 "1234"
 "12345"
 "aaaaa"
 "123456"
 
-/^[aeiou\d]{4,5}?/
+/^[aeiou\d]<4,5>?/
 "uoie"
 "1234"
 "12345"
 "aaaaa"
 "123456"
 
-/\A(abc|def)=(\1){2,3}\Z/
+/\A(abc|def)=(\1)<2,3>\Z/
 "abc=abcabc"
 "def=defdefdef"
 "abc=defdef"
@@ -364,7 +364,7 @@
 /^From +([^ ]+) +[a-zA-Z][a-zA-Z][a-zA-Z] +[a-zA-Z][a-zA-Z][a-zA-Z] +[0-9]?[0-9] +[0-9][0-9]:[0-9][0-9]/
 "From abcd  Mon Sep 01 12:33:02 1997"
 
-/^From\s+\S+\s+([a-zA-Z]{3}\s+){2}\d{1,2}\s+\d\d:\d\d/
+/^From\s+\S+\s+([a-zA-Z]<3>\s+)<2>\d<1,2>\s+\d\d:\d\d/
 "From abcd  Mon Sep 01 12:33:02 1997"
 "From abcd  Mon Sep  1 12:33:02 1997"
 "From abcd  Sep 01 12:33:02 1997"
@@ -379,7 +379,7 @@
 /foo(?!bar)(.*)/
 "foobar is foolish see?"
 
-/(?:(?!foo)...|^.{0,2})bar(.*)/
+/(?:(?!foo)...|^.<0,2>)bar(.*)/
 "foobar crowbar etc"
 "barrel"
 "2barrel"
@@ -404,7 +404,7 @@
 /^abcd#rhubarb/x"
 "abcd"
 
-/^(a)\1{2,3}(.)/
+/^(a)\1<2,3>(.)/
 "aaab"
 "aaaab"
 "aaaaab"
@@ -418,16 +418,16 @@
 "abc"
 "the abc"
 
-/^[ab]{1,3}(ab*|b)/
+/^[ab]<1,3>(ab*|b)/
 "aabbbbb"
 
-/^[ab]{1,3}?(ab*|b)/
+/^[ab]<1,3>?(ab*|b)/
 "aabbbbb"
 
-/^[ab]{1,3}?(ab*?|b)/
+/^[ab]<1,3>?(ab*?|b)/
 "aabbbbb"
 
-/^[ab]{1,3}(ab*?|b)/
+/^[ab]<1,3>(ab*?|b)/
 "aabbbbb"
 
 /  (?: [\040\t] |  \("
@@ -1240,7 +1240,7 @@
 /\0*/
 "\0\0\0\0"
 
-/A\x0{2,3}Z/
+/A\x0<2,3>Z/
 "The A\x0\x0Z"
 "An A\0\x0\0Z"
 "A\0Z"
@@ -1282,14 +1282,14 @@
 "b"
 "acb"
 
-/^(a|)\1{2}b/
+/^(a|)\1<2>b/
 "aaab"
 "b"
 "ab"
 "aab"
 "aaaab"
 
-/^(a|)\1{2,3}b/
+/^(a|)\1<2,3>b/
 "aaab"
 "aaaab"
 "b"
@@ -1297,7 +1297,7 @@
 "aab"
 "aaaaab"
 
-/ab{1,3}bc/
+/ab<1,3>bc/
 "abbbbc"
 "abbbc"
 "abbc"
@@ -1389,17 +1389,17 @@
 "ABCabc"
 "abcABC"
 
-/ab{3cd/
-"ab{3cd"
+/ab<3cd/
+"ab<3cd"
 
-/ab{3,cd/
-"ab{3,cd"
+/ab<3,cd/
+"ab<3,cd"
 
-/ab{3,4a}cd/
-"ab{3,4a}cd"
+/ab<3,4a>cd/
+"ab<3,4a>cd"
 
-/{4,5a}bc/
-"{4,5a}bc"
+/<4,5a>bc/
+"<4,5a>bc"
 
 /^a.b/
 "a\rb"
@@ -1448,10 +1448,10 @@
 /ab\gdef/
 "abgdef"
 
-/a{0}bc/
+/a<0>bc/
 "bc"
 
-/(a|(bc)){0,0}?xyz/
+/(a|(bc))<0,0>?xyz/
 "xyz"
 
 /abc[\10]de/
@@ -1466,7 +1466,7 @@
 /a.b(?s)/
 "a\nb"
 
-/^([^a])([^\b])([^c]*)([^d]{3,4})/
+/^([^a])([^\b])([^c]*)([^d]<3,4>)/
 "baNOTccccd"
 "baNOTcccd"
 "baNOTccd"
@@ -1494,7 +1494,7 @@
 "abc"
 "abk   "
 ""
-/[^k]{2,3}$/
+/[^k]<2,3>$/
 "abc"
 "kbc"
 "kabc "
@@ -1502,13 +1502,13 @@
 "akb"
 "akk "
 
-/^\d{8,}\@.+[^k]$/
+/^\d<8,>\@.+[^k]$/
 "12345678\@a.b.c.d"
 "123456789\@x.y.z"
 "12345678\@x.y.uk"
 "1234567\@a.b.c.d       "
 
-/(a)\1{8,}/
+/(a)\1<8,>/
 "aaaaaaaaa"
 "aaaaaaaaaa"
 "aaaaaaa   "
@@ -1532,10 +1532,10 @@
 /\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037\040\041\042\043\044\045\046\047\050\051\052\053\054\055\056\057\060\061\062\063\064\065\066\067\070\071\072\073\074\075\076\077\100\101\102\103\104\105\106\107\110\111\112\113\114\115\116\117\120\121\122\123\124\125\126\127\130\131\132\133\134\135\136\137\140\141\142\143\144\145\146\147\150\151\152\153\154\155\156\157\160\161\162\163\164\165\166\167\170\171\172\173\174\175\176\177\200\201\202\203\204\205\206\207\210\211\212\213\214\215\216\217\220\221\222\223\224\225\226\227\230\231\232\233\234\235\236\237\240\241\242\243\244\245\246\247\250\251\252\253\254\255\256\257\260\261\262\263\264\265\266\267\270\271\272\273\274\275\276\277\300\301\302\303\304\305\306\307\310\311\312\313\314\315\316\317\320\321\322\323\324\325\326\327\330\331\332\333\334\335\336\337\340\341\342\343\344\345\346\347\350\351\352\353\354\355\356\357\360\361\362\363\364\365\366\367\370\371\372\373\374\375\376\377/
 "\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037\040\041\042\043\044\045\046\047\050\051\052\053\054\055\056\057\060\061\062\063\064\065\066\067\070\071\072\073\074\075\076\077\100\101\102\103\104\105\106\107\110\111\112\113\114\115\116\117\120\121\122\123\124\125\126\127\130\131\132\133\134\135\136\137\140\141\142\143\144\145\146\147\150\151\152\153\154\155\156\157\160\161\162\163\164\165\166\167\170\171\172\173\174\175\176\177\200\201\202\203\204\205\206\207\210\211\212\213\214\215\216\217\220\221\222\223\224\225\226\227\230\231\232\233\234\235\236\237\240\241\242\243\244\245\246\247\250\251\252\253\254\255\256\257\260\261\262\263\264\265\266\267\270\271\272\273\274\275\276\277\300\301\302\303\304\305\306\307\310\311\312\313\314\315\316\317\320\321\322\323\324\325\326\327\330\331\332\333\334\335\336\337\340\341\342\343\344\345\346\347\350\351\352\353\354\355\356\357\360\361\362\363\364\365\366\367\370\371\372\373\374\375\376\377"
 
-/P[^*]TAIRE[^*]{1,6}?LL/
+/P[^*]TAIRE[^*]<1,6>?LL/
 "xxxxxxxxxxxPSTAIREISLLxxxxxxxxx"
 
-/P[^*]TAIRE[^*]{1,}?LL/
+/P[^*]TAIRE[^*]<1,>?LL/
 "xxxxxxxxxxxPSTAIREISLLxxxxxxxxx"
 
 /(\.\d\d[1-9]?)\d+/
@@ -1615,58 +1615,58 @@
 /\d\d\/\d\d\/\d\d\d\d/
 "01/01/2000"
 
-/word (?:[a-zA-Z0-9]+ ){0,10}otherword/
+/word (?:[a-zA-Z0-9]+ )<0,10>otherword/
 "word cat dog elephant mussel cow horse canary baboon snake shark otherword"
 "word cat dog elephant mussel cow horse canary baboon snake shark"
 
-/word (?:[a-zA-Z0-9]+ ){0,300}otherword/
+/word (?:[a-zA-Z0-9]+ )<0,300>otherword/
 "word cat dog elephant mussel cow horse canary baboon snake shark the quick brown fox and the lazy dog and several other words getting close to thirty by now I hope"
 
-/^(a){0,0}/
+/^(a)<0,0>/
 "bcd"
 "abc"
 "aab     "
 
-/^(a){0,1}/
+/^(a)<0,1>/
 "bcd"
 "abc"
 "aab  "
 
-/^(a){0,2}/
+/^(a)<0,2>/
 "bcd"
 "abc"
 "aab  "
 
-/^(a){0,3}/
+/^(a)<0,3>/
 "bcd"
 "abc"
 "aab"
 "aaa   "
 
-/^(a){0,}/
+/^(a)<0,>/
 "bcd"
 "abc"
 "aab"
 "aaa"
 "aaaaaaaa    "
 
-/^(a){1,1}/
+/^(a)<1,1>/
 "bcd"
 "abc"
 "aab  "
 
-/^(a){1,2}/
+/^(a)<1,2>/
 "bcd"
 "abc"
 "aab  "
 
-/^(a){1,3}/
+/^(a)<1,3>/
 "bcd"
 "abc"
 "aab"
 "aaa   "
 
-/^(a){1,}/
+/^(a)<1,>/
 "bcd"
 "abc"
 "aab"
@@ -1676,7 +1676,7 @@
 /.*\.gif/
 "borfle\nbib.gif\nno"
 
-/.{0,}\.gif/
+/.<0,>\.gif/
 "borfle\nbib.gif\nno"
 
 /.*\.gif/m"
@@ -1769,28 +1769,28 @@
 /^[\d][\d][\d][\d][\d][\d][\d][\d][\d][\d][\d][\d]/
 "123456654321"
 ""
-/^[abc]{12}/
+/^[abc]<12>/
 "abcabcabcabc"
 ""
-/^[a-c]{12}/
+/^[a-c]<12>/
 "abcabcabcabc"
 ""
-/^(a|b|c){12}/
+/^(a|b|c)<12>/
 "abcabcabcabc "
 
 /^[abcdefghijklmnopqrstuvwxy0123456789]/
 "n"
 "z "
 
-/abcde{0,0}/
+/abcde<0,0>/
 "abcd"
 "abce  "
 
-/ab[cd]{0,0}e/
+/ab[cd]<0,0>e/
 "abe"
 "abcde "
 ""
-/ab(c){0,0}d/
+/ab(c)<0,0>d/
 "abd"
 "abcd   "
 
@@ -1800,7 +1800,7 @@
 "abbbb"
 "bbbbb    "
 ""
-/ab\d{0}e/
+/ab\d<0>e/
 "abe"
 "ab1e   "
 ""
@@ -1820,7 +1820,7 @@
 //g"
 "abc"
 
-/<tr([\w\W\s\d][^<>]{0,})><TD([\w\W\s\d][^<>]{0,})>([\d]{0,}\.)(.*)((<BR>([\w\W\s\d][^<>]{0,})|[\s]{0,}))<\/a><\/TD><TD([\w\W\s\d][^<>]{0,})>([\w\W\s\d][^<>]{0,})<\/TD><TD([\w\W\s\d][^<>]{0,})>([\w\W\s\d][^<>]{0,})<\/TD><\/TR>/is"
+/<tr([\w\W\s\d][^<>]<0,>)><TD([\w\W\s\d][^<>]<0,>)>([\d]<0,>\.)(.*)((<BR>([\w\W\s\d][^<>]<0,>)|[\s]<0,>))<\/a><\/TD><TD([\w\W\s\d][^<>]<0,>)>([\w\W\s\d][^<>]<0,>)<\/TD><TD([\w\W\s\d][^<>]<0,>)>([\w\W\s\d][^<>]<0,>)<\/TD><\/TR>/is"
 "<TR BGCOLOR='#DBE9E9'><TD align=left valign=top>43.<a href='joblist.cfm?JobID=94 6735&Keyword='>Word Processor<BR>(N-1286)</a></TD><TD align=left valign=top>Lega lstaff.com</TD><TD align=left valign=top>CA - Statewide</TD></TR>"
 
 /a[^a]b/
@@ -1839,14 +1839,14 @@
 "acb"
 "a\nb  "
 
-/^(b+?|a){1,2}?c/
+/^(b+?|a)<1,2>?c/
 "bac"
 "bbac"
 "bbbac"
 "bbbbac"
 "bbbbbac "
 
-/^(b+|a){1,2}?c/
+/^(b+|a)<1,2>?c/
 "bac"
 "bbac"
 "bbbac"
@@ -1857,8 +1857,8 @@
 "x\nb\n"
 "a\bx\n  "
 ""
-/\x0{ab}/
-"\0{ab} "
+/\x0<ab>/
+"\0<ab> "
 
 /(A|B)*?CD/
 "CD "
@@ -1878,11 +1878,11 @@
 /(x)\2/
 "doesn't matter"
 
-/((a{0,5}){0,5}){0,5}[c]/
+/((a<0,5>)<0,5>)<0,5>[c]/
 "aaaaaaaaaac"
 "aaaaaaaaaa"
 
-/((a{0,5}){0,5})*[c]/
+/((a<0,5>)<0,5>)*[c]/
 "aaaaaaaaaac"
 "aaaaaaaaaa"
 
@@ -1908,7 +1908,7 @@
 "aaxa"
 
 //
-"@{['']}"
+"@<['']>"
 
 /^(?:(a)|(b))*$/
 "ab"
@@ -2034,36 +2034,36 @@
 /[b--]/
 "doesn't matter"
 
-/a{/
-"a{"
+/a</
+"a<"
 
-/a{}/
-"a{}"
+/a<>/
+"a<>"
 
-/a{3/
-"a{3"
+/a<3/
+"a<3"
 
-/a{3,/
-"a{3,"
+/a<3,/
+"a<3,"
 
-/a{3, 3}/
-"a{3,3}"
-"a{3, 3}"
+/a<3, 3>/
+"a<3,3>"
+"a<3, 3>"
 "aaa"
 
-/a{3, 3}/x"
-"a{3,3}"
-"a{3, 3}"
+/a<3, 3>/x"
+"a<3,3>"
+"a<3, 3>"
 "aaa"
 
-/a{3, }/
-"a{3,}"
-"a{3, }"
+/a<3, >/
+"a<3,>"
+"a<3, >"
 "aaa"
 
-/a{3, }/x"
-"a{3,}"
-"a{3, }"
+/a<3, >/x"
+"a<3,>"
+"a<3, >"
 "aaa"
 
 /\x x/
@@ -2086,21 +2086,21 @@
 "x3"
 "x 3"
 
-/^a{ 1}$/
+/^a< 1>$/
 "a"
-"a{ 1}"
-"a{1}"
+"a< 1>"
+"a<1>"
 
-/^a{ 1}$/x"
+/^a< 1>$/x"
 "a"
-"a{ 1}"
-"a{1}"
+"a< 1>"
+"a<1>"
 
-/{}/
-"{}"
+/<>/
+"<>"
 "a"
 
-/{1}/
+/<1>/
 "doesn't matter"
 
 /*/
@@ -2123,22 +2123,22 @@
 /a(?i=a)/
 "doesn't matter"
 
-/a(?<=a){3000}a/
+/a(?<=a)<3000>a/
 "aa"
 "xa"
 "ax"
 
-/a(?!=a){3000}a/
+/a(?!=a)<3000>a/
 "aa"
 "ax"
 "xa"
 
-/a(){3000}a/
+/a()<3000>a/
 "aa"
 "ax"
 "xa"
 
-/a(?:){3000}a/
+/a(?:)<3000>a/
 "aa"
 "ax"
 
@@ -2176,21 +2176,21 @@
 /(?=(a)\1)*aa/
 "aa"
 
-/^((a|b){2,5}){2}$/
+/^((a|b)<2,5>)<2>$/
 "aaaaabbbbb"
 
-/^(b*|ba){1,2}bc/
+/^(b*|ba)<1,2>bc/
 "babc"
 "bbabc"
 "bababc"
 "bababbc"
 "babababc"
 
-/^a{4,5}(?:c|a)c$/
+/^a<4,5>(?:c|a)c$/
 "aaaaac"
 "aaaaaac"
 
-/^(a|){4,5}(?:c|a)c$/
+/^(a|)<4,5>(?:c|a)c$/
 "aaaaac"
 "aaaaaac"
 
@@ -2219,7 +2219,7 @@
 "barfoo"
 "towbarfoo"
 
-/\w{3}(?<!bar)foo/
+/\w<3>(?<!bar)foo/
 "catfood"
 "foo"
 "barfoo"
@@ -2376,13 +2376,13 @@
 "bb  "
 "ab   "
 
-/^(?(?=abc)\w{3}:|\d\d)$/
+/^(?(?=abc)\w<3>:|\d\d)$/
 "abc:"
 "12"
 "123"
 "xyz    "
 
-/^(?(?!abc)\d\d|\w{3}:)$/
+/^(?(?!abc)\d\d|\w<3>:)$/
 "abc:"
 "12"
 "123"
@@ -2501,7 +2501,7 @@
 "aaaaa"
 "aabbaa "
 
-/(?(?=[^a-z]+[a-z])  \d{2}-[a-z]{3}-\d{2}  |  \d{2}-\d{2}-\d{2} ) /x"
+/(?(?=[^a-z]+[a-z])  \d<2>-[a-z]<3>-\d<2>  |  \d<2>-\d<2>-\d<2> ) /x"
 "12-sep-98"
 "12-09-98"
 "sep-12-98"
@@ -2563,7 +2563,7 @@
 "baz"
 "foobarbaz "
 
-/^(a\1?){4}$/
+/^(a\1?)<4>$/
 "a"
 "aa"
 "aaa"
@@ -2615,13 +2615,13 @@
 "abbc"
 "abbbbc"
 
-/.{1}/
+/.<1>/
 "abbbbc"
 
-/.{3,4}/
+/.<3,4>/
 "abbbbc"
 
-/ab{0,}bc/
+/ab<0,>bc/
 "abbbbc"
 
 /ab+bc/
@@ -2629,21 +2629,21 @@
 "abc"
 "abq"
 
-/ab{1,}bc/
+/ab<1,>bc/
 
 /ab+bc/
 "abbbbc"
 
-/ab{1,}bc/
+/ab<1,>bc/
 "abbbbc"
 
-/ab{1,3}bc/
+/ab<1,3>bc/
 "abbbbc"
 
-/ab{3,4}bc/
+/ab<3,4>bc/
 "abbbbc"
 
-/ab{4,5}bc/
+/ab<4,5>bc/
 "abq"
 "abbbbc"
 
@@ -2651,7 +2651,7 @@
 "abbc"
 "abc"
 
-/ab{0,1}bc/
+/ab<0,1>bc/
 "abc"
 
 /ab?bc/
@@ -2659,7 +2659,7 @@
 /ab?c/
 "abc"
 
-/ab{0,1}c/
+/ab<0,1>c/
 "abc"
 
 /^abc$/
@@ -2826,7 +2826,7 @@
 /a+b+c/
 "aabbabc"
 
-/a{1,}b{1,}c/
+/a<1,>b<1,>c/
 "aabbabc"
 
 /a.+?c/
@@ -2835,19 +2835,19 @@
 /(a+|b)*/
 "ab"
 
-/(a+|b){0,}/
+/(a+|b)<0,>/
 "ab"
 
 /(a+|b)+/
 "ab"
 
-/(a+|b){1,}/
+/(a+|b)<1,>/
 "ab"
 
 /(a+|b)?/
 "ab"
 
-/(a+|b){0,1}/
+/(a+|b)<0,1>/
 "ab"
 
 /[^ab]*/
@@ -2981,13 +2981,13 @@
 /(([a-c])b*?\2)*/
 "ababbbcbc"
 
-/(([a-c])b*?\2){3}/
+/(([a-c])b*?\2)<3>/
 "ababbbcbc"
 
 /((\3|b)\2(a)x)+/
 "aaaxabaxbaaxbbax"
 
-/((\3|b)\2(a)){2,}/
+/((\3|b)\2(a))<2,>/
 "bbaababbabaaaaabbaaaabba"
 
 /abc/i"
@@ -3009,7 +3009,7 @@
 /ab*?bc/i"
 "ABBBBC"
 
-/ab{0,}?bc/i"
+/ab<0,>?bc/i"
 "ABBBBC"
 
 /ab+?bc/i"
@@ -3019,21 +3019,21 @@
 "ABC"
 "ABQ"
 
-/ab{1,}bc/i"
+/ab<1,>bc/i"
 
 /ab+bc/i"
 "ABBBBC"
 
-/ab{1,}?bc/i"
+/ab<1,>?bc/i"
 "ABBBBC"
 
-/ab{1,3}?bc/i"
+/ab<1,3>?bc/i"
 "ABBBBC"
 
-/ab{3,4}?bc/i"
+/ab<3,4>?bc/i"
 "ABBBBC"
 
-/ab{4,5}?bc/i"
+/ab<4,5>?bc/i"
 "ABQ"
 "ABBBBC"
 
@@ -3041,7 +3041,7 @@
 "ABBC"
 "ABC"
 
-/ab{0,1}?bc/i"
+/ab<0,1>?bc/i"
 "ABC"
 
 /ab??bc/i"
@@ -3049,7 +3049,7 @@
 /ab??c/i"
 "ABC"
 
-/ab{0,1}?c/i"
+/ab<0,1>?c/i"
 "ABC"
 
 /^abc$/i"
@@ -3146,7 +3146,7 @@
 /a+b+c/i"
 "AABBABC"
 
-/a{1,}b{1,}c/i"
+/a<1,>b<1,>c/i"
 "AABBABC"
 
 /a.+?c/i"
@@ -3155,28 +3155,28 @@
 /a.*?c/i"
 "ABCABC"
 
-/a.{0,5}?c/i"
+/a.<0,5>?c/i"
 "ABCABC"
 
 /(a+|b)*/i"
 "AB"
 
-/(a+|b){0,}/i"
+/(a+|b)<0,>/i"
 "AB"
 
 /(a+|b)+/i"
 "AB"
 
-/(a+|b){1,}/i"
+/(a+|b)<1,>/i"
 "AB"
 
 /(a+|b)?/i"
 "AB"
 
-/(a+|b){0,1}/i"
+/(a+|b)<0,1>/i"
 "AB"
 
-/(a+|b){0,1}?/i"
+/(a+|b)<0,1>?/i"
 "AB"
 
 /[^ab]*/i"
@@ -3328,37 +3328,37 @@
 /a(?:b|c|d)+(.)/
 "acdbcdbe"
 
-/a(?:b|c|d){2}(.)/
+/a(?:b|c|d)<2>(.)/
 "acdbcdbe"
 
-/a(?:b|c|d){4,5}(.)/
+/a(?:b|c|d)<4,5>(.)/
 "acdbcdbe"
 
-/a(?:b|c|d){4,5}?(.)/
+/a(?:b|c|d)<4,5>?(.)/
 "acdbcdbe"
 
 /((foo)|(bar))*/
 "foobar"
 
-/a(?:b|c|d){6,7}(.)/
+/a(?:b|c|d)<6,7>(.)/
 "acdbcdbe"
 
-/a(?:b|c|d){6,7}?(.)/
+/a(?:b|c|d)<6,7>?(.)/
 "acdbcdbe"
 
-/a(?:b|c|d){5,6}(.)/
+/a(?:b|c|d)<5,6>(.)/
 "acdbcdbe"
 
-/a(?:b|c|d){5,6}?(.)/
+/a(?:b|c|d)<5,6>?(.)/
 "acdbcdbe"
 
-/a(?:b|c|d){5,7}(.)/
+/a(?:b|c|d)<5,7>(.)/
 "acdbcdbe"
 
-/a(?:b|c|d){5,7}?(.)/
+/a(?:b|c|d)<5,7>?(.)/
 "acdbcdbe"
 
-/a(?:b|(c|e){1,2}?|d)+?(.)/
+/a(?:b|(c|e)<1,2>?|d)+?(.)/
 "ace"
 
 /^(.+)?B/
@@ -3370,13 +3370,13 @@
 /^[<>]&/
 "<&OUT"
 
-/^(a\1?){4}$/
+/^(a\1?)<4>$/
 "aaaaaaaaaa"
 "AB"
 "aaaaaaaaa"
 "aaaaaaaaaaa"
 
-/^(a(?(1)\1)){4}$/
+/^(a(?(1)\1))<4>$/
 "aaaaaaaaaa"
 "aaaaaaaaa"
 "aaaaaaaaaaa"
@@ -3403,7 +3403,7 @@
 /^(?:b|a(?=(.)))*\1/
 "abc"
 
-/^(){3,5}/
+/^()<3,5>/
 "abc"
 
 /^(a+)*ax/
@@ -3534,19 +3534,19 @@
 "Ab4ab"
 "ab4Ab"
 
-/foo\w*\d{4}baz/
+/foo\w*\d<4>baz/
 "foobar1234baz"
 
 /x(~~)*(?:(?:F)?)?/
 "x~~"
 
-/^a(?#xxx){3}c/
+/^a(?#xxx)<3>c/
 "aaac"
 
-/^a(?#xxx)(?#xxx){3}c/
+/^a(?#xxx)(?#xxx)<3>c/
 "aaac"
 
-/^a (?#xxx) (?#yyy) {3}c/x"
+/^a (?#xxx) (?#yyy) <3>c/x"
 "aaac"
 
 /(?<![cd])b/
@@ -3752,29 +3752,29 @@
 "endingwxyz"
 "a rather long string that doesn't end with one of them"
 
-/word (?>(?:(?!otherword)[a-zA-Z0-9]+ ){0,30})otherword/
+/word (?>(?:(?!otherword)[a-zA-Z0-9]+ )<0,30>)otherword/
 "word cat dog elephant mussel cow horse canary baboon snake shark otherword"
 "word cat dog elephant mussel cow horse canary baboon snake shark"
 ""
-/word (?>[a-zA-Z0-9]+ ){0,30}otherword/
+/word (?>[a-zA-Z0-9]+ )<0,30>otherword/
 "word cat dog elephant mussel cow horse canary baboon snake shark the quick brown fox and the lazy dog and several other words getting close to thirty by now I hope"
 
-/(?<=\d{3}(?!999))foo/
+/(?<=\d<3>(?!999))foo/
 "999foo"
 "123999foo "
 "123abcfoo"
 ""
-/(?<=(?!...999)\d{3})foo/
+/(?<=(?!...999)\d<3>)foo/
 "999foo"
 "123999foo "
 "123abcfoo"
 
-/(?<=\d{3}(?!999)...)foo/
+/(?<=\d<3>(?!999)...)foo/
 "123abcfoo"
 "123456foo "
 "123999foo  "
 ""
-/(?<=\d{3}...)(?<!999)foo/
+/(?<=\d<3>...)(?<!999)foo/
 "123abcfoo   "
 "123456foo "
 "123999foo  "
@@ -3925,12 +3925,12 @@
 "ax"
 
 /a#comment\Q..."
-{2}/x"
+<2>/x"
 "a"
 "aa"
 
 /a(?#comment\Q..."
-){2}/x"
+)<2>/x"
 "a"
 "aa"
 
@@ -3945,5 +3945,5 @@
 /a(?!.*$)b/
 "ab"
 
-/.{2}[a-z]/
+/.<2>[a-z]/
 "Axi"
