@@ -57,7 +57,7 @@ rxc$(_EXE): librx.a rxc_b.o rxc.o
 	$(LN)rxc$(_EXE) rxc.o -lrx
 
 rxc.c : rxc_boot$(_EXE) rxc.rxc
-	rxc <rxc.rxc >rxc.c
+	rxc rxc.rxc >rxc.c
          
 rxc_b.o: rxc_boot$(_EXE)
 	./rxc_boot <rxc.rxc >rxc_b.c

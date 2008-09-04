@@ -99,9 +99,7 @@ void rx_dump_asm(FILE *f,unsigned char * nfa)
                      putc('\n',f);
                      break;
         case CASE  : fprintf(f,"\tCSE\n");           break;
-        case NEWLN : fprintf(f,"\tNLN\n");           break;
-        case ESCANY: fprintf(f,"\tANE\n");           break;
-        
+        case NEWLN : fprintf(f,"\tNLN\n");           break;        
         case FAIL:   fprintf(f,"\tFAI\n");         break;
         case FAILALL:fprintf(f,"\tFAA\n");         break;
         case PEEKED: fprintf(f,"\tRST\n");    break;

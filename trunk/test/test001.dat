@@ -21,30 +21,30 @@
 # * Characters
 # Usually characters in a pattern match themselves. 
 
-1/I'm a plain string/
-"I'm a plain string" 1
-"Me too!" 0
+1/plain string/
+"plain string" 1 {plain string} {} {} {} {} {} {} {} {}
+"other string" 0 {} {} {} {} {} {} {} {} {}
 
 # * Character class
 # A character set is way to specify a set of characters at once.
 1/[aeiou]/                 # wovels
 2/[bcdfghjklmnpqrstvwxyz]/ # consonants
-"u" 1
-"x" 2
-"3" 0
+"u" 1 {u} {} {} {} {} {} {} {} {}
+"x" 2 {x} {} {} {} {} {} {} {} {}
+"3" 0 {} {} {} {} {} {} {} {} {}
 
 # A set may be specified with a range
-1/[A-Ga-g]/  # Notes pitch
-"A" 1
-"b" 1
-"K" 0
+1/[A-Ga-g]/    # Notes pitch
+"A" 1 {A} {} {} {} {} {} {} {} {}
+"b" 1 {b} {} {} {} {} {} {} {} {}
+"K" 0 {} {} {} {} {} {} {} {} {}
 
 # To specify characters that do not belong to a given set, the '^' symbol
 # is used: 
-1/[^A-Z]/ # any character that is not an uppercase letter
-"u" 1
-"X" 0
-"3" 1
+1/[^A-Z]/        # any character that is not an uppercase letter
+"u" 1 {u} {} {} {} {} {} {} {} {}
+"X" 0 {} {} {} {} {} {} {} {} {}
+"3" 1 {3} {} {} {} {} {} {} {} {}
 
 # Also there are predefined classes:
 #  \a    alphabetic character
@@ -55,6 +55,7 @@
 #  \h    an hexadecimal digit ([0-9A-Za-z])
 #  \l    lowercase  character
 #  \n    newline character (ASCII 10)
+#  \oxxx the character whose code is xxx (in octal)
 #  \p    a punctuation character
 #  \q    alphanumeric (a letter or a digit)
 #  \r    carriage return character (ASCII 13)
@@ -67,8 +68,8 @@
 #  \y    space or tab (ASCII 32 or ASCII 9)
 
 1/\a\l\u\d\q\s\p\h\w\y/
-"PaR1S :F_ "  1
-"1Ag"         0
+"PaR1S :F_ "  1 {PaR1S :F_ } {} {} {} {} {} {} {} {}
+"1Ag"         0 {} {} {} {} {} {} {} {} {}
 
 # Note that the predefined sets are influenced by the current locale
 # settings. This means that "\l" may be different from "[a-z]", for example
@@ -77,8 +78,11 @@
 #  Predefined sets can be used within character set definitions.
 1/[\d,]+/
 2/[^\a\d]+/  # Anything but a letter or a digit
-"543,21"   1
-">>>@"     2
+"543,21"   1 {543,21} {} {} {} {} {} {} {} {}
+"100.31"   1 {100} {} {} {} {} {} {} {} {}
+"abc@3"    2 {@} {} {} {} {} {} {} {} {}
+"xyzwt"    0 {} {} {} {} {} {} {} {} {}
+
 
 # * Recognizers
 #   Some commonly used patterns have been predefined:
@@ -110,17 +114,21 @@
 #   Expressions can be grouped by parenthesis. If "X" is an expression, "(X)"
 # is a pattern that defines the same set of strings as "X".
 1/(a[bc])/
-"ab" 1
-"ac" 1
-"bc" 0
-
+2/ab/       # this will never match!
+3/\l\l/
+"ab" 1 {ab} {} {} {} {} {} {} {} {}
+"ac" 1 {ac} {} {} {} {} {} {} {} {}
+"bc" 3 {bc} {} {} {} {} {} {} {} {}
+"00" 0 {} {} {} {} {} {} {} {} {}
+ 
 #   Within a group it is possible to define alternative patterns. 
 # If "X" and "Y" are patterns, "(X|Y)" is a pattern that defines
 # the set of strings that match "X" or "Y".
 1/(ab|ac)/
-"ab" 1
-"ac" 1
-"bc" 0
+2/\l\l/
+"ab" 1 {ab} {} {} {} {} {} {} {} {}
+"ac" 1 {ac} {} {} {} {} {} {} {} {}
+"bc" 2 {bc} {} {} {} {} {} {} {} {}
 
 # * Operators
 #   The following operators can be applied to a pattern X:
@@ -140,27 +148,27 @@
 1/^\l\l/   # two lowercase letters at the beginning of the string
 2/\l\l$/   # two lowercase letters at the end of the string
 3/\l\l/    # two lowercase letters anywhere in the string 
-"xx<<" 1
-">>zy" 2
-">zy<" 3
-"q11p" 0
-"db"   1
+"xx<<" 1 {xx} {} {} {} {} {} {} {} {}
+">>zy" 2 {zy} {} {} {} {} {} {} {} {}
+">wy<" 3 {wy} {} {} {} {} {} {} {} {}
+"q11p" 0 {} {} {} {} {} {} {} {} {}
+"db"   1 {db} {} {} {} {} {} {} {} {}
 
 
 1/,\d!/   # a comma not followed by a digit
 2/\a:&/   # a letter followed by a colon
-",x" 1
-",3" 0
-".3" 0
-"x:" 2
-"9:" 0
-"x." 2
+",x" 1 {,} {} {} {} {} {} {} {} {}
+",3" 0 {} {} {} {} {} {} {} {} {}
+".3" 0 {} {} {} {} {} {} {} {} {}
+"x:" 2 {x} {} {} {} {} {} {} {} {}
+"9:" 0 {} {} {} {} {} {} {} {} {}
+"x." 0 {} {} {} {} {} {} {} {} {}
 
 # * Special Characters
 # If a special character is to be matched literally, it must be 
 # escaped with a backslash. Except if they are inside a character set.
 1/\[.[|*#^$&!()?+{}<>\\]+\]/
-"[*))((*]" 1
+"[*))((*]" 1 {[*))((*]} {} {} {} {} {} {} {} {}
 
 # * Captures
 #   Part of the matching string can be captured and returned among results.
@@ -173,18 +181,18 @@
 #    \8  reference 8th capture
 1/{\a}\1/    # twice the same letter
 2/{\a\a}\1/  # twice the same couple of letters
-"xaax" 1
-"xaxa" 2
-"abcd" 0 
+"xaax" 1 {aa} {a} {} {} {} {} {} {} {}
+"xaxa" 2 {xaxa} {xa} {} {} {} {} {} {} {}
+"abcd" 0 {} {} {} {} {} {} {} {} {}
 
 1/{.}\1#/   # a string delimited by its first character
-"'abcd'" 1
-"<abcd>"0
-"$$"     1
+"'abcd'" 1 {'abcd'} {'} {} {} {} {} {} {} {}
+"<abcd>" 0 {} {} {} {} {} {} {} {} {}
+"$$"     1 {$$} {$} {} {} {} {} {} {} {}
 
 
 1/\W{\l+}\({[?\)]*}\)/
-"xx"
+"xx"0 {} {} {} {} {} {} {} {} {}
 
 # * Switch
 #   A switch turns on and off a specific feature of the pattern matchin
@@ -194,18 +202,18 @@
 #    \e    turns off escaped match
 
 1/Case is \Cimportant\C but not always/
-"Case is IMPORTANT but not always"  1
-"Case is important but not ALWAYS"  0
+"Case is IMPORTANT but not always"  1 {Case is IMPORTANT but not always} {} {} {} {} {} {} {} {}
+"Case is important but not ALWAYS"  0 {} {} {} {} {} {} {} {} {}
 
 1/\E\\''#/     # Remember that X# = (X!.)*X
 2/\E`{.}\1#/
-"'abcde'"     1
-"$xyz$"       2
-"$xyz`$abc$"  2
-"abcd"        0
+"'abcde'"     1 {'abcde'} {} {} {} {} {} {} {} {}
+"$xyz$"       2 {$xyz$} {$} {} {} {} {} {} {} {}
+"$xyz`$abc$"  2 {$xyz`$abc$} {$} {} {} {} {} {} {} {}
+"abcd"        0 {} {} {} {} {} {} {} {} {}
 
 1/\E$'{[^']*}'\e{[^']*}'/
-"'ab'cd'"         1
-"'ab$'cd'ef'"     1
-"'ab$'cd'ef$'gh'" 1
+"'ab'cd'"         1 {'ab'cd'} {ab} {cd} {} {} {} {} {} {}
+"'ab$'cd'ef'"     1 {'ab$'cd'ef'} {ab$'cd} {ef} {} {} {} {} {} {}
+"'ab$'cd'ef$'gh'" 1 {'ab$'cd'ef$'} {ab$'cd} {ef$} {} {} {} {} {} {}
 

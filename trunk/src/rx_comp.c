@@ -834,13 +834,21 @@ static char *storeesc(rexptrs *r, unsigned char *p)
                  storech(r,*p); 
                break;
                
-#if 0        
-    case '<' : storeop(r,BOW); break;
-    case '>' : storeop(r,EOW); break;
-#endif
-    
-    case '0' : storeop(r,ZERO); break;
-    
+    case 'o' :            
+    case '0' : if ('0' <= p[1] && p[1] <= '7') {
+                 chr = *++p - '0';
+                 if ('0' <= p[1] && p[1] <= '7') {
+                   chr = (chr << 3) | (*++p - '0');
+                   if ('0' <= p[1] && p[1] <= '7') {
+                     chr = (chr << 3) | (*++p - '0');
+                   }
+                 }
+                 storech(r,chr);
+               }
+               else 
+                 storech(r,*p); 
+               break;
+                   
     case '1' : case '2' : case '3' : case '4' :
     case '5' : case '6' : case '7' : case '8' :
                chr -= '1';
@@ -867,7 +875,6 @@ static char *storeesc(rexptrs *r, unsigned char *p)
     case 'w' : storeop(r,WORDC);   break;
     case 'c' : storeop(r,CTRL);    break;
     case 'p' : storeop(r,PUNCT);   break;
-    case 'y' : storeop(r,SPCTAB);  break;
     case 'z' : storeop(r,ZERO);    break;
     
     case 'L' : op = NEWLN;   goto rec;
@@ -880,7 +887,11 @@ static char *storeesc(rexptrs *r, unsigned char *p)
          rec : storeop(r,op);
                break;
                
-    case 'W' : storeop(r,SPCS);    break;
+    case 'y' : if (p[1] == '*') {
+                 storeop(r,SPCS); p++;
+               }
+               else   
+                 storeop(r,SPCTAB);  break;
     
     case 'e' : storeop(r,ESCOFF);    break;
 
@@ -926,10 +937,11 @@ static char *compile(const unsigned char *pat, unsigned char *nfa,
   unsigned char *p = (unsigned char *)pat;
   static rexptrs rex;
   rexptrs *r;
-  unsigned char c;
+  /*unsigned char c;*/
   unsigned char n;
+  unsigned char bol = 0;
+  unsigned char clo = 0;
   unsigned short l;
-  unsigned short bol = 0;
   
   r = &rex;
   
@@ -952,19 +964,26 @@ static char *compile(const unsigned char *pat, unsigned char *nfa,
   store(r,0x80);
   
   while (*p) {
-    c=0;
+    /*c=0;*/
     switch (*p) {
-      case '.' : storeop(r,ANY) ; break;
+      case '.' : storeop(r,ANY) ;
+                 clo = 1;
+                 break;
       
       case '^':  if (p == pat) {
                    storeop(r,BOL) ;
                    bol = 1;
+                   clo = 0;
                  }
-                 else storech(r,*p);
+                 else {
+                   storech(r,*p);
+                   clo = 1; 
+                 }
                  break;
       
       case '$':  if (p[1] == '\0') storeop(r,EOL);
                  else              storech(r,*p);
+                 clo = 1;
                  break;
 
       case '{':  if (num_capt < RX_MAXCAPT) {
@@ -972,6 +991,7 @@ static char *compile(const unsigned char *pat, unsigned char *nfa,
                    storeop(r, BOC | num_capt++);
                  }      
                  else error("ERR109: Too many captures");
+                 clo = 0;
                  break;
                  
       case '}':  if (empty(capt_stack))
@@ -979,6 +999,7 @@ static char *compile(const unsigned char *pat, unsigned char *nfa,
                  n=pop(capt_stack);
                  storeop(r, EOC | n);
                  def_capt |= (1 << n);
+                 clo = 0;
                  break;    
                  
       case '+':  
@@ -987,29 +1008,44 @@ static char *compile(const unsigned char *pat, unsigned char *nfa,
       case '?':  
       case '!':  
       case '#':  
-      case '&':  
+      case '&':  if (!clo)
+                   error("ERR119: unexpected closure");
                  p = storeclo(r,*p,p);
+                 clo = 0;
                  break;
                  
       case '[' : if (p[1] == '\0')
                    storech(r,*p);
                  else 
                    p += storeccl(r,p+1);
+                 clo = 1;
                  break;
                  
-      case '\\': p = storeesc(r,p+1);
+      case '\\': switch(p[1]) {
+                   case 'E':
+                   case 'e':
+                   case 'C': clo = 0;
+                             break;
+                   default : clo = 1;
+                             break;
+                 }
+                 p = storeesc(r,p+1);
                  break;
 
       case '(' : p = startalt(r,p); 
+                 clo = 0;
                  break;
                                     
       case '|' : p = newalt(r,p); 
+                 clo = 0;
                  break;
                                     
       case ')' : p = endalt(r,p); 
+                 clo = 0;
                  break;
                                     
       default :  storech(r,*p);
+                 clo = 1;
                  break;
                        
     }
@@ -1026,8 +1062,8 @@ static char *compile(const unsigned char *pat, unsigned char *nfa,
   if (alt_cur_label > 1) {
     fixalt(r);
   }
+  /* set the argument of the PATTERN op to the length of the pattern */
   l = (r->cur - r->first)-3;
-  
   p = r->first;
   p[1] = 0x80 | (l & 0x7F) >> 7;
   p[2] = 0x80 | (l & 0x7F);  
@@ -1052,64 +1088,13 @@ char *rx_compile_add(const unsigned char *pat, unsigned char *nfa)
     fail = *--nfa; 
   }
   err = compile(pat,nfa,RX_MAXNFA);
+  
   if (err == NULL) {
+    /* fix failure types (FAI or FAA) */
     while (*nfa != END) nfa++;
     if (fail != END && nfa[-1] != fail) nfa[-1] = FAIL;
   }
   
   return err;
 }
-
-  
-#ifdef UTEST
-#include "ut.h"
-
-static char nfa[RX_MAXNFA];
-static char *err;
-static char *res = NULL;
-
-TESTCASE(comp_str1,"Compiling regular string regexp")
-  err = rx_compile("abcde",nfa);
-  if (err == NULL) UTStringsEqual(nfa,"eabcde");
-TESTRESULT(err)
-
-TESTCASE(comp_longstr,"Compiling exceedingly long regexp")
-  err = rx_compile("123456789012345678901234567890123456789012345",nfa);
-  if (err == NULL)
-    res="Improper handling of too long regular expressions!";
-  else
-    UTStringsEqual(err,"Regular expression too long");
-TESTRESULT(res)
-
-TESTCASE(comp_esc,"Compiling characters escape sequences")
-  /* Verify that escape sequences that generate a single character are
-  ** handled properly.
-  */
-  err = rx_compile("\\b\\e\\f\\n\\r\\t\\v",nfa);
-  UTStringsEqual(nfa,"g\b\e\f\n\r\t\v");
-  err = rx_compile("\\g\\i\\j\\k\\m\\o\\x",nfa);
-  UTStringsEqual(nfa,"ggijkmox");
-  err = rx_compile("\\A\\B\\D\\G\\I\\J\\K\\L\\M\\O\\P\\R\\S\\T\\U\\V\\X\\Z",nfa);
-  UTStringsEqual(nfa,"rABDGIJKLMOPRSTUVXZ");
-  /*rx_hexdump(stdout,nfa);*/
-TESTRESULT(NULL)
-
-
-_TESTCASE(comp_esc_ccl,"Compiling characters escape sequences (in character class)")
-  /* Verify that escape sequences that generate a single character are
-  ** handled properly in character class. Remember that in the code this two
-  ** cases are separated. This will help keep the consistency!
-  */
-  err = rx_compile("[\\b\\e\\f\\n\\r\\t\\v]",nfa);
-  rx_hexdump(stdout,nfa);
-  UTStringsEqual(nfa,"g\b\e\f\n\r\t\v");
-  err = rx_compile("\\g\\i\\j\\k\\m\\o\\x",nfa);
-  UTStringsEqual(nfa,"ggijkmox");
-  err = rx_compile("\\A\\B\\D\\G\\I\\J\\K\\L\\M\\O\\P\\R\\S\\T\\U\\V\\X\\Z",nfa);
-  UTStringsEqual(nfa,"rABDGIJKLMOPRSTUVXZ");
-  /*rx_hexdump(stdout,nfa);*/
-TESTRESULT(NULL)
-
-
-#endif
 
