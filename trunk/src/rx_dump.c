@@ -215,7 +215,7 @@ void rx_dump_asm(FILE *f, unsigned char * nfa)
 
   if (nfa != NULL) {
     startnfa = nfa;
-    maxnfa = nfa+strlen(nfa);
+    maxnfa = nfa+strlen((char *)nfa);
     while (1) {
       nextnfa = rx_step_asm(f, nfa - startnfa, nfa);
       if (*nfa == END) break;
