@@ -64,13 +64,13 @@ int main (int argc, char **argv)
        if (argv[argn][0] == '\0') {
          break;
        }
-       err=rx_compile_add(argv[argn],nfa);
+       err=rx_compile_add((unsigned char *)argv[argn],nfa);
        argn++;
      }
      
      if (err == NULL) {
        if (!binonly)
-         fprintf(stdout,"nfa: (%d)\n\t",strlen(nfa));
+         fprintf(stdout,"nfa: (%d)\n\t",strlen((char *)nfa));
        fputs("\"",stdout);
        rx_dump_str(stdout,nfa);
        fputs("\"",stdout);
@@ -80,7 +80,7 @@ int main (int argc, char **argv)
        
        for (argn++ ;argn < argc; argn++) {
          printf("%s -> ",argv[argn]);
-         if ((rx=rx_exec(nfa,argv[argn]))) {
+         if ((rx=rx_exec(nfa,(unsigned char *)argv[argn]))) {
            printf("[%d]",rx_matched(rx));
            for (j=0; j <= RX_MAXCAPT ; j++) { 
              fputs("  (",stdout);
