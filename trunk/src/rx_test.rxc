@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 {
   char *s;
   char *err;
-  int c,n;
+  int c;
   int state = READING;
   int argn = 1;  
   int sym = 0;
@@ -100,12 +100,11 @@ int main(int argc, char *argv[])
                           }
                           break;
 
-        case "^{\Q}{\y*}{\d*}(\y*\B{})*" :
+        case "^{\Q}{\y*}[^\n]*" :
                           state = MATCHING;
                           s = rx_end(r,0);
                           rx_write(r,1,outf);
                           rx_write(r,2,outf);
-                          n = atoi(rx_start(r,3));
                           rx_end(r,1)[-1] = '\0';
                           r = rx_exec(nfa,rx_start(r,1)+1);
                           fprintf(outf,"%d",rx_matched(r));
