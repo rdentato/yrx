@@ -34,9 +34,11 @@ endif
 
 ## BUILD VARIANTS ###############
 # 
-BUILD=Debug
-#BUILD=Profile
-#BUILD=Release
+ifeq ($(BUILD)x,x)
+  BUILD=Debug
+  #BUILD=Profile
+  #BUILD=Release
+endif
 
 ## TRACING ###############
 # 
@@ -64,6 +66,7 @@ CFL = -O2 -Wall
 
 ifeq ($(BUILD),Debug)
  DEBUG=-DDEBUG
+ CFL += -g
 endif
 
 # .** Cross platform macros

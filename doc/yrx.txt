@@ -27,7 +27,8 @@ express or implied warranty.
 ==============
 
   YRX is an extension to add pattern matching capability to C, its
-main use is to create lexical scanners.
+main use is to create lexical scanners. It comes handy whenever a text
+file has to be analyzed to extract information from it.
 
   Its mode of operation is much much more similar to
 <re2c:http://re2c.sourceforge.net> than |lex|.
@@ -35,12 +36,11 @@ main use is to create lexical scanners.
   It consists of a pattern matching library (|rx|) and many 
 utilities developed on top of that.
 
-
 = Patterns 
 ===========
 
-  RX patterns are similar to regular expressions but not quite the same. 
-They are also inspired to PEG (Parsing Expressions Grammars)
+  RX patterns are similar to regular expressions but there are many important
+differences. They are also inspired to PEG (Parsing Expressions Grammars)
 
   The main differences with regular expressions are:
 
@@ -59,33 +59,36 @@ They are also inspired to PEG (Parsing Expressions Grammars)
  ~~~~~~~~~~~~~
   Each character matches itself except:
   
-  [.]      matches any character
-  [\]      escape next character. If there's no special meaning associated
-           with that escaped sequence, the regular character is matched.
-  [[`]]    delimit character class
-  [^]      Beginning of the line (only if placed at the beginning of pattern)
-  [$]      End of line (only if placed at the end of pattern)
-  [*]      Matches preceding expression repeated zero or more times.
-  [+]      As above but matches one or more repetitions.
-  [?]      As above but matches only zero or one repetitions. 
-  [!]      Matches a 0-length string assuming it doesn't match the specified
-           expression. (See section "Context")
-  [&]      Matches a 0-length string assuming it does match the specified
-           expression. (See section "Context")
-  [#]      Matches the specified expression preceeded by any string.
-            "X#" is equivalent to "(X!.)*X"        
-  [<>]     Set limits for matching repetitions. For example the regex "X<1,3>"
-           matches a string of 1 to 3 'X'.
-  [(|)]    grouping and alternate. The regex "(ab|cd)" will match the string
-           "ab" or the string "cd". 
-  [{}]     delimit captures. Up to eight captures can be defined. (See section
-           "Captures")
+  [.]     matches any character
+  [\]     interpret next character as special. If there's no special meaning
+          associated with that escaped sequence, the regular character
+          is matched.
+  [[`]]   delimit character class
+  [^]     Beginning of the line (only if placed at the beginning of pattern)
+  [$]     End of line (only if placed at the end of pattern)
+  [*]     Matches preceding expression repeated zero or more times.
+  [+]     As above but matches one or more repetitions.
+  [?]     As above but matches only zero or one repetitions. 
+  [!]     Matches a 0-length string assuming it doesn't match the specified
+          expression. (See section "Context")
+  [&]     Matches a 0-length string assuming it does match the specified
+          expression. (See section "Context")
+  [#]     Matches the specified expression preceeded by any string.
+          "X#" is equivalent to "(X!.)*X"        
+  [<>]    Set limits for matching repetitions. For example the expression
+          "X<1,3>" matches a string of 1 to 3 'X'.
+  [(|)]   Grouping and alternate. The expression "(ab|cd)" will match the
+          string "ab" or the string "cd". 
+  [{}]    Delimit captures. Up to eight captures can be defined. (See section
+          "Captures")
  
-  Characters may also be specified through their code in hexadecimal form:
+  Characters may also be specified through their code in hexadecimal or octal
+form:
 
   ------  -----
    \x41    'A'
    \x9     \t
+   \o11    \t
 
  ==  Character class
  ~~~~~~~~~~~~~~~~~~~
@@ -165,15 +168,11 @@ been predefined
           :  0x3e0a
           :  0Xf4E
           
-  [\Y]    A possibly empty sequence of spaces and/or tabs.
-          Note that it is *not* equivalent to |\s*| because
-          \s will also match newlines and other blanks!
-  
-  [\W]    A sequence of alphanumeric characters (including '|_|')
+  [\I]    An identifier. Equivalent to "\w\q*"
   
           :  fun_test
           :  t0
-          :  3E2F
+          :  _x3E2F
                     
   [\<]     Matches start of word
   [\>]     Matches end of word
