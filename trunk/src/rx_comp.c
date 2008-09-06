@@ -648,10 +648,10 @@ static unsigned char *endalt(rexptrs *r, unsigned char *p)
                 storeop(r,ONFEND);
                 break;  
   }
-  pop(alt_stack);
-  pop(alt_stack);
-  pop(alt_stack);
-  pop(alt_stack);
+  (void)pop(alt_stack);
+  (void)pop(alt_stack);
+  (void)pop(alt_stack);
+  (void)pop(alt_stack);
   return p;
 }
 
