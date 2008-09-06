@@ -86,7 +86,7 @@ int rx_isinccl(unsigned char n, const unsigned char *ccl)
   return (found ^ (ccl[0] & 0x40)) ;
 }
 
-static char *qstr(unsigned char *e)
+static unsigned char *qstr(unsigned char *e)
 {
   char c;
   c=*e++;
@@ -296,8 +296,8 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                     nfa += 2; /* skip GOTO */
                   }
                   else {
-                   *nfa++;
-                   goto gt;                   
+                    nfa++;
+                    goto gt;                   
                   }
                   break;
                     
@@ -437,13 +437,13 @@ int rx_len(rx_result rx, unsigned char n)
 char *rx_start(rx_result rx, unsigned char n)
 {
   if ((rx == NULL) || (n > 8)) return NULL;
-  return rx_boc[n];
+  return (char *)rx_boc[n];
 }
 
 char *rx_end(rx_result rx, unsigned char n)
 {
   if ((rx == NULL) || (n > 8)) return NULL;
-  return rx_eoc[n];
+  return (char *)rx_eoc[n];
 }
 
 unsigned char rx_matched(rx_result rx)
@@ -455,9 +455,9 @@ unsigned char rx_matched(rx_result rx)
 char *rx_cpy(rx_result rx, unsigned char n, unsigned char *s)
 {
   if ((rx == NULL) || (n > 8) || rx_boc[n] == NULL) return NULL;
-  strncpy(s,rx_boc[n],rx_eoc[n] - rx_boc[n]);
+  strncpy((char *)s,(char *)rx_boc[n],rx_eoc[n] - rx_boc[n]);
   s[rx_eoc[n] - rx_boc[n]] = '\0';
-  return s;
+  return (char *)s;
 }
 
 rx_result rx_match(const unsigned char *pattern, unsigned char *str, char **err)
