@@ -44,9 +44,11 @@ typedef void *rx_result;
 
 /*   Should you need a readable dump of the nfa, use these to functions.
 */
-void       rx_dump_str (FILE *f,unsigned char * nfa);
-void       rx_dump_asm (FILE *f,unsigned char * nfa);
-void       rx_dump_num (FILE *f,unsigned char * nfa);
+void  rx_dump_str (FILE *f,unsigned char * nfa);
+void  rx_dump_asm (FILE *f,unsigned char * nfa);
+void  rx_dump_num (FILE *f,unsigned char * nfa);
+char *rx_step_asm (FILE *f, unsigned int cnt, unsigned char *nfa);
+
 
 /*   Create a NFA from a regular expression. Note that nfa must be at 
 ** least {RX_MAXNFA} characters long.
@@ -96,8 +98,13 @@ int       rx_iterate (const unsigned char * nfa, unsigned char *str,
 unsigned char rx_matched(rx_result rx);
 
 /* writes a capture on file f */
-
 #define rx_write(r,n,f) fwrite(rx_start(r,n),rx_len(r,n),1,f)
+
+#ifdef TRACE
+extern int rx_trace;
+#define rx_trace_on()  (rx_trace=1)
+#define rx_trace_off() (rx_trace=0)
+#endif
 
 #endif /* RX_H */
 
