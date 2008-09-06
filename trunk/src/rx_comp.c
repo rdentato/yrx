@@ -165,7 +165,7 @@ static rexptrs *storech(rexptrs *r, unsigned char c)
   ** |010 xxxxx| i.e. we only have 5 bits to store the string length.
   */
   op = *(r->lastop);
-  if (( optype(op) != STR) || ( op == NOTCHR) || ( STR_len(op) > 30))  {
+  if (( optype(op) != STR) || ( op == NOTCHR) || ( STR_len(op) >= 30))  {
     storeop(r,STR);
   }
   
@@ -697,6 +697,7 @@ static void fixalt(rexptrs *r)
                      case BRACED: (r->cur)++;
                      
                      /* arg is 1 byte */
+                     case MIN   :
                      case BKMAX : (r->cur)++;
                                   break;
                   }

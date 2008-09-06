@@ -23,11 +23,11 @@ endif
 .SUFFIXES: .rxc .po .c .o
 
 .c.po:
-	gcc $(CFLAGS) -pg -c -o $*.po $*.c
+	gcc $(CFLAGS) -g -pg -c -o $*.po $*.c
 
 .rxc.po:
 	rxc $*.rxc >$*.c
-	gcc $(CFLAGS) -pg -c -o $*.po $*.c 
+	gcc $(CFLAGS) -g -pg -c -o $*.po $*.c 
 	$(RM) $*.c
 	
 .rxc.o:

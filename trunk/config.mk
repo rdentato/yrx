@@ -38,6 +38,10 @@ BUILD=Debug
 #BUILD=Profile
 #BUILD=Release
 
+## TRACING ###############
+# 
+TRACE=-DTRACE
+
 ## TOOLS
 UPX=upx --best
 UPX=test
@@ -69,5 +73,5 @@ ifeq (${SYS},MINGW)
 _EXE=.exe
 endif
 
-CFLAGS = -I. $(PROFILE) $(DEBUG) $(CFL)
+CFLAGS = -I. $(PROFILE) $(DEBUG) $(TRACE) $(CFL)
 LDFLAGS = $(PROFILE) $(LFL) -L. 

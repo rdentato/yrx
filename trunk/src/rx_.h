@@ -64,12 +64,12 @@ typedef struct {
 #define BACK    0x29   /* 001 01001 */
 
 #define MINANY  0x2A   /* 001 01010 */
-#define MIN     0x2B   /* 001 01011 */
+#define MIN     0x2B   /* 001 01011 xxxxxxxx */
 #define BOL     0x2C   /* 001 01100 */
 #define EOL     0x2D   /* 001 01101 */
 #define CASE    0x2E   /* 001 01110 */
 
-#define BRACED  0x33   /* 001 10011 */  
+#define BRACED  0x33   /* 001 10011 xxxxxxxx xxxxxxxx*/  
 #define QSTR    0x37   /* 001 10111 */
 #define NINT    0x38   /* 001 11000 */
 #define NFLOAT  0x39   /* 001 11001 */

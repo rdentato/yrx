@@ -61,155 +61,168 @@ static void outsymc(FILE *f,int c)
 ** expression.
 */
 
-#define incrnfa()  (cnt++,((*nfa)? ++nfa : nfa))
-#define addnfa(_x) do { int _y=_x; if ((nfa+_y) <maxnfa) {nfa+=_y; cnt+=_y;} } while (0)
+#define incrnfa()  (cnt++, (*nfa)? ++nfa : nfa)
+#define addnfa(x) (nfa += x)
 
-void rx_dump_asm(FILE *f,unsigned char * nfa)
+char *rx_step_asm(FILE *f, unsigned int cnt, unsigned char *nfa)
 {
   int n;
-  int back = 0;
-  unsigned int cnt = 0;
-  unsigned char *maxnfa;
+  static int back = 0;
+
+  fprintf(f,"%04X\t%02X",cnt,*nfa);
   
-  if (nfa != NULL) {
-    maxnfa = nfa+strlen(nfa);
-    while (*nfa != END) {
-      fprintf(f,"%04X\t%02X",cnt,*nfa);
-      
-      switch (*nfa) {
+  switch (*nfa) {
 
-        case BOL   : fprintf(f,"\tBOL\n");     break;
-        case EOL   : fprintf(f,"\tEOL\n");     break;
-        
-        case SPCS  : fprintf(f,"\tWSP\n");     break;
-        case IDENT : fprintf(f,"\tIDN\n");     break;
-        case ZERO  : fprintf(f,"\tZRO\n");     break;
-        case QSTR  : fprintf(f,"\tQST\n");     break;
-        case NINT  : fprintf(f,"\tINT\n");     break;
-        case NHEX  : fprintf(f,"\tHEX\n");     break;
-        case NFLOAT: fprintf(f,"\tFLT\n");     break;
-        case ESCOFF: fprintf(f,"\tESC\tOFF\n");     break;
-        case ESCAPE: fprintf(f,"\tESC\t");
-                     outsymc(f,*(incrnfa()));
-                     putc('\n',f);
-                     break;
-        case BRACED: fprintf(f,"\tBRC\t");
-                     outsymc (f,*(incrnfa()));
-                     outsymc (f,*(incrnfa()));
-                     putc('\n',f);
-                     break;
-        case CASE  : fprintf(f,"\tCSE\n");           break;
-        case NEWLN : fprintf(f,"\tNLN\n");           break;        
-        case FAIL:   fprintf(f,"\tFAI\n");         break;
-        case FAILALL:fprintf(f,"\tFAA\n");         break;
-        case PEEKED: fprintf(f,"\tRST\n");    break;
-        case ONFEND: fprintf(f,"\tOFF\n");    break;
-        
-        case BKABS : n = 257; goto bk;
-        case BACK  : n = 256; goto bk;
-        case BKMAX : n = *(incrnfa());
-                     fprintf(f,"%02X",n);                     
-                bk : if (n == 256)
-                        fprintf(f,"\tJFO\t0,");
-                     else if (n == 257)
-                        fprintf(f,"\tJMP\t");
-                     else
-                        fprintf(f,"\tJFO\t%d,",n);
-                     incrnfa();
-                     n = jmparg(nfa);
-                     fprintf(f,"%04X",cnt - n +2);
-                     fprintf(f,"\t;-%d\n",n); 
-                     incrnfa();
-                     break;
+    case BOL   : fprintf(f,"\tBOL\n");     break;
+    case EOL   : fprintf(f,"\tEOL\n");     break;
+    
+    case END   : fprintf(f,"\tEND\n");     break;
+    case SPCS  : fprintf(f,"\tWSP\n");     break;
+    case IDENT : fprintf(f,"\tIDN\n");     break;
+    case ZERO  : fprintf(f,"\tZRO\n");     break;
+    case QSTR  : fprintf(f,"\tQST\n");     break;
+    case NINT  : fprintf(f,"\tINT\n");     break;
+    case NHEX  : fprintf(f,"\tHEX\n");     break;
+    case NFLOAT: fprintf(f,"\tFLT\n");     break;
+    case ESCOFF: fprintf(f,"\tESC\tOFF\n");     break;
+    case ESCAPE: fprintf(f,"\tESC\t");
+                 outsymc(f,*(incrnfa()));
+                 putc('\n',f);
+                 break;
+    case BRACED: fprintf(f,"\tBRC\t");
+                 outsymc (f,*(incrnfa()));
+                 outsymc (f,*(incrnfa()));
+                 putc('\n',f);
+                 break;
+    case CASE  : fprintf(f,"\tCSE\n");    break;
+    case NEWLN : fprintf(f,"\tNLN\n");    break;        
+    case FAIL:   fprintf(f,"\tFAI\n");    break;
+    case FAILALL:fprintf(f,"\tFAA\n");    break;
+    case PEEKED: fprintf(f,"\tRST\n");    break;
+    case ONFEND: fprintf(f,"\tOFF\n");    break;
+    
+    case BKABS : n = 257; goto bk;
+    case BACK  : n = 256; goto bk;
+    case BKMAX : n = *(incrnfa());
+                 fprintf(f,"%02X",n);                     
+            bk : if (n == 256)
+                    fprintf(f,"\tJFO\t");
+                 else if (n == 257) 
+                    fprintf(f,"\tJMP\t");
+                 else 
+                    fprintf(f,"\tJFO\t%d,",n);
+                 incrnfa(); 
+                 n = jmparg(nfa);
+                 fprintf(f,"%04X",cnt - n +2);
+                 fprintf(f,"\t;-%d\n",n); 
+                 incrnfa();
+                 break;
 
-        case MIN   : fprintf(f,"\tMIN\t%d\n",*(incrnfa()));
-                     break;
-                     
-        case MINANY: fprintf(f,"\tMIN\t0\n");
-                     break;
-                     
-        case MATCH:  fprintf(f,"\tMTC\n");           break;
-        case PATTERN: n=((nfa[1] & 0x7F) << 7) + (nfa[2] & 0x7F); 
-                     fprintf(f,"%02X%02X\tNXT\t%04X\t;+%d\n",nfa[1],nfa[2],cnt+2+n,n);
-                     incrnfa();incrnfa();
-                     break;
-                     
-        case NOTCHR :
-                  fprintf(f,"\tNCH\t");
-                  outsymc(f,nfa[1]);
-                  incrnfa();
-                  fprintf(f,"\n");
-                  break;
-                  
-         default: switch (optype(*nfa)) {
-                                             
-                case GOTO    : fprintf(f,"%02X",nfa[1]);
-                               if ((*nfa & 0xF0) == ONFAIL)
-                                 fprintf(f,"\tOFJ");
-                               else 
-                                 fprintf(f,"\tJMP");
-                               n = jmparg(nfa);
-                               fprintf(f,"\t%04X",(back)?cnt - n +2 : cnt + n+2);
-                               fprintf(f,"\t;%c%d\n",(back? '-': '+'),n); 
-                               back = 0;
-                               incrnfa();
-                               break; 
-                            
-                case STR : fprintf(f,"\tSTR\t");
-                            n=STR_len(*nfa);
-                            while (n) {
-                              outsymc (f,*(incrnfa()));
-                              n--;
-                            } 
-                            fputc('\n',f);
-                            break;
-                            
-                case CAPTR : switch (CAPT_type(*nfa)) {
-                              case CAPT: fprintf(f,"\tCPT"); break;
-                              case BOC : fprintf(f,"\tBOC"); break;
-                              case EOC : fprintf(f,"\tEOC"); break;
-                            }
-                            fprintf(f,"\t%d\n",CAPT_num(*nfa));
-                            break;
-            
-                case CCL  : fprintf(f,"\t");
-                            if (iscls(*nfa)) {
-                              if (*nfa & 0x40) fprintf(f,"NOT ");
-                              switch((*nfa & 0xBF)) {  
-                                case ANY   : fprintf(f,"ANY"); break;
-                                case WORDC : fprintf(f,"WRD"); break;
-                                case SPACE : fprintf(f,"SPC"); break;
-                                case DIGIT : fprintf(f,"DGT"); break;
-                                case XDIGIT: fprintf(f,"HDG"); break;
-                                case ANYUPR: fprintf(f,"UPR"); break;
-                                case ANYLWR: fprintf(f,"LWR"); break;
-                                case ALNUM : fprintf(f,"ALN"); break;
-                                case ALPHA : fprintf(f,"ALP"); break;
-                                case CTRL  : fprintf(f,"CTL"); break;
-                                case PUNCT : fprintf(f,"PNC"); break;
-                                case SPCTAB: fprintf(f,"STB"); break;
-                                case ZERO  : fprintf(f,"ZRO"); break;
-                              }
-                            }
-                            else {
-                              fprintf(f,"CCL ");
-                              for (n=0;n<256;n++) {
-                                if (rx_isinccl(n,nfa)) outsymc(f,n);
-                              }
-                              addnfa(CCL_len(*nfa));
-                            }
-                            fprintf(f,"\n");
-                            break;
-                             
-                default: fprintf(f,"0x%02X\n",*nfa);
-                         break; 
-          }
-          break;
+    case MIN   : fprintf(f,"\tMIN\t%d\n",*(incrnfa()));
+                 break;
+                 
+    case MINANY: fprintf(f,"\tMIN\t0\n");
+                 break;
+                 
+    case MATCH:  fprintf(f,"\tMTC\n");           break;
+    case PATTERN: n=((nfa[1] & 0x7F) << 7) + (nfa[2] & 0x7F); 
+                 fprintf(f,"%02X%02X\tNXT\t%04X\t;+%d\n",nfa[1],nfa[2],cnt+2+n,n);
+                 incrnfa();incrnfa();
+                 break;
+                 
+    case NOTCHR :
+              fprintf(f,"\tNCH\t");
+              outsymc(f,nfa[1]);
+              incrnfa();
+              fprintf(f,"\n");
+              break;
+              
+     default: switch (optype(*nfa)) {
+                                         
+            case GOTO    : fprintf(f,"%02X",nfa[1]);
+                           if ((*nfa & 0xF0) == ONFAIL)
+                             fprintf(f,"\tOFJ");
+                           else 
+                             fprintf(f,"\tJMP");
+                           n = jmparg(nfa);
+                           fprintf(f,"\t%04X",cnt + n+2);
+                           fprintf(f,"\t;+%d\n",n); 
+                           back = 0;
+                           incrnfa();
+                           break; 
+                        
+            case STR : fprintf(f,"\tSTR\t");
+                        n=STR_len(*nfa);
+                        while (n) {
+                          outsymc (f,*(incrnfa()));
+                          n--;
+                        } 
+                        fputc('\n',f);
+                        break;
+                        
+            case CAPTR : switch (CAPT_type(*nfa)) {
+                          case CAPT: fprintf(f,"\tCPT"); break;
+                          case BOC : fprintf(f,"\tBOC"); break;
+                          case EOC : fprintf(f,"\tEOC"); break;
+                        }
+                        fprintf(f,"\t%d\n",CAPT_num(*nfa));
+                        break;
+        
+            case CCL  : fprintf(f,"\t");
+                        if (iscls(*nfa)) {
+                          if (*nfa & 0x40) fprintf(f,"NOT ");
+                          switch((*nfa & 0xBF)) {  
+                            case ANY   : fprintf(f,"ANY"); break;
+                            case WORDC : fprintf(f,"WRD"); break;
+                            case SPACE : fprintf(f,"SPC"); break;
+                            case DIGIT : fprintf(f,"DGT"); break;
+                            case XDIGIT: fprintf(f,"HDG"); break;
+                            case ANYUPR: fprintf(f,"UPR"); break;
+                            case ANYLWR: fprintf(f,"LWR"); break;
+                            case ALNUM : fprintf(f,"ALN"); break;
+                            case ALPHA : fprintf(f,"ALP"); break;
+                            case CTRL  : fprintf(f,"CTL"); break;
+                            case PUNCT : fprintf(f,"PNC"); break;
+                            case SPCTAB: fprintf(f,"STB"); break;
+                            case ZERO  : fprintf(f,"ZRO"); break;
+                          }
+                        }
+                        else {
+                          fprintf(f,"CCL ");
+                          for (n=0;n<256;n++) {
+                            if (rx_isinccl(n,nfa)) outsymc(f,n);
+                          }
+                          addnfa(CCL_len(*nfa));
+                        }
+                        fprintf(f,"\n");
+                        break;
+                         
+            default: fprintf(f,"0x%02X\n",*nfa);
+                     break; 
       }
-      incrnfa();
+      break;
+  }
+  incrnfa();
+  return nfa;
+}
+
+void rx_dump_asm(FILE *f, unsigned char * nfa)
+{
+  unsigned char *maxnfa;
+  unsigned char *startnfa;
+  unsigned char *nextnfa;
+
+
+  if (nfa != NULL) {
+    startnfa = nfa;
+    maxnfa = nfa+strlen(nfa);
+    while (1) {
+      nextnfa = rx_step_asm(f, nfa - startnfa, nfa);
+      if (*nfa == END) break;
+      if (nextnfa > maxnfa) break;
+      nfa = nextnfa; 
     }
   }
-  fprintf(f,"%04X\t00\tEND\n",cnt);
 }
 
 /* Since NFAs do not contain embedded zeros, they could be treated as

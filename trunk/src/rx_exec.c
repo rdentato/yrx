@@ -163,6 +163,11 @@ static unsigned char  of_cnt = 0;
 #define of_num_loop() ((of_loop[(of_cnt>>1)-1]))
 #define of_zro_loop()  (of_loop[(of_cnt>>1)-1] = 0)
 #endif
+
+#ifdef TRACE
+int rx_trace;
+#endif
+
 static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned char *nfa)
 {
   unsigned char n, c;
@@ -172,13 +177,23 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
   unsigned char *t,*p;
   unsigned fail = 0;
   int back = 0;
+  
+#ifdef TRACE
   unsigned char *q = (unsigned char *)nfa;
+#endif
 
   while (*nfa != END && *nfa != MATCH) {
     start = s;
-    /** /
-    fprintf(stderr,"--> %05X %02X %02X %s\n",nfa-q,*nfa,optype(*nfa),s);fflush(stderr);
-    / **/
+    
+#ifdef TRACE
+    if (rx_trace) {
+      fprintf(stderr,";      %s\n",s);
+      rx_step_asm(stderr,nfa-q,(unsigned char *)nfa);
+      fflush(stderr);
+    }
+   /*   fprintf(stderr,"--> %05X %02X %02X %s\n",nfa-q,*nfa,optype(*nfa),s);fflush(stderr);*/
+#endif
+
    switch (*nfa) {
                 
      case BOL : if (s != r->bol) FAILED(); break;
@@ -269,15 +284,20 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                 }
                 if (s == start) FAILED();
                 break;
+                
       case BKABS: t = NULL; goto bk;
       case BKMAX:
       case BACK : of_pop(p,t);
              bk : n = of_inc_loop();
                   back = 1;
                   /* s == t reveals an endless loop */
-                  if ((s == t) || (*nfa == BKMAX && n >= *++nfa)) {
+                  if ((*nfa == BKMAX && n >= *++nfa) || (s == t) ) {
                     back = 0;
                     nfa += 2; /* skip GOTO */
+                  }
+                  else {
+                   *nfa++;
+                   goto gt;                   
                   }
                   break;
                     
@@ -317,11 +337,12 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                     
       default :  switch (optype(*nfa)) {
     
-      case GOTO  : if ((*nfa & 0xF0) == ONFAIL) {
+      case GOTO  :
+              gt : if ((*nfa & 0xF0) == ONFAIL) {
                      of_push(nfa+1+jmparg(nfa), start);
                    }
                    else {
-                     k = jmparg(nfa);
+                  k = jmparg(nfa);
                      /* fprintf(stderr,">>> %d %d %p ->",k,back,nfa);*/
                      nfa += (back ? -k : k);
                      /* fprintf(stderr," %p\n",nfa); fflush(stderr); */
@@ -372,6 +393,7 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
       default     : FAILED();
     }
     }
+    
     if (fail) {
       if (of_empty()) return NULL;
       of_pop(nfa,s);
@@ -379,6 +401,8 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
     }
     nfa++;
   }
+  
+  if (s == str) return NULL;
 
   return s;
 }

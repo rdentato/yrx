@@ -25,7 +25,7 @@ unsigned char nfa[RX_MAXNFA];
 void usage(void)
 {
   fprintf(stderr,"RX v0.9b - (c)2008 Remo Dentato\n");
-  fprintf(stderr,"Usage: rx [-l locale|-b] regexp [string]\n");
+  fprintf(stderr,"Usage: rx [-l locale|-b|-t] regexp [string]\n");
   exit(0);
 }
 
@@ -47,6 +47,9 @@ int main (int argc, char **argv)
                  break;
                  
        case 'b': binonly = 1; break;
+       
+       case 't': rx_trace_on(); break;
+
      }
    }
    if (!binonly)
