@@ -559,7 +559,7 @@ static unsigned char *newalt(rexptrs *r, unsigned char *p)
     error("ERR105: Unexpected '|'");
   storegoto(r,top(alt_stack,1));
   labels[top(alt_stack,0)] = r->cur;
-  pop(alt_stack);
+  (void)pop(alt_stack);
   push(alt_stack,alt_cur_label);
   storeonfail(r,alt_cur_label++);
   return p;
@@ -815,7 +815,7 @@ static unsigned char *storeclo(rexptrs *r,unsigned char clo,unsigned char *p)
   return p;
 }               
 
-static char *storeesc(rexptrs *r, unsigned char *p)
+static unsigned char *storeesc(rexptrs *r, unsigned char *p)
 {
   unsigned char chr = *p;
   unsigned char op;
