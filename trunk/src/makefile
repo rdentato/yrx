@@ -19,17 +19,10 @@ PROFILE = -fprofile-arcs -ftest-coverage
 CFL = -DUTEST  -I. -I../test
 endif
 
+
 .SUFFIXES:
-.SUFFIXES: .rxc .po .c .o
+.SUFFIXES: .rxc .c .o
 
-.c.po:
-	gcc $(CFLAGS) -g -pg -c -o $*.po $*.c
-
-.rxc.po:
-	rxc $*.rxc >$*.c
-	gcc $(CFLAGS) -g -pg -c -o $*.po $*.c 
-	$(RM) $*.c
-	
 .rxc.o:
 	rxc $*.rxc >$*.c
 	gcc $(CFLAGS) -c $*.c 
@@ -83,6 +76,17 @@ rx_test$(_EXE): librx.a rxc$(_EXE) rx_test.o
 	$(LN)rx_test$(_EXE) rx_test.o -lrx
 
 # = Profiling
+
+.SUFFIXES: .po
+
+.c.po:
+	gcc $(CFLAGS) -g -pg -c -o $*.po $*.c
+
+.rxc.po:
+	rxc $*.rxc >$*.c
+	gcc $(CFLAGS) -g -pg -c -o $*.po $*.c 
+	$(RM) $*.c
+	
 
 rx_prof$(_EXE): rx_test.rxc rx_test.po $(RX_POBJS)
 	$(LN)rx_prof$(_EXE) $(RX_POBJS) rx_test.po -pg  

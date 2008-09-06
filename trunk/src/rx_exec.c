@@ -114,19 +114,24 @@ rx_result rx_exec(const unsigned char *nfa, unsigned char *str)
   
   static rx_extended rex; 
   
-  if (str == NULL) return NULL;
+  if (str == NULL || nfa == NULL || *str == '\0' || *nfa == '\0')
+    return NULL;
   
   rex.casesensitive = 1;
   rex.bol = str;
   rex.rxnum = 0;
   rex.escape = '\\';
-    
+  
+  /* Try to match str against nfa. If it fails try starting from the next
+  ** character.  rex.failall signals that thaere is no hope to match.    
+  */  
   do {
     rex.rxnum = 0;
     if ((matches = match(&rex,str,nfa)) || rex.failall) break;
   } while (*str++)  ;
 
   if (matches) {
+    /* set capture 0 to the entire matching portion */
     rex.boc[0] = str;
     rex.eoc[0] = matches;
     return ((rx_result *)&rex);
