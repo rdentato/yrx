@@ -64,7 +64,7 @@ static void outsymc(FILE *f,int c)
 #define incrnfa()  (cnt++, (*nfa)? ++nfa : nfa)
 #define addnfa(x) (nfa += x)
 
-char *rx_step_asm(FILE *f, unsigned int cnt, unsigned char *nfa)
+unsigned char *rx_step_asm(FILE *f, unsigned int cnt, unsigned char *nfa)
 {
   int n;
   static int back = 0;

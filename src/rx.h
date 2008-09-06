@@ -47,7 +47,7 @@ typedef void *rx_result;
 void  rx_dump_str (FILE *f,unsigned char * nfa);
 void  rx_dump_asm (FILE *f,unsigned char * nfa);
 void  rx_dump_num (FILE *f,unsigned char * nfa);
-char *rx_step_asm (FILE *f, unsigned int cnt, unsigned char *nfa);
+unsigned char *rx_step_asm (FILE *f, unsigned int cnt, unsigned char *nfa);
 
 
 /*   Create a NFA from a regular expression. Note that nfa must be at 
