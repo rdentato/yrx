@@ -87,16 +87,8 @@ rx_test$(_EXE): librx.a rxc$(_EXE) rx_test.o
 rx_prof$(_EXE): rx_test.rxc rx_test.po $(RX_POBJS)
 	$(LN)rx_prof$(_EXE) $(RX_POBJS) rx_test.po -pg  
         
-# = Unit testing
-rx_test: FORCE 
-	$(RM) *.o
-	make UTEST="yes" rx_tst
-	
-rx_tst: $(RX_OBJS)
-	../test/ut $(RX_SRC) > ut_tests.h
-	gcc -c $(CFLAGS) ../test/utlib.c	
-	$(LN)rx_test $(RX_OBJS) utlib.o -lgcov
-	
+# = Test coverage
+
 gcov: FORCE
 	rx_test
 	gcov $(RX_SRC)
