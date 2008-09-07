@@ -66,14 +66,19 @@ static unsigned char num_capt=0;
 **         depends on its usage!!! Not for reuse.
 */
 
-static unsigned char capt_stack[10];
+#define capt_stack_max   10
+#define alt_stack_max   256 
+
+static unsigned char capt_stack[capt_stack_max];
 static unsigned char capt_stack_count=0;
 
-static unsigned int  alt_stack[64];
-static unsigned char alt_stack_count=0;
+static unsigned int  alt_stack[alt_stack_max];
+static unsigned int  alt_stack_count=0;
 static unsigned int  alt_cur_label=1;
 
-#define push(_s,_v) (_s[_s##_count++]=_v)
+#define push(_s,_v) (_s##_count >= _s##_max ? \
+                         error("ERR195: Stack overflow") :\
+                         (_s[_s##_count++]=_v))
 #define pop(_s)     (_s[--_s##_count])
 #define top(_s,_n)  (_s[_s##_count-1-_n])
 #define empty(_s)   (_s##_count==0)
@@ -540,9 +545,12 @@ static void storejmp(rexptrs *r, unsigned char op, int offset)
 #define storeonfail(r, o) storejmp(r,ONFAIL,o)
 #define storegoto(r, o) storejmp(r,GOTO,o)
 
-static unsigned char *labels[3000];
+static unsigned char *labels[1000];
+
 static unsigned char *startalt(rexptrs *r, unsigned char *p)
 {
+  /*fprintf(stderr,"++ %d\n",alt_cur_label);*/
+
   labels[alt_cur_label] = r->cur+2;
   push(alt_stack,alt_cur_label++); /* label to '(XX' */
   labels[alt_cur_label] = r->cur;
@@ -942,7 +950,7 @@ static char *compile(const unsigned char *pat, unsigned char *nfa,
   unsigned char n;
   unsigned char bol = 0;
   unsigned char clo = 0;
-  unsigned short l;
+  unsigned short l = 0;
   
   r = &rex;
   
@@ -951,9 +959,15 @@ static char *compile(const unsigned char *pat, unsigned char *nfa,
   rex.lastop        = rex.first;
   rex.len           = 0;
   rex.casesensitive = 1;
+  rex.maxlen        = maxlen;
+  rex.error =NULL;
 
   *(r->cur) = END;
-  r->error =NULL;
+
+  capt_stack_count=0;
+  alt_stack_count=0;
+  alt_cur_label=1;
+    
   if (setjmp(compile_fail) != 0) {
     return r->error;
   }
