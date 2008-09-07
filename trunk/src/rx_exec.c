@@ -200,6 +200,7 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
 #endif
 
    switch (*nfa) {
+     case ZERO: if (*s)          FAILED(); break;
                 
      case BOL : if (s != r->bol) FAILED(); break;
      case EOL : if (*s)          FAILED(); break;

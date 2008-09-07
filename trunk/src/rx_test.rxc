@@ -71,6 +71,8 @@ int main(int argc, char *argv[])
   }
   
   while ((s = fgets(ln,ln_len,inf))) {
+    /*fprintf(stderr,"-- %s\n",s);*/
+    lnnum++;
     while (*s) {
       RX_SWITCH(r,s) { 
                                 
@@ -82,7 +84,7 @@ int main(int argc, char *argv[])
                              s = rx_end(r,0);
                              break;
            
-        case "^\y*\d*{//#}" :
+        case "^\y*\d*{\E\\//#}" :
                           if (state == MATCHING) {
                             *nfa = '\0';
                             xprn = 1;      
