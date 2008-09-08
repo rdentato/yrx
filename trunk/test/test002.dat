@@ -1,5 +1,7 @@
 # * Stress tests
 
+# This expressions are an adaptation of the testdata for PCRE package for CLISP
+
 1/the quick brown fox/
 2/\Cthe quick brown fox/
 "the quick brown fox" 1 {the quick brown fox} {} {} {} {} {} {} {} {}
@@ -169,7 +171,7 @@
 
 1/^{[^\!]+}\!{=#}{[apquxz]+}\.{[ixr]+}\.{[z]+}\.{[ac]+}\.uk$/
 "abc!pqr=apquxz.ixr.zzz.ac.uk"   1 {abc!pqr=apquxz.ixr.zzz.ac.uk} {abc} {pqr=} {apquxz} {ixr} {zzz} {ac} {} {}
-"!pqr=apquxz.ixr.zzz.ac.uk"      0 {} {} {} {} {} {} {} {} {} 
+"!pqr=apquxz.ixr.zzz.ac.uk"      0 {} {} {} {} {} {} {} {} {}
 "abc!=apquxz.ixr.zzz.ac.uk"      1 {abc!=apquxz.ixr.zzz.ac.uk} {abc} {=} {apquxz} {ixr} {zzz} {ac} {} {}
 "abc!pqr=apquxz:ixr.zzz.ac.uk"   0 {} {} {} {} {} {} {} {} {}
 "abc!pqr=apquxz.ixr.zzz.ac.ukk"  0 {} {} {} {} {} {} {} {} {}
@@ -204,1937 +206,1937 @@
 "*.c-a.0-c" 0 {} {} {} {} {} {} {} {} {}
 
 1/{(cat(a(ract|tonic)|erpillar))} \12(3)/
-"cataract cataract23"       0 {} {} {} {} {} {} {} {} {}
-"catatonic catatonic23"     0 {} {} {} {} {} {} {} {} {}
-"caterpillar caterpillar23" 0 {} {} {} {} {} {} {} {} {}
-
-
-/^From +([^ ]+) +[a-zA-Z][a-zA-Z][a-zA-Z] +[a-zA-Z][a-zA-Z][a-zA-Z] +[0-9]?[0-9] +[0-9][0-9]:[0-9][0-9]/
-"From abcd  Mon Sep 01 12:33:02 1997"
-
-/^From\s+\S+\s+([a-zA-Z]<3>\s+)<2>\d<1,2>\s+\d\d:\d\d/
-"From abcd  Mon Sep 01 12:33:02 1997"
-"From abcd  Mon Sep  1 12:33:02 1997"
-"From abcd  Sep 01 12:33:02 1997"
-
-/^12.34/s"
-"12\n34"
-"12\r34"
-
-/\w+(=\t)/
-"the quick brown\t fox"
-
-/foo(bar)(.*)/
-"foobar is foolish see?"
-
-/(:(foo)...|^.<0,2>)bar(.*)/
-"foobar crowbar etc"
-"barrel"
-"2barrel"
-"A barrel"
-
-/^(\D*)(=\d)(123)/
-"abc456"
-"abc123"
-
-/^1234(# test newlines"
-"inside)/
-"1234"
-
-/^1234 #comment in extended re"
-"/
-"1234"
-
-/#rhubarb"
-"abcd/
-"abcd"
-
-/^abcd#rhubarb/
-"abcd"
-
-/^(a)\1<2,3>(.)/
-"aaab"
-"aaaab"
-"aaaaab"
-"aaaaaab"
-
-/(^)abc/
-"the abc"
-"abc"
-
-/(=^)abc/
-"abc"
-"the abc"
-
-/^[ab]<1,3>(ab*|b)/
-"aabbbbb"
-
-/^[ab]<1,3>(ab*|b)/
-"aabbbbb"
-
-/^[ab]<1,3>(ab*|b)/
-"aabbbbb"
-
-/^[ab]<1,3>(ab*|b)/
-"aabbbbb"
-"Alan Other <user\@dom.ain>"
-"<user\@dom.ain>"
-"user\@dom.ain"
-"\"A. Other\" <user.1234\@dom.ain> (a comment)"
-"A. Other <user.1234\@dom.ain> (a comment)"
-"\"/s=user/ou=host/o=place/prmd=uu.yy/admd= /c=gb/\"\@x400-re.lay"
-"A missing angle <user\@some.where"
-"The quick brown fox"
-
-/abc\0def\00pqr\000xyz\0000AB/
-"abc\0def\00pqr\000xyz\0000AB"
-"abc456 abc\0def\00pqr\000xyz\0000ABCDE"
-
-/abc\x0def\x00pqr\x000xyz\x0000AB/
-"abc\x0def\x00pqr\x000xyz\x0000AB"
-"abc456 abc\x0def\x00pqr\x000xyz\x0000ABCDE"
-
-/^[\000-\037]/
-"\0A"
-"\01B"
-"\037C"
-
-/\0*/
-"\0\0\0\0"
-
-/A\x0<2,3>Z/
-"The A\x0\x0Z"
-"An A\0\x0\0Z"
-"A\0Z"
-"A\0\x0\0\x0Z"
-
-/^(cow|)\1(bell)/
-"cowcowbell"
-"bell"
-"cowbell"
-
-/^\s/
-"\040abc"
-"\x0cabc"
-"\nabc"
-"\rabc"
-"\tabc"
-"abc"
-
-/^a	b"
-""
-"  c/
-"abc"
-
-/^(a|)\1*b/
-"ab"
-"aaaab"
-"b"
-"acb"
-
-/^(a|)\1+b/
-"aab"
-"aaaab"
-"b"
-"ab"
-
-/^(a|)\1?b/
-"ab"
-"aab"
-"b"
-"acb"
-
-/^(a|)\1<2>b/
-"aaab"
-"b"
-"ab"
-"aab"
-"aaaab"
-
-/^(a|)\1<2,3>b/
-"aaab"
-"aaaab"
-"b"
-"ab"
-"aab"
-"aaaaab"
-
-/ab<1,3>bc/
-"abbbbc"
-"abbbc"
-"abbc"
-"abc"
-"abbbbbc"
-
-/([^.]*)\.([^:]*):[T ]+(.*)/
-"track1.title:TBlah blah blah"
-
-/([^.]*)\.([^:]*):[T ]+(.*)/
-"track1.title:TBlah blah blah"
-
-/([^.]*)\.([^:]*):[t ]+(.*)/
-"track1.title:TBlah blah blah"
-
-/^[W-c]+$/
-"WXY_^abc"
-"wxy"
-
-/^[W-c]+$/
-"WXY_^abc"
-"wxy_^ABC"
-
-/^[\x3f-\x5F]+$/
-"WXY_^abc"
-"wxy_^ABC"
-
-/^abc$/m"
-"abc"
-"qqq\nabc"
-"abc\nzzz"
-"qqq\nabc\nzzz"
-
-/^abc$/
-"abc"
-"qqq\nabc"
-"abc\nzzz"
-"qqq\nabc\nzzz"
-
-/\Aabc\Z/m"
-"abc"
-"abc\n "
-"qqq\nabc"
-"abc\nzzz"
-"qqq\nabc\nzzz"
-""
-/\A(.)*\Z/s"
-"abc\ndef"
-
-/\A(.)*\Z/m"
-"abc\ndef"
-
-/(:b|::+)/
-"b::c"
-"c::b"
-
-/[-az]+/
-"az-"
-"b"
-
-/[az-]+/
-"za-"
-"b"
-
-/[a\-z]+/
-"a-z"
-"b"
-
-/[a-z]+/
-"abcdxyz"
-
-/[\d-]+/
-"12-34"
-"aaa"
-
-/[\d-z]+/
-"12-34z"
-"aaa"
-
-/\x5c/
-"\\"
-
-/\x20Z/
-"the Zoo"
-"Zulu"
-
-/(abc)\1/
-"abcabc"
-"ABCabc"
-"abcABC"
-
-/ab\<3cd/
-"ab<3cd"
-
-/ab\<3,cd/
-"ab\<3,cd"
-
-/ab\<3,4a>cd/
-"ab\<3,4a>cd"
-
-/\<4,5a\>bc/
-"\<4,5a\>bc"
-
-/^a.b/
-"a\rb"
-"a\nb"
-
-/abc$/
-"abc"
-"abc\n"
-"abc\ndef"
-
-/(abc)\0123/
-"abc\x53"
-
-/(abc)\0223/
-"abc\x93"
-
-/(abc)\0323/
-"abc\xd3"
-
-/(abc)\0500/
-"abc\x40"
-"abc\100"
-
-/(abc)\05000/
-"abc\x400"
-"abc\x40\x30"
-"abc\1000"
-"abc\100\x30"
-"abc\100\060"
-"abc\100\60"
-
-/abc\081/
-"abc\081"
-"abc\0\x38\x31"
-
-/abc\91/
-"abc\091"
-"abc\0\x39\x31"
-
-/(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)(k)(l)\12\123/
-"abcdefghijkllS"
-
-/(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)(k)\12\123/
-"abcdefghijk\12S"
-
-/ab\gdef/
-"abgdef"
-
-/a<0>bc/
-"bc"
-
-/(a|(bc))<0,0>xyz/
-"xyz"
-
-/abc[\10]de/
-"abc\010de"
-
-/abc[\1]de/
-"abc\1de"
-
-/(abc)[\1]de/
-"abc\1de"
-
-/a.b(s)/
-"a\nb"
-
-/^([^a])([^\b])([^c]*)([^d]<3,4>)/
-"baNOTccccd"
-"baNOTcccd"
-"baNOTccd"
-"bacccd"
-"anything"
-"b\bc   "
-"baccd"
-
-/[^a]/
-"Abc"
-""
-/[^a]/
-"Abc "
-
-/[^a]+/
-"AAAaAbc"
-""
-/[^a]+/
-"AAAaAbc "
-
-/[^a]+/
-"bbb\nccc"
-""
-/[^k]$/
-"abc"
-"abk   "
-""
-/[^k]<2,3>$/
-"abc"
-"kbc"
-"kabc "
-"abk"
-"akb"
-"akk "
-
-/^\d<8,>\@.+[^k]$/
-"12345678\@a.b.c.d"
-"123456789\@x.y.z"
-"12345678\@x.y.uk"
-"1234567\@a.b.c.d       "
-
-/(a)\1<8,>/
-"aaaaaaaaa"
-"aaaaaaaaaa"
-"aaaaaaa   "
-
-/[^a]/
-"aaaabcd"
-"aaAabcd "
-
-/[^a]/
-"aaaabcd"
-"aaAabcd "
-
-/[^az]/
-"aaaabcd"
-"aaAabcd "
-
-/[^az]/
-"aaaabcd"
-"aaAabcd "
-
-/\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037\040\041\042\043\044\045\046\047\050\051\052\053\054\055\056\057\060\061\062\063\064\065\066\067\070\071\072\073\074\075\076\077\100\101\102\103\104\105\106\107\110\111\112\113\114\115\116\117\120\121\122\123\124\125\126\127\130\131\132\133\134\135\136\137\140\141\142\143\144\145\146\147\150\151\152\153\154\155\156\157\160\161\162\163\164\165\166\167\170\171\172\173\174\175\176\177\200\201\202\203\204\205\206\207\210\211\212\213\214\215\216\217\220\221\222\223\224\225\226\227\230\231\232\233\234\235\236\237\240\241\242\243\244\245\246\247\250\251\252\253\254\255\256\257\260\261\262\263\264\265\266\267\270\271\272\273\274\275\276\277\300\301\302\303\304\305\306\307\310\311\312\313\314\315\316\317\320\321\322\323\324\325\326\327\330\331\332\333\334\335\336\337\340\341\342\343\344\345\346\347\350\351\352\353\354\355\356\357\360\361\362\363\364\365\366\367\370\371\372\373\374\375\376\377/
-"\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037\040\041\042\043\044\045\046\047\050\051\052\053\054\055\056\057\060\061\062\063\064\065\066\067\070\071\072\073\074\075\076\077\100\101\102\103\104\105\106\107\110\111\112\113\114\115\116\117\120\121\122\123\124\125\126\127\130\131\132\133\134\135\136\137\140\141\142\143\144\145\146\147\150\151\152\153\154\155\156\157\160\161\162\163\164\165\166\167\170\171\172\173\174\175\176\177\200\201\202\203\204\205\206\207\210\211\212\213\214\215\216\217\220\221\222\223\224\225\226\227\230\231\232\233\234\235\236\237\240\241\242\243\244\245\246\247\250\251\252\253\254\255\256\257\260\261\262\263\264\265\266\267\270\271\272\273\274\275\276\277\300\301\302\303\304\305\306\307\310\311\312\313\314\315\316\317\320\321\322\323\324\325\326\327\330\331\332\333\334\335\336\337\340\341\342\343\344\345\346\347\350\351\352\353\354\355\356\357\360\361\362\363\364\365\366\367\370\371\372\373\374\375\376\377"
-
-/P[^*]TAIRE[^*]<1,6>LL/
-"xxxxxxxxxxxPSTAIREISLLxxxxxxxxx"
-
-/P[^*]TAIRE[^*]<1,>LL/
-"xxxxxxxxxxxPSTAIREISLLxxxxxxxxx"
-
-/(\.\d\d[1-9]?)\d+/
-"1.230003938"
-"1.875000282   "
-"1.235  "
-""
-/(\.\d\d((=0)|\d(=\d)))/
-"1.230003938      "
-"1.875000282"
-"1.235 "
-""
-/ab/
-"ab "
-""
-/\b(foo)\s+(\w+)/
-"Food is on the foo table"
-""
-/foo(.*)bar/
-"The food is under the bar in the barn."
-""
-/foo(.*)bar/  "
-"The food is under the bar in the barn."
-
-/(.*)(\d*)/
-"I have 2 numbers: 53147"
-""
-/(.*)(\d+)/
-"I have 2 numbers: 53147"
-""
-/(.*)(\d*)/
-"I have 2 numbers: 53147"
-
-/(.*)(\d+)/
-"I have 2 numbers: 53147"
-
-/(.*)(\d+)$/
-"I have 2 numbers: 53147"
-
-/(.*)(\d+)$/
-"I have 2 numbers: 53147"
-
-/(.*)\b(\d+)$/
-"I have 2 numbers: 53147"
-
-/(.*\D)(\d+)$/
-"I have 2 numbers: 53147"
-
-/^\D*(123)/
-"ABC123"
-""
-/^(\D*)(=\d)(123)/
-"ABC445"
-"ABC123"
-""
-/^[W-]46]/
-"W46]789 "
-"-46]789"
-"Wall"
-"Zebra"
-"42"
-"[abcd] "
-"]abcd["
-""
-/^[W-\]46]/
-"W46]789 "
-"Wall"
-"Zebra"
-"Xylophone  "
-"42"
-"[abcd] "
-"]abcd["
-"\\backslash "
-"-46]789"
-"well"
-""
-/\d\d\/\d\d\/\d\d\d\d/
-"01/01/2000"
-
-/word (:[a-zA-Z0-9]+ )<0,10>otherword/
-"word cat dog elephant mussel cow horse canary baboon snake shark otherword"
-"word cat dog elephant mussel cow horse canary baboon snake shark"
-
-/word (:[a-zA-Z0-9]+ )<0,300>otherword/
-"word cat dog elephant mussel cow horse canary baboon snake shark the quick brown fox and the lazy dog and several other words getting close to thirty by now I hope"
-
-/^(a)<0,0>/
-"bcd"
-"abc"
-"aab     "
-
-/^(a)<0,1>/
-"bcd"
-"abc"
-"aab  "
-
-/^(a)<0,2>/
-"bcd"
-"abc"
-"aab  "
-
-/^(a)<0,3>/
-"bcd"
-"abc"
-"aab"
-"aaa   "
-
-/^(a)<0,>/
-"bcd"
-"abc"
-"aab"
-"aaa"
-"aaaaaaaa    "
-
-/^(a)<1,1>/
-"bcd"
-"abc"
-"aab  "
-
-/^(a)<1,2>/
-"bcd"
-"abc"
-"aab  "
-
-/^(a)<1,3>/
-"bcd"
-"abc"
-"aab"
-"aaa   "
-
-/^(a)<1,>/
-"bcd"
-"abc"
-"aab"
-"aaa"
-"aaaaaaaa    "
-
-/.*\.gif/
-"borfle\nbib.gif\nno"
-
-/.<0,>\.gif/
-"borfle\nbib.gif\nno"
-
-/.*\.gif/m"
-"borfle\nbib.gif\nno"
-
-/.*\.gif/s"
-"borfle\nbib.gif\nno"
-
-/.*\.gif/ms"
-"borfle\nbib.gif\nno"
-""
-/.*$/
-"borfle\nbib.gif\nno"
-
-/.*$/m"
-"borfle\nbib.gif\nno"
-
-/.*$/s"
-"borfle\nbib.gif\nno"
-
-/.*$/ms"
-"borfle\nbib.gif\nno"
-""
-/.*$/
-"borfle\nbib.gif\nno\n"
-
-/.*$/m"
-"borfle\nbib.gif\nno\n"
-
-/.*$/s"
-"borfle\nbib.gif\nno\n"
-
-/.*$/ms"
-"borfle\nbib.gif\nno\n"
-""
-/(.*X|^B)/
-"abcde\n1234Xyz"
-"BarFoo "
-"abcde\nBar  "
-
-/(.*X|^B)/m"
-"abcde\n1234Xyz"
-"BarFoo "
-"abcde\nBar  "
-
-/(.*X|^B)/s"
-"abcde\n1234Xyz"
-"BarFoo "
-"abcde\nBar  "
-
-/(.*X|^B)/ms"
-"abcde\n1234Xyz"
-"BarFoo "
-"abcde\nBar  "
-
-/(s)(.*X|^B)/
-"abcde\n1234Xyz"
-"BarFoo "
-"abcde\nBar  "
-
-/(s:.*X|^B)/
-"abcde\n1234Xyz"
-"BarFoo "
-"abcde\nBar  "
-
-/^.*B/
-"abc\nB"
-""
-/(s)^.*B/
-"abc\nB"
-
-/(m)^.*B/
-"abc\nB"
-""
-/(ms)^.*B/
-"abc\nB"
-
-/(ms)^B/
-"abc\nB"
-
-/(s)B$/
-"B\n"
-
-/^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]/
-"123456654321"
-""
-/^\d\d\d\d\d\d\d\d\d\d\d\d/
-"123456654321 "
-
-/^[\d][\d][\d][\d][\d][\d][\d][\d][\d][\d][\d][\d]/
-"123456654321"
-""
-/^[abc]<12>/
-"abcabcabcabc"
-""
-/^[a-c]<12>/
-"abcabcabcabc"
-""
-/^(a|b|c)<12>/
-"abcabcabcabc "
-
-/^[abcdefghijklmnopqrstuvwxy0123456789]/
-"n"
-"z "
-
-/abcde<0,0>/
-"abcd"
-"abce  "
-
-/ab[cd]<0,0>e/
-"abe"
-"abcde "
-""
-/ab(c)<0,0>d/
-"abd"
-"abcd   "
-
-/a(b*)/
-"a"
-"ab"
-"abbbb"
-"bbbbb    "
-""
-/ab\d<0>e/
-"abe"
-"ab1e   "
-""
-/"([^\\"]+|\\.)*"/
-"the \"quick\" brown fox"
-"\"the \\\"quick\\\" brown fox\" "
-
-/.*/g+"
-"abc"
-""
-/\b/g+"
-"abc "
-
-/\b/+g"
-"abc "
-
-//
-"abc"
-
-/a[^a]b/
-"acb"
-"a\nb"
-""
-/a.b/
-"acb"
-"a\nb   "
-""
-/a[^a]b/s"
-"acb"
-"a\nb  "
-""
-/a.b/s"
-"acb"
-"a\nb  "
-
-/^(b+|a)<1,2>c/
-"bac"
-"bbac"
-"bbbac"
-"bbbbac"
-"bbbbbac "
-
-/^(b+|a)<1,2>c/
-"bac"
-"bbac"
-"bbbac"
-"bbbbac"
-"bbbbbac "
-""
-/(\A)x/m"
-"x\nb\n"
-"a\bx\n  "
-""
-/\x0\<ab>/
-"\0<ab> "
-
-/(A|B)*CD/
-"CD "
-""
-/(A|B)*CD/
-"CD "
-
-/{(AB)*}\1/
-"ABABAB"
-
-/{(AB)*}\1/
-"ABABAB"
-""
-/\(/
-"doesn't matter"
-
-/(x)\2/
-"doesn't matter"
-
-/((a<0,5>)<0,5>)<0,5>[c]/
-"aaaaaaaaaac"
-"aaaaaaaaaa"
-
-/((a<0,5>)<0,5>)*[c]/
-"aaaaaaaaaac"
-"aaaaaaaaaa"
-
-/(\b)*a/
-"a"
-
-/(a)*b/
-"ab"
-
-/(a|)*b/
-"ab"
-"b"
-"x"
-
-/^(:(a)|(b))*\1\2$/
-"abab"
-
-/abc[^x]def/
-"abcxabcydef"
-
-/^(a|\1x)*$/
-"aax"
-"aaxa"
-
-//
-"@<['']>"
-
-/^(:(a)|(b))*$/
-"ab"
-
-/[\0]/
-"a"
-"\0"
-
-/[\1]/
-"a"
-"\1"
-
-/\10/
-"doesn't matter"
-
-/\10/
-"a"
-
-/a\)b/
-"ab"
-
-/[x]/
-"doesn't matter"
-
-/[\]]/
-"doesn't matter"
-
-/[\x]/
-"x"
-"\0"
-
-/((a)*)*/
-"a"
-
-/{a}\1/
-"a"
-
-/{a}\1/
-"a"
-
-/a(i)a(-i)a/
-"aaa"
-"aAa"
-"aAA"
-
-/a(i)a(-i)a(i)a(-i)a/
-"aaaaa"
-"aAaAa"
-"AaAaA"
-"aAAAa"
-"AaaaA"
-"AAAAA"
-"aaAAA"
-"AAaaa"
-
-/\x/
-"a"
-"X"
-"\0"
-
-/[a-c-e]/
-"a"
-"b"
-"d"
-"-"
-
-/[b-\d]/
-"b"
-"c"
-"d"
-"-"
-"1"
-
-/[\d-f]/
-"d"
-"e"
-"f"
-"-"
-"1"
-
-/[/
-"doesn't matter"
-
-/]/
-"]"
-"a"
-
-/[x]/
-"doesn't matter"
-
-/[\-a-c]/
-"-"
-"a"
-"b"
-"d"
-
-/[a-c\-]/
-"-"
-"a"
-"b"
-"d"
-
-/[\-]/
-"a"
-"-"
-
-/[\-\-]/
-"a"
-"-"
-
-/[\-\-\-]/
-"a"
-"-"
-
-/[\-\-b]/
-"-"
-"a"
-"c"
-
-/[b\-\-]/
-"doesn't matter"
-
-/a\</
-"a<"
-
-/a\<>/
-"a<>"
-
-/a\<3/
-"a<3"
-
-/a\<3,/
-"a<3,"
-
-/a<3,3>/
-"a<3,3>"
-"a<3,3>"
-"aaa"
-
-/a<3,3>/
-"a<3,3>"
-"a<3,3>"
-"aaa"
-
-/a<3,>/
-"a<3,>"
-"a<3, >"
-"aaa"
-
-/a<3,>/
-"a<3,>"
-"a<3,>"
-"aaa"
-
-/\x x/
-"\0 x"
-"\0x"
-
-/\x x/
-"\0 x"
-"\0x"
-
-/\x 3/
-"\0003"
-"\000 3"
-"x3"
-"x 3"
-
-/\x 3/
-"\0003"
-"\000 3"
-"x3"
-"x 3"
-
-/^a<1>$/
-"a"
-"a< 1>"
-"a<1>"
-
-/^a<1>$/
-"a"
-"a< 1>"
-"a<1>"
-
-/\<\>/
-"<>"
-"a"
-
-/\<1\>/
-"doesn't matter"
-
-/\*/
-"doesn't matter"
-
-/\|/
-"x"
-
-/\0000/
-"\0000"
-
-/a\)b/
-"ab"
-
-/a(i)b/
-"ab"
-"aB"
-"Ab"
-
-/a(i=a)/
-"doesn't matter"
-
-/a=a\)<100>a/
-"aa"
-"xa"
-"ax"
-
-/a(=a)<30>a/
-"aa"
-"ax"
-"xa"
-
-/a<30>a/
-"aa"
-"ax"
-"xa"
-
-/a(:)<30>a/
-"aa"
-"ax"
-
-/a=a*a/
-"aa"
-"ax"
-"xa"
-
-/a(=a)*a/
-"aa"
-"ax"
-"xa"
-
-/a*a/
-"aa"
-"ax"
-"xa"
-
-/a(:)*a/
-"aa"
-"ax"
-"xa"
-
-/x=a*a/
-"aa"
-"xa"
-"ax"
-
-/a=(a)*\1/
-"aa"
-
-/a=(a)*\1/
-"aa"
-
-/(=(a)\1)*aa/
-"aa"
-
-/^((a|b)<2,5>)<2>$/
-"aaaaabbbbb"
-
-/^(b*|ba)<1,2>bc/
-"babc"
-"bbabc"
-"bababc"
-"bababbc"
-"babababc"
-
-/^a<4,5>(:c|a)c$/
-"aaaaac"
-"aaaaaac"
-
-/^(a|)<4,5>(:c|a)c$/
-"aaaaac"
-"aaaaaac"
-
-/(m:^).abc$/
-"eeexabc"
-"eee\nxabc"
-
-/(m:^)abc/
-"abc"
-"\nabc"
-
-
-/^abc/
-"abc"
-"\nabc"
-
-/\Aabc/
-"abc"
-"\nabc"
-
-/barfoo/
-"foo"
-"catfood"
-"arfootle"
-"rfoosh"
-"barfoo"
-"towbarfoo"
-
-/\w<3>barfoo/
-"catfood"
-"foo"
-"barfoo"
-"towbarfoo"
-
-/=(foo)abar/
-"fooabar"
-"bar"
-"foobbar"
-""
-/\Aabc\z/
-"abc"
-"abc\n   "
-"qqq\nabc"
-"abc\nzzz"
-"qqq\nabc\nzzz"
-".*/)foo""
-"/this/is/a/very/long/line/in/deed/with/very/many/slashes/in/it/you/see/
-".*/)foo""
-"/this/is/a/very/long/line/in/deed/with/very/many/slashes/in/and/foo"
-
-/(\.\d\d[1-9]?)\d+/
-"1.230003938"
-"1.875000282"
-"1.235 "
-
-/^(\w+|\s+)*$/
-"now is the time for all good men to come to the aid of the party"
-"this is not a line with only words and spaces!"
-""
-/(\d+)(\w)/
-"12345a"
-"12345+ "
-
-/(\d+)(\w)/
-"12345a"
-"12345+ "
-
-/a+b/
-"aaab"
-
-/(a+)b/
-"aaab"
-
-/(a+)b/
-"aaab"
-
-/b+/
-"aaabbbccc"
-
-/(a+|b+|c*c)/
-"aaabbbbccccd"
-
-/([^]+)|\([^]*\))+/
-"((abc(ade)ufhx"
-""
-/\(([^]+)|\([^]+\))+\)/
-"(abc)"
-"(abc(def)xyz)"
-"((aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa   "
-
-/a(-i)b/
-"ab"
-"Ab"
-"aB"
-"AB"
-""
-
-/(a (x)b c)d e/
-"a bcd e"
-"a b cd e"
-"abcd e   "
-"a bcde "
-""
-
-/(a b(x)c d (-x)e f)/
-"a bcde f"
-"abcdef  "
-
-/(a(i)b)c/
-"abc"
-"aBc"
-"abC"
-"aBC  "
-"Abc"
-"ABc"
-"ABC"
-"AbC"
-""
-
-/a(i:b)c/
-"abc"
-"aBc"
-"ABC"
-"abC"
-"aBC"
-""
-
-/a(i:b)*c/
-"aBc"
-"aBBc"
-"aBC"
-"aBBC"
-""
-/a(=b(i)c)\w\wd/
-"abcd"
-"abCd"
-"aBCd"
-"abcD     "
-""
-
-/(s-i:more.*than).*million/
-"more than million"
-"more than MILLION"
-"more \n than Million "
-"MORE THAN MILLION    "
-"more \n than \n million "
-
-/(:(s-i)more.*than).*million/
-"more than million"
-"more than MILLION"
-"more \n than Million "
-"MORE THAN MILLION    "
-"more \n than \n million "
-""
-/(a(i)b+)+c/ "
-"abc"
-"aBbc"
-"aBBc "
-"Abc"
-"abAb    "
-"abbC "
-""
-/(=a(i)b)\w\wc/
-"abc"
-"aBc"
-"Ab "
-"abC"
-"aBC     "
-""
-/=a(i)b(\w\w)c/
-"abxxc"
-"aBxxc"
-"Abxxc"
-"ABxxc"
-"abxxC      "
-
-/(:(a)|b)((1)A|B)/
-"aA"
-"bB"
-"aB"
-"bA    "
-
-/^(a)?((1)a|b)+$/
-"aa"
-"b"
-"bb  "
-"ab   "
-
-/^((=abc)\w<3>:|\d\d)$/
-"abc:"
-"12"
-"123"
-"xyz    "
-
-/^((abc)\d\d|\w<3>:)$/
-"abc:"
-"12"
-"123"
-"xyz    "
-""
-/(=foobar|cat)/
-"foobar"
-"cat"
-"fcat"
-"focat   "
-"foocat  "
-
-/(foocat|bar)/
-"foobar"
-"cat"
-"fcat"
-"focat   "
-"foocat  "
-
-/( \( )? [^3]+ ((1) \) |x) /
-"abcd"
-"(abcd)"
-"the quick (abcd) fox"
-"(abcd   "
-
-/( \( )? [^e]+ ((1) \) ) /
-"abcd"
-"(abcd)"
-"the quick (abcd) fox"
-"(abcd   "
-
-/^((2)a|(1)(2))+$/
-"12"
-"12a"
-"12aa"
-"1234    "
-
-/((i)blah)\s+\1/
-"blah blah"
-"BLAH BLAH"
-"Blah Blah"
-"blaH blaH"
-"blah BLAH"
-"Blah blah      "
-"blaH blah "
-
-/((i)blah)\s+(i:\1)/
-"blah blah"
-"BLAH BLAH"
-"Blah Blah"
-"blaH blaH"
-"blah BLAH"
-"Blah blah      "
-"blaH blah "
-
-/a*/
-"a"
-"aa"
-"aaaa"
-""
-
-/(abc)+/
-"abc"
-"abcabc"
-"abcabcabc"
-"xyz      "
-
-/([a]*)*/
-"a"
-"aaaaa "
-""
-/([ab]*)*/
-"a"
-"b"
-"ababab"
-"aaaabcde"
-"bbbb    "
-""
-/([^a]*)*/
-"b"
-"bbbb"
-"aaa   "
-""
-/([^ab]*)*/
-"cccc"
-"abab  "
-""
-/([a]*)*/
-"a"
-"aaaa "
-""
-/([ab]*)*/
-"a"
-"b"
-"abab"
-"baba   "
-""
-/([^a]*)*/
-"b"
-"bbbb"
-"aaa   "
-""
-/([^ab]*)*/
-"c"
-"cccc"
-"baba   "
-""
-/a*/
-"a"
-"aaabcde "
-""
-/(a*)*/
-"aaaaa"
-"aabbaa "
-""
-/(a*)*/
-"aaaaa"
-"aabbaa "
-
-/((=[^a-z]+[a-z])  \d<2>-[a-z]<3>-\d<2>  |  \d<2>-\d<2>-\d<2> ) /
-"12-sep-98"
-"12-09-98"
-"sep-12-98"
-""
-/=(foo)bar\1/
-"foobarfoo"
-"foobarfootling "
-"foobar"
-"barfoo   "
-
-/(saturday|sunday)/
-"saturday"
-"sunday"
-"Saturday"
-"Sunday"
-"SATURDAY"
-"SUNDAY"
-"SunDay"
-""
-/(a(i)bc|BB)x/
-"abcx"
-"aBCx"
-"bbx"
-"BBx"
-"abcX"
-"aBCX"
-"bbX"
-"BBX               "
-
-/^([ab](i)[cd]|[ef])/
-"ac"
-"aC"
-"bD"
-"elephant"
-"Europe "
-"frog"
-"France"
-"Africa     "
-
-/^(ab|a(i)[b-c](m-i)d|x(i)y|z)/
-"ab"
-"aBd"
-"xy"
-"xY"
-"zebra"
-"Zambesi"
-"aCD  "
-"XY  "
-
-/=foo\n^bar/m"
-"foo\nbar"
-"bar"
-"baz\nbar   "
-
-/=!foobarbaz/
-"barbaz"
-"barbarbaz "
-"koobarbaz "
-"baz"
-"foobarbaz "
-
-/^({a}\1?)<4>$/
-"a"
-"aa"
-"aaa"
-"aaaa"
-"aaaaa"
-"aaaaaa"
-"aaaaaaa"
-"aaaaaaaa"
-"aaaaaaaaa"
-"aaaaaaaaaa"
-"aaaaaaaaaaa"
-"aaaaaaaaaaaa"
-"aaaaaaaaaaaaa"
-"aaaaaaaaaaaaaa"
-"aaaaaaaaaaaaaaa"
-"aaaaaaaaaaaaaaaa               "
-
-/^{{({a}\1?)(a\1?)}(a\2?)}(a\3?)$/
-"a"
-"aa"
-"aaa"
-"aaaa"
-"aaaaa"
-"aaaaaa"
-"aaaaaaa"
-"aaaaaaaa"
-"aaaaaaaaa"
-"aaaaaaaaaa"
-"aaaaaaaaaaa"
-"aaaaaaaaaaaa"
-"aaaaaaaaaaaaa"
-"aaaaaaaaaaaaaa"
-"aaaaaaaaaaaaaaa"
-"aaaaaaaaaaaaaaaa               "
-
-/abc/
-"abc"
-"xabcy"
-"ababc"
-"xbc"
-"axc"
-"abx"
-
-/ab*c/
-"abc"
-
-/ab*bc/
-"abc"
-"abbc"
-"abbbbc"
-
-/.<1>/
-"abbbbc"
-
-/.<3,4>/
-"abbbbc"
-
-/ab<0,>bc/
-"abbbbc"
-
-/ab+bc/
-"abbc"
-"abc"
-"abq"
-
-/ab<1,>bc/
-
-/ab+bc/
-"abbbbc"
-
-/ab<1,>bc/
-"abbbbc"
-
-/ab<1,3>bc/
-"abbbbc"
-
-/ab<3,4>bc/
-"abbbbc"
-
-/ab<4,5>bc/
-"abq"
-"abbbbc"
-
-/ab?bc/
-"abbc"
-"abc"
-
-/ab<0,1>bc/
-"abc"
-
-/ab?bc/
-
-/ab?c/
-"abc"
-
-/ab<0,1>c/
-"abc"
-
-/^abc$/
-"abc"
-"abbbbc"
-"abcc"
-
-/^abc/
-"abcc"
-
-/^abc$/
-
-/abc$/
-"aabc"
-"aabc"
-"aabcd"
-
-/^/
-"abc"
-
-/$/
-"abc"
-
-/a.c/
-"abc"
-"axc"
-
-/a.*c/
-"axyzc"
-
-/a[bc]d/
-"abd"
-"axyzd"
-"abc"
-
-/a[b-d]e/
-"ace"
-
-/a[b-d]/
-"aac"
-
-/a[-b]/
-"a-"
-
-/a[b-]/
-"a-"
-
-/a]/
-"a]"
-
-/a[]]b/
-"a]b"
-
-/a[^bc]d/
-"aed"
-"abd"
-"abd"
-
-/a[^-b]c/
-"adc"
-
-/a[^]b]c/
-"adc"
-"a-c"
-"a]c"
-
-/\ba\b/
-"a-"
-"-a"
-"-a-"
-
-/\by\b/
-"xy"
-"yz"
-"xyz"
-
-/\ba\b/
-"a-"
-"-a"
-"-a-"
-
-/\by\b/
-"xy"
-
-/\by\b/
-"yz"
-
-/\by\b/
-"xyz"
-
-/\w/
-"a"
-
-/\W/
-"-"
-"-"
-"a"
-
-/a\sb/
-"a b"
-
-/a\Sb/
-"a-b"
-"a-b"
-"a b"
-
-/\d/
-"1"
-
-/\D/
-"-"
-"-"
-"1"
-
-/[\w]/
-"a"
-
-/[\W]/
-"-"
-"-"
-"a"
-
-/a[\s]b/
-"a b"
-
-/a[\S]b/
-"a-b"
-"a-b"
-"a b"
-
-/[\d]/
-"1"
-
-/[\D]/
-"-"
-"-"
-"1"
-
-/(ab|cd)/
-"abc"
-"abcd"
-
-/ef/
-"def"
-
-/$b/
-
-/a\(b/
-"a(b"
-
-/a\(*b/
-"ab"
-"a((b"
-
-/a\\b/
-"a\b"
-
-/((a))/
-"abc"
-
-/(a)b(c)/
-"abc"
-
-/a+b+c/
-"aabbabc"
-
-/a<1,>b<1,>c/
-"aabbabc"
-
-/a.+c/
-"abcabc"
-
-/(a+|b)*/
-"ab"
-
-/(a+|b)<0,>/
-"ab"
-
-/(a+|b)+/
-"ab"
-
-/(a+|b)<1,>/
-"ab"
-
-/(a+|b)?/
-"ab"
-
-/(a+|b)<0,1>/
-"ab"
-
-/[^ab]*/
-"cde"
-
-/abc/
-"b"
-""
-
-/a*/
-""
-
-/([abc])*d/
-"abbbcd"
-
-/([abc])*bcd/
-"abcd"
-
-/(a|b|c|d|e)/
-"e"
-
-/(a|b|c|d|e)f/
-"ef"
-
-/abcd*efg/
-"abcdefg"
-
-/ab*/
-"xabyabbbz"
-"xayabbbz"
-
-/(ab|cd)e/
-"abcde"
-
-/[abhgefdc]ij/
-"hij"
-
-/^(ab|cd)e/
-
-/(abc|s)ef/
-"abcdef"
-
-/(a|b)c*d/
-"abcd"
-
-/(ab|ab*)bc/
-"abc"
-
-/a([bc]*)c*/
-"abc"
-
-/a([bc]*)(c*d)/
-"abcd"
-
-/a([bc]+)(c*d)/
-"abcd"
-
-/a([bc]*)(c+d)/
-"abcd"
-
-/a[bcd]*dcdcde/
-"adcdcde"
-
-/a[bcd]+dcdcde/
-"abcde"
-"adcdcde"
-
-/(ab|a)b*c/
-"abc"
-
-/((a)(b)c)(d)/
-"abcd"
-
-/[a-zA-Z_][a-zA-Z0-9_]*/
-"alpha"
-
-/^(a(bc+|b[eh])g|.h)$/
-"abh"
-
-/((Z)+|A)*/
-"ZABCDEFG"
-
-/(Z|A)*/
-"ZABCDEFG"
-
-/(Z()|A)*/
-"ZABCDEFG"
-
-/((Z)+|A)*/
-"ZABCDEFG"
-
-/(\+|A)*/
-"ZABCDEFG"
-
-/a*/
-"abbab"
-
-/^[a-\d]/
-"abcde"
-"-things"
-"0digit"
-"bcdef    "
-
-/^[\d-a]/
-"abcde"
-"-things"
-"0digit"
-"bcdef"
-
-/(=abc).*(=def)/
-"abcdef"
-"abcxdef"
-"abcxdefxdef"
-
-/(=abc).*(=def)/
-"abcdef"
-"abcxdef"
-"abcxdefxdef"
-
-/(abc).*(def)/
-"abcdef"
-"abcxdef"
-"abcxdefxdef"
-
-/(abc).*(def)/
-"abcdef"
-"abcxdef"
-"abcxdefxdef"
-
-/(abc).+(def)/
-"abcdef"
-"abcxdef"
-"abcxdefxdef"
-
-/(abc).+(def)/
-"abcdef"
-"abcxdef"
-"abcxdefxdef"
-
-/(\b)(.*)/
-"-abcdef"
-"abcdef"
-
-/(\B)(.*)/
-"-abcdef"
-"abcdef"
-
-/^'[ab]'/
-"'a'"
-"'b'"
-"x'a'"
-"'a'x"
-"'ab'"
-
-/^'[ab]'$/
-"'a'"
-"'b'"
-"x'a'"
-"'a'x"
-"'ab'"
-
-/'[ab]'$/
-"'a'"
-"'b'"
-"x'a'"
-"'a'x"
-"'ab'"
-
-/'[ab]'/
-"'a'"
-"'b'"
-"x'a'"
-"'a'x"
-"'ab'"
-
-/abc\x1B/
-"abc"
-"abcE"
-
-/abc[\x1Bx]/
-"abcx"
-"abcE"
-
-/^\Qa*\x1B$/
-"a*"
-"a"
-
-/\Qa*x\x1B/
-"a*x"
-"a*"
-
-/\Qa*x/
-"a*x"
-"a*"
-
-/\Q\Qa*x\x1B\x1B/
-"a*x"
-"a\\*x"
-
-/\Q\Qa*x\x1B/
-"a*x"
-"a\\*x"
-
-/a\Q[x\x1B]/
-"a[x]"
-"ax"
-
-/a\#comment\Q..."<2>/
-"a"
-"aa"
-
-/a(\#comment\Q...")<2>/
-"a"
-"aa"
-
-/(x)a#\Q"./
-"a."
-"aa"
-
-/ab(.*q)cd/
-"abcdxklqj"
-
-/a(.*$)b/
-"ab"
-
-/.<2>[a-z]/
-"Axi"
+"cataract cataract23"       1 {cataract cataract23} {cataract} {} {} {} {} {} {} {}
+"catatonic catatonic23"     1 {catatonic catatonic23} {catatonic} {} {} {} {} {} {} {}
+"caterpillar caterpillar23" 1 {caterpillar caterpillar23} {caterpillar} {} {} {} {} {} {} {}
+
+
+1/^From +([^ ]+) +[a-zA-Z][a-zA-Z][a-zA-Z] +[a-zA-Z][a-zA-Z][a-zA-Z] +[0-9]?[0-9] +[0-9][0-9]:[0-9][0-9]/
+"From abcd  Mon Sep 01 12:33:02 1997"1 {From abcd  Mon Sep 01 12:33} {} {} {} {} {} {} {} {}
+
+1/^From\s+\S+\s+([a-zA-Z]<3>\s+)<2>\d<1,2>\s+\d\d:\d\d/
+"From abcd  Mon Sep 01 12:33:02 1997"0 {} {} {} {} {} {} {} {} {}
+"From abcd  Mon Sep  1 12:33:02 1997"0 {} {} {} {} {} {} {} {} {}
+"From abcd  Sep 01 12:33:02 1997"0 {} {} {} {} {} {} {} {} {}
+
+1/^12.34/s.".
+"12\n34"0 {} {} {} {} {} {} {} {} {}
+"12\r34"0 {} {} {} {} {} {} {} {} {}
+
+1/\w+(=\t)/
+"the quick brown\t fox"0 {} {} {} {} {} {} {} {} {}
+
+1/foo(bar)(.*)/
+"foobar is foolish see?"1 {foobar is foolish see?} {} {} {} {} {} {} {} {}
+
+1/(:(foo)...|^.<0,2>)bar(.*)/
+"foobar crowbar etc"0 {} {} {} {} {} {} {} {} {}
+"barrel"0 {} {} {} {} {} {} {} {} {}
+"2barrel"0 {} {} {} {} {} {} {} {} {}
+"A barrel"0 {} {} {} {} {} {} {} {} {}
+
+1/^(\D*)(=\d)(123)/
+"abc456"0 {} {} {} {} {} {} {} {} {}
+"abc123"0 {} {} {} {} {} {} {} {} {}
+
+/.^.1.2.3.4.(.# test newlines"
+".i.n.s.i.d.e.)./.
+"1234"0 {} {} {} {} {} {} {} {} {}
+
+/.^.1.2.3.4. #comment in extended re"
+"./.
+"1234"0 {} {} {} {} {} {} {} {} {}
+
+/.#rhubarb"
+".a.b.c.d./.
+"abcd"0 {} {} {} {} {} {} {} {} {}
+
+1/^abcd#rhubarb/
+"abcd"0 {} {} {} {} {} {} {} {} {}
+
+1/^(a)\1<2,3>(.)/
+"aaab"0 {} {} {} {} {} {} {} {} {}
+"aaaab"0 {} {} {} {} {} {} {} {} {}
+"aaaaab"0 {} {} {} {} {} {} {} {} {}
+"aaaaaab"0 {} {} {} {} {} {} {} {} {}
+
+1/(^)abc/
+"the abc"0 {} {} {} {} {} {} {} {} {}
+"abc"0 {} {} {} {} {} {} {} {} {}
+
+1/(=^)abc/
+"abc"0 {} {} {} {} {} {} {} {} {}
+"the abc"0 {} {} {} {} {} {} {} {} {}
+
+1/^[ab]<1,3>(ab*|b)/
+"aabbbbb"1 {aabb} {} {} {} {} {} {} {} {}
+
+1/^[ab]<1,3>(ab*|b)/
+"aabbbbb"1 {aabb} {} {} {} {} {} {} {} {}
+
+1/^[ab]<1,3>(ab*|b)/
+"aabbbbb"1 {aabb} {} {} {} {} {} {} {} {}
+
+1/^[ab]<1,3>(ab*|b)/
+"aabbbbb"1 {aabb} {} {} {} {} {} {} {} {}
+"Alan Other <user\@dom.ain>"0 {} {} {} {} {} {} {} {} {}
+"<user\@dom.ain>"0 {} {} {} {} {} {} {} {} {}
+"user\@dom.ain"0 {} {} {} {} {} {} {} {} {}
+"\"A. Other\" <user.1234\@dom.ain> (a comment)"0 {} {} {} {} {} {} {} {} {}
+"A. Other <user.1234\@dom.ain> (a comment)"0 {} {} {} {} {} {} {} {} {}
+"\"/s=user/ou=host/o=place/prmd=uu.yy/admd= /c=gb/\"\@x400-re.lay"0 {} {} {} {} {} {} {} {} {}
+"A missing angle <user\@some.where"0 {} {} {} {} {} {} {} {} {}
+"The quick brown fox"0 {} {} {} {} {} {} {} {} {}
+
+1/abc\0def\00pqr\000xyz\0000AB/
+"abc\0def\00pqr\000xyz\0000AB"0 {} {} {} {} {} {} {} {} {}
+"abc456 abc\0def\00pqr\000xyz\0000ABCDE"0 {} {} {} {} {} {} {} {} {}
+
+1/abc\x0def\x00pqr\x000xyz\x0000AB/
+"abc\x0def\x00pqr\x000xyz\x0000AB"0 {} {} {} {} {} {} {} {} {}
+"abc456 abc\x0def\x00pqr\x000xyz\x0000ABCDE"0 {} {} {} {} {} {} {} {} {}
+
+1/^[\000-\037]/
+"\0A"0 {} {} {} {} {} {} {} {} {}
+"\01B"0 {} {} {} {} {} {} {} {} {}
+"\037C"0 {} {} {} {} {} {} {} {} {}
+
+1/\0*/
+"\0\0\0\0"1 {0} {} {} {} {} {} {} {} {}
+
+1/A\x0<2,3>Z/
+"The A\x0\x0Z"0 {} {} {} {} {} {} {} {} {}
+"An A\0\x0\0Z"0 {} {} {} {} {} {} {} {} {}
+"A\0Z"0 {} {} {} {} {} {} {} {} {}
+"A\0\x0\0\x0Z"0 {} {} {} {} {} {} {} {} {}
+
+1/^(cow|)\1(bell)/
+"cowcowbell"0 {} {} {} {} {} {} {} {} {}
+"bell"1 {bell} {} {} {} {} {} {} {} {}
+"cowbell"1 {cowbell} {} {} {} {} {} {} {} {}
+
+1/^\s/
+"\040abc"0 {} {} {} {} {} {} {} {} {}
+"\x0cabc"0 {} {} {} {} {} {} {} {} {}
+"\nabc"0 {} {} {} {} {} {} {} {} {}
+"\rabc"0 {} {} {} {} {} {} {} {} {}
+"\tabc"0 {} {} {} {} {} {} {} {} {}
+"abc"0 {} {} {} {} {} {} {} {} {}
+
+/.^.a.	b.".
+""0 {} {} {} {} {} {} {} {} {}
+".  c./.
+"abc"0 {} {} {} {} {} {} {} {} {}
+
+1/^(a|)\1*b/
+"ab"1 {ab} {} {} {} {} {} {} {} {}
+"aaaab"0 {} {} {} {} {} {} {} {} {}
+"b"1 {b} {} {} {} {} {} {} {} {}
+"acb"0 {} {} {} {} {} {} {} {} {}
+
+1/^(a|)\1+b/
+"aab"0 {} {} {} {} {} {} {} {} {}
+"aaaab"0 {} {} {} {} {} {} {} {} {}
+"b"1 {b} {} {} {} {} {} {} {} {}
+"ab"1 {ab} {} {} {} {} {} {} {} {}
+
+1/^(a|)\1?b/
+"ab"1 {ab} {} {} {} {} {} {} {} {}
+"aab"0 {} {} {} {} {} {} {} {} {}
+"b"1 {b} {} {} {} {} {} {} {} {}
+"acb"0 {} {} {} {} {} {} {} {} {}
+
+1/^(a|)\1<2>b/
+"aaab"0 {} {} {} {} {} {} {} {} {}
+"b"0 {} {} {} {} {} {} {} {} {}
+"ab"0 {} {} {} {} {} {} {} {} {}
+"aab"0 {} {} {} {} {} {} {} {} {}
+"aaaab"0 {} {} {} {} {} {} {} {} {}
+
+1/^(a|)\1<2,3>b/
+"aaab"0 {} {} {} {} {} {} {} {} {}
+"aaaab"0 {} {} {} {} {} {} {} {} {}
+"b"0 {} {} {} {} {} {} {} {} {}
+"ab"0 {} {} {} {} {} {} {} {} {}
+"aab"0 {} {} {} {} {} {} {} {} {}
+"aaaaab"0 {} {} {} {} {} {} {} {} {}
+
+1/ab<1,3>bc/
+"abbbbc"1 {abbbbc} {} {} {} {} {} {} {} {}
+"abbbc"0 {} {} {} {} {} {} {} {} {}
+"abbc"0 {} {} {} {} {} {} {} {} {}
+"abc"0 {} {} {} {} {} {} {} {} {}
+"abbbbbc"0 {} {} {} {} {} {} {} {} {}
+
+1/([^.]*)\.([^:]*):[T ]+(.*)/
+"track1.title:TBlah blah blah"1 {track1.title:TBlah blah blah} {} {} {} {} {} {} {} {}
+
+1/([^.]*)\.([^:]*):[T ]+(.*)/
+"track1.title:TBlah blah blah"1 {track1.title:TBlah blah blah} {} {} {} {} {} {} {} {}
+
+1/([^.]*)\.([^:]*):[t ]+(.*)/
+"track1.title:TBlah blah blah"0 {} {} {} {} {} {} {} {} {}
+
+1/^[W-c]+$/
+"WXY_^abc"1 {WXY_^abc} {} {} {} {} {} {} {} {}
+"wxy"0 {} {} {} {} {} {} {} {} {}
+
+1/^[W-c]+$/
+"WXY_^abc"1 {WXY_^abc} {} {} {} {} {} {} {} {}
+"wxy_^ABC"0 {} {} {} {} {} {} {} {} {}
+
+1/^[\x3f-\x5F]+$/
+"WXY_^abc"0 {} {} {} {} {} {} {} {} {}
+"wxy_^ABC"0 {} {} {} {} {} {} {} {} {}
+
+1/^abc$/m.".
+"abc"1 {abc} {} {} {} {} {} {} {} {}
+"qqq\nabc"0 {} {} {} {} {} {} {} {} {}
+"abc\nzzz"0 {} {} {} {} {} {} {} {} {}
+"qqq\nabc\nzzz"0 {} {} {} {} {} {} {} {} {}
+
+1/^abc$/
+"abc"1 {abc} {} {} {} {} {} {} {} {}
+"qqq\nabc"0 {} {} {} {} {} {} {} {} {}
+"abc\nzzz"0 {} {} {} {} {} {} {} {} {}
+"qqq\nabc\nzzz"0 {} {} {} {} {} {} {} {} {}
+
+1/\Aabc\Z/m.".
+"abc"0 {} {} {} {} {} {} {} {} {}
+"abc\n "0 {} {} {} {} {} {} {} {} {}
+"qqq\nabc"0 {} {} {} {} {} {} {} {} {}
+"abc\nzzz"0 {} {} {} {} {} {} {} {} {}
+"qqq\nabc\nzzz"0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/\A(.)*\Z/s.".
+"abc\ndef"0 {} {} {} {} {} {} {} {} {}
+
+1/\A(.)*\Z/m.".
+"abc\ndef"0 {} {} {} {} {} {} {} {} {}
+
+1/(:b|::+)/
+"b::c"1 {::} {} {} {} {} {} {} {} {}
+"c::b"1 {::} {} {} {} {} {} {} {} {}
+
+1/[-az]+/
+"az-"1 {az-} {} {} {} {} {} {} {} {}
+"b"0 {} {} {} {} {} {} {} {} {}
+
+1/[az-]+/
+"za-"1 {za-} {} {} {} {} {} {} {} {}
+"b"0 {} {} {} {} {} {} {} {} {}
+
+1/[a\-z]+/
+"a-z"1 {a-z} {} {} {} {} {} {} {} {}
+"b"0 {} {} {} {} {} {} {} {} {}
+
+1/[a-z]+/
+"abcdxyz"1 {abcdxyz} {} {} {} {} {} {} {} {}
+
+1/[\d-]+/
+"12-34"1 {12-34} {} {} {} {} {} {} {} {}
+"aaa"0 {} {} {} {} {} {} {} {} {}
+
+1/[\d-z]+/
+"12-34z"1 {12-34z} {} {} {} {} {} {} {} {}
+"aaa"1 {aaa} {} {} {} {} {} {} {} {}
+
+1/\x5c/
+"\\"1 {\} {} {} {} {} {} {} {} {}
+
+1/\x20Z/
+"the Zoo"1 { Z} {} {} {} {} {} {} {} {}
+"Zulu"0 {} {} {} {} {} {} {} {} {}
+
+1/(abc)\1/
+"abcabc"1 {abc} {} {} {} {} {} {} {} {}
+"ABCabc"1 {abc} {} {} {} {} {} {} {} {}
+"abcABC"1 {abc} {} {} {} {} {} {} {} {}
+
+1/ab\<3cd/
+"ab<3cd"1 {ab<3cd} {} {} {} {} {} {} {} {}
+
+1/ab\<3,cd/
+"ab\<3,cd"0 {} {} {} {} {} {} {} {} {}
+
+1/ab\<3,4a>cd/
+"ab\<3,4a>cd"0 {} {} {} {} {} {} {} {} {}
+
+1/\<4,5a\>bc/
+"\<4,5a\>bc"0 {} {} {} {} {} {} {} {} {}
+
+1/^a.b/
+"a\rb"0 {} {} {} {} {} {} {} {} {}
+"a\nb"0 {} {} {} {} {} {} {} {} {}
+
+1/abc$/
+"abc"1 {abc} {} {} {} {} {} {} {} {}
+"abc\n"0 {} {} {} {} {} {} {} {} {}
+"abc\ndef"0 {} {} {} {} {} {} {} {} {}
+
+1/(abc)\0123/
+"abc\x53"0 {} {} {} {} {} {} {} {} {}
+
+1/(abc)\0223/
+"abc\x93"0 {} {} {} {} {} {} {} {} {}
+
+1/(abc)\0323/
+"abc\xd3"0 {} {} {} {} {} {} {} {} {}
+
+1/(abc)\0500/
+"abc\x40"0 {} {} {} {} {} {} {} {} {}
+"abc\100"0 {} {} {} {} {} {} {} {} {}
+
+1/(abc)\05000/
+"abc\x400"0 {} {} {} {} {} {} {} {} {}
+"abc\x40\x30"0 {} {} {} {} {} {} {} {} {}
+"abc\1000"0 {} {} {} {} {} {} {} {} {}
+"abc\100\x30"0 {} {} {} {} {} {} {} {} {}
+"abc\100\060"0 {} {} {} {} {} {} {} {} {}
+"abc\100\60"0 {} {} {} {} {} {} {} {} {}
+
+1/abc\081/
+"abc\081"0 {} {} {} {} {} {} {} {} {}
+"abc\0\x38\x31"0 {} {} {} {} {} {} {} {} {}
+
+1/abc\91/
+"abc\091"0 {} {} {} {} {} {} {} {} {}
+"abc\0\x39\x31"0 {} {} {} {} {} {} {} {} {}
+
+1/(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)(k)(l)\12\123/
+"abcdefghijkllS"0 {} {} {} {} {} {} {} {} {}
+
+1/(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)(k)\12\123/
+"abcdefghijk\12S"0 {} {} {} {} {} {} {} {} {}
+
+1/ab\gdef/
+"abgdef"1 {abgdef} {} {} {} {} {} {} {} {}
+
+1/a<0>bc/
+"bc"1 {bc} {} {} {} {} {} {} {} {}
+
+1/(a|(bc))<0,0>xyz/
+"xyz"1 {xyz} {} {} {} {} {} {} {} {}
+
+1/abc[\10]de/
+"abc\010de"0 {} {} {} {} {} {} {} {} {}
+
+1/abc[\1]de/
+"abc\1de"0 {} {} {} {} {} {} {} {} {}
+
+1/(abc)[\1]de/
+"abc\1de"0 {} {} {} {} {} {} {} {} {}
+
+1/a.b(s)/
+"a\nb"0 {} {} {} {} {} {} {} {} {}
+
+1/^([^a])([^\b])([^c]*)([^d]<3,4>)/
+"baNOTccccd"1 {baNOTcccc} {} {} {} {} {} {} {} {}
+"baNOTcccd"1 {baNOTccc} {} {} {} {} {} {} {} {}
+"baNOTccd"0 {} {} {} {} {} {} {} {} {}
+"bacccd"1 {baccc} {} {} {} {} {} {} {} {}
+"anything"0 {} {} {} {} {} {} {} {} {}
+"b\bc   "1 {b\bc   } {} {} {} {} {} {} {} {}
+"baccd"0 {} {} {} {} {} {} {} {} {}
+
+1/[^a]/
+"Abc"1 {A} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/[^a]/
+"Abc "1 {A} {} {} {} {} {} {} {} {}
+
+1/[^a]+/
+"AAAaAbc"1 {AAA} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/[^a]+/
+"AAAaAbc "1 {AAA} {} {} {} {} {} {} {} {}
+
+1/[^a]+/
+"bbb\nccc"1 {bbb\nccc} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/[^k]$/
+"abc"1 {c} {} {} {} {} {} {} {} {}
+"abk   "1 { } {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/[^k]<2,3>$/
+"abc"1 {abc} {} {} {} {} {} {} {} {}
+"kbc"1 {bc} {} {} {} {} {} {} {} {}
+"kabc "1 {bc } {} {} {} {} {} {} {} {}
+"abk"0 {} {} {} {} {} {} {} {} {}
+"akb"0 {} {} {} {} {} {} {} {} {}
+"akk "0 {} {} {} {} {} {} {} {} {}
+
+1/^\d<8,>\@.+[^k]$/
+"12345678\@a.b.c.d"0 {} {} {} {} {} {} {} {} {}
+"123456789\@x.y.z"0 {} {} {} {} {} {} {} {} {}
+"12345678\@x.y.uk"0 {} {} {} {} {} {} {} {} {}
+"1234567\@a.b.c.d       "0 {} {} {} {} {} {} {} {} {}
+
+1/(a)\1<8,>/
+"aaaaaaaaa"0 {} {} {} {} {} {} {} {} {}
+"aaaaaaaaaa"0 {} {} {} {} {} {} {} {} {}
+"aaaaaaa   "0 {} {} {} {} {} {} {} {} {}
+
+1/[^a]/
+"aaaabcd"1 {b} {} {} {} {} {} {} {} {}
+"aaAabcd "1 {A} {} {} {} {} {} {} {} {}
+
+1/[^a]/
+"aaaabcd"1 {b} {} {} {} {} {} {} {} {}
+"aaAabcd "1 {A} {} {} {} {} {} {} {} {}
+
+1/[^az]/
+"aaaabcd"1 {b} {} {} {} {} {} {} {} {}
+"aaAabcd "1 {A} {} {} {} {} {} {} {} {}
+
+1/[^az]/
+"aaaabcd"1 {b} {} {} {} {} {} {} {} {}
+"aaAabcd "1 {A} {} {} {} {} {} {} {} {}
+
+1/\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037\040\041\042\043\044\045\046\047\050\051\052\053\054\055\056\057\060\061\062\063\064\065\066\067\070\071\072\073\074\075\076\077\100\101\102\103\104\105\106\107\110\111\112\113\114\115\116\117\120\121\122\123\124\125\126\127\130\131\132\133\134\135\136\137\140\141\142\143\144\145\146\147\150\151\152\153\154\155\156\157\160\161\162\163\164\165\166\167\170\171\172\173\174\175\176\177\200\201\202\203\204\205\206\207\210\211\212\213\214\215\216\217\220\221\222\223\224\225\226\227\230\231\232\233\234\235\236\237\240\241\242\243\244\245\246\247\250\251\252\253\254\255\256\257\260\261\262\263\264\265\266\267\270\271\272\273\274\275\276\277\300\301\302\303\304\305\306\307\310\311\312\313\314\315\316\317\320\321\322\323\324\325\326\327\330\331\332\333\334\335\336\337\340\341\342\343\344\345\346\347\350\351\352\353\354\355\356\357\360\361\362\363\364\365\366\367\370\371\372\373\374\375\376\377/
+"\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037\040\041\042\043\044\045\046\047\050\051\052\053\054\055\056\057\060\061\062\063\064\065\066\067\070\071\072\073\074\075\076\077\100\101\102\103\104\105\106\107\110\111\112\113\114\115\116\117\120\121\122\123\124\125\126\127\130\131\132\133\134\135\136\137\140\141\142\143\144\145\146\147\150\151\152\153\154\155\156\157\160\161\162\163\164\165\166\167\170\171\172\173\174\175\176\177\200\201\202\203\204\205\206\207\210\211\212\213\214\215\216\217\220\221\222\223\224\225\226\227\230\231\232\233\234\235\236\237\240\241\242\243\244\245\246\247\250\251\252\253\254\255\256\257\260\261\262\263\264\265\266\267\270\271\272\273\274\275\276\277\300\301\302\303\304\305\306\307\310\311\312\313\314\315\316\317\320\321\322\323\324\325\326\327\330\331\332\333\334\335\336\337\340\341\342\343\344\345\346\347\350\351\352\353\354\355\356\357\360\361\362\363\364\365\366\367\370\371\372\373\374\375\376\377"0 {} {} {} {} {} {} {} {} {}
+
+1/P[^*]TAIRE[^*]<1,6>LL/
+"xxxxxxxxxxxPSTAIREISLLxxxxxxxxx"0 {} {} {} {} {} {} {} {} {}
+
+1/P[^*]TAIRE[^*]<1,>LL/
+"xxxxxxxxxxxPSTAIREISLLxxxxxxxxx"0 {} {} {} {} {} {} {} {} {}
+
+1/(\.\d\d[1-9]?)\d+/
+"1.230003938"1 {.230003938} {} {} {} {} {} {} {} {}
+"1.875000282   "1 {.875000282} {} {} {} {} {} {} {} {}
+"1.235  "0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/(\.\d\d((=0)|\d(=\d)))/
+"1.230003938      "0 {} {} {} {} {} {} {} {} {}
+"1.875000282"0 {} {} {} {} {} {} {} {} {}
+"1.235 "0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/ab/
+"ab "1 {ab} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/\b(foo)\s+(\w+)/
+"Food is on the foo table"0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/foo(.*)bar/
+"The food is under the bar in the barn."0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/foo(.*)bar/  ".
+"The food is under the bar in the barn."0 {} {} {} {} {} {} {} {} {}
+
+1/(.*)(\d*)/
+"I have 2 numbers: 53147"1 {I have 2 numbers: 53147} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/(.*)(\d+)/
+"I have 2 numbers: 53147"0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/(.*)(\d*)/
+"I have 2 numbers: 53147"1 {I have 2 numbers: 53147} {} {} {} {} {} {} {} {}
+
+1/(.*)(\d+)/
+"I have 2 numbers: 53147"0 {} {} {} {} {} {} {} {} {}
+
+1/(.*)(\d+)$/
+"I have 2 numbers: 53147"0 {} {} {} {} {} {} {} {} {}
+
+1/(.*)(\d+)$/
+"I have 2 numbers: 53147"0 {} {} {} {} {} {} {} {} {}
+
+1/(.*)\b(\d+)$/
+"I have 2 numbers: 53147"0 {} {} {} {} {} {} {} {} {}
+
+1/(.*\D)(\d+)$/
+"I have 2 numbers: 53147"0 {} {} {} {} {} {} {} {} {}
+
+1/^\D*(123)/
+"ABC123"0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/^(\D*)(=\d)(123)/
+"ABC445"0 {} {} {} {} {} {} {} {} {}
+"ABC123"0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/^[W-]46]/
+"W46]789 "1 {W46]} {} {} {} {} {} {} {} {}
+"-46]789"1 {-46]} {} {} {} {} {} {} {} {}
+"Wall"0 {} {} {} {} {} {} {} {} {}
+"Zebra"0 {} {} {} {} {} {} {} {} {}
+"42"0 {} {} {} {} {} {} {} {} {}
+"[abcd] "0 {} {} {} {} {} {} {} {} {}
+"]abcd["0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/^[W-\]46]/
+"W46]789 "1 {W} {} {} {} {} {} {} {} {}
+"Wall"1 {W} {} {} {} {} {} {} {} {}
+"Zebra"1 {Z} {} {} {} {} {} {} {} {}
+"Xylophone  "1 {X} {} {} {} {} {} {} {} {}
+"42"1 {4} {} {} {} {} {} {} {} {}
+"[abcd] "1 {[} {} {} {} {} {} {} {} {}
+"]abcd["1 {]} {} {} {} {} {} {} {} {}
+"\\backslash "1 {\} {} {} {} {} {} {} {} {}
+"-46]789"0 {} {} {} {} {} {} {} {} {}
+"well"0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/\d\d\/\d\d\/\d\d\d\d/
+"01/01/2000"1 {01/01/2000} {} {} {} {} {} {} {} {}
+
+1/word (:[a-zA-Z0-9]+ )<0,10>otherword/
+"word cat dog elephant mussel cow horse canary baboon snake shark otherword"0 {} {} {} {} {} {} {} {} {}
+"word cat dog elephant mussel cow horse canary baboon snake shark"0 {} {} {} {} {} {} {} {} {}
+
+1/word (:[a-zA-Z0-9]+ )<0,300>otherword/
+"word cat dog elephant mussel cow horse canary baboon snake shark the quick brown fox and the lazy dog and several other words getting close to thirty by now I hope"0 {} {} {} {} {} {} {} {} {}
+
+1/^(a)<0,0>/
+"bcd"0 {} {} {} {} {} {} {} {} {}
+"abc"1 {a} {} {} {} {} {} {} {} {}
+"aab     "1 {aa} {} {} {} {} {} {} {} {}
+
+1/^(a)<0,1>/
+"bcd"0 {} {} {} {} {} {} {} {} {}
+"abc"1 {a} {} {} {} {} {} {} {} {}
+"aab  "1 {a} {} {} {} {} {} {} {} {}
+
+1/^(a)<0,2>/
+"bcd"0 {} {} {} {} {} {} {} {} {}
+"abc"1 {a} {} {} {} {} {} {} {} {}
+"aab  "1 {aa} {} {} {} {} {} {} {} {}
+
+1/^(a)<0,3>/
+"bcd"0 {} {} {} {} {} {} {} {} {}
+"abc"1 {a} {} {} {} {} {} {} {} {}
+"aab"1 {aa} {} {} {} {} {} {} {} {}
+"aaa   "1 {aaa} {} {} {} {} {} {} {} {}
+
+1/^(a)<0,>/
+"bcd"0 {} {} {} {} {} {} {} {} {}
+"abc"1 {a} {} {} {} {} {} {} {} {}
+"aab"1 {aa} {} {} {} {} {} {} {} {}
+"aaa"1 {aaa} {} {} {} {} {} {} {} {}
+"aaaaaaaa    "1 {aaaaaaaa} {} {} {} {} {} {} {} {}
+
+1/^(a)<1,1>/
+"bcd"0 {} {} {} {} {} {} {} {} {}
+"abc"0 {} {} {} {} {} {} {} {} {}
+"aab  "0 {} {} {} {} {} {} {} {} {}
+
+1/^(a)<1,2>/
+"bcd"0 {} {} {} {} {} {} {} {} {}
+"abc"1 {a} {} {} {} {} {} {} {} {}
+"aab  "1 {aa} {} {} {} {} {} {} {} {}
+
+1/^(a)<1,3>/
+"bcd"0 {} {} {} {} {} {} {} {} {}
+"abc"1 {a} {} {} {} {} {} {} {} {}
+"aab"1 {aa} {} {} {} {} {} {} {} {}
+"aaa   "1 {aaa} {} {} {} {} {} {} {} {}
+
+1/^(a)<1,>/
+"bcd"0 {} {} {} {} {} {} {} {} {}
+"abc"1 {a} {} {} {} {} {} {} {} {}
+"aab"1 {aa} {} {} {} {} {} {} {} {}
+"aaa"1 {aaa} {} {} {} {} {} {} {} {}
+"aaaaaaaa    "1 {aaaaaaaa} {} {} {} {} {} {} {} {}
+
+1/.*\.gif/
+"borfle\nbib.gif\nno"0 {} {} {} {} {} {} {} {} {}
+
+1/.<0,>\.gif/
+"borfle\nbib.gif\nno"0 {} {} {} {} {} {} {} {} {}
+
+1/.*\.gif/m.".
+"borfle\nbib.gif\nno"0 {} {} {} {} {} {} {} {} {}
+
+1/.*\.gif/s.".
+"borfle\nbib.gif\nno"0 {} {} {} {} {} {} {} {} {}
+
+1/.*\.gif/m.s.".
+"borfle\nbib.gif\nno"0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/.*$/
+"borfle\nbib.gif\nno"1 {borfle\nbib.gif\nno} {} {} {} {} {} {} {} {}
+
+1/.*$/m.".
+"borfle\nbib.gif\nno"1 {borfle\nbib.gif\nno} {} {} {} {} {} {} {} {}
+
+1/.*$/s.".
+"borfle\nbib.gif\nno"1 {borfle\nbib.gif\nno} {} {} {} {} {} {} {} {}
+
+1/.*$/m.s.".
+"borfle\nbib.gif\nno"1 {borfle\nbib.gif\nno} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/.*$/
+"borfle\nbib.gif\nno\n"1 {borfle\nbib.gif\nno\n} {} {} {} {} {} {} {} {}
+
+1/.*$/m.".
+"borfle\nbib.gif\nno\n"1 {borfle\nbib.gif\nno\n} {} {} {} {} {} {} {} {}
+
+1/.*$/s.".
+"borfle\nbib.gif\nno\n"1 {borfle\nbib.gif\nno\n} {} {} {} {} {} {} {} {}
+
+1/.*$/m.s.".
+"borfle\nbib.gif\nno\n"1 {borfle\nbib.gif\nno\n} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/(.*X|^B)/
+"abcde\n1234Xyz"0 {} {} {} {} {} {} {} {} {}
+"BarFoo "0 {} {} {} {} {} {} {} {} {}
+"abcde\nBar  "0 {} {} {} {} {} {} {} {} {}
+
+1/(.*X|^B)/m.".
+"abcde\n1234Xyz"0 {} {} {} {} {} {} {} {} {}
+"BarFoo "0 {} {} {} {} {} {} {} {} {}
+"abcde\nBar  "0 {} {} {} {} {} {} {} {} {}
+
+1/(.*X|^B)/s.".
+"abcde\n1234Xyz"0 {} {} {} {} {} {} {} {} {}
+"BarFoo "0 {} {} {} {} {} {} {} {} {}
+"abcde\nBar  "0 {} {} {} {} {} {} {} {} {}
+
+1/(.*X|^B)/m.s.".
+"abcde\n1234Xyz"0 {} {} {} {} {} {} {} {} {}
+"BarFoo "0 {} {} {} {} {} {} {} {} {}
+"abcde\nBar  "0 {} {} {} {} {} {} {} {} {}
+
+1/(s)(.*X|^B)/
+"abcde\n1234Xyz"0 {} {} {} {} {} {} {} {} {}
+"BarFoo "0 {} {} {} {} {} {} {} {} {}
+"abcde\nBar  "0 {} {} {} {} {} {} {} {} {}
+
+1/(s:.*X|^B)/
+"abcde\n1234Xyz"0 {} {} {} {} {} {} {} {} {}
+"BarFoo "0 {} {} {} {} {} {} {} {} {}
+"abcde\nBar  "0 {} {} {} {} {} {} {} {} {}
+
+1/^.*B/
+"abc\nB"0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/(s)^.*B/
+"abc\nB"0 {} {} {} {} {} {} {} {} {}
+
+1/(m)^.*B/
+"abc\nB"0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/(ms)^.*B/
+"abc\nB"0 {} {} {} {} {} {} {} {} {}
+
+1/(ms)^B/
+"abc\nB"0 {} {} {} {} {} {} {} {} {}
+
+1/(s)B$/
+"B\n"0 {} {} {} {} {} {} {} {} {}
+
+1/^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]/
+"123456654321"1 {123456654321} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/^\d\d\d\d\d\d\d\d\d\d\d\d/
+"123456654321 "1 {123456654321} {} {} {} {} {} {} {} {}
+
+1/^[\d][\d][\d][\d][\d][\d][\d][\d][\d][\d][\d][\d]/
+"123456654321"1 {123456654321} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/^[abc]<12>/
+"abcabcabcabc"1 {abcabcabcabc} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/^[a-c]<12>/
+"abcabcabcabc"1 {abcabcabcabc} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/^(a|b|c)<12>/
+"abcabcabcabc "1 {abcabcabcabc} {} {} {} {} {} {} {} {}
+
+1/^[abcdefghijklmnopqrstuvwxy0123456789]/
+"n"1 {n} {} {} {} {} {} {} {} {}
+"z "0 {} {} {} {} {} {} {} {} {}
+
+1/abcde<0,0>/
+"abcd"1 {abcd} {} {} {} {} {} {} {} {}
+"abce  "0 {} {} {} {} {} {} {} {} {}
+
+1/ab[cd]<0,0>e/
+"abe"1 {abe} {} {} {} {} {} {} {} {}
+"abcde "1 {abcde} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/ab(c)<0,0>d/
+"abd"1 {abd} {} {} {} {} {} {} {} {}
+"abcd   "1 {abcd} {} {} {} {} {} {} {} {}
+
+1/a(b*)/
+"a"1 {a} {} {} {} {} {} {} {} {}
+"ab"1 {ab} {} {} {} {} {} {} {} {}
+"abbbb"1 {abbbb} {} {} {} {} {} {} {} {}
+"bbbbb    "0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/ab\d<0>e/
+"abe"1 {abe} {} {} {} {} {} {} {} {}
+"ab1e   "1 {ab1e} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/"([^\\"]+|\\.)*"/
+"the \"quick\" brown fox"0 {} {} {} {} {} {} {} {} {}
+"\"the \\\"quick\\\" brown fox\" "0 {} {} {} {} {} {} {} {} {}
+
+1/.*/g.+.".
+"abc"1 {abc} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/\b/g.+.".
+"abc "0 {} {} {} {} {} {} {} {} {}
+
+1/\b/+.g.".
+"abc "0 {} {} {} {} {} {} {} {} {}
+
+1//
+"abc"0 {} {} {} {} {} {} {} {} {}
+
+1/a[^a]b/
+"acb"1 {acb} {} {} {} {} {} {} {} {}
+"a\nb"0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/a.b/
+"acb"1 {acb} {} {} {} {} {} {} {} {}
+"a\nb   "0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/a[^a]b/s.".
+"acb"1 {acb} {} {} {} {} {} {} {} {}
+"a\nb  "0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/a.b/s.".
+"acb"1 {acb} {} {} {} {} {} {} {} {}
+"a\nb  "0 {} {} {} {} {} {} {} {} {}
+
+1/^(b+|a)<1,2>c/
+"bac"1 {bac} {} {} {} {} {} {} {} {}
+"bbac"1 {bbac} {} {} {} {} {} {} {} {}
+"bbbac"1 {bbbac} {} {} {} {} {} {} {} {}
+"bbbbac"1 {bbbbac} {} {} {} {} {} {} {} {}
+"bbbbbac "1 {bbbbbac} {} {} {} {} {} {} {} {}
+
+1/^(b+|a)<1,2>c/
+"bac"1 {bac} {} {} {} {} {} {} {} {}
+"bbac"1 {bbac} {} {} {} {} {} {} {} {}
+"bbbac"1 {bbbac} {} {} {} {} {} {} {} {}
+"bbbbac"1 {bbbbac} {} {} {} {} {} {} {} {}
+"bbbbbac "1 {bbbbbac} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/(\A)x/m.".
+"x\nb\n"0 {} {} {} {} {} {} {} {} {}
+"a\bx\n  "0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/\x0\<ab>/
+"\0<ab> "0 {} {} {} {} {} {} {} {} {}
+
+1/(A|B)*CD/
+"CD "1 {CD} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/(A|B)*CD/
+"CD "1 {CD} {} {} {} {} {} {} {} {}
+
+1/{(AB)*}\1/
+"ABABAB"0 {} {} {} {} {} {} {} {} {}
+
+1/{(AB)*}\1/
+"ABABAB"0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/\(/
+"doesn't matter"0 {} {} {} {} {} {} {} {} {}
+
+1/(x)\2/
+"doesn't matter"0 {} {} {} {} {} {} {} {} {}
+
+1/((a<0,5>)<0,5>)<0,5>[c]/
+"aaaaaaaaaac"1 {aaaaaaaaaac} {} {} {} {} {} {} {} {}
+"aaaaaaaaaa"0 {} {} {} {} {} {} {} {} {}
+
+1/((a<0,5>)<0,5>)*[c]/
+"aaaaaaaaaac"1 {aaaaaaaaaac} {} {} {} {} {} {} {} {}
+"aaaaaaaaaa"0 {} {} {} {} {} {} {} {} {}
+
+1/(\b)*a/
+"a"1 {a} {} {} {} {} {} {} {} {}
+
+1/(a)*b/
+"ab"1 {ab} {} {} {} {} {} {} {} {}
+
+1/(a|)*b/
+"ab"1 {ab} {} {} {} {} {} {} {} {}
+"b"1 {b} {} {} {} {} {} {} {} {}
+"x"0 {} {} {} {} {} {} {} {} {}
+
+1/^(:(a)|(b))*\1\2$/
+"abab"0 {} {} {} {} {} {} {} {} {}
+
+1/abc[^x]def/
+"abcxabcydef"1 {abcydef} {} {} {} {} {} {} {} {}
+
+1/^(a|\1x)*$/
+"aax"1 {aax} {} {} {} {} {} {} {} {}
+"aaxa"1 {aaxa} {} {} {} {} {} {} {} {}
+
+1//
+"@<['']>"0 {} {} {} {} {} {} {} {} {}
+
+1/^(:(a)|(b))*$/
+"ab"0 {} {} {} {} {} {} {} {} {}
+
+1/[\0]/
+"a"0 {} {} {} {} {} {} {} {} {}
+"\0"0 {} {} {} {} {} {} {} {} {}
+
+1/[\1]/
+"a"0 {} {} {} {} {} {} {} {} {}
+"\1"1 {1} {} {} {} {} {} {} {} {}
+
+1/\10/
+"doesn't matter"0 {} {} {} {} {} {} {} {} {}
+
+1/\10/
+"a"0 {} {} {} {} {} {} {} {} {}
+
+1/a\)b/
+"ab"0 {} {} {} {} {} {} {} {} {}
+
+1/[x]/
+"doesn't matter"0 {} {} {} {} {} {} {} {} {}
+
+1/[\]]/
+"doesn't matter"0 {} {} {} {} {} {} {} {} {}
+
+1/[\x]/
+"x"1 {x} {} {} {} {} {} {} {} {}
+"\0"0 {} {} {} {} {} {} {} {} {}
+
+1/((a)*)*/
+"a"1 {a} {} {} {} {} {} {} {} {}
+
+1/{a}\1/
+"a"0 {} {} {} {} {} {} {} {} {}
+
+1/{a}\1/
+"a"0 {} {} {} {} {} {} {} {} {}
+
+1/a(i)a(-i)a/
+"aaa"0 {} {} {} {} {} {} {} {} {}
+"aAa"0 {} {} {} {} {} {} {} {} {}
+"aAA"0 {} {} {} {} {} {} {} {} {}
+
+1/a(i)a(-i)a(i)a(-i)a/
+"aaaaa"0 {} {} {} {} {} {} {} {} {}
+"aAaAa"0 {} {} {} {} {} {} {} {} {}
+"AaAaA"0 {} {} {} {} {} {} {} {} {}
+"aAAAa"0 {} {} {} {} {} {} {} {} {}
+"AaaaA"0 {} {} {} {} {} {} {} {} {}
+"AAAAA"0 {} {} {} {} {} {} {} {} {}
+"aaAAA"0 {} {} {} {} {} {} {} {} {}
+"AAaaa"0 {} {} {} {} {} {} {} {} {}
+
+1/\x/
+"a"0 {} {} {} {} {} {} {} {} {}
+"X"0 {} {} {} {} {} {} {} {} {}
+"\0"0 {} {} {} {} {} {} {} {} {}
+
+1/[a-c-e]/
+"a"1 {a} {} {} {} {} {} {} {} {}
+"b"1 {b} {} {} {} {} {} {} {} {}
+"d"1 {d} {} {} {} {} {} {} {} {}
+"-"0 {} {} {} {} {} {} {} {} {}
+
+1/[b-\d]/
+"b"1 {b} {} {} {} {} {} {} {} {}
+"c"0 {} {} {} {} {} {} {} {} {}
+"d"0 {} {} {} {} {} {} {} {} {}
+"-"0 {} {} {} {} {} {} {} {} {}
+"1"1 {1} {} {} {} {} {} {} {} {}
+
+1/[\d-f]/
+"d"1 {d} {} {} {} {} {} {} {} {}
+"e"1 {e} {} {} {} {} {} {} {} {}
+"f"1 {f} {} {} {} {} {} {} {} {}
+"-"1 {-} {} {} {} {} {} {} {} {}
+"1"1 {1} {} {} {} {} {} {} {} {}
+
+1/[/
+"doesn't matter"0 {} {} {} {} {} {} {} {} {}
+
+1/]/
+"]"1 {]} {} {} {} {} {} {} {} {}
+"a"0 {} {} {} {} {} {} {} {} {}
+
+1/[x]/
+"doesn't matter"0 {} {} {} {} {} {} {} {} {}
+
+1/[\-a-c]/
+"-"1 {-} {} {} {} {} {} {} {} {}
+"a"1 {a} {} {} {} {} {} {} {} {}
+"b"1 {b} {} {} {} {} {} {} {} {}
+"d"0 {} {} {} {} {} {} {} {} {}
+
+1/[a-c\-]/
+"-"1 {-} {} {} {} {} {} {} {} {}
+"a"1 {a} {} {} {} {} {} {} {} {}
+"b"1 {b} {} {} {} {} {} {} {} {}
+"d"0 {} {} {} {} {} {} {} {} {}
+
+1/[\-]/
+"a"0 {} {} {} {} {} {} {} {} {}
+"-"1 {-} {} {} {} {} {} {} {} {}
+
+1/[\-\-]/
+"a"0 {} {} {} {} {} {} {} {} {}
+"-"1 {-} {} {} {} {} {} {} {} {}
+
+1/[\-\-\-]/
+"a"0 {} {} {} {} {} {} {} {} {}
+"-"1 {-} {} {} {} {} {} {} {} {}
+
+1/[\-\-b]/
+"-"1 {-} {} {} {} {} {} {} {} {}
+"a"0 {} {} {} {} {} {} {} {} {}
+"c"0 {} {} {} {} {} {} {} {} {}
+
+1/[b\-\-]/
+"doesn't matter"0 {} {} {} {} {} {} {} {} {}
+
+1/a\</
+"a<"1 {a<} {} {} {} {} {} {} {} {}
+
+1/a\<>/
+"a<>"1 {a<>} {} {} {} {} {} {} {} {}
+
+1/a\<3/
+"a<3"1 {a<3} {} {} {} {} {} {} {} {}
+
+1/a\<3,/
+"a<3,"1 {a<3,} {} {} {} {} {} {} {} {}
+
+1/a<3,3>/
+"a<3,3>"0 {} {} {} {} {} {} {} {} {}
+"a<3,3>"0 {} {} {} {} {} {} {} {} {}
+"aaa"1 {aaa} {} {} {} {} {} {} {} {}
+
+1/a<3,3>/
+"a<3,3>"0 {} {} {} {} {} {} {} {} {}
+"a<3,3>"0 {} {} {} {} {} {} {} {} {}
+"aaa"1 {aaa} {} {} {} {} {} {} {} {}
+
+1/a<3,>/
+"a<3,>"0 {} {} {} {} {} {} {} {} {}
+"a<3, >"0 {} {} {} {} {} {} {} {} {}
+"aaa"1 {aaa} {} {} {} {} {} {} {} {}
+
+1/a<3,>/
+"a<3,>"0 {} {} {} {} {} {} {} {} {}
+"a<3,>"0 {} {} {} {} {} {} {} {} {}
+"aaa"1 {aaa} {} {} {} {} {} {} {} {}
+
+1/\x x/
+"\0 x"0 {} {} {} {} {} {} {} {} {}
+"\0x"0 {} {} {} {} {} {} {} {} {}
+
+1/\x x/
+"\0 x"0 {} {} {} {} {} {} {} {} {}
+"\0x"0 {} {} {} {} {} {} {} {} {}
+
+1/\x 3/
+"\0003"0 {} {} {} {} {} {} {} {} {}
+"\000 3"0 {} {} {} {} {} {} {} {} {}
+"x3"0 {} {} {} {} {} {} {} {} {}
+"x 3"1 {x 3} {} {} {} {} {} {} {} {}
+
+1/\x 3/
+"\0003"0 {} {} {} {} {} {} {} {} {}
+"\000 3"0 {} {} {} {} {} {} {} {} {}
+"x3"0 {} {} {} {} {} {} {} {} {}
+"x 3"1 {x 3} {} {} {} {} {} {} {} {}
+
+1/^a<1>$/
+"a"0 {} {} {} {} {} {} {} {} {}
+"a< 1>"0 {} {} {} {} {} {} {} {} {}
+"a<1>"0 {} {} {} {} {} {} {} {} {}
+
+1/^a<1>$/
+"a"0 {} {} {} {} {} {} {} {} {}
+"a< 1>"0 {} {} {} {} {} {} {} {} {}
+"a<1>"0 {} {} {} {} {} {} {} {} {}
+
+1/\<\>/
+"<>"1 {<>} {} {} {} {} {} {} {} {}
+"a"0 {} {} {} {} {} {} {} {} {}
+
+1/\<1\>/
+"doesn't matter"0 {} {} {} {} {} {} {} {} {}
+
+1/\*/
+"doesn't matter"0 {} {} {} {} {} {} {} {} {}
+
+1/\|/
+"x"0 {} {} {} {} {} {} {} {} {}
+
+1/\0000/
+"\0000"0 {} {} {} {} {} {} {} {} {}
+
+1/a\)b/
+"ab"0 {} {} {} {} {} {} {} {} {}
+
+1/a(i)b/
+"ab"0 {} {} {} {} {} {} {} {} {}
+"aB"0 {} {} {} {} {} {} {} {} {}
+"Ab"0 {} {} {} {} {} {} {} {} {}
+
+1/a(i=a)/
+"doesn't matter"0 {} {} {} {} {} {} {} {} {}
+
+1/a=a\)<100>a/
+"aa"0 {} {} {} {} {} {} {} {} {}
+"xa"0 {} {} {} {} {} {} {} {} {}
+"ax"0 {} {} {} {} {} {} {} {} {}
+
+1/a(=a)<30>a/
+"aa"0 {} {} {} {} {} {} {} {} {}
+"ax"0 {} {} {} {} {} {} {} {} {}
+"xa"0 {} {} {} {} {} {} {} {} {}
+
+1/a<30>a/
+"aa"0 {} {} {} {} {} {} {} {} {}
+"ax"0 {} {} {} {} {} {} {} {} {}
+"xa"0 {} {} {} {} {} {} {} {} {}
+
+1/a(:)<30>a/
+"aa"0 {} {} {} {} {} {} {} {} {}
+"ax"0 {} {} {} {} {} {} {} {} {}
+
+1/a=a*a/
+"aa"0 {} {} {} {} {} {} {} {} {}
+"ax"0 {} {} {} {} {} {} {} {} {}
+"xa"0 {} {} {} {} {} {} {} {} {}
+
+1/a(=a)*a/
+"aa"1 {aa} {} {} {} {} {} {} {} {}
+"ax"0 {} {} {} {} {} {} {} {} {}
+"xa"0 {} {} {} {} {} {} {} {} {}
+
+1/a*a/
+"aa"0 {} {} {} {} {} {} {} {} {}
+"ax"0 {} {} {} {} {} {} {} {} {}
+"xa"0 {} {} {} {} {} {} {} {} {}
+
+1/a(:)*a/
+"aa"1 {aa} {} {} {} {} {} {} {} {}
+"ax"0 {} {} {} {} {} {} {} {} {}
+"xa"0 {} {} {} {} {} {} {} {} {}
+
+1/x=a*a/
+"aa"0 {} {} {} {} {} {} {} {} {}
+"xa"0 {} {} {} {} {} {} {} {} {}
+"ax"0 {} {} {} {} {} {} {} {} {}
+
+1/a=(a)*\1/
+"aa"0 {} {} {} {} {} {} {} {} {}
+
+1/a=(a)*\1/
+"aa"0 {} {} {} {} {} {} {} {} {}
+
+1/(=(a)\1)*aa/
+"aa"1 {aa} {} {} {} {} {} {} {} {}
+
+1/^((a|b)<2,5>)<2>$/
+"aaaaabbbbb"1 {aaaaabbbbb} {} {} {} {} {} {} {} {}
+
+1/^(b*|ba)<1,2>bc/
+"babc"0 {} {} {} {} {} {} {} {} {}
+"bbabc"0 {} {} {} {} {} {} {} {} {}
+"bababc"0 {} {} {} {} {} {} {} {} {}
+"bababbc"0 {} {} {} {} {} {} {} {} {}
+"babababc"0 {} {} {} {} {} {} {} {} {}
+
+1/^a<4,5>(:c|a)c$/
+"aaaaac"0 {} {} {} {} {} {} {} {} {}
+"aaaaaac"1 {aaaaaac} {} {} {} {} {} {} {} {}
+
+1/^(a|)<4,5>(:c|a)c$/
+"aaaaac"0 {} {} {} {} {} {} {} {} {}
+"aaaaaac"1 {aaaaaac} {} {} {} {} {} {} {} {}
+
+1/(m:^).abc$/
+"eeexabc"0 {} {} {} {} {} {} {} {} {}
+"eee\nxabc"0 {} {} {} {} {} {} {} {} {}
+
+1/(m:^)abc/
+"abc"0 {} {} {} {} {} {} {} {} {}
+"\nabc"0 {} {} {} {} {} {} {} {} {}
+
+
+1/^abc/
+"abc"1 {abc} {} {} {} {} {} {} {} {}
+"\nabc"0 {} {} {} {} {} {} {} {} {}
+
+1/\Aabc/
+"abc"0 {} {} {} {} {} {} {} {} {}
+"\nabc"0 {} {} {} {} {} {} {} {} {}
+
+1/barfoo/
+"foo"0 {} {} {} {} {} {} {} {} {}
+"catfood"0 {} {} {} {} {} {} {} {} {}
+"arfootle"0 {} {} {} {} {} {} {} {} {}
+"rfoosh"0 {} {} {} {} {} {} {} {} {}
+"barfoo"1 {barfoo} {} {} {} {} {} {} {} {}
+"towbarfoo"1 {barfoo} {} {} {} {} {} {} {} {}
+
+1/\w<3>barfoo/
+"catfood"0 {} {} {} {} {} {} {} {} {}
+"foo"0 {} {} {} {} {} {} {} {} {}
+"barfoo"0 {} {} {} {} {} {} {} {} {}
+"towbarfoo"1 {towbarfoo} {} {} {} {} {} {} {} {}
+
+1/=(foo)abar/
+"fooabar"0 {} {} {} {} {} {} {} {} {}
+"bar"0 {} {} {} {} {} {} {} {} {}
+"foobbar"0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/\Aabc\z/
+"abc"0 {} {} {} {} {} {} {} {} {}
+"abc\n   "0 {} {} {} {} {} {} {} {} {}
+"qqq\nabc"0 {} {} {} {} {} {} {} {} {}
+"abc\nzzz"0 {} {} {} {} {} {} {} {} {}
+"qqq\nabc\nzzz"0 {} {} {} {} {} {} {} {} {}
+"...*./.).f.o.o.""0 {} {} {} {} {} {} {} {} {}
+".1/this/i.s.2/a/v.e.r.y.3/long/l.i.n.e.4/in/d.e.e.d.5/with/v.e.r.y.6/many/s.l.a.s.h.e.s.7/in/i.t.8/you/s.e.e./.
+"...*./.).f.o.o.""0 {} {} {} {} {} {} {} {} {}
+"/this/is/a/very/long/line/in/deed/with/very/many/slashes/in/and/foo"1 {this} {} {} {} {} {} {} {} {}
+
+1/(\.\d\d[1-9]?)\d+/
+"1.230003938"1 {.230003938} {} {} {} {} {} {} {} {}
+"1.875000282"1 {.875000282} {} {} {} {} {} {} {} {}
+"1.235 "0 {} {} {} {} {} {} {} {} {}
+
+1/^(\w+|\s+)*$/
+"now is the time for all good men to come to the aid of the party"1 {now is the time for all good men to come to the aid of the party} {} {} {} {} {} {} {} {}
+"this is not a line with only words and spaces!"0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/(\d+)(\w)/
+"12345a"1 {12345a} {} {} {} {} {} {} {} {}
+"12345+ "0 {} {} {} {} {} {} {} {} {}
+
+1/(\d+)(\w)/
+"12345a"1 {12345a} {} {} {} {} {} {} {} {}
+"12345+ "0 {} {} {} {} {} {} {} {} {}
+
+1/a+b/
+"aaab"1 {aaab} {} {} {} {} {} {} {} {}
+
+1/(a+)b/
+"aaab"1 {aaab} {} {} {} {} {} {} {} {}
+
+1/(a+)b/
+"aaab"1 {aaab} {} {} {} {} {} {} {} {}
+
+1/b+/
+"aaabbbccc"1 {bbb} {} {} {} {} {} {} {} {}
+
+1/(a+|b+|c*c)/
+"aaabbbbccccd"1 {aaa} {} {} {} {} {} {} {} {}
+
+1/([^]+)|\([^]*\))+/
+"((abc(ade)ufhx"1 {ade)} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/\(([^]+)|\([^]+\))+\)/
+"(abc)"0 {} {} {} {} {} {} {} {} {}
+"(abc(def)xyz)"0 {} {} {} {} {} {} {} {} {}
+"((aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa   "0 {} {} {} {} {} {} {} {} {}
+
+1/a(-i)b/
+"ab"0 {} {} {} {} {} {} {} {} {}
+"Ab"0 {} {} {} {} {} {} {} {} {}
+"aB"0 {} {} {} {} {} {} {} {} {}
+"AB"0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+
+1/(a (x)b c)d e/
+"a bcd e"0 {} {} {} {} {} {} {} {} {}
+"a b cd e"0 {} {} {} {} {} {} {} {} {}
+"abcd e   "0 {} {} {} {} {} {} {} {} {}
+"a bcde "0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+
+1/(a b(x)c d (-x)e f)/
+"a bcde f"0 {} {} {} {} {} {} {} {} {}
+"abcdef  "0 {} {} {} {} {} {} {} {} {}
+
+1/(a(i)b)c/
+"abc"0 {} {} {} {} {} {} {} {} {}
+"aBc"0 {} {} {} {} {} {} {} {} {}
+"abC"0 {} {} {} {} {} {} {} {} {}
+"aBC  "0 {} {} {} {} {} {} {} {} {}
+"Abc"0 {} {} {} {} {} {} {} {} {}
+"ABc"0 {} {} {} {} {} {} {} {} {}
+"ABC"0 {} {} {} {} {} {} {} {} {}
+"AbC"0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+
+1/a(i:b)c/
+"abc"0 {} {} {} {} {} {} {} {} {}
+"aBc"0 {} {} {} {} {} {} {} {} {}
+"ABC"0 {} {} {} {} {} {} {} {} {}
+"abC"0 {} {} {} {} {} {} {} {} {}
+"aBC"0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+
+1/a(i:b)*c/
+"aBc"0 {} {} {} {} {} {} {} {} {}
+"aBBc"0 {} {} {} {} {} {} {} {} {}
+"aBC"0 {} {} {} {} {} {} {} {} {}
+"aBBC"0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/a(=b(i)c)\w\wd/
+"abcd"0 {} {} {} {} {} {} {} {} {}
+"abCd"0 {} {} {} {} {} {} {} {} {}
+"aBCd"0 {} {} {} {} {} {} {} {} {}
+"abcD     "0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+
+1/(s-i:more.*than).*million/
+"more than million"0 {} {} {} {} {} {} {} {} {}
+"more than MILLION"0 {} {} {} {} {} {} {} {} {}
+"more \n than Million "0 {} {} {} {} {} {} {} {} {}
+"MORE THAN MILLION    "0 {} {} {} {} {} {} {} {} {}
+"more \n than \n million "0 {} {} {} {} {} {} {} {} {}
+
+1/(:(s-i)more.*than).*million/
+"more than million"0 {} {} {} {} {} {} {} {} {}
+"more than MILLION"0 {} {} {} {} {} {} {} {} {}
+"more \n than Million "0 {} {} {} {} {} {} {} {} {}
+"MORE THAN MILLION    "0 {} {} {} {} {} {} {} {} {}
+"more \n than \n million "0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/(a(i)b+)+c/ ".
+"abc"0 {} {} {} {} {} {} {} {} {}
+"aBbc"0 {} {} {} {} {} {} {} {} {}
+"aBBc "0 {} {} {} {} {} {} {} {} {}
+"Abc"0 {} {} {} {} {} {} {} {} {}
+"abAb    "0 {} {} {} {} {} {} {} {} {}
+"abbC "0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/(=a(i)b)\w\wc/
+"abc"0 {} {} {} {} {} {} {} {} {}
+"aBc"0 {} {} {} {} {} {} {} {} {}
+"Ab "0 {} {} {} {} {} {} {} {} {}
+"abC"0 {} {} {} {} {} {} {} {} {}
+"aBC     "0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/=a(i)b(\w\w)c/
+"abxxc"0 {} {} {} {} {} {} {} {} {}
+"aBxxc"0 {} {} {} {} {} {} {} {} {}
+"Abxxc"0 {} {} {} {} {} {} {} {} {}
+"ABxxc"0 {} {} {} {} {} {} {} {} {}
+"abxxC      "0 {} {} {} {} {} {} {} {} {}
+
+1/(:(a)|b)((1)A|B)/
+"aA"0 {} {} {} {} {} {} {} {} {}
+"bB"1 {bB} {} {} {} {} {} {} {} {}
+"aB"0 {} {} {} {} {} {} {} {} {}
+"bA    "0 {} {} {} {} {} {} {} {} {}
+
+1/^(a)?((1)a|b)+$/
+"aa"0 {} {} {} {} {} {} {} {} {}
+"b"1 {b} {} {} {} {} {} {} {} {}
+"bb  "0 {} {} {} {} {} {} {} {} {}
+"ab   "0 {} {} {} {} {} {} {} {} {}
+
+1/^((=abc)\w<3>:|\d\d)$/
+"abc:"0 {} {} {} {} {} {} {} {} {}
+"12"1 {12} {} {} {} {} {} {} {} {}
+"123"0 {} {} {} {} {} {} {} {} {}
+"xyz    "0 {} {} {} {} {} {} {} {} {}
+
+1/^((abc)\d\d|\w<3>:)$/
+"abc:"1 {abc:} {} {} {} {} {} {} {} {}
+"12"0 {} {} {} {} {} {} {} {} {}
+"123"0 {} {} {} {} {} {} {} {} {}
+"xyz    "0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/(=foobar|cat)/
+"foobar"0 {} {} {} {} {} {} {} {} {}
+"cat"1 {cat} {} {} {} {} {} {} {} {}
+"fcat"1 {cat} {} {} {} {} {} {} {} {}
+"focat   "1 {cat} {} {} {} {} {} {} {} {}
+"foocat  "1 {cat} {} {} {} {} {} {} {} {}
+
+1/(foocat|bar)/
+"foobar"1 {bar} {} {} {} {} {} {} {} {}
+"cat"0 {} {} {} {} {} {} {} {} {}
+"fcat"0 {} {} {} {} {} {} {} {} {}
+"focat   "0 {} {} {} {} {} {} {} {} {}
+"foocat  "1 {foocat} {} {} {} {} {} {} {} {}
+
+1/( \( )? [^3]+ ((1) \) |x) /
+"abcd"0 {} {} {} {} {} {} {} {} {}
+"(abcd)"0 {} {} {} {} {} {} {} {} {}
+"the quick (abcd) fox"0 {} {} {} {} {} {} {} {} {}
+"(abcd   "0 {} {} {} {} {} {} {} {} {}
+
+1/( \( )? [^e]+ ((1) \) ) /
+"abcd"0 {} {} {} {} {} {} {} {} {}
+"(abcd)"0 {} {} {} {} {} {} {} {} {}
+"the quick (abcd) fox"0 {} {} {} {} {} {} {} {} {}
+"(abcd   "0 {} {} {} {} {} {} {} {} {}
+
+1/^((2)a|(1)(2))+$/
+"12"1 {12} {} {} {} {} {} {} {} {}
+"12a"0 {} {} {} {} {} {} {} {} {}
+"12aa"0 {} {} {} {} {} {} {} {} {}
+"1234    "0 {} {} {} {} {} {} {} {} {}
+
+1/((i)blah)\s+\1/
+"blah blah"0 {} {} {} {} {} {} {} {} {}
+"BLAH BLAH"0 {} {} {} {} {} {} {} {} {}
+"Blah Blah"0 {} {} {} {} {} {} {} {} {}
+"blaH blaH"0 {} {} {} {} {} {} {} {} {}
+"blah BLAH"0 {} {} {} {} {} {} {} {} {}
+"Blah blah      "0 {} {} {} {} {} {} {} {} {}
+"blaH blah "0 {} {} {} {} {} {} {} {} {}
+
+1/((i)blah)\s+(i:\1)/
+"blah blah"0 {} {} {} {} {} {} {} {} {}
+"BLAH BLAH"0 {} {} {} {} {} {} {} {} {}
+"Blah Blah"0 {} {} {} {} {} {} {} {} {}
+"blaH blaH"0 {} {} {} {} {} {} {} {} {}
+"blah BLAH"0 {} {} {} {} {} {} {} {} {}
+"Blah blah      "0 {} {} {} {} {} {} {} {} {}
+"blaH blah "0 {} {} {} {} {} {} {} {} {}
+
+1/a*/
+"a"1 {a} {} {} {} {} {} {} {} {}
+"aa"1 {aa} {} {} {} {} {} {} {} {}
+"aaaa"1 {aaaa} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+
+1/(abc)+/
+"abc"1 {abc} {} {} {} {} {} {} {} {}
+"abcabc"1 {abcabc} {} {} {} {} {} {} {} {}
+"abcabcabc"1 {abcabcabc} {} {} {} {} {} {} {} {}
+"xyz      "0 {} {} {} {} {} {} {} {} {}
+
+1/([a]*)*/
+"a"1 {a} {} {} {} {} {} {} {} {}
+"aaaaa "1 {aaaaa} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/([ab]*)*/
+"a"1 {a} {} {} {} {} {} {} {} {}
+"b"1 {b} {} {} {} {} {} {} {} {}
+"ababab"1 {ababab} {} {} {} {} {} {} {} {}
+"aaaabcde"1 {aaaab} {} {} {} {} {} {} {} {}
+"bbbb    "1 {bbbb} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/([^a]*)*/
+"b"1 {b} {} {} {} {} {} {} {} {}
+"bbbb"1 {bbbb} {} {} {} {} {} {} {} {}
+"aaa   "1 {   } {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/([^ab]*)*/
+"cccc"1 {cccc} {} {} {} {} {} {} {} {}
+"abab  "1 {  } {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/([a]*)*/
+"a"1 {a} {} {} {} {} {} {} {} {}
+"aaaa "1 {aaaa} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/([ab]*)*/
+"a"1 {a} {} {} {} {} {} {} {} {}
+"b"1 {b} {} {} {} {} {} {} {} {}
+"abab"1 {abab} {} {} {} {} {} {} {} {}
+"baba   "1 {baba} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/([^a]*)*/
+"b"1 {b} {} {} {} {} {} {} {} {}
+"bbbb"1 {bbbb} {} {} {} {} {} {} {} {}
+"aaa   "1 {   } {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/([^ab]*)*/
+"c"1 {c} {} {} {} {} {} {} {} {}
+"cccc"1 {cccc} {} {} {} {} {} {} {} {}
+"baba   "1 {   } {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/a*/
+"a"1 {a} {} {} {} {} {} {} {} {}
+"aaabcde "1 {aaa} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/(a*)*/
+"aaaaa"1 {aaaaa} {} {} {} {} {} {} {} {}
+"aabbaa "1 {aa} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/(a*)*/
+"aaaaa"1 {aaaaa} {} {} {} {} {} {} {} {}
+"aabbaa "1 {aa} {} {} {} {} {} {} {} {}
+
+1/((=[^a-z]+[a-z])  \d<2>-[a-z]<3>-\d<2>  |  \d<2>-\d<2>-\d<2> ) /
+"12-sep-98"0 {} {} {} {} {} {} {} {} {}
+"12-09-98"0 {} {} {} {} {} {} {} {} {}
+"sep-12-98"0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/=(foo)bar\1/
+"foobarfoo"0 {} {} {} {} {} {} {} {} {}
+"foobarfootling "0 {} {} {} {} {} {} {} {} {}
+"foobar"0 {} {} {} {} {} {} {} {} {}
+"barfoo   "0 {} {} {} {} {} {} {} {} {}
+
+1/(saturday|sunday)/
+"saturday"1 {saturday} {} {} {} {} {} {} {} {}
+"sunday"1 {sunday} {} {} {} {} {} {} {} {}
+"Saturday"0 {} {} {} {} {} {} {} {} {}
+"Sunday"0 {} {} {} {} {} {} {} {} {}
+"SATURDAY"0 {} {} {} {} {} {} {} {} {}
+"SUNDAY"0 {} {} {} {} {} {} {} {} {}
+"SunDay"0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+1/(a(i)bc|BB)x/
+"abcx"0 {} {} {} {} {} {} {} {} {}
+"aBCx"0 {} {} {} {} {} {} {} {} {}
+"bbx"0 {} {} {} {} {} {} {} {} {}
+"BBx"1 {BBx} {} {} {} {} {} {} {} {}
+"abcX"0 {} {} {} {} {} {} {} {} {}
+"aBCX"0 {} {} {} {} {} {} {} {} {}
+"bbX"0 {} {} {} {} {} {} {} {} {}
+"BBX               "0 {} {} {} {} {} {} {} {} {}
+
+1/^([ab](i)[cd]|[ef])/
+"ac"0 {} {} {} {} {} {} {} {} {}
+"aC"0 {} {} {} {} {} {} {} {} {}
+"bD"0 {} {} {} {} {} {} {} {} {}
+"elephant"1 {e} {} {} {} {} {} {} {} {}
+"Europe "0 {} {} {} {} {} {} {} {} {}
+"frog"1 {f} {} {} {} {} {} {} {} {}
+"France"0 {} {} {} {} {} {} {} {} {}
+"Africa     "0 {} {} {} {} {} {} {} {} {}
+
+1/^(ab|a(i)[b-c](m-i)d|x(i)y|z)/
+"ab"1 {ab} {} {} {} {} {} {} {} {}
+"aBd"0 {} {} {} {} {} {} {} {} {}
+"xy"0 {} {} {} {} {} {} {} {} {}
+"xY"0 {} {} {} {} {} {} {} {} {}
+"zebra"1 {z} {} {} {} {} {} {} {} {}
+"Zambesi"0 {} {} {} {} {} {} {} {} {}
+"aCD  "0 {} {} {} {} {} {} {} {} {}
+"XY  "0 {} {} {} {} {} {} {} {} {}
+
+1/=foo\n^bar/m.".
+"foo\nbar"0 {} {} {} {} {} {} {} {} {}
+"bar"0 {} {} {} {} {} {} {} {} {}
+"baz\nbar   "0 {} {} {} {} {} {} {} {} {}
+
+1/=!foobarbaz/
+"barbaz"0 {} {} {} {} {} {} {} {} {}
+"barbarbaz "0 {} {} {} {} {} {} {} {} {}
+"koobarbaz "0 {} {} {} {} {} {} {} {} {}
+"baz"0 {} {} {} {} {} {} {} {} {}
+"foobarbaz "1 {foobarbaz} {} {} {} {} {} {} {} {}
+
+1/^({a}\1?)<4>$/
+"a"0 {} {} {} {} {} {} {} {} {}
+"aa"0 {} {} {} {} {} {} {} {} {}
+"aaa"0 {} {} {} {} {} {} {} {} {}
+"aaaa"0 {} {} {} {} {} {} {} {} {}
+"aaaaa"0 {} {} {} {} {} {} {} {} {}
+"aaaaaa"0 {} {} {} {} {} {} {} {} {}
+"aaaaaaa"1 {aaaaaaa} {a} {} {} {} {} {} {} {}
+"aaaaaaaa"1 {aaaaaaaa} {a} {} {} {} {} {} {} {}
+"aaaaaaaaa"0 {} {} {} {} {} {} {} {} {}
+"aaaaaaaaaa"0 {} {} {} {} {} {} {} {} {}
+"aaaaaaaaaaa"0 {} {} {} {} {} {} {} {} {}
+"aaaaaaaaaaaa"0 {} {} {} {} {} {} {} {} {}
+"aaaaaaaaaaaaa"0 {} {} {} {} {} {} {} {} {}
+"aaaaaaaaaaaaaa"0 {} {} {} {} {} {} {} {} {}
+"aaaaaaaaaaaaaaa"0 {} {} {} {} {} {} {} {} {}
+"aaaaaaaaaaaaaaaa               "0 {} {} {} {} {} {} {} {} {}
+
+1/^{{({a}\1?)(a\1?)}(a\2?)}(a\3?)$/
+"a"0 {} {} {} {} {} {} {} {} {}
+"aa"0 {} {} {} {} {} {} {} {} {}
+"aaa"0 {} {} {} {} {} {} {} {} {}
+"aaaa"0 {} {} {} {} {} {} {} {} {}
+"aaaaa"0 {} {} {} {} {} {} {} {} {}
+"aaaaaa"1 {aaaaaa} {aaaaa} {aa} {a} {} {} {} {} {}
+"aaaaaaa"1 {aaaaaaa} {aaaaa} {aa} {a} {} {} {} {} {}
+"aaaaaaaa"0 {} {} {} {} {} {} {} {} {}
+"aaaaaaaaa"0 {} {} {} {} {} {} {} {} {}
+"aaaaaaaaaa"0 {} {} {} {} {} {} {} {} {}
+"aaaaaaaaaaa"0 {} {} {} {} {} {} {} {} {}
+"aaaaaaaaaaaa"0 {} {} {} {} {} {} {} {} {}
+"aaaaaaaaaaaaa"0 {} {} {} {} {} {} {} {} {}
+"aaaaaaaaaaaaaa"0 {} {} {} {} {} {} {} {} {}
+"aaaaaaaaaaaaaaa"0 {} {} {} {} {} {} {} {} {}
+"aaaaaaaaaaaaaaaa               "0 {} {} {} {} {} {} {} {} {}
+
+1/abc/
+"abc"1 {abc} {} {} {} {} {} {} {} {}
+"xabcy"1 {abc} {} {} {} {} {} {} {} {}
+"ababc"1 {abc} {} {} {} {} {} {} {} {}
+"xbc"0 {} {} {} {} {} {} {} {} {}
+"axc"0 {} {} {} {} {} {} {} {} {}
+"abx"0 {} {} {} {} {} {} {} {} {}
+
+1/ab*c/
+"abc"1 {abc} {} {} {} {} {} {} {} {}
+
+1/ab*bc/
+"abc"0 {} {} {} {} {} {} {} {} {}
+"abbc"0 {} {} {} {} {} {} {} {} {}
+"abbbbc"0 {} {} {} {} {} {} {} {} {}
+
+1/.<1>/
+"abbbbc"0 {} {} {} {} {} {} {} {} {}
+
+1/.<3,4>/
+"abbbbc"1 {abbb} {} {} {} {} {} {} {} {}
+
+1/ab<0,>bc/
+"abbbbc"0 {} {} {} {} {} {} {} {} {}
+
+1/ab+bc/
+"abbc"0 {} {} {} {} {} {} {} {} {}
+"abc"0 {} {} {} {} {} {} {} {} {}
+"abq"0 {} {} {} {} {} {} {} {} {}
+
+1/ab<1,>bc/
+
+2/ab+bc/
+"abbbbc"0 {} {} {} {} {} {} {} {} {}
+
+1/ab<1,>bc/
+"abbbbc"0 {} {} {} {} {} {} {} {} {}
+
+1/ab<1,3>bc/
+"abbbbc"1 {abbbbc} {} {} {} {} {} {} {} {}
+
+1/ab<3,4>bc/
+"abbbbc"0 {} {} {} {} {} {} {} {} {}
+
+1/ab<4,5>bc/
+"abq"0 {} {} {} {} {} {} {} {} {}
+"abbbbc"0 {} {} {} {} {} {} {} {} {}
+
+1/ab?bc/
+"abbc"1 {abbc} {} {} {} {} {} {} {} {}
+"abc"0 {} {} {} {} {} {} {} {} {}
+
+1/ab<0,1>bc/
+"abc"0 {} {} {} {} {} {} {} {} {}
+
+1/ab?bc/
+
+2/ab?c/
+"abc"2 {abc} {} {} {} {} {} {} {} {}
+
+1/ab<0,1>c/
+"abc"1 {abc} {} {} {} {} {} {} {} {}
+
+1/^abc$/
+"abc"1 {abc} {} {} {} {} {} {} {} {}
+"abbbbc"0 {} {} {} {} {} {} {} {} {}
+"abcc"0 {} {} {} {} {} {} {} {} {}
+
+1/^abc/
+"abcc"1 {abc} {} {} {} {} {} {} {} {}
+
+1/^abc$/
+
+2/abc$/
+"aabc"2 {abc} {} {} {} {} {} {} {} {}
+"aabc"2 {abc} {} {} {} {} {} {} {} {}
+"aabcd"0 {} {} {} {} {} {} {} {} {}
+
+1/^/
+"abc"0 {} {} {} {} {} {} {} {} {}
+
+1/$/
+"abc"0 {} {} {} {} {} {} {} {} {}
+
+1/a.c/
+"abc"1 {abc} {} {} {} {} {} {} {} {}
+"axc"1 {axc} {} {} {} {} {} {} {} {}
+
+1/a.*c/
+"axyzc"0 {} {} {} {} {} {} {} {} {}
+
+1/a[bc]d/
+"abd"1 {abd} {} {} {} {} {} {} {} {}
+"axyzd"0 {} {} {} {} {} {} {} {} {}
+"abc"0 {} {} {} {} {} {} {} {} {}
+
+1/a[b-d]e/
+"ace"1 {ace} {} {} {} {} {} {} {} {}
+
+1/a[b-d]/
+"aac"1 {ac} {} {} {} {} {} {} {} {}
+
+1/a[-b]/
+"a-"1 {a-} {} {} {} {} {} {} {} {}
+
+1/a[b-]/
+"a-"1 {a-} {} {} {} {} {} {} {} {}
+
+1/a]/
+"a]"1 {a]} {} {} {} {} {} {} {} {}
+
+1/a[]]b/
+"a]b"1 {a]b} {} {} {} {} {} {} {} {}
+
+1/a[^bc]d/
+"aed"1 {aed} {} {} {} {} {} {} {} {}
+"abd"0 {} {} {} {} {} {} {} {} {}
+"abd"0 {} {} {} {} {} {} {} {} {}
+
+1/a[^-b]c/
+"adc"1 {adc} {} {} {} {} {} {} {} {}
+
+1/a[^]b]c/
+"adc"1 {adc} {} {} {} {} {} {} {} {}
+"a-c"1 {a-c} {} {} {} {} {} {} {} {}
+"a]c"0 {} {} {} {} {} {} {} {} {}
+
+1/\ba\b/
+"a-"0 {} {} {} {} {} {} {} {} {}
+"-a"0 {} {} {} {} {} {} {} {} {}
+"-a-"0 {} {} {} {} {} {} {} {} {}
+
+1/\by\b/
+"xy"0 {} {} {} {} {} {} {} {} {}
+"yz"0 {} {} {} {} {} {} {} {} {}
+"xyz"0 {} {} {} {} {} {} {} {} {}
+
+1/\ba\b/
+"a-"0 {} {} {} {} {} {} {} {} {}
+"-a"0 {} {} {} {} {} {} {} {} {}
+"-a-"0 {} {} {} {} {} {} {} {} {}
+
+1/\by\b/
+"xy"0 {} {} {} {} {} {} {} {} {}
+
+1/\by\b/
+"yz"0 {} {} {} {} {} {} {} {} {}
+
+1/\by\b/
+"xyz"0 {} {} {} {} {} {} {} {} {}
+
+1/\w/
+"a"1 {a} {} {} {} {} {} {} {} {}
+
+1/\W/
+"-"0 {} {} {} {} {} {} {} {} {}
+"-"0 {} {} {} {} {} {} {} {} {}
+"a"0 {} {} {} {} {} {} {} {} {}
+
+1/a\sb/
+"a b"1 {a b} {} {} {} {} {} {} {} {}
+
+1/a\Sb/
+"a-b"0 {} {} {} {} {} {} {} {} {}
+"a-b"0 {} {} {} {} {} {} {} {} {}
+"a b"0 {} {} {} {} {} {} {} {} {}
+
+1/\d/
+"1"1 {1} {} {} {} {} {} {} {} {}
+
+1/\D/
+"-"0 {} {} {} {} {} {} {} {} {}
+"-"0 {} {} {} {} {} {} {} {} {}
+"1"0 {} {} {} {} {} {} {} {} {}
+
+1/[\w]/
+"a"1 {a} {} {} {} {} {} {} {} {}
+
+1/[\W]/
+"-"0 {} {} {} {} {} {} {} {} {}
+"-"0 {} {} {} {} {} {} {} {} {}
+"a"0 {} {} {} {} {} {} {} {} {}
+
+1/a[\s]b/
+"a b"1 {a b} {} {} {} {} {} {} {} {}
+
+1/a[\S]b/
+"a-b"0 {} {} {} {} {} {} {} {} {}
+"a-b"0 {} {} {} {} {} {} {} {} {}
+"a b"0 {} {} {} {} {} {} {} {} {}
+
+1/[\d]/
+"1"1 {1} {} {} {} {} {} {} {} {}
+
+1/[\D]/
+"-"0 {} {} {} {} {} {} {} {} {}
+"-"0 {} {} {} {} {} {} {} {} {}
+"1"0 {} {} {} {} {} {} {} {} {}
+
+1/(ab|cd)/
+"abc"1 {ab} {} {} {} {} {} {} {} {}
+"abcd"1 {ab} {} {} {} {} {} {} {} {}
+
+1/ef/
+"def"1 {ef} {} {} {} {} {} {} {} {}
+
+1/$b/
+
+2/a\(b/
+"a(b"2 {a(b} {} {} {} {} {} {} {} {}
+
+1/a\(*b/
+"ab"1 {ab} {} {} {} {} {} {} {} {}
+"a((b"1 {a((b} {} {} {} {} {} {} {} {}
+
+1/a\\b/
+"a\b"1 {a\b} {} {} {} {} {} {} {} {}
+
+1/((a))/
+"abc"1 {a} {} {} {} {} {} {} {} {}
+
+1/(a)b(c)/
+"abc"1 {abc} {} {} {} {} {} {} {} {}
+
+1/a+b+c/
+"aabbabc"1 {abc} {} {} {} {} {} {} {} {}
+
+1/a<1,>b<1,>c/
+"aabbabc"1 {abc} {} {} {} {} {} {} {} {}
+
+1/a.+c/
+"abcabc"0 {} {} {} {} {} {} {} {} {}
+
+1/(a+|b)*/
+"ab"1 {ab} {} {} {} {} {} {} {} {}
+
+1/(a+|b)<0,>/
+"ab"1 {ab} {} {} {} {} {} {} {} {}
+
+1/(a+|b)+/
+"ab"1 {ab} {} {} {} {} {} {} {} {}
+
+1/(a+|b)<1,>/
+"ab"1 {ab} {} {} {} {} {} {} {} {}
+
+1/(a+|b)?/
+"ab"1 {a} {} {} {} {} {} {} {} {}
+
+1/(a+|b)<0,1>/
+"ab"1 {a} {} {} {} {} {} {} {} {}
+
+1/[^ab]*/
+"cde"1 {cde} {} {} {} {} {} {} {} {}
+
+1/abc/
+"b"0 {} {} {} {} {} {} {} {} {}
+""0 {} {} {} {} {} {} {} {} {}
+
+1/a*/
+""0 {} {} {} {} {} {} {} {} {}
+
+1/([abc])*d/
+"abbbcd"1 {abbbcd} {} {} {} {} {} {} {} {}
+
+1/([abc])*bcd/
+"abcd"0 {} {} {} {} {} {} {} {} {}
+
+1/(a|b|c|d|e)/
+"e"1 {e} {} {} {} {} {} {} {} {}
+
+1/(a|b|c|d|e)f/
+"ef"1 {ef} {} {} {} {} {} {} {} {}
+
+1/abcd*efg/
+"abcdefg"1 {abcdefg} {} {} {} {} {} {} {} {}
+
+1/ab*/
+"xabyabbbz"1 {ab} {} {} {} {} {} {} {} {}
+"xayabbbz"1 {a} {} {} {} {} {} {} {} {}
+
+1/(ab|cd)e/
+"abcde"1 {cde} {} {} {} {} {} {} {} {}
+
+1/[abhgefdc]ij/
+"hij"1 {hij} {} {} {} {} {} {} {} {}
+
+1/^(ab|cd)e/
+
+2/(abc|s)ef/
+"abcdef"0 {} {} {} {} {} {} {} {} {}
+
+1/(a|b)c*d/
+"abcd"1 {bcd} {} {} {} {} {} {} {} {}
+
+1/(ab|ab*)bc/
+"abc"0 {} {} {} {} {} {} {} {} {}
+
+1/a([bc]*)c*/
+"abc"1 {abc} {} {} {} {} {} {} {} {}
+
+1/a([bc]*)(c*d)/
+"abcd"1 {abcd} {} {} {} {} {} {} {} {}
+
+1/a([bc]+)(c*d)/
+"abcd"1 {abcd} {} {} {} {} {} {} {} {}
+
+1/a([bc]*)(c+d)/
+"abcd"0 {} {} {} {} {} {} {} {} {}
+
+1/a[bcd]*dcdcde/
+"adcdcde"0 {} {} {} {} {} {} {} {} {}
+
+1/a[bcd]+dcdcde/
+"abcde"0 {} {} {} {} {} {} {} {} {}
+"adcdcde"0 {} {} {} {} {} {} {} {} {}
+
+1/(ab|a)b*c/
+"abc"1 {abc} {} {} {} {} {} {} {} {}
+
+1/((a)(b)c)(d)/
+"abcd"1 {abcd} {} {} {} {} {} {} {} {}
+
+1/[a-zA-Z_][a-zA-Z0-9_]*/
+"alpha"1 {alpha} {} {} {} {} {} {} {} {}
+
+1/^(a(bc+|b[eh])g|.h)$/
+"abh"0 {} {} {} {} {} {} {} {} {}
+
+1/((Z)+|A)*/
+"ZABCDEFG"1 {ZA} {} {} {} {} {} {} {} {}
+
+1/(Z|A)*/
+"ZABCDEFG"1 {ZA} {} {} {} {} {} {} {} {}
+
+1/(Z()|A)*/
+"ZABCDEFG"1 {ZA} {} {} {} {} {} {} {} {}
+
+1/((Z)+|A)*/
+"ZABCDEFG"1 {ZA} {} {} {} {} {} {} {} {}
+
+1/(\+|A)*/
+"ZABCDEFG"1 {A} {} {} {} {} {} {} {} {}
+
+1/a*/
+"abbab"1 {a} {} {} {} {} {} {} {} {}
+
+1/^[a-\d]/
+"abcde"1 {a} {} {} {} {} {} {} {} {}
+"-things"0 {} {} {} {} {} {} {} {} {}
+"0digit"1 {0} {} {} {} {} {} {} {} {}
+"bcdef    "0 {} {} {} {} {} {} {} {} {}
+
+1/^[\d-a]/
+"abcde"1 {a} {} {} {} {} {} {} {} {}
+"-things"1 {-} {} {} {} {} {} {} {} {}
+"0digit"1 {0} {} {} {} {} {} {} {} {}
+"bcdef"0 {} {} {} {} {} {} {} {} {}
+
+1/(=abc).*(=def)/
+"abcdef"0 {} {} {} {} {} {} {} {} {}
+"abcxdef"0 {} {} {} {} {} {} {} {} {}
+"abcxdefxdef"0 {} {} {} {} {} {} {} {} {}
+
+1/(=abc).*(=def)/
+"abcdef"0 {} {} {} {} {} {} {} {} {}
+"abcxdef"0 {} {} {} {} {} {} {} {} {}
+"abcxdefxdef"0 {} {} {} {} {} {} {} {} {}
+
+1/(abc).*(def)/
+"abcdef"0 {} {} {} {} {} {} {} {} {}
+"abcxdef"0 {} {} {} {} {} {} {} {} {}
+"abcxdefxdef"0 {} {} {} {} {} {} {} {} {}
+
+1/(abc).*(def)/
+"abcdef"0 {} {} {} {} {} {} {} {} {}
+"abcxdef"0 {} {} {} {} {} {} {} {} {}
+"abcxdefxdef"0 {} {} {} {} {} {} {} {} {}
+
+1/(abc).+(def)/
+"abcdef"0 {} {} {} {} {} {} {} {} {}
+"abcxdef"0 {} {} {} {} {} {} {} {} {}
+"abcxdefxdef"0 {} {} {} {} {} {} {} {} {}
+
+1/(abc).+(def)/
+"abcdef"0 {} {} {} {} {} {} {} {} {}
+"abcxdef"0 {} {} {} {} {} {} {} {} {}
+"abcxdefxdef"0 {} {} {} {} {} {} {} {} {}
+
+1/(\b)(.*)/
+"-abcdef"0 {} {} {} {} {} {} {} {} {}
+"abcdef"0 {} {} {} {} {} {} {} {} {}
+
+1/(\B)(.*)/
+"-abcdef"0 {} {} {} {} {} {} {} {} {}
+"abcdef"0 {} {} {} {} {} {} {} {} {}
+
+1/^'[ab]'/
+"'a'"1 {'a'} {} {} {} {} {} {} {} {}
+"'b'"1 {'b'} {} {} {} {} {} {} {} {}
+"x'a'"0 {} {} {} {} {} {} {} {} {}
+"'a'x"1 {'a'} {} {} {} {} {} {} {} {}
+"'ab'"0 {} {} {} {} {} {} {} {} {}
+
+1/^'[ab]'$/
+"'a'"1 {'a'} {} {} {} {} {} {} {} {}
+"'b'"1 {'b'} {} {} {} {} {} {} {} {}
+"x'a'"0 {} {} {} {} {} {} {} {} {}
+"'a'x"0 {} {} {} {} {} {} {} {} {}
+"'ab'"0 {} {} {} {} {} {} {} {} {}
+
+1/'[ab]'$/
+"'a'"1 {'a'} {} {} {} {} {} {} {} {}
+"'b'"1 {'b'} {} {} {} {} {} {} {} {}
+"x'a'"1 {'a'} {} {} {} {} {} {} {} {}
+"'a'x"0 {} {} {} {} {} {} {} {} {}
+"'ab'"0 {} {} {} {} {} {} {} {} {}
+
+1/'[ab]'/
+"'a'"1 {'a'} {} {} {} {} {} {} {} {}
+"'b'"1 {'b'} {} {} {} {} {} {} {} {}
+"x'a'"1 {'a'} {} {} {} {} {} {} {} {}
+"'a'x"1 {'a'} {} {} {} {} {} {} {} {}
+"'ab'"0 {} {} {} {} {} {} {} {} {}
+
+1/abc\x1B/
+"abc"0 {} {} {} {} {} {} {} {} {}
+"abcE"0 {} {} {} {} {} {} {} {} {}
+
+1/abc[\x1Bx]/
+"abcx"1 {abcx} {} {} {} {} {} {} {} {}
+"abcE"0 {} {} {} {} {} {} {} {} {}
+
+1/^\Qa*\x1B$/
+"a*"0 {} {} {} {} {} {} {} {} {}
+"a"0 {} {} {} {} {} {} {} {} {}
+
+1/\Qa*x\x1B/
+"a*x"0 {} {} {} {} {} {} {} {} {}
+"a*"0 {} {} {} {} {} {} {} {} {}
+
+1/\Qa*x/
+"a*x"0 {} {} {} {} {} {} {} {} {}
+"a*"0 {} {} {} {} {} {} {} {} {}
+
+1/\Q\Qa*x\x1B\x1B/
+"a*x"0 {} {} {} {} {} {} {} {} {}
+"a\\*x"0 {} {} {} {} {} {} {} {} {}
+
+1/\Q\Qa*x\x1B/
+"a*x"0 {} {} {} {} {} {} {} {} {}
+"a\\*x"0 {} {} {} {} {} {} {} {} {}
+
+1/a\Q[x\x1B]/
+"a[x]"0 {} {} {} {} {} {} {} {} {}
+"ax"0 {} {} {} {} {} {} {} {} {}
+
+1/a\#comment\Q..."<2>/
+"a"0 {} {} {} {} {} {} {} {} {}
+"aa"0 {} {} {} {} {} {} {} {} {}
+
+1/a(\#comment\Q...")<2>/
+"a"0 {} {} {} {} {} {} {} {} {}
+"aa"0 {} {} {} {} {} {} {} {} {}
+
+1/(x)a#\Q"./
+"a."0 {} {} {} {} {} {} {} {} {}
+"aa"0 {} {} {} {} {} {} {} {} {}
+
+1/ab(.*q)cd/
+"abcdxklqj"0 {} {} {} {} {} {} {} {} {}
+
+1/a(.*$)b/
+"ab"0 {} {} {} {} {} {} {} {} {}
+
+1/.<2>[a-z]/
+"Axi"1 {Axi} {} {} {} {} {} {} {} {}
 
 
 # This patterns are an adaptation of the test suite created by Glenn Fowler and
@@ -2619,23 +2621,23 @@
 "ac" 1 {ac} {} {} {} {} {} {} {} {}
 
 1/m[ou]'?am+[ae]r\s+([aeae]l[- ])?[gkq]h?[aeu]+([dtz][dhz]?)+af[iy]/
-"muammar qaddafi" 0 {} {} {} {} {} {} {} {} {}
-"mo'ammar gadhafi" 0 {} {} {} {} {} {} {} {} {}
-"muammar kaddafi" 0 {} {} {} {} {} {} {} {} {}
-"muammar qadhafi" 0 {} {} {} {} {} {} {} {} {}
-"muammar gadafi" 0 {} {} {} {} {} {} {} {} {}
-"mu'ammar qadafi" 0 {} {} {} {} {} {} {} {} {}
-"moamar gaddafi" 0 {} {} {} {} {} {} {} {} {}
-"mu'ammar qadhdhafi" 0 {} {} {} {} {} {} {} {} {}
-"muammar khaddafi" 0 {} {} {} {} {} {} {} {} {}
-"muammar ghaddafy" 0 {} {} {} {} {} {} {} {} {}
-"muammar ghadafi" 0 {} {} {} {} {} {} {} {} {}
-"muammar ghaddafi" 0 {} {} {} {} {} {} {} {} {}
-"muamar kaddafi" 0 {} {} {} {} {} {} {} {} {}
-"muammar quathafi" 0 {} {} {} {} {} {} {} {} {}
-"muammar gheddafi" 0 {} {} {} {} {} {} {} {} {}
-"moammar khadafy" 0 {} {} {} {} {} {} {} {} {}
-"moammar qudhafi" 0 {} {} {} {} {} {} {} {} {}
+"muammar qaddafi" 1 {muammar qaddafi} {} {} {} {} {} {} {} {}
+"mo'ammar gadhafi" 1 {mo'ammar gadhafi} {} {} {} {} {} {} {} {}
+"muammar kaddafi" 1 {muammar kaddafi} {} {} {} {} {} {} {} {}
+"muammar qadhafi" 1 {muammar qadhafi} {} {} {} {} {} {} {} {}
+"muammar gadafi" 1 {muammar gadafi} {} {} {} {} {} {} {} {}
+"mu'ammar qadafi" 1 {mu'ammar qadafi} {} {} {} {} {} {} {} {}
+"moamar gaddafi" 1 {moamar gaddafi} {} {} {} {} {} {} {} {}
+"mu'ammar qadhdhafi" 1 {mu'ammar qadhdhafi} {} {} {} {} {} {} {} {}
+"muammar khaddafi" 1 {muammar khaddafi} {} {} {} {} {} {} {} {}
+"muammar ghaddafy" 1 {muammar ghaddafy} {} {} {} {} {} {} {} {}
+"muammar ghadafi" 1 {muammar ghadafi} {} {} {} {} {} {} {} {}
+"muammar ghaddafi" 1 {muammar ghaddafi} {} {} {} {} {} {} {} {}
+"muamar kaddafi" 1 {muamar kaddafi} {} {} {} {} {} {} {} {}
+"muammar quathafi" 1 {muammar quathafi} {} {} {} {} {} {} {} {}
+"muammar gheddafi" 1 {muammar gheddafi} {} {} {} {} {} {} {} {}
+"moammar khadafy" 1 {moammar khadafy} {} {} {} {} {} {} {} {}
+"moammar qudhafi" 1 {moammar qudhafi} {} {} {} {} {} {} {} {}
 
 1/a+(b|c)*d+/
 "aabcdd" 1 {aabcdd} {} {} {} {} {} {} {} {}

@@ -127,23 +127,23 @@ int setglobals(unsigned char *mptext)
                            setblank(rr);
                            break;
                            
-      case "^tempo\Y{\N}" :
+      case "^tempo\y*{\N}" :
                            setblank(rr);
                            break;
                            
-      case "^meter\Y({\N\/\N}|none)" :
+      case "^meter\y*({\N\/\N}|none)" :
                            setblank(rr);
                            break;
                            
-      case "^ppqn\Y{\N}" :
+      case "^ppqn\y*{\N}" :
                            setblank(rr);
                            break;
       
-      case "^globaloose\Y{\N},{(g|\N)}" :
+      case "^globaloose\y*{\N},{(g|\N)}" :
                            setblank(rr);
                            break;
       
-      case "^globalvelvar\Y{\N},{(g|\N)}" :
+      case "^globalvelvar\y*{\N},{(g|\N)}" :
                            setblank(rr);
                            break;   
                            
