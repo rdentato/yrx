@@ -458,12 +458,30 @@ unsigned char rx_matched(rx_result rx)
   return ((rx_extended *)rx)->rxnum;
 }
 
-char *rx_cpy(rx_result rx, unsigned char n, unsigned char *s)
+char *rx_ncpy(rx_result rx, unsigned char n, unsigned char *s,
+                                                           unsigned short len)
 {
+  unsigned short maxlen;
   if ((rx == NULL) || (n > 8) || rx_boc[n] == NULL) return NULL;
-  strncpy((char *)s,(char *)rx_boc[n],rx_eoc[n] - rx_boc[n]);
+  maxlen = rx_eoc[n] - rx_boc[n];
+  if (maxlen > len) maxlen = len;
+  strncpy((char *)s,(char *)rx_boc[n],maxlen);
   s[rx_eoc[n] - rx_boc[n]] = '\0';
   return (char *)s;
+}
+
+char *rx_dup(rx_result rx, unsigned char n)
+{
+  unsigned short maxlen;
+  char *s = NULL;
+  if ((rx == NULL) || (n > 8) || rx_boc[n] == NULL) return NULL;
+  maxlen = rx_eoc[n] - rx_boc[n];
+  s = malloc(maxlen+1);
+  if (s) {
+    rx_ncpy(rx,n,s);
+    s[maxlen] = '\0';
+  }
+  return s;
 }
 
 rx_result rx_match(const unsigned char *pattern, unsigned char *str, char **err)

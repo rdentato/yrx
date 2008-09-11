@@ -85,7 +85,9 @@ char     *rx_end     (rx_result rx, unsigned char n);
 /* Use |rx_copy()| to fill a buffer (that must be at least of rx_len()+1
 ** bytes) with a zero terminated copy of the nth capture. 
 */
-char     *rx_cpy     (rx_result rx, unsigned char n, unsigned char *s);
+char     *rx_ncpy    (rx_result rx, unsigned char n, unsigned char *s, 
+                                                           unsigned short len);
+#define rx_cpy(r,n,s) rx_ncpy(r,n,s,0xFFFF)
 
 /* Execute a function for every match over a string. The matching results
 ** are passed as arguments to the string. If the string returns a non zero

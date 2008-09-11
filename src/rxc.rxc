@@ -30,6 +30,9 @@ FILE *tmpf;
 FILE *inf;
 FILE *outf;
 
+char resvar[128];
+char strvar[128];
+
 int swnum = 0;
 int rxnum = 0;
 int lnnum = 0;
@@ -94,16 +97,15 @@ int main(int argc, char *argv[])
       
         case IN_CODE :
           RX_SWITCH(r,s) { 
-            case "^\/\*"    : state = IN_COMMENT;
-            case "^\s+"     : 
-            case "^\Q"      : 
-            case "^//.*"    : 
+            case "^\/\*"     : state = IN_COMMENT;
+            case "^\s+"      : 
+            case "^\Q"       : 
+            case "^//.*"     : 
             case "^[^R/c]+" : s = rx_end(r,0);
-                              rx_write(r,0,tmpf);
-                              break;
+                               rx_write(r,0,tmpf);
+                               break;
                
-            case "^case\y*{\Q}\y*:" :
-                              s = rx_end(r,0);
+            case "^case\y*{\Q}\y*:" : s = rx_end(r,0);
                               fprintf(tmpf,"case %d :",++rxnum);
                               rx_end(r,1)[-1] = '\0';
                               err = rx_compile_add(rx_start(r,1)+1,nfa);
@@ -116,17 +118,14 @@ int main(int argc, char *argv[])
             case "^RX_SWITCH\y*\({\I},{(\B()|[^)(]+)+}\)" :
                               s = rx_end(r,0);
                               outrx(sym);
-                              fprintf(tmpf,"switch(rx_matched((");
-                              rx_write(r,1,tmpf);
-                              fprintf(tmpf," = rx_exec(RX_%d,", ++swnum);
-                              rx_write(r,2,tmpf);
-                              fprintf(tmpf,"))))");
-                              
+                              rx_cpy(r,1,resvar);
+                              rx_cpy(r,2,strvar);
+                              fprintf(tmpf,"switch(rx_matched((%s",resvar);
+                              fprintf(tmpf," = rx_exec(RX_%d,%s))))", ++swnum,strvar);
                               rxnum = 0;
                               *nfa = '\0';
                               break;      
-
-                              
+                                   
             default :         if (*s) fputc(*s++,tmpf);
                               break;                        
           }      
