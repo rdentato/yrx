@@ -89,8 +89,24 @@ int main(int argc, char *argv[])
         s++;        
       }
     }
-    if (s) {
-      fprintf(tmpf,"%s",s);
+    while (*s) {
+      switch (*s) {
+        case '"'  : do { fputc(*s++,tmpf); } while (*s && *s != '"');
+                    if (*s == '"')  fputc('"',tmpf);
+                    break;
+                    
+        case '$'  : switch (s[1]) {
+                      case '|' : fprintf(tmpf,"s = rx_end(r,0);");
+                                 s++;
+                                 break;
+                                 
+                      default  : fputc('$',tmpf);
+                    }
+                    break;
+                    
+         default  : fputc(*s,tmpf);
+      }
+      s++;
     }
   }
   

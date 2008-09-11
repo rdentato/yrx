@@ -118,9 +118,9 @@ int main(int argc, char *argv[])
                           break;
                           
         default :         if (*s) {
-                             fputc(*s++,outf);
-                             fputc('.',outf);
-                             }
+                            fputc(*s++,outf);
+                            fputc('.',outf);
+                          }
                           break;                        
       }            
     }
