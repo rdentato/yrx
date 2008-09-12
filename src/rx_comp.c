@@ -981,8 +981,16 @@ static char *compile(const unsigned char *pat, unsigned char *nfa,
   while (*p) {
     /*c=0;*/
     switch (*p) {
-      case '.' : storeop(r,ANY) ;
-                 clo = 1;
+      case ' ' : switch (p[1]) {
+                   case '+' : storeop(r,SPCTAB) ;
+                   case '*' :
+                   case '?' : p++;
+                 }
+                 storeop(r,SPCS) ;
+                 clo = 0;
+                 break;
+      
+      case '.' : storeop(r,ANY);  clo = 1;
                  break;
       
       case '^':  if (p == pat) {

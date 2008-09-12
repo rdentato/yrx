@@ -25,8 +25,9 @@ endif
 
 .rxc.o:
 	rxc $*.rxc >$*.c
-	gcc $(CFLAGS) -c $*.c 
-	$(RM) $*.c
+	gcc $(CFLAGS) -c $*.c
+ 
+	#$(RM) $*.c
 
 # = Build all
 # 
