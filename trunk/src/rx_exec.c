@@ -348,7 +348,7 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
                      of_push(nfa+1+jmparg(nfa), start);
                    }
                    else {
-                  k = jmparg(nfa);
+                     k = jmparg(nfa);
                      /* fprintf(stderr,">>> %d %d %p ->",k,back,nfa);*/
                      nfa += (back ? -k : k);
                      /* fprintf(stderr," %p\n",nfa); fflush(stderr); */
@@ -408,7 +408,7 @@ static unsigned char *match(rx_extended *r, unsigned char *str, const unsigned c
     nfa++;
   }
   
-  if (s == str) return NULL;
+  if (s == str || r->rxnum == 0) return NULL;
 
   return s;
 }
@@ -478,7 +478,7 @@ char *rx_dup(rx_result rx, unsigned char n)
   maxlen = rx_eoc[n] - rx_boc[n];
   s = malloc(maxlen+1);
   if (s) {
-    rx_ncpy(rx,n,s);
+    rx_cpy(rx,n,s);
     s[maxlen] = '\0';
   }
   return s;

@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
         rx_dump_num(stdout,nfa);
         fprintf(stdout,"\n};\n");
       }
-      fprintf(tmpf,"switch(rx_matched((r = rx_exec(RX_%d,s)))) {\n", ++swnum);
+      fprintf(tmpf,"RX_SWITCH(r,s,%d) {\n", ++swnum);
       rxnum = 0;
       *nfa = '\0';
       *s = '\0';
@@ -89,25 +89,8 @@ int main(int argc, char *argv[])
         s++;        
       }
     }
-    while (*s) {
-      switch (*s) {
-        case '"'  : do { fputc(*s++,tmpf); } while (*s && *s != '"');
-                    if (*s == '"')  fputc('"',tmpf);
-                    break;
-                    
-        case '$'  : switch (s[1]) {
-                      case '|' : fprintf(tmpf,"s = rx_end(r,0);");
-                                 s++;
-                                 break;
-                                 
-                      default  : fputc('$',tmpf);
-                    }
-                    break;
-                    
-         default  : fputc(*s,tmpf);
-      }
-      s++;
-    }
+    if (s && *s)
+      fputs(s,tmpf);
   }
   
   if (*nfa) {
@@ -115,6 +98,9 @@ int main(int argc, char *argv[])
     rx_dump_num(stdout,nfa);
     fprintf(stdout,"\n};\n");
   }
+  
+  fputs("#define RX_SWITCH(r,s,n) switch ((r = rx_exec(RX_##n,s))? (s=rx_end(r,0),rx_matched(r)) : 0)\n",stdout);
+
   fputs("#line 1\n",stdout);
   
   fseek(tmpf,SEEK_SET,0);

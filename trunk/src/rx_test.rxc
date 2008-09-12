@@ -76,25 +76,22 @@ int main(int argc, char *argv[])
     while (*s) {
       RX_SWITCH(r,s) { 
                                 
-        case "^\#\y*ERR.*" : s = rx_end(r,0);
-                             break;
+        case "^\# ERR.*" : break;
                              
         case "^\#.*"       :
-        case "^\s+"        : rx_write(r,0,outf);
-                             s = rx_end(r,0);
+        case "^\s+"        : RX_WRITE(0,outf);
                              break;
            
-        case "^\y*\d*{\E\\//#}" :
+        case "^ \d*{\E\\//#}" :
                           if (state == MATCHING) {
                             *nfa = '\0';
                             xprn = 1;      
                             state = READING;                      
                           }
-                          s = rx_end(r,0);
                           fprintf(outf,"%d/",xprn++);
-                          rx_end(r,1)[-1] = '\0';
-                          fwrite(rx_start(r,1)+1,rx_len(r,1)-2,1,outf);
-                          err = rx_compile_add(rx_start(r,1)+1,nfa);
+                          RX_END(1)[-1] = '\0';
+                          fwrite(RX_START(1)+1, RX_LEN(1)-2, 1, outf);
+                          err = rx_compile_add(RX_START(1)+1,nfa);
                           fputc('/',outf);
                           if (err) {
                             fprintf(stderr,"%d:ERR205: %s\n",lnnum,err);
@@ -102,17 +99,16 @@ int main(int argc, char *argv[])
                           }
                           break;
 
-        case "^{\Q}{\y*}[^\n]*" :
+        case "^{\Q}{ }[^\n]*" :
                           state = MATCHING;
-                          s = rx_end(r,0);
-                          rx_write(r,1,outf);
-                          rx_write(r,2,outf);
-                          rx_end(r,1)[-1] = '\0';
-                          r = rx_exec(nfa,rx_start(r,1)+1);
+                          RX_WRITE(1,outf);
+                          RX_WRITE(2,outf);
+                          RX_END(1)[-1] = '\0';
+                          r = rx_exec(nfa,RX_START(1)+1);
                           fprintf(outf,"%d",rx_matched(r));
                           for (c=0; c <= RX_MAXCAPT ; c++) { 
                             fputs(" {",outf);
-                            rx_write(r,c,outf);
+                            RX_WRITE(c,outf);
                             fputs("}",outf);
                           }
                           break;

@@ -62,7 +62,7 @@ void outrx(int sym)
 
 int main(int argc, char *argv[])
 {
-  char *s;
+  char *s,*t;
   char *err;
   int c;
   int state = IN_CODE;
@@ -101,11 +101,10 @@ int main(int argc, char *argv[])
             case "^\s+"      : 
             case "^\Q"       : 
             case "^//.*"     : 
-            case "^[^R/c]+" : s = rx_end(r,0);
-                               rx_write(r,0,tmpf);
+            case "^[^R/c\"]+": rx_write(r,0,tmpf);
                                break;
                
-            case "^case\y*{\Q}\y*:" : s = rx_end(r,0);
+            case "^case {\Q} :" : 
                               fprintf(tmpf,"case %d :",++rxnum);
                               rx_end(r,1)[-1] = '\0';
                               err = rx_compile_add(rx_start(r,1)+1,nfa);
@@ -115,15 +114,21 @@ int main(int argc, char *argv[])
                               }
                               break;
 
-            case "^RX_SWITCH\y*\({\I},{(\B()|[^)(]+)+}\)" :
-                              s = rx_end(r,0);
+            case "^RX_SWITCH \( {\I} , {\I} \)" :
                               outrx(sym);
                               rx_cpy(r,1,resvar);
                               rx_cpy(r,2,strvar);
-                              fprintf(tmpf,"switch(rx_matched((%s",resvar);
-                              fprintf(tmpf," = rx_exec(RX_%d,%s))))", ++swnum,strvar);
+                              fprintf(tmpf,"RX_SWITCH(%s,%s,%d)",resvar,strvar,++swnum);
                               rxnum = 0;
                               *nfa = '\0';
+                              break;      
+
+            case "^RX_{\u+} \(" :
+                              fputs("rx_",tmpf);
+                              t = rx_start(r,1);
+                              while (t < rx_end(r,1))
+                                fputc(tolower(*t++),tmpf);
+                              fprintf(tmpf,"(%s,",resvar);
                               break;      
                                    
             default :         if (*s) fputc(*s++,tmpf);
@@ -135,8 +140,7 @@ int main(int argc, char *argv[])
         
           RX_SWITCH(r,s) {
             case "^\*\/"   : state = IN_CODE;
-            case "^[^\*]+" : s = rx_end(r,0); 
-                             rx_write(r,0,tmpf);
+            case "^[^\*]+" : rx_write(r,0,tmpf);
                              break;
                
             default :        if (*s) fputc(*s++,tmpf);
@@ -151,7 +155,7 @@ int main(int argc, char *argv[])
   }
   
   outrx(sym);
-  
+  fprintf(outf,"#define RX_SWITCH(r,s,n) switch ((r = rx_exec(RX_##n,s))? (s=rx_end(r,0),rx_matched(r)) : 0)\n");
   fprintf(outf,"#line 1 \"%s\"\n",fname);
   
   fseek(tmpf,SEEK_SET,0);
