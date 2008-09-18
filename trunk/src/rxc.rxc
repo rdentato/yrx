@@ -1,5 +1,5 @@
 /* 
-**  (C) 2006 by Remo Dentato (rdentato@users.sourceforge.net)
+**  (C) 2008 by Remo Dentato (rdentato@users.sourceforge.net)
 **
 ** Permission to use, copy, modify and distribute this code and
 ** its documentation for any purpose is hereby granted without
@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
             case "^[^R/c\"]+": rx_write(r,0,tmpf);
                                break;
                
-            case "^case {\Q} :" : 
+            case "^case *{\Q} *:" : 
                               fprintf(tmpf,"case %d :",++rxnum);
                               rx_end(r,1)[-1] = '\0';
                               err = rx_compile_add(rx_start(r,1)+1,nfa);
@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
                               }
                               break;
 
-            case "^RX_SWITCH \( {\I} , {\I} \)" :
+            case "^RX_SWITCH *\( *{\I} *, *{\I} *\)" :
                               outrx(sym);
                               rx_cpy(r,1,resvar);
                               rx_cpy(r,2,strvar);
@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
                               *nfa = '\0';
                               break;      
 
-            case "^RX_{\u+} \(" :
+            case "^RX_{\u+} *\(" :
                               fputs("rx_",tmpf);
                               t = rx_start(r,1);
                               while (t < rx_end(r,1))
