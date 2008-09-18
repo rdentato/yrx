@@ -32,7 +32,7 @@ endif
 # Or simply uncoment next line if you're using mingw
 #SYS=MINGW
 
-## BUILD VARIANTS ###############
+## BUILD TARGETS ###############
 # 
 ifeq ($(BUILD)x,x)
   BUILD=Debug

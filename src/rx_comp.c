@@ -1,5 +1,5 @@
 /* 
-**  (C) 2006 by Remo Dentato (rdentato@users.sourceforge.net)
+**  (C) 2008 by Remo Dentato (rdentato@users.sourceforge.net)
 **
 ** Permission to use, copy, modify and distribute this code and
 ** its documentation for any purpose is hereby granted without
@@ -12,9 +12,6 @@
 ** express or implied warranty.
 **
 */
-#ifdef UTEST
-#define RX_MAXNFA 40
-#endif
 
 #include "rx_.h"
 #include <setjmp.h>
@@ -979,15 +976,21 @@ static char *compile(const unsigned char *pat, unsigned char *nfa,
   store(r,0x80);
   
   while (*p) {
-    /*c=0;*/
     switch (*p) {
-      case ' ' : switch (p[1]) {
-                   case '+' : storeop(r,SPCTAB) ;
-                   case '*' :
-                   case '?' : p++;
+      case ' ' : clo = 0;
+                 switch (p[1]) {
+                   case '*' : storeop(r,SPCS) ;
+                              p++;
+                              break;
+
+                   case '?' : storeop(r,SPCTAB) ;
+                              clo = 1;
+                              break;
+
+                   case '+' : p++;
+                   default  : storeop(r,SPCTAB) ;
+                              storeop(r,SPCS) ;
                  }
-                 storeop(r,SPCS) ;
-                 clo = 0;
                  break;
       
       case '.' : storeop(r,ANY);  clo = 1;
