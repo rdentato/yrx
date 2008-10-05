@@ -979,12 +979,9 @@ static char *compile(const unsigned char *pat, unsigned char *nfa,
     switch (*p) {
       case ' ' : clo = 0;
                  switch (p[1]) {
+                   case '?' :
                    case '*' : storeop(r,SPCS) ;
                               p++;
-                              break;
-
-                   case '?' : storeop(r,SPCTAB) ;
-                              clo = 1;
                               break;
 
                    case '+' : p++;

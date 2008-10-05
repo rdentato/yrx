@@ -1,0 +1,340 @@
+#! /bin/sh
+# This is a shell archive.  Remove anything before this line, then feed it
+# into a shell via "sh file" or similar.  To overwrite existing files,
+# type "sh file -c".
+# The tool that generated this appeared in the comp.sources.unix newsgroup;
+# send mail to comp-sources-u...@uunet.uu.net if you want that tool.
+# Contents:  README wildmat.3 wildmat.c
+# Wrapped by kent@sparky on Wed Apr  3 21:33:55 1991
+PATH=/bin:/usr/bin:/usr/ucb ; export PATH
+echo If this archive is complete, you will see the following message:
+echo '          "shar: End of archive 1 (of 1)."'
+if test -f 'README' -a "${1}" != "-c" ; then
+  echo shar: Will not clobber existing file \"'README'\"
+else
+  echo shar: Extracting \"'README'\" \(1418 characters\)
+  sed "s/^X//" >'README' <<'END_OF_FILE'
+X
+XThis is a revised version of the shell-style pattern matcher posted to
+Xcomp.sources.misc in March.  Lars and I replaced the two mutually-
+Xrecursive routines with in-line code for the star case.  The source also
+Xnow has detailed comments on how the trickier part works.
+X
+XBasically, this routine compares text against a specified pattern
+Xand returns 0 if the text doesn't match the pattern, or non-zero if it
+Xdoes.  The patterns can have the following elements:
+X       *               Any set of characters
+X       ?               Any single character
+X       [...]           Any character in the range ...
+X       [^...]          Any character not in the range ...
+X       \* \? \[        A * ? or [ character
+X       x               The character x
+X
+XFor more details, see the manual page.  There is no Makefile; install
+Xaccording local custom.  It runs on pretty much any machine with a C
+Xcompiler.
+X
+XFrom the original README:
+X    This small routine is an efficient pattern-matcher for shell-style
+X    wildcards.  I wrote and posted it five year ago.  Since then other
+X    people have picked it up (notably Gilmore's TAR).  Others have posted
+X    fixes, which usually introduced bugs (Lars is the notable exception).
+X    It's probably about time that this got archived somewhere ...  I'm not
+X    interested in any other languages, nor particularly in seeing new
+X    features other than performance gains.
+X
+XI hope you find this useful.  I hope you don't pretend that you wrote it.
+X       /rich $alz
+X       <rs...@bbn.com>
+X       April, 1991
+END_OF_FILE
+  if test 1418 -ne `wc -c <'README'`; then
+    echo shar: \"'README'\" unpacked with wrong size!
+  fi
+  # end of 'README'
+fi
+if test -f 'wildmat.3' -a "${1}" != "-c" ; then
+  echo shar: Will not clobber existing file \"'wildmat.3'\"
+else
+  echo shar: Extracting \"'wildmat.3'\" \(1968 characters\)
+  sed "s/^X//" >'wildmat.3' <<'END_OF_FILE'
+X.TH WILDMAT 3
+X.SH NAME
+Xwildmat \- perform shell-style wildcard matching
+X.SH SYNOPSIS
+X.nf
+X.B "int"
+X.B "wildmat(text, pattern)"
+X.B "    char              *text;"
+X.B "    char              *pattern;"
+X.fi
+X.SH DESCRIPTION
+X.I Wildmat
+Xcompares the
+X.I text
+Xagainst the
+X.I pattern
+Xand
+Xreturns non-zero if the pattern matches the text.
+XThe pattern is interpreted similar to shell filename wildcards, and not
+Xas a full regular expression such as those handled by the
+X.IR grep (1)
+Xfamily of programs or the
+X.IR regex (3)
+Xor
+X.IR regexp (3)
+Xset of routines.
+X.PP
+XThe pattern is interpreted according to the following rules:
+X.TP
+X.BI \e x
+XTurns off the special meaning of
+X.I x
+Xand matches it directly; this is used mostly before a question mark or
+Xasterisk, and is not valid inside square brackets.
+X.TP
+X.B ?
+XMatches any single character.
+X.TP
+X.B *
+XMatches any sequence of zero or more characters.
+X.TP
+X.BI [ x...y ]
+XMatches any single character specified by the set
+X.IR x...y ,
+Xwhere any character other than minus sign or close bracket may appear
+Xin the set.
+XA minus sign may be used to indicate a range of characters.
+XThat is,
+X.I [0\-5abc]
+Xis a shorthand for
+X.IR [012345abc] .
+XMore than one range may appear inside a character set;
+X.I [0-9a-zA-Z._]
+Xmatches almost all of the legal characters for a host name.
+X.TP
+X.BI [^ x...y ]
+XThis matches any character
+X.I not
+Xin the set
+X.IR x...y ,
+Xwhich is interpreted as described above.
+X.SH "BUGS"
+XThere is no way to specify a minus sign in a character range.
+X.SH HISTORY
+XWritten by Rich $alz <rs...@bbn.com> in 1986, and posted to Usenet
+Xseveral times since then, most notably in comp.sources.misc in
+XMarch, 1991.
+X.PP
+XLars Mathiesen <thor...@diku.dk> enhanced the multi-asterisk failure
+Xmode in early 1991.
+X.PP
+XRich and Lars increased the efficiency of star patterns and reposted it
+Xto comp.sources.misc in April, 1991.
+X.PP
+X.de R$
+XThis is revision \\$3, dated \\$4.
+X..
+X.R$ $Id: wildmat.3,v 1.4 91/03/25 17:17:19 rsalz Exp $
+X.SH "SEE ALSO"
+Xgrep(1), regex(3), regexp(3).
+END_OF_FILE
+  if test 1968 -ne `wc -c <'wildmat.3'`; then
+    echo shar: \"'wildmat.3'\" unpacked with wrong size!
+  fi
+  # end of 'wildmat.3'
+fi
+if test -f 'wildmat.c' -a "${1}" != "-c" ; then
+  echo shar: Will not clobber existing file \"'wildmat.c'\"
+else
+  echo shar: Extracting \"'wildmat.c'\" \(4645 characters\)
+  sed "s/^X//" >'wildmat.c' <<'END_OF_FILE'
+X/*  $Revision: 1.4 $
+X**
+X**  Do shell-style pattern matching for ?, \, [], and * characters.
+X**  Might not be robust in face of malformed patterns; e.g., "foo[a-"
+X**  could cause a segmentation violation.  It is 8bit clean.
+X**
+X**  Written by Rich $alz, mirror!rs, Wed Nov 26 19:03:17 EST 1986.
+X**  Rich $alz is now <rs...@bbn.com>.
+X**  April, 1991:  Replaced mutually-recursive calls with in-line code
+X**  for the star character.
+X**
+X**  Special thanks to Lars Mathiesen <thor...@diku.dk> for the ABORT code.
+X**  This can greatly speed up failing wildcard patterns.  For example:
+X**     pattern: -*-*-*-*-*-*-12-*-*-*-m-*-*-*
+X**     text 1:  -adobe-courier-bold-o-normal--12-120-75-75-m-70-iso8859-1
+X**     text 2:  -adobe-courier-bold-o-normal--12-120-75-75-X-70-iso8859-1
+X**  Text 1 matches with 51 calls, while text 2 fails with 54 calls.  Without
+X**  the ABORT, then it takes 22310 calls to fail.  Ugh.  The following
+X**  explanation is from Lars:
+X**  The precondition that must be fulfilled is that DoMatch will consume
+X**  at least one character in text.  This is true if *p is neither '*' nor
+X**  '\0'.)  The last return has ABORT instead of FALSE to avoid quadratic
+X**  behaviour in cases like pattern "*a*b*c*d" with text "abcxxxxx".  With
+X**  FALSE, each star-loop has to run to the end of the text; with ABORT
+X**  only the last one does.
+X**
+X**  Once the control of one instance of DoMatch enters the star-loop, that
+X**  instance will return either TRUE or ABORT, and any calling instance
+X**  will therefore return immediately after (without calling recursively
+X**  again).  In effect, only one star-loop is ever active.  It would be
+X**  possible to modify the code to maintain this context explicitly,
+X**  eliminating all recursive calls at the cost of some complication and
+X**  loss of clarity (and the ABORT stuff seems to be unclear enough by
+X**  itself).  I think it would be unwise to try to get this into a
+X**  released version unless you have a good test data base to try it out
+X**  on.
+X*/
+X
+X#define TRUE                   1
+X#define FALSE                  0
+X#define ABORT                  -1
+X
+X
+X    /* What character marks an inverted character class? */
+X#define NEGATE_CLASS           '^'
+X    /* Is "*" a common pattern? */
+X#define OPTIMIZE_JUST_STAR
+X    /* Do tar(1) matching rules, which ignore a trailing slash? */
+X#undef MATCH_TAR_PATTERN
+X
+X
+X/*
+X**  Match text and p, return TRUE, FALSE, or ABORT.
+X*/
+Xstatic int
+XDoMatch(text, p)
+X    register char      *text;
+X    register char      *p;
+X{
+X    register int       last;
+X    register int       matched;
+X    register int       reverse;
+X
+X    for ( ; *p; text++, p++) {
+X       if (*text == '\0' && *p != '*')
+X           return ABORT;
+X       switch (*p) {
+X       case '\\':
+X           /* Literal match with following character. */
+X           p++;
+X           /* FALLTHROUGH */
+X       default:
+X           if (*text != *p)
+X               return FALSE;
+X           continue;
+X       case '?':
+X           /* Match anything. */
+X           continue;
+X       case '*':
+X           while (*++p == '*')
+X               /* Consecutive stars act just like one. */
+X               continue;
+X           if (*p == '\0')
+X               /* Trailing star matches everything. */
+X               return TRUE;
+X           while (*text)
+X               if ((matched = DoMatch(text++, p)) != FALSE)
+X                   return matched;
+X           return ABORT;
+X       case '[':
+X           reverse = p[1] == NEGATE_CLASS ? TRUE : FALSE;
+X           if (reverse)
+X               /* Inverted character class. */
+X               p++;
+X           for (last = 0400, matched = FALSE; *++p && *p != ']'; last = *p)
+X               /* This next line requires a good C compiler. */
+X               if (*p == '-' ? *text <= *++p && *text >= last : *text == *p)
+X                   matched = TRUE;
+X           if (matched == reverse)
+X               return FALSE;
+X           continue;
+X       }
+X    }
+X
+X#ifdef MATCH_TAR_PATTERN
+X    if (*text == '/')
+X       return TRUE;
+X#endif /* MATCH_TAR_ATTERN */
+X    return *text == '\0';
+X}
+X
+X
+X/*
+X**  User-level routine.  Returns TRUE or FALSE.
+X*/
+Xint
+Xwildmat(text, p)
+X    char       *text;
+X    char       *p;
+X{
+X#ifdef OPTIMIZE_JUST_STAR
+X    if (p[0] == '*' && p[1] == '\0')
+X       return TRUE;
+X#endif /* OPTIMIZE_JUST_STAR */
+X    return DoMatch(text, p) == TRUE;
+X}
+X
+X
+X
+X#ifdef TEST
+X#include <stdio.h>
+X
+X/* Yes, we use gets not fgets.  Sue me. */
+Xextern char    *gets();
+X
+X
+Xmain()
+X{
+X    char        p[80];
+X    char        text[80];
+X
+X    printf("Wildmat tester.  Enter pattern, then strings to test.\n");
+X    printf("A blank line gets prompts for a new pattern; a blank pattern\n");
+X    printf("exits the program.\n");
+X
+X    for ( ; ; ) {
+X       printf("\nEnter pattern:  ");
+X       (void)fflush(stdout);
+X       if (gets(p) == NULL || p[0] == '\0')
+X           break;
+X       for ( ; ; ) {
+X           printf("Enter text:  ");
+X           (void)fflush(stdout);
+X           if (gets(text) == NULL)
+X               exit(0);
+X           if (text[0] == '\0')
+X               /* Blank line; go back and get a new pattern. */
+X               break;
+X           printf("      %s\n", wildmat(text, p) ? "YES" : "NO");
+X       }
+X    }
+X
+X    exit(0);
+X    /* NOTREACHED */
+X}
+X#endif /* TEST */
+END_OF_FILE
+  if test 4645 -ne `wc -c <'wildmat.c'`; then
+    echo shar: \"'wildmat.c'\" unpacked with wrong size!
+  fi
+  # end of 'wildmat.c'
+fi
+echo shar: End of archive 1 \(of 1\).
+cp /dev/null ark1isdone
+MISSING=""
+for I in 1 ; do
+    if test ! -f ark${I}isdone ; then
+        MISSING="${MISSING} ${I}"
+    fi
+done
+if test "${MISSING}" = "" ; then
+    echo You have the archive.
+    rm -f ark[1-9]isdone
+else
+    echo You still must unpack the following archives:
+    echo "        " ${MISSING}
+fi
+exit 0
+exit 0 # Just in case...
