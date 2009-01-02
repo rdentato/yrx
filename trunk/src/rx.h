@@ -51,7 +51,7 @@ unsigned char *rx_step_asm (FILE *f, unsigned int cnt, unsigned char *nfa);
 
 
 /*   Create a NFA from a regular expression. Note that nfa must be at 
-** least {RX_MAXNFA} characters long.
+** maximum {RX_MAXNFA} characters long.
 **   Compiling is an expensive operations, consider caching nfa's rather
 ** then recompiling the regular expression every time. 
 **   If anything goes wrong, it returns an error message.
